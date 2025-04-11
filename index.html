@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Poster Tools</title>
+  <link rel="icon" type="image/svg+xml" href="../assets/mediux.svg" />
+  <link href="https://fonts.googleapis.com/css2?family=Gabarito:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary-gradient: linear-gradient(to right, #00fff0, #a600ff);
+      --accent-glow: rgba(0, 255, 255, 0.15);
+      --card-bg: rgba(255, 255, 255, 0.03);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --text-primary: #ffffff;
+      --text-secondary: #cccccc;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      margin: 0;
+      font-family: 'Gabarito', sans-serif;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    
+    header {
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.6);
+      box-shadow: 0 0 30px rgba(0, 255, 255, 0.15);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(8px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    
+    header img {
+      height: 60px;
+      filter: drop-shadow(0 0 6px rgba(0,255,255,0.5));
+    }
+    
+    .hero-section {
+      position: relative;
+      height: 35vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      overflow: hidden;
+      padding: 2rem 0 1rem;
+    }
+    
+    .hero-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at center, rgba(255,0,255,0.1), transparent 70%);
+      filter: blur(100px);
+      z-index: -1;
+    }
+    
+    .hero-content {
+      max-width: 800px;
+      padding: 0 2rem;
+      z-index: 1;
+    }
+    
+    .hero-title {
+      font-size: 4rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      background: linear-gradient(to right, #00fff0, #a600ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      position: relative;
+      z-index: 1;
+      animation: fadeIn 1s ease-out;
+    }
+    
+    .hero-subtitle {
+      font-size: 1.5rem;
+      color: var(--text-secondary);
+      position: relative;
+      z-index: 1;
+      animation: fadeIn 1s ease-out 0.3s forwards;
+      opacity: 0;
+    }
+    
+    .tool-features {
+      padding: 3rem 2rem 4rem;
+      position: relative;
+      margin-top: -1rem;
+    }
+    
+    .tools-container {
+      display: flex;
+      flex-direction: column;
+      gap: 8rem;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    
+    .tool-feature {
+      display: flex;
+      align-items: center;
+      gap: 4rem;
+      position: relative;
+      animation: fadeIn 1.2s ease-out;
+    }
+    
+    .tool-feature:nth-child(even) {
+      flex-direction: row-reverse;
+    }
+    
+    .tool-feature::before {
+      content: '';
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, var(--accent-glow), transparent 70%);
+      z-index: -1;
+      filter: blur(80px);
+      opacity: 0.8;
+    }
+    
+    .tool-feature:nth-child(1)::before {
+      top: -100px;
+      right: -100px;
+      background: radial-gradient(circle, rgba(0,255,255,0.15), transparent 70%);
+    }
+    
+    .tool-feature:nth-child(2)::before {
+      bottom: -100px;
+      left: -100px;
+      background: radial-gradient(circle, rgba(255,0,255,0.15), transparent 70%);
+    }
+    
+    .tool-info {
+      flex: 1;
+    }
+    
+    .tool-title {
+      font-size: 2.2rem;
+      margin-bottom: 1rem;
+      position: relative;
+      display: inline-block;
+    }
+    
+    .tool-title::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 0;
+      width: 60px;
+      height: 3px;
+      background: var(--primary-gradient);
+      border-radius: 3px;
+    }
+    
+    .tool-description {
+      color: var(--text-secondary);
+      font-size: 1.1rem;
+      line-height: 1.6;
+      margin-bottom: 2rem;
+    }
+    
+    .tool-details {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    
+    .tool-detail {
+      flex-basis: calc(50% - 0.75rem);
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 1rem;
+      backdrop-filter: blur(10px);
+    }
+    
+    .detail-title {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: #00fff0;
+    }
+    
+    .detail-text {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+    
+    .tool-link {
+      display: inline-block;
+      padding: 0.7rem 1.5rem;
+      background: rgba(0, 0, 0, 0.3);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 50px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+    
+    .tool-link:hover {
+      background: rgba(0, 255, 240, 0.1);
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0, 255, 255, 0.2);
+    }
+    
+    .tool-preview {
+      flex: 1;
+      position: relative;
+    }
+    
+    .preview-image {
+      width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+    
+    .poster-preview-group {
+      display: flex;
+      gap: 16px;
+      justify-content: flex-start;
+      padding: 15px;
+      border-radius: 20px;
+      background-color: rgba(26, 23, 42, 0.5);
+    }
+    
+    .poster-preview-image {
+      height: 300px;
+      width: auto;
+      border-radius: 8px;
+    }
+    
+    .testimonials {
+      padding: 6rem 2rem;
+      position: relative;
+      background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.2));
+    }
+    
+    .testimonial-container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    
+    .testimonial-cards {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+    
+    .testimonial-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 2rem;
+      backdrop-filter: blur(10px);
+      transition: transform 0.3s ease;
+    }
+    
+    .testimonial-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(0, 255, 255, 0.1);
+    }
+    
+    .testimonial-text {
+      font-size: 1.1rem;
+      line-height: 1.6;
+      margin-bottom: 1.5rem;
+      color: var(--text-secondary);
+    }
+    
+    .testimonial-author {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    
+    .author-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--primary-gradient);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-weight: 700;
+      font-size: 1.2rem;
+    }
+    
+    .author-info h4 {
+      font-size: 1rem;
+      margin-bottom: 0.2rem;
+    }
+    
+    .author-info p {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+    
+    .cta-section {
+      padding: 6rem 2rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .cta-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at center, rgba(0,255,255,0.1), transparent 70%);
+      filter: blur(80px);
+      z-index: -1;
+    }
+    
+    .cta-content {
+      max-width: 800px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .cta-title {
+      font-size: 3rem;
+      margin-bottom: 1.5rem;
+      background: var(--primary-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .cta-text {
+      font-size: 1.2rem;
+      color: var(--text-secondary);
+      margin-bottom: 3rem;
+    }
+    
+    .cta-button {
+      padding: 0.8rem 2rem;
+      background: rgba(0, 0, 0, 0.3);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 50px;
+      font-size: 1rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+    }
+    
+    .cta-button.primary {
+      background: linear-gradient(135deg, rgba(0, 255, 240, 0.2), rgba(166, 0, 255, 0.2));
+      box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+    }
+    
+    .cta-button:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 5px 20px rgba(0, 255, 255, 0.3);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+    
+    footer {
+      text-align: center;
+      padding: 2rem 1rem;
+      font-size: 0.9rem;
+      color: #aaa;
+      background: rgba(0, 0, 0, 0.3);
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    footer a {
+      color: #fff;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    @media (max-width: 1200px) {
+      .tool-feature {
+        gap: 2rem;
+      }
+    }
+    
+    @media (max-width: 992px) {
+      .hero-title {
+        font-size: 3rem;
+      }
+      
+      .hero-section {
+        height: auto;
+        padding: 3rem 0 0.5rem;
+      }
+      
+      .tool-feature {
+        flex-direction: column !important;
+      }
+      
+      .tool-info, .tool-preview {
+        width: 100%;
+      }
+      
+      .poster-preview-image {
+        height: 280px;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .hero-title {
+        font-size: 2.5rem;
+      }
+      
+      .hero-subtitle {
+        font-size: 1.2rem;
+      }
+      
+      .tool-details {
+        flex-direction: column;
+      }
+      
+      .tool-detail {
+        flex-basis: 100%;
+      }
+      
+      .poster-preview-group {
+        overflow-x: auto;
+        padding-bottom: 15px;
+      }
+      
+      .poster-preview-image {
+        height: 220px;
+        flex-shrink: 0;
+      }
+      
+      .section-title {
+  font-size: 2.2rem;
+  margin-bottom: 2rem;
+  position: relative;
+  display: inline-block;
+  text-align: left;
+}
+
+.section-title::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 0;
+  width: 60px;
+  height: 3px;
+  background: var(--primary-gradient);
+  border-radius: 3px;
+}
+  </style>
+</head>
+<body>
+  <!-- Header (kept as per your request) -->
+  <header>
+    <img src="assets/logo.png" alt="Poster Tools Logo" />
+  </header>
+
+  <!-- Streamlined Hero Section (reduced height, no buttons) -->
+  <section class="hero-section">
+    <div class="hero-bg"></div>
+    <div class="hero-content">
+      <h1 class="hero-title">Build & Showcase Your Visuals</h1>
+      <p class="hero-subtitle">Curate your media with sleek, powerful tools designed for creators who demand perfection.</p>
+    </div>
+  </section>
+
+  <!-- Tool Features Section -->
+  <section class="tool-features">
+    <div class="tools-container">
+      <!-- Poster Showcase Tool -->
+      <div class="tool-feature">
+        <div class="tool-info">
+          <h3 class="tool-title">Poster Showcase</h3>
+          <p class="tool-description">Create stunning poster walls and titlecard collections with unparalleled control. Perfect for displaying your curated media in style.</p>
+          
+          <div class="tool-details">
+            <div class="tool-detail">
+              <h4 class="detail-title">Flexible Layout</h4>
+              <p class="detail-text">Easily arrange and group posters with powerful grid controls and auto-alignment.</p>
+            </div>
+            <div class="tool-detail">
+              <h4 class="detail-title">Export Options</h4>
+              <p class="detail-text">Save as high-quality images for sharing or display in multiple formats.</p>
+            </div>
+            <div class="tool-detail">
+              <h4 class="detail-title">Custom Styling</h4>
+              <p class="detail-text">Add shadows, borders, and text overlays to create the perfect presentation.</p>
+            </div>
+            <div class="tool-detail">
+              <h4 class="detail-title">Metadata Integration</h4>
+              <p class="detail-text">Automatically pull and display film/series information in your showcase.</p>
+            </div>
+          </div>
+          
+          <a href="poster-showcase/" class="tool-link">Explore Poster Showcase</a>
+        </div>
+        
+        <div class="tool-preview">
+          <img src="assets/examples/nathanforyou.png" alt="Poster Showcase Example" class="preview-image">
+        </div>
+      </div>
+      
+      <!-- Poster Overlay Tool -->
+      <div class="tool-feature">
+        <div class="tool-info">
+          <h3 class="tool-title">Poster Overlay</h3>
+          <p class="tool-description">Apply professional-grade overlays to your posters with precision and style. Perfect for media servers like Plex, Emby, and Jellyfin.</p>
+          
+          <div class="tool-details">
+            <div class="tool-detail">
+              <h4 class="detail-title">4K/HDR/DV Badges</h4>
+              <p class="detail-text">Showcase your media quality with stylish, professionally designed overlays.</p>
+            </div>
+            <div class="tool-detail">
+              <h4 class="detail-title">Customizable</h4>
+              <p class="detail-text">Adjust position, size, and transparency to perfectly complement your poster art.</p>
+            </div>
+            <div class="tool-detail">
+              <h4 class="detail-title">Template Library</h4>
+              <p class="detail-text">Choose from a growing collection of overlay styles to match your aesthetic.</p>
+            </div>
+            <div class="tool-detail">
+              <h4 class="detail-title">Batch Processing</h4>
+              <p class="detail-text">Apply overlays to multiple posters at once for efficient workflow.</p>
+            </div>
+          </div>
+          
+          <a href="poster-overlay/" class="tool-link">Explore Poster Overlay</a>
+        </div>
+        
+        <div class="tool-preview">
+          <div class="poster-preview-group">
+            <img src="assets/showcase/poster1.png" alt="Mickey 17" class="poster-preview-image">
+            <img src="assets/showcase/poster2.png" alt="Novocaine" class="poster-preview-image">
+            <img src="assets/showcase/poster3.png" alt="Captain America" class="poster-preview-image">
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials Section -->
+  <section class="testimonials">
+    <div class="testimonial-container">
+      <h2 class="section-title tool-title">What Users Say</h2>
+      <div class="testimonial-cards">
+  <!-- Card 1 -->
+  <div class="testimonial-card">
+    <p class="testimonial-text">"Poster Tools has completely transformed my Plex library. The overlay tool saves me hours of work and the results look professional every time."</p>
+    <div class="testimonial-author">
+      <div class="author-avatar">M</div>
+      <div class="author-info">
+        <h4>Michael T.</h4>
+        <p>Media Enthusiast</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 2 -->
+  <div class="testimonial-card">
+    <p class="testimonial-text">"The Poster Showcase tool helped me create amazing collection displays that I've shared with my streaming community. Easy to use but powerful."</p>
+    <div class="testimonial-author">
+      <div class="author-avatar">S</div>
+      <div class="author-info">
+        <h4>Sarah J.</h4>
+        <p>Content Creator</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 3 -->
+  <div class="testimonial-card">
+    <p class="testimonial-text">"As someone who takes pride in their media collection, these tools are essential. The attention to detail and design quality is unmatched."</p>
+    <div class="testimonial-author">
+      <div class="author-avatar">R</div>
+      <div class="author-info">
+        <h4>Ryan K.</h4>
+        <p>Collector</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 4 (separate card, not nested) -->
+  <div class="testimonial-card">
+    <p class="testimonial-text">"The ability to create consistent branded looks for my entire media collection has been game-changing. These tools deliver professional results with minimal effort."</p>
+    <div class="testimonial-author">
+      <div class="author-avatar">J</div>
+      <div class="author-info">
+        <h4>Jessica L.</h4>
+        <p>Digital Curator</p>
+      </div>
+    </div>
+  </div>
+</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="cta-section">
+    <div class="cta-bg"></div>
+    <div class="cta-content">
+      <h2 class="cta-title">Ready to Showcase Your Collection?</h2>
+      <p class="cta-text">Transform your media library with our powerful tools designed for creators who care about presentation.</p>
+      <a href="poster-showcase/" class="cta-button primary">Get Started Now</a>
+    </div>
+  </section>
+
+  <!-- Footer (kept as per your request) -->
+  <footer>
+    Built for creators • <a href="https://mediux.pro" target="_blank">Mediux.pro</a>
+  </footer>
+</body>
+</html>
