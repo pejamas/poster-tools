@@ -66,7 +66,7 @@
     border-right: 1px solid rgba(255, 255, 255, 0.05);
     display: flex;
     flex-direction: column;
-    gap: 0.95rem;
+    gap: 0.7rem;
     box-sizing: border-box;
     /* Added these properties for scrolling */
     overflow-y: auto;
@@ -345,6 +345,74 @@
     display: none;
   }
   
+  /* Toggle switch styling */
+  .toggle-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 0.25rem;
+  }
+  
+  .toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 46px;
+    height: 24px;
+  }
+  
+  .toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    margin: 0;
+  }
+  
+  .toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #444;
+    transition: .3s;
+    border-radius: 24px;
+  }
+  
+  .toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .3s;
+    border-radius: 50%;
+  }
+  
+  input:checked + .toggle-slider {
+    background-color: #0088cc;
+  }
+  
+  input:checked + .toggle-slider:before {
+    transform: translateX(22px);
+  }
+  
+  .toggle-label {
+    font-size: 0.85rem;
+    color: #ccc;
+  }
+  
+  /* Section separator */
+  .section-separator {
+    width: 100%;
+    margin: 0.5rem 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 0.5rem;
+  }
+  
   /* Media query for very small screens */
   @media (max-height: 700px) {
     .sidebar {
@@ -378,12 +446,31 @@
       <label for="set-id">Set ID</label>
       <input type="text" id="set-id" placeholder="e.g. 01" />
 	  
+	  <div class="section-separator"></div>
+	  
 	  <label for="backdrop-upload" class="drop-zone">Upload Backdrop</label>
       <input type="file" id="backdrop-upload" accept="image/*">
 
       <label for="blur-amount">Blur Amount</label>
       <input type="range" id="blur-amount" min="0" max="30" step="1" value="5">
+      
+      <!-- Background toggle switch -->
+      <div class="toggle-container">
+        <span class="toggle-label">Use Backdrop</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="use-backdrop-toggle" checked>
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
 
+      <label for="bg-start">Background Start</label>
+      <input type="color" id="bg-start" value="#2c3e50">
+
+      <label for="bg-end">Background End</label>
+      <input type="color" id="bg-end" value="#6a11cb">
+      
+      <div class="section-separator"></div>
+      
       <label for="columns-select">Posters Per Row</label>
       <select id="columns-select">
         <option value="2">2</option>
@@ -399,19 +486,34 @@
         <option value="4">4</option>
         <option value="5">5</option>
       </select>
+      
+      <!-- Section headings toggles -->
+      <div class="toggle-container">
+        <span class="toggle-label">Show Posters Header</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="show-posters-header" checked>
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      
+      <div class="toggle-container">
+        <span class="toggle-label">Show Titlecards Header</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="show-titlecards-header" checked>
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
 
+      <div class="section-separator"></div>
+      
       <label for="logo-scale">Logo Scale</label>
       <input type="range" id="logo-scale" min="0.3" max="2" step="0.1" value="1">
-
-      <label for="bg-start">Background Start</label>
-      <input type="color" id="bg-start" value="#2c3e50">
-
-      <label for="bg-end">Background End</label>
-      <input type="color" id="bg-end" value="#6a11cb">
 
       <label for="logo-upload" class="drop-zone">Upload Clear Logo</label>
       <input type="file" id="logo-upload" accept="image/*" />
 
+      <div class="section-separator"></div>
+      
       <label for="file-input" class="drop-zone">Upload Posters</label>
       <input type="file" id="file-input" multiple accept="image/*" />
 
@@ -429,14 +531,14 @@
         </div>
         <img id="logo-preview" alt="Clear Logo" />
 
-        <h2 class="section-title">Posters</h2>
+        <h2 class="section-title" id="posters-header">Posters</h2>
         <div id="poster-grid-wrapper" class="grid-section">
           <div id="poster-grid"></div>
         </div>
 
         <hr style="width: 100%; border-color: rgba(255,255,255,0.2);">
 
-        <h2 class="section-title">Titlecards</h2>
+        <h2 class="section-title" id="titlecards-header">Titlecards</h2>
         <div id="titlecard-grid-wrapper" class="grid-section">
           <div id="titlecard-grid"></div>
         </div>
@@ -484,6 +586,62 @@ document.getElementById("creator-icon-upload").addEventListener("change", (e) =>
 document.getElementById("creator-name").addEventListener("input", e => {
   document.getElementById("credit-text").textContent = e.target.value;
 });
+
+// Toggle switches for section headers
+document.getElementById("show-posters-header").addEventListener("change", e => {
+  document.getElementById("posters-header").style.display = e.target.checked ? "block" : "none";
+});
+
+document.getElementById("show-titlecards-header").addEventListener("change", e => {
+  document.getElementById("titlecards-header").style.display = e.target.checked ? "block" : "none";
+});
+
+document.getElementById("logo-upload").addEventListener("change", e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = evt => {
+    const img = document.getElementById("logo-preview");
+    img.src = evt.target.result;
+    img.style.display = "block";
+  };
+  reader.readAsDataURL(file);
+});
+
+// Toggle for backdrop vs gradient background
+document.getElementById("use-backdrop-toggle").addEventListener("change", e => {
+  toggleBackgroundType(e.target.checked);
+});
+
+document.getElementById("file-input").addEventListener("change", async (e) => {
+  await handleFiles(e.target.files, "poster");
+});
+
+document.getElementById("titlecard-input").addEventListener("change", async (e) => {
+  await handleFiles(e.target.files, "titlecard");
+});
+
+function toggleBackgroundType(useBackdrop) {
+  const exportWrapper = document.getElementById("export-wrapper");
+  
+  if (useBackdrop && window._currentBackdropURL) {
+    // Use backdrop if available
+    exportWrapper.style.backgroundImage = `url(${window._currentBackdropURL})`;
+    exportWrapper.style.backgroundSize = "cover";
+    exportWrapper.style.backgroundPosition = "center";
+    // Set background to none AFTER setting backgroundImage
+    exportWrapper.style.background = 'none';
+  } else {
+    // Use gradient background - always show gradient when toggle is off
+    // First clear any background image
+    exportWrapper.style.backgroundImage = 'none';
+    
+    // Then set the gradient
+    const bgStart = document.getElementById("bg-start").value;
+    const bgEnd = document.getElementById("bg-end").value;
+    exportWrapper.style.background = `linear-gradient(135deg, ${bgStart}, ${bgEnd})`;
+  }
+}
 	
 const posterGrid = document.getElementById("poster-grid");
 const titlecardGrid = document.getElementById("titlecard-grid");
@@ -614,9 +772,68 @@ async function handleFiles(files, className) {
       }
       return aKey.seasonNumber - bKey.seasonNumber;
     });
-  }
+    
+    // Extract existing posters first
+    const container = document.querySelector(`#${className}-grid`);
+    const existingPosters = Array.from(container.querySelectorAll('.poster-wrapper')).map(wrapper => 
+      wrapper.querySelector('img').src
+    );
 
-  if (className === "titlecard") {
+    // Process new uploaded posters
+    const newPosterSrcs = await Promise.all(fileArray.map(async file => {
+      return await new Promise(resolve => {
+        const reader = new FileReader();
+        reader.onload = e => resolve(e.target.result);
+        reader.readAsDataURL(file);
+      });
+    }));
+
+    // Merge existing and new posters
+    const allPosterSrcs = [...existingPosters, ...newPosterSrcs];
+    
+    // Clear container and rebuild
+    container.innerHTML = "";
+    
+    // Create wrappers for all posters
+    const wrappers = allPosterSrcs.map(src => {
+      const wrapper = document.createElement("div");
+      wrapper.className = `${className}-wrapper`;
+
+      const img = document.createElement("img");
+      img.src = src;
+      img.className = className;
+      img.draggable = true;
+
+      const btn = document.createElement("button");
+      btn.className = "delete-btn";
+      btn.textContent = "×";
+      btn.onclick = () => {
+        wrapper.remove();
+        rebuildGrids();
+      };
+
+      wrapper.appendChild(img);
+      wrapper.appendChild(btn);
+
+      img.addEventListener("dragstart", () => wrapper.dataset.dragging = true);
+      img.addEventListener("dragend", () => delete wrapper.dataset.dragging);
+      wrapper.addEventListener("dragover", e => e.preventDefault());
+      wrapper.addEventListener("drop", e => {
+        e.preventDefault();
+        const dragging = document.querySelector("[data-dragging]");
+        if (dragging && dragging !== wrapper) {
+          wrapper.parentNode.insertBefore(dragging.closest(`.${className}-wrapper`), wrapper);
+          rebuildGrids();
+        }
+      });
+
+      return wrapper;
+    });
+    
+    wrappers.forEach(wrapper => container.appendChild(wrapper));
+    rebuildGrids();
+  } 
+  else if (className === "titlecard") {
     const parseInfo = name => {
       const cleaned = name.toLowerCase().replace(/\.[^/.]+$/, "").trim();
       const match = cleaned.match(/s(\d{1,2})[\s\.]?e(\d{1,2})/i);
@@ -631,8 +848,8 @@ async function handleFiles(files, className) {
     const existingWrappers = Array.from(container.querySelectorAll('.titlecard-wrapper'));
     const existingCards = existingWrappers.map(wrapper => ({
       src: wrapper.querySelector('img').src,
-      season: parseInt(wrapper.dataset.season),
-      episode: parseInt(wrapper.dataset.episode),
+      season: parseInt(wrapper.dataset.season || "0"),
+      episode: parseInt(wrapper.dataset.episode || "0"),
     }));
 
     // Process new uploaded titlecards
@@ -704,55 +921,6 @@ async function handleFiles(files, className) {
 
     // Final regroup into rows
     groupItemsWithHeaders(container, parseInt(titlecardColumnsSelect.value));
-
-  } else {
-    // For posters (original logic remains)
-    const container = document.querySelector(`#${className}-grid`);
-    container.innerHTML = "";
-
-    const wrappers = await Promise.all(fileArray.map(async file => {
-      const result = await new Promise(resolve => {
-        const reader = new FileReader();
-        reader.onload = e => resolve(e.target.result);
-        reader.readAsDataURL(file);
-      });
-
-      const wrapper = document.createElement("div");
-      wrapper.className = `${className}-wrapper`;
-
-      const img = document.createElement("img");
-      img.src = result;
-      img.className = className;
-      img.draggable = true;
-
-      const btn = document.createElement("button");
-      btn.className = "delete-btn";
-      btn.textContent = "×";
-      btn.onclick = () => {
-        wrapper.remove();
-        rebuildGrids();
-      };
-
-      wrapper.appendChild(img);
-      wrapper.appendChild(btn);
-
-      img.addEventListener("dragstart", () => wrapper.dataset.dragging = true);
-      img.addEventListener("dragend", () => delete wrapper.dataset.dragging);
-      wrapper.addEventListener("dragover", e => e.preventDefault());
-      wrapper.addEventListener("drop", e => {
-        e.preventDefault();
-        const dragging = document.querySelector("[data-dragging]");
-        if (dragging && dragging !== wrapper) {
-          wrapper.parentNode.insertBefore(dragging.closest(`.${className}-wrapper`), wrapper);
-          rebuildGrids();
-        }
-      });
-
-      return wrapper;
-    }));
-
-    wrappers.forEach(wrapper => container.appendChild(wrapper));
-    rebuildGrids();
   }
 }
 
@@ -779,6 +947,9 @@ document.getElementById("backdrop-upload").addEventListener("change", async (e) 
       const blurAmount = parseInt(document.getElementById("blur-amount").value);
       applySmartBlur(originalImg, blurAmount);
       
+      // Auto-check the backdrop toggle when a new backdrop is uploaded
+      document.getElementById("use-backdrop-toggle").checked = true;
+      
     } catch (error) {
       console.error("Error in backdrop processing:", error);
       alert("There was an error processing your image. Please try another one.");
@@ -795,6 +966,71 @@ document.getElementById("blur-amount").addEventListener("input", async (e) => {
   const blurAmount = parseInt(e.target.value);
   applySmartBlur(window._originalBackdropImage, blurAmount);
 });
+
+// Logo scale slider
+document.getElementById("logo-scale").addEventListener("input", e => {
+  document.getElementById("logo-preview").style.transform = `scale(${e.target.value})`;
+});
+
+// Grid column selectors
+document.getElementById("columns-select").addEventListener("change", rebuildGrids);
+document.getElementById("titlecard-columns-select").addEventListener("change", rebuildGrids);
+
+// Set ID field
+document.getElementById("set-id").addEventListener("input", e => {
+  document.getElementById("set-id-line").textContent = e.target.value ? `Set ID: ${e.target.value}` : "";
+});
+
+// Toggle for backdrop vs gradient background
+document.getElementById("use-backdrop-toggle").addEventListener("change", e => {
+  toggleBackgroundType(e.target.checked);
+});
+
+document.getElementById("bg-start").addEventListener("input", e => {
+  // Don't update styles if backdrop is active
+  if (document.getElementById("use-backdrop-toggle").checked && window._currentBackdropURL) {
+    document.getElementById("export-wrapper").style.setProperty("--bg-start", e.target.value);
+    return;
+  }
+  
+  // Otherwise update the gradient
+  const bgStart = e.target.value;
+  const bgEnd = document.getElementById("bg-end").value;
+  document.getElementById("export-wrapper").style.setProperty("--bg-start", bgStart);
+  document.getElementById("export-wrapper").style.background = `linear-gradient(135deg, ${bgStart}, ${bgEnd})`;
+});
+
+document.getElementById("bg-end").addEventListener("input", e => {
+  // Don't update styles if backdrop is active
+  if (document.getElementById("use-backdrop-toggle").checked && window._currentBackdropURL) {
+    document.getElementById("export-wrapper").style.setProperty("--bg-end", e.target.value);
+    return;
+  }
+  
+  // Otherwise update the gradient
+  const bgEnd = e.target.value;
+  const bgStart = document.getElementById("bg-start").value;
+  document.getElementById("export-wrapper").style.setProperty("--bg-end", bgEnd);
+  document.getElementById("export-wrapper").style.background = `linear-gradient(135deg, ${bgStart}, ${bgEnd})`;
+});
+
+function toggleBackgroundType(useBackdrop) {
+  const exportWrapper = document.getElementById("export-wrapper");
+  
+  if (useBackdrop && window._currentBackdropURL) {
+    // Use backdrop
+    exportWrapper.style.background = "none";
+    exportWrapper.style.backgroundImage = `url(${window._currentBackdropURL})`;
+    exportWrapper.style.backgroundSize = "cover";
+    exportWrapper.style.backgroundPosition = "center";
+  } else {
+    // Use gradient background
+    const bgStart = document.getElementById("bg-start").value;
+    const bgEnd = document.getElementById("bg-end").value;
+    exportWrapper.style.background = `linear-gradient(135deg, ${bgStart}, ${bgEnd})`;
+    exportWrapper.style.backgroundImage = "none";
+  }
+}
 
 function applySmartBlur(originalImg, blurAmount) {
   // Create a canvas for processing
@@ -858,174 +1094,73 @@ function applySmartBlur(originalImg, blurAmount) {
   blurredBackdropDataURL = blurredDataURL;
   window._currentBackdropURL = blurredDataURL;
   
-  // Apply to the export wrapper with adjusted background properties
+  // Apply to the export wrapper based on toggle state
+  const useBackdrop = document.getElementById("use-backdrop-toggle").checked;
+  
+if (useBackdrop) {
+  // Apply the backdrop background
   const exportWrapper = document.getElementById("export-wrapper");
   
-  // Update ALL background properties to ensure proper coverage
-  exportWrapper.style.background = "none";
+  // First clear existing background
+  exportWrapper.style.removeProperty('background');
+  exportWrapper.style.background = 'none';
+  
+  // Then set the backdrop image
   exportWrapper.style.backgroundImage = `url('${blurredDataURL}')`;
-  exportWrapper.style.backgroundSize = "110% 110%"; // Slightly larger than container
+  exportWrapper.style.backgroundSize = "110% 110%";
   exportWrapper.style.backgroundPosition = "center center";
   exportWrapper.style.backgroundRepeat = "no-repeat";
+  exportWrapper.style.overflow = "hidden"; // Add this line
+} else {
+  // If toggle is off, use gradient instead
+  const exportWrapper = document.getElementById("export-wrapper");
+  const bgStart = document.getElementById("bg-start").value;
+  const bgEnd = document.getElementById("bg-end").value;
   
-  // Hide regular background
-  const bgContainer = document.getElementById("export-bg-container");
-  if (bgContainer) {
-    bgContainer.style.display = "none";
-  }
+  // Clear background image first
+  exportWrapper.style.backgroundImage = 'none';
+  
+  // Then set the gradient
+  exportWrapper.style.background = `linear-gradient(135deg, ${bgStart}, ${bgEnd})`;
+  exportWrapper.style.overflow = "hidden"; // Add this line
+}
 }
 
-document.getElementById("file-input").addEventListener("change", async (e) => {
-  await handleFiles(e.target.files, "poster");
+// Toggle switches for section headers
+document.getElementById("show-posters-header").addEventListener("change", e => {
+  document.getElementById("posters-header").style.display = e.target.checked ? "block" : "none";
 });
 
-document.getElementById("titlecard-input").addEventListener("change", async (e) => {
-  await handleFiles(e.target.files, "titlecard");
-});
-columnsSelect.addEventListener("change", rebuildGrids);
-titlecardColumnsSelect.addEventListener("change", rebuildGrids);
-
-document.getElementById("creator-name").addEventListener("input", e => {
-  document.getElementById("credit-text").textContent = e.target.value;
-});
-document.getElementById("set-id").addEventListener("input", e => {
-  document.getElementById("set-id-line").textContent = e.target.value ? `Set ID: ${e.target.value}` : "";
-});
-document.getElementById("logo-scale").addEventListener("input", e => {
-  document.getElementById("logo-preview").style.transform = `scale(${e.target.value})`;
-});
-document.getElementById("logo-upload").addEventListener("change", e => {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = evt => {
-    const img = document.getElementById("logo-preview");
-    img.src = evt.target.result;
-    img.style.display = "block";
-  };
-  reader.readAsDataURL(file);
-});
-
-document.getElementById("bg-start").addEventListener("input", e => {
-  document.getElementById("export-wrapper").style.setProperty("--bg-start", e.target.value);
-  updateBackgroundStyles();
-});
-document.getElementById("bg-end").addEventListener("input", e => {
-  document.getElementById("export-wrapper").style.setProperty("--bg-end", e.target.value);
-  updateBackgroundStyles();
+document.getElementById("show-titlecards-header").addEventListener("change", e => {
+  document.getElementById("titlecards-header").style.display = e.target.checked ? "block" : "none";
 });
 
 function updateBackgroundStyles() {
   const exportWrapper = document.getElementById("export-wrapper");
   const bgContainer = document.getElementById("export-bg-container");
+  const useBackdrop = document.getElementById("use-backdrop-toggle").checked;
 
-  // If we have a blurred backdrop, it takes priority
-  if (window._currentBackdropURL) {
+  // If we have a blurred backdrop and the toggle is enabled
+  if (window._currentBackdropURL && useBackdrop) {
     bgContainer.style.display = "none";
-    exportWrapper.style.background = "none";
+    exportWrapper.style.removeProperty('background');
+    exportWrapper.style.background = 'none';
     exportWrapper.style.backgroundImage = `url(${window._currentBackdropURL})`;
     exportWrapper.style.backgroundSize = "cover";
     exportWrapper.style.backgroundPosition = "center";
-    return;
-  }
-
-  if (originalBgDataURL) {
-    bgContainer.style.display = "block";
-    exportWrapper.style.background = "none"; // override gradient fallback
   } else {
+    // Use gradient background
     bgContainer.style.display = "none";
     const bgStart = document.getElementById("bg-start").value;
     const bgEnd = document.getElementById("bg-end").value;
+    
+    // Clear background image first
+    exportWrapper.style.backgroundImage = 'none';
+    
+    // Then set the gradient
     exportWrapper.style.background = `linear-gradient(135deg, ${bgStart}, ${bgEnd})`;
   }
 }
-
-function fixBackgroundContainerSizing() {
-  const exportWrapper = document.getElementById("export-wrapper");
-  const bgContainer = document.getElementById("export-bg-container");
-  
-  if (exportWrapper && bgContainer) {
-    // Make sure the background container completely fills the wrapper
-    bgContainer.style.position = "absolute";
-    bgContainer.style.top = "0";
-    bgContainer.style.left = "0";
-    bgContainer.style.right = "0";
-    bgContainer.style.bottom = "0";
-    bgContainer.style.overflow = "hidden";
-    bgContainer.style.borderRadius = "12px"; // Match wrapper's border radius
-    bgContainer.style.margin = "0"; // Remove any margin
-    
-    // Make sure any white borders or outlines are removed
-    exportWrapper.style.border = "none";
-    exportWrapper.style.outline = "none";
-    exportWrapper.style.overflow = "hidden"; // Prevent content from spilling out
-  }
-  
-  // Do the same for backdrop container if it exists
-  const backdropContainer = document.getElementById("backdrop-container");
-  if (exportWrapper && backdropContainer) {
-    backdropContainer.style.position = "absolute";
-    backdropContainer.style.top = "0";
-    backdropContainer.style.left = "0";
-    backdropContainer.style.right = "0";
-    backdropContainer.style.bottom = "0";
-    backdropContainer.style.overflow = "hidden";
-    backdropContainer.style.borderRadius = "12px";
-    backdropContainer.style.margin = "0";
-  }
-}
-
-async function blurImage(img, blurAmount) {
-  return new Promise((resolve, reject) => {
-    try {
-      // Set canvas dimensions to match image
-      backdropCanvas.width = img.width;
-      backdropCanvas.height = img.height;
-      
-      // Clear canvas
-      backdropCtx.clearRect(0, 0, backdropCanvas.width, backdropCanvas.height);
-      
-      // Draw the original image
-      backdropCtx.drawImage(img, 0, 0);
-      
-      // Apply stack blur algorithm - multiply the blur amount to make it stronger
-      // Change this line:
-      if (blurAmount > 0) {
-        // Apply the blur multiple times for stronger effect
-        const enhancedBlur = Math.min(blurAmount * 3, 150); // Limit max blur to 150px
-        stackBlur(backdropCtx, 0, 0, backdropCanvas.width, backdropCanvas.height, enhancedBlur);
-      }
-      
-      // Return the blurred image data URL
-      resolve(backdropCanvas.toDataURL('image/jpeg', 0.85));
-    } catch (error) {
-      reject(error);
-    }
-  });
-}
-// Function to check if sidebar needs scrolling
-function checkSidebarScroll() {
-  const sidebar = document.querySelector('.sidebar');
-  const layout = document.querySelector('.layout');
-  
-  // If sidebar content is taller than the available height
-  if (sidebar.scrollHeight > layout.clientHeight) {
-    sidebar.classList.add('scrollable');
-  } else {
-    sidebar.classList.remove('scrollable');
-  }
-}
-
-// Call these functions on page load
-fixBackgroundContainerSizing();
-updateBackgroundStyles();
-checkSidebarScroll();
-
-// Also call after relevant changes
-window.addEventListener("resize", () => {
-  fixBackgroundContainerSizing();
-  checkSidebarScroll();
-});
 
 document.getElementById("resetBtn").addEventListener("click", () => {
   const overlay = document.getElementById('custom-confirm-overlay');
@@ -1038,285 +1173,13 @@ document.getElementById("resetBtn").addEventListener("click", () => {
   confirmNo.onclick = () => overlay.style.display = 'none';
 });
 
-// Stack Blur Algorithm by Mario Klingemann <mario@quasimondo.com>
-// http://www.quasimondo.com/StackBlurForCanvas/StackBlurDemo.html
-function stackBlur(ctx, x, y, width, height, radius) {
-  if (radius < 1) return;
-  
-  var imgData = ctx.getImageData(x, y, width, height);
-  var pixels = imgData.data;
-  
-  var x, y, i, p, yp, yi, yw, r_sum, g_sum, b_sum, a_sum, 
-      r_out_sum, g_out_sum, b_out_sum, a_out_sum,
-      r_in_sum, g_in_sum, b_in_sum, a_in_sum, 
-      pr, pg, pb, pa, rbs;
-      
-  var div = radius + radius + 1;
-  var widthMinus1  = width - 1;
-  var heightMinus1 = height - 1;
-  var radiusPlus1  = radius + 1;
-  var sumFactor = radiusPlus1 * (radiusPlus1 + 1) / 2;
-  
-  var stackStart = new BlurStack();
-  var stack = stackStart;
-  for (i = 1; i < div; i++) {
-    stack = stack.next = new BlurStack();
-    if (i == radiusPlus1) var stackEnd = stack;
-  }
-  stack.next = stackStart;
-  var stackIn = null;
-  var stackOut = null;
-  
-  yw = yi = 0;
-  
-  var mul_sum = mul_table[radius];
-  var shg_sum = shg_table[radius];
-  
-  for (y = 0; y < height; y++) {
-    r_in_sum = g_in_sum = b_in_sum = a_in_sum = r_sum = g_sum = b_sum = a_sum = 0;
-    
-    r_out_sum = radiusPlus1 * (pr = pixels[yi]);
-    g_out_sum = radiusPlus1 * (pg = pixels[yi+1]);
-    b_out_sum = radiusPlus1 * (pb = pixels[yi+2]);
-    a_out_sum = radiusPlus1 * (pa = pixels[yi+3]);
-    
-    r_sum += sumFactor * pr;
-    g_sum += sumFactor * pg;
-    b_sum += sumFactor * pb;
-    a_sum += sumFactor * pa;
-    
-    stack = stackStart;
-    
-    for (i = 0; i < radiusPlus1; i++) {
-      stack.r = pr;
-      stack.g = pg;
-      stack.b = pb;
-      stack.a = pa;
-      stack = stack.next;
-    }
-    
-    for (i = 1; i < radiusPlus1; i++) {
-      p = yi + ((widthMinus1 < i ? widthMinus1 : i) << 2);
-      r_sum += (stack.r = (pr = pixels[p])) * (rbs = radiusPlus1 - i);
-      g_sum += (stack.g = (pg = pixels[p+1])) * rbs;
-      b_sum += (stack.b = (pb = pixels[p+2])) * rbs;
-      a_sum += (stack.a = (pa = pixels[p+3])) * rbs;
-      
-      r_in_sum += pr;
-      g_in_sum += pg;
-      b_in_sum += pb;
-      a_in_sum += pa;
-      
-      stack = stack.next;
-    }
-    
-    stackIn = stackStart;
-    stackOut = stackEnd;
-    for (x = 0; x < width; x++) {
-      pixels[yi+3] = pa = (a_sum * mul_sum) >> shg_sum;
-      if (pa != 0) {
-        pa = 255 / pa;
-        pixels[yi]   = ((r_sum * mul_sum) >> shg_sum) * pa;
-        pixels[yi+1] = ((g_sum * mul_sum) >> shg_sum) * pa;
-        pixels[yi+2] = ((b_sum * mul_sum) >> shg_sum) * pa;
-      } else {
-        pixels[yi] = pixels[yi+1] = pixels[yi+2] = 0;
-      }
-      
-      r_sum -= r_out_sum;
-      g_sum -= g_out_sum;
-      b_sum -= b_out_sum;
-      a_sum -= a_out_sum;
-      
-      r_out_sum -= stackIn.r;
-      g_out_sum -= stackIn.g;
-      b_out_sum -= stackIn.b;
-      a_out_sum -= stackIn.a;
-      
-      p =  (yw + ((p = x + radius + 1) < widthMinus1 ? p : widthMinus1)) << 2;
-      
-      r_in_sum += (stackIn.r = pixels[p]);
-      g_in_sum += (stackIn.g = pixels[p+1]);
-      b_in_sum += (stackIn.b = pixels[p+2]);
-      a_in_sum += (stackIn.a = pixels[p+3]);
-      
-      r_sum += r_in_sum;
-      g_sum += g_in_sum;
-      b_sum += b_in_sum;
-      a_sum += a_in_sum;
-      
-      stackIn = stackIn.next;
-      
-      r_out_sum += (pr = stackOut.r);
-      g_out_sum += (pg = stackOut.g);
-      b_out_sum += (pb = stackOut.b);
-      a_out_sum += (pa = stackOut.a);
-      
-      r_in_sum -= pr;
-      g_in_sum -= pg;
-      b_in_sum -= pb;
-      a_in_sum -= pa;
-      
-      stackOut = stackOut.next;
-
-      yi += 4;
-    }
-    yw += width;
-  }
-  
-  for (x = 0; x < width; x++) {
-    g_in_sum = b_in_sum = a_in_sum = r_in_sum = g_sum = b_sum = a_sum = r_sum = 0;
-    
-    yi = x << 2;
-    r_out_sum = radiusPlus1 * (pr = pixels[yi]);
-    g_out_sum = radiusPlus1 * (pg = pixels[yi+1]);
-    b_out_sum = radiusPlus1 * (pb = pixels[yi+2]);
-    a_out_sum = radiusPlus1 * (pa = pixels[yi+3]);
-    
-    r_sum += sumFactor * pr;
-    g_sum += sumFactor * pg;
-    b_sum += sumFactor * pb;
-    a_sum += sumFactor * pa;
-    
-    stack = stackStart;
-    
-    for (i = 0; i < radiusPlus1; i++) {
-      stack.r = pr;
-      stack.g = pg;
-      stack.b = pb;
-      stack.a = pa;
-      stack = stack.next;
-    }
-    
-    yp = width;
-    
-    for (i = 1; i <= radius; i++) {
-      yi = (yp + x) << 2;
-      
-      r_sum += (stack.r = (pr = pixels[yi])) * (rbs = radiusPlus1 - i);
-      g_sum += (stack.g = (pg = pixels[yi+1])) * rbs;
-      b_sum += (stack.b = (pb = pixels[yi+2])) * rbs;
-      a_sum += (stack.a = (pa = pixels[yi+3])) * rbs;
-      
-      r_in_sum += pr;
-      g_in_sum += pg;
-      b_in_sum += pb;
-      a_in_sum += pa;
-      
-      stack = stack.next;
-    
-      if (i < heightMinus1) {
-        yp += width;
-      }
-    }
-    
-    yi = x;
-    stackIn = stackStart;
-    stackOut = stackEnd;
-    for (y = 0; y < height; y++) {
-      p = yi << 2;
-      pixels[p+3] = pa = (a_sum * mul_sum) >> shg_sum;
-      if (pa > 0) {
-        pa = 255 / pa;
-        pixels[p]   = ((r_sum * mul_sum) >> shg_sum) * pa;
-        pixels[p+1] = ((g_sum * mul_sum) >> shg_sum) * pa;
-        pixels[p+2] = ((b_sum * mul_sum) >> shg_sum) * pa;
-      } else {
-        pixels[p] = pixels[p+1] = pixels[p+2] = 0;
-      }
-      
-      r_sum -= r_out_sum;
-      g_sum -= g_out_sum;
-      b_sum -= b_out_sum;
-      a_sum -= a_out_sum;
-      
-      r_out_sum -= stackIn.r;
-      g_out_sum -= stackIn.g;
-      b_out_sum -= stackIn.b;
-      a_out_sum -= stackIn.a;
-      
-      p = (x + (((p = y + radiusPlus1) < heightMinus1 ? p : heightMinus1) * width)) << 2;
-      
-      r_sum += (r_in_sum += (stackIn.r = pixels[p]));
-      g_sum += (g_in_sum += (stackIn.g = pixels[p+1]));
-      b_sum += (b_in_sum += (stackIn.b = pixels[p+2]));
-      a_sum += (a_in_sum += (stackIn.a = pixels[p+3]));
-      
-      stackIn = stackIn.next;
-      
-      r_out_sum += (pr = stackOut.r);
-      g_out_sum += (pg = stackOut.g);
-      b_out_sum += (pb = stackOut.b);
-      a_out_sum += (pa = stackOut.a);
-      
-      r_in_sum -= pr;
-      g_in_sum -= pg;
-      b_in_sum -= pb;
-      a_in_sum -= pa;
-      
-      stackOut = stackOut.next;
-      
-      yi += width;
-    }
-  }
-  
-  ctx.putImageData(imgData, x, y);
-}
-
-// BlurStack class needed for the blur algorithm
-function BlurStack() {
-  this.r = 0;
-  this.g = 0;
-  this.b = 0;
-  this.a = 0;
-  this.next = null;
-}
-
-// Lookup tables for blur algorithm
-var mul_table = [
-  512,512,456,512,328,456,335,512,405,328,271,456,388,335,292,512,
-  454,405,364,328,298,271,496,456,420,388,360,335,312,292,273,512,
-  482,454,428,405,383,364,345,328,312,298,284,271,259,496,475,456,
-  437,420,404,388,374,360,347,335,323,312,302,292,282,273,265,512,
-  497,482,468,454,441,428,417,405,394,383,373,364,354,345,337,328,
-  320,312,305,298,291,284,278,271,265,259,507,496,485,475,465,456,
-  446,437,428,420,412,404,396,388,381,374,367,360,354,347,341,335,
-  329,323,318,312,307,302,297,292,287,282,278,273,269,265,261,512,
-  505,497,489,482,475,468,461,454,447,441,435,428,422,417,411,405,
-  399,394,389,383,378,373,368,364,359,354,350,345,341,337,332,328,
-  324,320,316,312,309,305,301,298,294,291,287,284,281,278,274,271,
-  268,265,262,259,257,507,501,496,491,485,480,475,470,465,460,456,
-  451,446,442,437,433,428,424,420,416,412,408,404,400,396,392,388,
-  385,381,377,374,370,367,363,360,357,354,350,347,344,341,338,335,
-  332,329,326,323,320,318,315,312,310,307,304,302,299,297,294,292,
-  289,287,285,282,280,278,275,273,271,269,267,265,263,261,259
-];
-
-var shg_table = [
-  9, 11, 12, 13, 13, 14, 14, 15, 15, 15, 15, 16, 16, 16, 16, 17, 
-  17, 17, 17, 17, 17, 17, 18, 18, 18, 18, 18, 18, 18, 18, 18, 19, 
-  19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 20, 20, 20,
-  20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 21,
-  21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21,
-  21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 22, 22, 22, 22, 22, 22, 
-  22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22,
-  22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 23, 
-  23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
-  23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
-  23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 
-  23, 23, 23, 23, 23, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 
-  24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
-  24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
-  24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
-  24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24
-];
-
 document.getElementById("downloadBtn").addEventListener("click", async () => {
   const wrapper = document.getElementById("export-wrapper");
   const borderRadius = 24; // Border radius value in pixels (for export)
   
-  // Check for blurred backdrop
-  const hasBlurredBackdrop = window._currentBackdropURL ? true : false;
+  // Check for blurred backdrop and if toggle is enabled
+  const useBackdrop = document.getElementById("use-backdrop-toggle").checked;
+  const hasBlurredBackdrop = window._currentBackdropURL && useBackdrop ? true : false;
   const originalBg = originalBgDataURL; // Custom background image
   
   // Clone the wrapper to avoid modifying the actual DOM
@@ -1349,12 +1212,27 @@ document.getElementById("downloadBtn").addEventListener("click", async () => {
   const backdropContainerClone = clone.querySelector("#backdrop-container");
   if (backdropContainerClone) backdropContainerClone.remove();
 
+  // Check section visibility based on toggle states
+  const showPostersHeader = document.getElementById("show-posters-header").checked;
+  const showTitlecardsHeader = document.getElementById("show-titlecards-header").checked;
+  
+  // Handle section headers visibility for export
+  const postersHeaderClone = clone.querySelector("#posters-header");
+  const titlecardsHeaderClone = clone.querySelector("#titlecards-header");
+  
+  if (postersHeaderClone) {
+    postersHeaderClone.style.display = showPostersHeader ? "block" : "none";
+  }
+  
+  if (titlecardsHeaderClone) {
+    titlecardsHeaderClone.style.display = showTitlecardsHeader ? "block" : "none";
+  }
+  
   // Remove titlecard section if empty
   const titlecardGridClone = clone.querySelector("#titlecard-grid");
   if (!titlecardGridClone || titlecardGridClone.children.length === 0) {
-    const sectionTitle = clone.querySelector(".section-title:nth-of-type(2)");
+    if (titlecardsHeaderClone) titlecardsHeaderClone.remove();
     const wrapper = clone.querySelector("#titlecard-grid-wrapper");
-    if (sectionTitle) sectionTitle.remove();
     if (wrapper) wrapper.remove();
   }
 
@@ -1405,7 +1283,7 @@ document.getElementById("downloadBtn").addEventListener("click", async () => {
   ctx.clip();
 
   // Step 1: Draw the appropriate background covering the ENTIRE canvas
-  if (hasBlurredBackdrop && window._currentBackdropURL) {
+  if (hasBlurredBackdrop) {
     // Use blurred backdrop
     const bgImg = new Image();
     await new Promise((resolve, reject) => {
