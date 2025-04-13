@@ -16,7 +16,7 @@
       flex-direction: column;
       height: 100vh;
       overflow-x: hidden;
-	  overflow-y: auto;
+      overflow-y: auto;
     }
     header {
       padding: 1rem 2rem;
@@ -41,8 +41,8 @@
       font-size: 1.5rem;
       margin: 0;
       color: white;
-	  position: relative;
-	  top: -1px;
+      position: relative;
+      top: -1px;
     }
     .header-center {
       display: flex;
@@ -58,6 +58,8 @@
       flex: 1;
       overflow: hidden;
     }
+    
+    /* Updated sidebar styling */
     .sidebar {
       width: 280px;
       background: rgba(0, 0, 0, 0.6);
@@ -67,75 +69,276 @@
       border-right: 1px solid rgba(255,255,255,0.05);
       display: flex;
       flex-direction: column;
-      gap: 1.2rem;
+      gap: 0.5rem;
       box-sizing: border-box;
       align-items: center;
+      /* Added these properties for scrolling */
+      overflow-y: auto;
+      max-height: 100%;
+      /* Improved scrollbar styling */
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.3) rgba(0, 0, 0, 0.1);
     }
-    .sidebar button,
-    .sidebar select {
+    
+    /* Scrollbar styling for WebKit browsers (Chrome, Safari, etc.) */
+    .sidebar::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    .sidebar::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 4px;
+    }
+    
+    .sidebar::-webkit-scrollbar-thumb {
+      background-color: rgba(255, 255, 255, 0.3);
+      border-radius: 4px;
+    }
+    
+    .sidebar::-webkit-scrollbar-thumb:hover {
+      background-color: rgba(255, 255, 255, 0.5);
+    }
+    
+    .sidebar label {
+      font-size: 0.85rem;
+      color: #ccc;
+      margin-bottom: 0.25rem;
+      display: block;
       width: 100%;
-      padding: 0.6rem;
-      font-size: 0.95rem;
+      text-align: left;
+    }
+    
+    .sidebar select,
+    .sidebar input[type="text"],
+    #tmdb-search-input {
+      width: 100%;
+      max-width: 100%;
+      padding: 0.75rem;
+      font-size: 0.9rem;
+      background: #333;
+      color: white;
       border: none;
       border-radius: 6px;
       box-sizing: border-box;
+      margin-bottom: 0.5rem;
+    }
+    
+    .sidebar select:focus,
+    .sidebar input:focus,
+    #tmdb-search-input:focus {
+      outline: 1px solid rgba(0, 255, 255, 0.5);
+    }
+    
+    .sidebar button {
+      width: 100%;
+      padding: 0.8rem;
+      font-size: 0.95rem;
+      border: none;
+      border-radius: 6px;
+      margin-top: 0.5rem;
       background: white;
       color: black;
       font-weight: bold;
       cursor: pointer;
+      transition: all 0.2s;
     }
+    
+    .sidebar button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    #download-btn {
+      background: white;
+      color: black;
+    }
+    
     #reset-btn {
       background: #ff4d4d;
       color: white;
-      font-weight: bold;
-      border: none;
     }
+    
     .drop-zone-label {
-      border: 2px dashed #ccc;
-      padding: 0.8rem 0.1rem;
-      text-align: center;
-      border-radius: 6px;
-      cursor: pointer;
-      color: #ccc;
-      width: 100%;
-      font-size: 0.95rem;
-      font-weight: bold;
-      background: transparent;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  width: 100%;
+  height: 48px;
+  border: 2px dashed rgba(255, 255, 255, 0.3);
+  padding: 0;
+  text-align: center !important;
+  border-radius: 8px;
+  cursor: pointer;
+  color: white;
+  font-weight: 500;
+  background: rgba(0, 0, 0, 0.3);
+  transition: all 0.2s;
+  margin-bottom: 1rem;
+  box-sizing: border-box;
+}
+
+.drop-zone-label span {
+  width: 100%;
+  text-align: center;
+  line-height: 1;
+}
+    
+    .drop-zone-label:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.5);
     }
+    
     .sidebar input[type="file"] {
       display: none;
     }
-    .sidebar label {
-      font-size: 0.9rem;
-      color: #eee;
+    
+    /* Section spacing and grouping */
+    .sidebar-section {
       width: 100%;
-      text-align: center;
-      margin-bottom: 0.2rem;
+      margin-bottom: 1rem;
     }
-    #overlay-select {
-      background: #f4f4f4;
-      color: #111;
-      font-weight: bold;
-      text-align: center;
+    
+    .sidebar-section-title {
+      font-size: 1rem;
+      color: white;
+      margin-bottom: 0.5rem;
+    }
+    
+    /* TMDB search styling */
+    .tmdb-search {
+      position: relative;
+      width: 100%;
+      margin-bottom: 1rem;
+    }
+    
+    #tmdb-search-input {
+      width: 100%;
+      background: #333;
+      color: white;
+      border-radius: 6px;
+    }
+    
+    .autocomplete-suggestions {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      background: #222;
+      color: white;
+      border-radius: 0 0 6px 6px;
+      overflow: hidden;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+      max-height: 220px;
+      overflow-y: auto;
+    }
+    
+    .autocomplete-suggestions div {
+      padding: 0.6rem 0.75rem;
+      cursor: pointer;
+      transition: background 0.2s;
+      font-weight: 600;
+      color: white;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .autocomplete-suggestions div:hover {
+      background: #444;
+    }
+    
+    /* Network logo styling */
+    .network-logo-select {
+      position: relative;
+      width: 100%;
+    }
+    
+    .network-logo-select select {
+      appearance: none;
+      width: 100%;
+      padding: 0.75rem;
+      padding-left: 50px; /* Space for the logo */
+      background-color: #333;
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    
+    .network-logo-select select:hover {
+      background-color: #444;
+    }
+    
+    .network-logo-select::after {
+      content: '';
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 0;
+      height: 0;
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-top: 5px solid white;
+      pointer-events: none;
+    }
+    
+    .network-logo-preview {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 30px;
+      height: 15px;
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+      z-index: 2;
+    }
+    
+    #network-logo-select,
+    #overlay-select,
+    #logo-color {
+      background: #333;
+      color: white;
+      text-align: left;
+      font-weight: 400;
+    }
+    
+    /* Logo options styling */
+    .logo-options {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.2);
+      padding: 0.8rem;
+      border-radius: 6px;
+      margin-top: 0.25rem;
+      margin-bottom: 1rem;
+    }
+    
+    .logo-options label {
+      margin-bottom: 0.5rem;
+      color: white;
+    }
+    
+    /* Main content area */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 4rem;
+      gap: 2rem;
+      overflow-y: auto;
     }
 
-.main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 4rem;
-  gap: 2rem;
-  overflow-y: auto;
-}
-
-.main-content {
-  display: flex;
-  gap: 2rem;
-  justify-content: center;
-  align-items: flex-start;
-  flex-wrap: wrap;
-}
+    .main-content {
+      display: flex;
+      gap: 2rem;
+      justify-content: center;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+    
     .canvas-container {
       width: 550px;
       height: 800px;
@@ -146,6 +349,7 @@
       border-radius: 12px;
       box-shadow: 0 0 20px rgba(0,0,0,0.6);
     }
+    
     canvas {
       width: 100%;
       height: 100%;
@@ -169,17 +373,20 @@
       overflow-y: auto;
       border: 1px solid rgba(255,255,255,0.05);
     }
+    
     .title-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
+    
     .title-row h2 {
       font-size: 1.6rem;
       margin: 0;
       flex: 1;
       color: white;
     }
+    
     .rating-badge {
       background: linear-gradient(135deg, #ffcc00, #ffa500);
       color: #111;
@@ -190,171 +397,134 @@
       box-shadow: 0 0 8px rgba(255, 204, 0, 0.3);
       white-space: nowrap;
     }
+    
     .info-pair {
       font-weight: 600;
       color: #ccc;
-	}
-	.info-group {
+    }
+    
+    .info-group {
       background: rgba(255,255,255,0.03);
       padding: 1rem;
       border-radius: 10px;
       margin-bottom: 1rem;
-	  display: flex;
-	  flex-direction: column;
-	  gap: 0.9rem;
-	}
-	.info-item {
-	  font-size: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.9rem;
+    }
+    
+    .info-item {
+      font-size: 1rem;
       line-height: 1.5;
       color: #ddd;
-	}
-	.info-item .label {
+    }
+    
+    .info-item .label {
       color: #fff;
       font-weight: 700;
       margin-right: 0.4rem;
     }
+    
     .tagline {
       font-style: italic;
       font-size: 1.05rem;
       color: #aaa;
     }
+    
     .overview {
       margin-top: auto;
       font-size: 1rem;
       line-height: 1.6;
       color: #ddd;
     }
-	.tmdb-search {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-}
-.tmdb-search {
-  position: relative;
-  width: 100%;
-}
+    
+    /* Poster modal styling */
+    #poster-modal {
+      width: 100%;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 2rem;
+    }
 
-#tmdb-search-input {
-  width: 100%;
-  padding: 0.5rem;
-  font-size: 0.95rem;
-  border-radius: 6px;
-  border: none;
-  box-sizing: border-box;
-}
+    .poster-grid {
+      display: flex;
+      flex-direction: row;
+      gap: 0.75rem;
+      padding: 1rem;
+      width: calc(130px * 10 + 0.7rem * 9); /* 10 posters + 9 gaps */
+      max-width: 100%;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: thin;
+      scrollbar-color: #00ffff rgba(255, 255, 255, 0.05);
+      scroll-behavior: smooth;
+      scroll-padding-left: 1rem;
+      background: rgba(0, 0, 0, 0.35);
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0,255,255,0.1);
+      white-space: nowrap;
+    }
 
-.autocomplete-suggestions {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  z-index: 100;
-  background: white;
-  color: black;
-  border-radius: 0 0 6px 6px;
-  overflow: hidden;
-  box-shadow: 0 8px 16px rgba(0,0,0,0.3);
-  max-height: 220px;
-  overflow-y: auto;
-}
+    .poster-grid::-webkit-scrollbar {
+      height: 8px;
+    }
 
-.autocomplete-suggestions div {
-  padding: 0.5rem 0.75rem;
-  cursor: pointer;
-  transition: background 0.2s;
-  font-weight: 600;
-}
+    .poster-grid::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 6px;
+    }
 
-.autocomplete-suggestions div:hover {
-  background: #eee;
-}
+    .poster-grid::-webkit-scrollbar-thumb {
+      background-color: #00ffff;
+      border-radius: 6px;
+      border: 2px solid rgba(15, 10, 30, 0.9);
+    }
 
-#poster-modal {
-  width: 100%;
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 2rem;
-}
+    .poster-grid::-webkit-scrollbar-thumb:hover {
+      background-color: #0ff;
+    }
 
-.poster-grid {
-  display: flex;
-  flex-direction: row;
-  gap: 0.75rem;
-  padding: 1rem;
-  width: calc(130px * 10 + 0.7rem * 9); /* 10 posters + 9 gaps */
-  max-width: 100%;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  scrollbar-width: thin;
-  scrollbar-color: #00ffff rgba(255, 255, 255, 0.05);
-  scroll-behavior: smooth;
-  scroll-padding-left: 1rem;
-  background: rgba(0, 0, 0, 0.35);
-  border-radius: 12px;
-  box-shadow: 0 0 20px rgba(0,255,255,0.1);
-  white-space: nowrap;
-}
+    .poster-grid img {
+      width: 130px; /* tighter fit for more headroom */
+      height: 200px;
+      object-fit: cover;
+      flex: 0 0 auto;
+      border-radius: 6px;
+      scroll-snap-align: start;
+      cursor: pointer;
+      transition: transform 0.2s;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    }
 
-.poster-grid::-webkit-scrollbar {
-  height: 8px;
-}
+    .poster-grid img:hover {
+      transform: scale(1.05);
+    }
 
-.poster-grid::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 6px;
-}
+    .poster-grid-wrapper {
+      overflow-x: auto;
+      padding: 0 1rem; /* consistent left and right padding */
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      max-width: 1440px;
+    } 
 
-.poster-grid::-webkit-scrollbar-thumb {
-  background-color: #00ffff;
-  border-radius: 6px;
-  border: 2px solid rgba(15, 10, 30, 0.9);
-}
+    .poster-wrapper {
+      scrollbar-gutter: stable both-edges;
+    }
 
-.poster-grid::-webkit-scrollbar-thumb:hover {
-  background-color: #0ff;
-}
-
-.poster-grid img {
-  width: 130px; /* tighter fit for more headroom */
-  height: 200px;
-  object-fit: cover;
-  flex: 0 0 auto;
-  border-radius: 6px;
-  scroll-snap-align: start;
-  cursor: pointer;
-  transition: transform 0.2s;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
-}
-
-.poster-grid img:hover {
-  transform: scale(1.05);
-}
-
-.poster-grid-wrapper {
-  overflow-x: auto;
-  padding: 0 1rem; /* consistent left and right padding */
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
-  max-width: 1440px;
-} 
-
-.poster-wrapper {
-  scrollbar-gutter: stable both-edges;
-}
-
-.close-modal {
-  position: absolute;
-  top: -2.5rem;
-  right: 0;
-  background: #ff4d4d;
-  color: white;
-  padding: 0.4rem 0.8rem;
-  border: none;
-  font-weight: bold;
-  border-radius: 6px;
-  cursor: pointer;
-}
+    .close-modal {
+      position: absolute;
+      top: -2.5rem;
+      right: 0;
+      background: #ff4d4d;
+      color: white;
+      padding: 0.4rem 0.8rem;
+      border: none;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -370,59 +540,91 @@
 
   <div class="layout">
     <div class="sidebar">
+	 <div class="sidebar-section">
 	  <div class="tmdb-search">
 	    <input type="text" id="tmdb-search-input" placeholder="Search TMDB..." autocomplete="off" />
 		<div class="autocomplete-suggestions" id="tmdb-suggestions"></div>
 	  </div>
-	  
-      <label for="poster-upload" class="drop-zone-label">Upload Poster</label>
+	 </div>
+	 
+     <div class="sidebar-section">	 
+      <label for="poster-upload" class="drop-zone-label"><span>Upload Poster</span></label>
       <input type="file" id="poster-upload" accept="image/*">
+	 </div>
 
-      <label for="overlay-select">Choose Overlay</label>
+      <label for="overlay-select">Movie Banner</label>
       <select id="overlay-select">
+	    <option value="none">None</option>
         <option value="../assets/overlays/4K with DV.png">4K with DV</option>
         <option value="../assets/overlays/4K with HDR.png">4K with HDR</option>
         <option value="../assets/overlays/4K no HDR.png">4K no HDR</option>
       </select>
+      
+      <!-- New Network Logo Section -->
+      <label for="network-logo-select">Network Logo</label>
+      <select id="network-logo-select">
+        <option value="none">None</option>
+        <option value="../assets/logos/netflix-white.png">Netflix</option>
+        <option value="../assets/logos/hbomax-white.png">HBO Max</option>
+        <option value="../assets/logos/prime-white.png">Prime Video</option>
+        <option value="../assets/logos/disney-white.png">Disney+</option>
+        <option value="../assets/logos/hulu-white.png">Hulu</option>
+        <option value="../assets/logos/appletv-white.png">Apple TV+</option>
+        <option value="../assets/logos/paramount-white.png">Paramount+</option>
+        <option value="../assets/logos/peacock-white.png">Peacock</option>
+		<option value="../assets/logos/sky-white.png">Sky</option>
+		<option value="../assets/logos/itv-white.png">Itv</option>
+      </select>
+
+      <div class="logo-options">
+        <label for="logo-color">Logo Color:</label>
+        <select id="logo-color">
+          <option value="white">White</option>
+          <option value="black">Black</option>
+        </select>
+      </div>
+      <!-- End Network Logo Section -->
 
       <button id="download-btn">Download Poster</button>
       <button id="reset-btn">Reset</button>
     </div>
 
     <div class="main">
-  <div class="main-content">
-    <div class="canvas-container">
-      <canvas id="overlay-canvas" width="1000" height="1500"></canvas>
-    </div>
+      <div class="main-content">
+        <div class="canvas-container">
+          <canvas id="overlay-canvas" width="1000" height="1500"></canvas>
+        </div>
 
-    <div class="metadata-panel" id="metadata-panel" style="display: none;">
-      <div class="title-row">
-        <h2 id="meta-title">Movie Title</h2>
-        <span class="rating-badge" id="meta-rating"></span>
+        <div class="metadata-panel" id="metadata-panel" style="display: none;">
+          <div class="title-row">
+            <h2 id="meta-title">Movie Title</h2>
+            <span class="rating-badge" id="meta-rating"></span>
+          </div>
+          <div id="meta-tagline" class="tagline"></div>
+
+          <div class="info-group">
+            <div class="info-item"><span class="label">Year:</span> <span id="meta-year"></span></div>
+            <div class="info-item"><span class="label">Runtime:</span> <span id="meta-runtime"></span></div>
+            <div class="info-item"><span class="label">Genres:</span> <span id="meta-genres"></span></div>
+            <div class="info-item"><span class="label">Director:</span> <span id="meta-director"></span></div>
+            <div class="info-item"><span class="label">Cast:</span> <span id="meta-cast"></span></div>
+            <div class="info-item"><span class="label">Language:</span> <span id="meta-language"></span></div>
+            <div class="info-item"><span class="label">Country:</span> <span id="meta-country"></span></div>
+          </div>
+
+          <div class="overview" id="meta-overview"></div>
+        </div>
       </div>
-      <div id="meta-tagline" class="tagline"></div>
 
-      <div class="info-group">
-        <div class="info-item"><span class="label">Year:</span> <span id="meta-year"></span></div>
-        <div class="info-item"><span class="label">Runtime:</span> <span id="meta-runtime"></span></div>
-        <div class="info-item"><span class="label">Genres:</span> <span id="meta-genres"></span></div>
-        <div class="info-item"><span class="label">Director:</span> <span id="meta-director"></span></div>
-        <div class="info-item"><span class="label">Cast:</span> <span id="meta-cast"></span></div>
-        <div class="info-item"><span class="label">Language:</span> <span id="meta-language"></span></div>
-        <div class="info-item"><span class="label">Country:</span> <span id="meta-country"></span></div>
+      <!-- Poster Modal inserted BELOW canvas and metadata -->
+      <div id="poster-modal" style="display: none;">
+        <button class="close-modal" onclick="document.getElementById('poster-modal').style.display='none'">Close</button>
+        <div class="poster-grid-wrapper">
+         <div class="poster-grid" id="poster-results"></div>
+        </div>
       </div>
-
-      <div class="overview" id="meta-overview"></div>
     </div>
   </div>
-
-  <!-- Poster Modal inserted BELOW canvas and metadata -->
-  <div id="poster-modal" style="display: none;">
-    <button class="close-modal" onclick="document.getElementById('poster-modal').style.display='none'">Close</button>
-    <div class="poster-grid-wrapper">
-	 <div class="poster-grid" id="poster-results"></div>
-  </div>
-</div>
 
   <script>
     const posterUpload = document.getElementById('poster-upload');
@@ -434,6 +636,16 @@
 
     const metaPanel = document.getElementById('metadata-panel');
     const TMDB_API_KEY = '96c821c9e98fab6a43bff8021d508d1d';
+
+    // Network Logo Functionality
+    const networkLogoSelect = document.getElementById('network-logo-select');
+    const logoColorSelect = document.getElementById('logo-color');
+    let networkLogoImage = null;
+    let currentLogoPath = 'none';
+	
+    const LOGO_WIDTH = 160;
+    const LOGO_MARGIN_LEFT = 50;
+	const LOGO_MARGIN_TOP = 50;
 
     posterUpload.addEventListener('change', e => {
       const file = e.target.files[0];
@@ -456,16 +668,77 @@
       drawCanvas();
     });
 
-    function drawCanvas() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(baseImage, 0, 0, canvas.width, canvas.height);
+    // Handle network logo selection
+    networkLogoSelect.addEventListener('change', updateNetworkLogo);
+    logoColorSelect.addEventListener('change', updateNetworkLogo);
 
-      overlayImage = new Image();
-      overlayImage.onload = () => {
-        ctx.drawImage(overlayImage, 0, 0, canvas.width, canvas.height);
+    function updateNetworkLogo() {
+      if (networkLogoSelect.value === 'none') {
+        networkLogoImage = null;
+        if (baseImage) drawCanvas();
+        return;
+      }
+      
+      // Get the selected logo path and update based on color choice
+      const logoPathBase = networkLogoSelect.value.replace('-white.png', '');
+      const logoColor = logoColorSelect.value;
+      currentLogoPath = `${logoPathBase}-${logoColor}.png`;
+      
+      networkLogoImage = new Image();
+      networkLogoImage.onload = () => {
+        if (baseImage) drawCanvas();
       };
-      overlayImage.src = overlaySelect.value;
+      networkLogoImage.src = currentLogoPath;
     }
+
+    function drawCanvas() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
+  // Draw the base image
+  ctx.drawImage(baseImage, 0, 0, canvas.width, canvas.height);
+  
+  // Draw the network logo if one is selected
+  if (networkLogoImage) {
+    // Target area dimensions (fixed region where logo should appear)
+    const TARGET_WIDTH = 250;
+    const TARGET_HEIGHT = 43; // Approximate height, will depend on logo aspect ratio
+    const MARGIN_LEFT = 54;
+    const MARGIN_TOP = 55;
+    
+    // Calculate scaling to fit logo within target area while maintaining aspect ratio
+    const logoRatio = networkLogoImage.width / networkLogoImage.height;
+    let logoWidth, logoHeight;
+    
+    // Determine if width or height is the limiting factor
+    if (logoRatio > TARGET_WIDTH / TARGET_HEIGHT) {
+      // Logo is wider (relative to height) than target area
+      logoWidth = TARGET_WIDTH;
+      logoHeight = logoWidth / logoRatio;
+    } else {
+      // Logo is taller (relative to width) than target area
+      logoHeight = TARGET_HEIGHT;
+      logoWidth = logoHeight * logoRatio;
+    }
+    
+    // Draw the logo at the appropriate size and position
+    ctx.drawImage(
+      networkLogoImage, 
+      MARGIN_LEFT,
+      MARGIN_TOP,
+      logoWidth, 
+      logoHeight
+    );
+  }
+  
+  // Only draw the overlay if one is explicitly selected and not "none"
+  if (overlaySelect.value !== "none") {
+    overlayImage = new Image();
+    overlayImage.onload = () => {
+      ctx.drawImage(overlayImage, 0, 0, canvas.width, canvas.height);
+    };
+    overlayImage.src = overlaySelect.value;
+  }
+}
 
     function fetchMetadata(filename) {
       const cleanName = filename.replace(/\.[^/.]+$/, '').replace(/[_-]/g, ' ');
@@ -478,20 +751,20 @@
               .then(res => res.json())
               .then(details => {
 			  
-			    document.getElementById('meta-title').textContent = details.title;
+                document.getElementById('meta-title').textContent = details.title;
                 document.getElementById('meta-rating').textContent = details.vote_average.toFixed(1);
                 document.getElementById('meta-tagline').textContent = details.tagline || '';
 				
-				const director = details.credits.crew.find(p => p.job === 'Director');
+                const director = details.credits.crew.find(p => p.job === 'Director');
                 const cast = details.credits.cast.slice(0, 5).map(p => p.name).join(', ');
                 
-				document.getElementById('meta-year').textContent = details.release_date?.slice(0, 4);
-				document.getElementById('meta-runtime').textContent = `${details.runtime} mins`;
-				document.getElementById('meta-genres').textContent = details.genres.map(g => g.name).join(', ');
-				document.getElementById('meta-director').textContent = director?.name || '—';
-				document.getElementById('meta-cast').textContent = cast || '—';
-				document.getElementById('meta-language').textContent = details.original_language.toUpperCase();
-				document.getElementById('meta-country').textContent = details.production_countries?.[0]?.name || '—';
+                document.getElementById('meta-year').textContent = details.release_date?.slice(0, 4);
+                document.getElementById('meta-runtime').textContent = `${details.runtime} mins`;
+                document.getElementById('meta-genres').textContent = details.genres.map(g => g.name).join(', ');
+                document.getElementById('meta-director').textContent = director?.name || '—';
+                document.getElementById('meta-cast').textContent = cast || '—';
+                document.getElementById('meta-language').textContent = details.original_language.toUpperCase();
+                document.getElementById('meta-country').textContent = details.production_countries?.[0]?.name || '—';
                 document.getElementById('meta-overview').textContent = details.overview;
 
                 metaPanel.style.display = 'flex';
@@ -499,88 +772,91 @@
           }
         });
     }
-	const searchInput = document.getElementById('tmdb-search-input');
+    
+    const searchInput = document.getElementById('tmdb-search-input');
     const suggestionsBox = document.getElementById('tmdb-suggestions');
 
-searchInput.addEventListener('input', () => {
-  const query = searchInput.value.trim();
-  if (!query) {
-    suggestionsBox.innerHTML = '';
-    return;
-  }
-
-  fetch(`https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(query)}&api_key=${TMDB_API_KEY}&language=en-US&include_adult=false`)
-    .then(res => res.json())
-    .then(data => {
-      const results = data.results
-        .filter(movie => movie.poster_path && movie.original_language === 'en')
-        .slice(0, 10);
-
-      suggestionsBox.innerHTML = '';
-      results.forEach(movie => {
-        const div = document.createElement('div');
-        div.textContent = `${movie.title} (${movie.release_date?.slice(0, 4) || '—'})`;
-        div.addEventListener('click', () => {
-          searchInput.value = movie.title;
-          suggestionsBox.innerHTML = '';
-          fetchAndDisplayPostersById(movie.id, movie.title);
-        });
-        suggestionsBox.appendChild(div);
-      });
-    });
-});
-
-document.addEventListener('click', (e) => {
-  if (!e.target.closest('.tmdb-search')) {
-    suggestionsBox.innerHTML = '';
-  }
-});
-function fetchAndDisplayPostersById(movieId, movieTitle) {
-  const container = document.getElementById('poster-results');
-  container.innerHTML = ''; // Clear existing
-
-  fetch(`https://api.themoviedb.org/3/movie/${movieId}/images?api_key=${TMDB_API_KEY}`)
-    .then(res => res.json())
-    .then(images => {
-      const posters = images.posters
-        .filter(p => p.iso_639_1 === 'en')
-        .slice(0, 30); // Show max 10
-
-      if (posters.length === 0) {
-        container.innerHTML = '<p style="color:white;">No posters found.</p>';
+    searchInput.addEventListener('input', () => {
+      const query = searchInput.value.trim();
+      if (!query) {
+        suggestionsBox.innerHTML = '';
         return;
       }
 
-      posters.forEach(poster => {
-        const img = document.createElement('img');
-        img.src = `https://image.tmdb.org/t/p/w500${poster.file_path}`;
-        img.alt = movieTitle;
-        img.title = movieTitle;
+      fetch(`https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(query)}&api_key=${TMDB_API_KEY}&language=en-US&include_adult=false`)
+        .then(res => res.json())
+        .then(data => {
+          const results = data.results
+            .filter(movie => movie.poster_path && movie.original_language === 'en')
+            .slice(0, 10);
 
-        img.addEventListener('click', () => {
-          const image = new Image();
-          image.crossOrigin = 'anonymous';
-          image.onload = () => {
-            baseImage = image;
-            drawCanvas();
-            fetchMetadata(movieTitle);
-            document.getElementById('poster-modal').style.display = 'flex';
-          };
-          image.src = img.src;
+          suggestionsBox.innerHTML = '';
+          results.forEach(movie => {
+            const div = document.createElement('div');
+            div.textContent = `${movie.title} (${movie.release_date?.slice(0, 4) || '—'})`;
+            div.addEventListener('click', () => {
+              searchInput.value = movie.title;
+              suggestionsBox.innerHTML = '';
+              fetchAndDisplayPostersById(movie.id, movie.title);
+            });
+            suggestionsBox.appendChild(div);
+          });
         });
-
-        container.appendChild(img);
-      });
-	  
-      container.scrollLeft = 0;
-	  
-      document.getElementById('poster-modal').style.display = 'flex';
-    })
-    .catch(err => {
-      container.innerHTML = '<p style="color:white;">Error loading posters.</p>';
-      console.error(err);
     });
-}
+
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.tmdb-search')) {
+        suggestionsBox.innerHTML = '';
+      }
+    });
+    
+    function fetchAndDisplayPostersById(movieId, movieTitle) {
+      const container = document.getElementById('poster-results');
+      container.innerHTML = ''; // Clear existing
+
+      fetch(`https://api.themoviedb.org/3/movie/${movieId}/images?api_key=${TMDB_API_KEY}`)
+        .then(res => res.json())
+        .then(images => {
+          const posters = images.posters
+            .filter(p => p.iso_639_1 === 'en')
+            .slice(0, 30); // Show max 30
+
+          if (posters.length === 0) {
+            container.innerHTML = '<p style="color:white;">No posters found.</p>';
+            return;
+          }
+
+          posters.forEach(poster => {
+            const img = document.createElement('img');
+            img.src = `https://image.tmdb.org/t/p/w500${poster.file_path}`;
+            img.alt = movieTitle;
+            img.title = movieTitle;
+
+            img.addEventListener('click', () => {
+              const image = new Image();
+              image.crossOrigin = 'anonymous';
+              image.onload = () => {
+                baseImage = image;
+                drawCanvas();
+                fetchMetadata(movieTitle);
+                document.getElementById('poster-modal').style.display = 'flex';
+              };
+              image.src = img.src;
+            });
+
+            container.appendChild(img);
+          });
+          
+          container.scrollLeft = 0;
+          
+          document.getElementById('poster-modal').style.display = 'flex';
+        })
+        .catch(err => {
+          container.innerHTML = '<p style="color:white;">Error loading posters.</p>';
+          console.error(err);
+        });
+    }
+    
     document.getElementById('download-btn').addEventListener('click', () => {
       const link = document.createElement('a');
       link.download = 'poster-overlay.png';
@@ -593,12 +869,20 @@ function fetchAndDisplayPostersById(movieId, movieTitle) {
       posterUpload.value = '';
       baseImage = null;
       metaPanel.style.display = 'none';
-	  
-	  document.getElementById('tmdb-search-input').value = '';
+      
+      document.getElementById('tmdb-search-input').value = '';
       document.getElementById('tmdb-suggestions').innerHTML = '';
-	  
-	  document.getElementById('poster-modal').style.display = 'none';
+      
+      document.getElementById('poster-modal').style.display = 'none';
       document.getElementById('poster-results').innerHTML = '';
+      
+      // Reset network logo options
+      networkLogoSelect.value = 'none';
+      logoColorSelect.value = 'white';
+      networkLogoImage = null;
+      
+      // Reset overlay to none
+      overlaySelect.value = 'none';
     });
   </script>
 </body>
