@@ -68,6 +68,27 @@
     flex-direction: column;
     gap: 1rem;
     box-sizing: border-box;
+    /* Added these properties for scrolling */
+    overflow-y: auto;
+    max-height: 100%;
+    /* Improved scrollbar styling */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.3) rgba(0, 0, 0, 0.1);
+  }
+  /* Scrollbar styling for WebKit browsers (Chrome, Safari, etc.) */
+  .sidebar::-webkit-scrollbar {
+    width: 8px;
+  }
+  .sidebar::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+  }
+  .sidebar::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+  }
+  .sidebar::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.5);
   }
   .sidebar label {
     font-size: 0.85rem;
@@ -176,6 +197,24 @@
   }
   #logo-preview {
     max-height: 100px;
+    display: none;
+  }
+  #backdrop-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 0;
+    overflow: hidden;
+    border-radius: 12px;
+    margin: 0;
+    padding: 0;
+  }
+  #backdrop-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
     display: none;
   }
   .section-title {
@@ -301,6 +340,13 @@
   input[type="file"] {
     display: none;
   }
+  
+  /* Media query for very small screens */
+  @media (max-height: 700px) {
+    .sidebar {
+      padding-right: 1rem; /* Slightly reduce padding to account for scrollbar */
+    }
+  }
   </style>
 </head>
 <body>
@@ -328,8 +374,11 @@
       <label for="set-id">Set ID</label>
       <input type="text" id="set-id" placeholder="e.g. 01" />
 	  
-	  <label for="bg-image-upload" class="drop-zone">Upload Background Image</label>
-      <input type="file" id="bg-image-upload" accept="image/*">
+	  <label for="backdrop-upload" class="drop-zone">Upload Backdrop</label>
+      <input type="file" id="backdrop-upload" accept="image/*">
+
+      <label for="blur-amount">Blur Amount</label>
+      <input type="range" id="blur-amount" min="0" max="30" step="1" value="5">
 
       <label for="columns-select">Posters Per Row</label>
       <select id="columns-select">
@@ -414,6 +463,7 @@
   </div>
 
 <script>
+// JavaScript - Full implementation
 document.getElementById("creator-icon-upload").addEventListener("change", (e) => {
   const file = e.target.files[0];
   if (file) {
@@ -437,6 +487,9 @@ const columnsSelect = document.getElementById("columns-select");
 const titlecardColumnsSelect = document.getElementById("titlecard-columns-select");
 const bgImage = document.getElementById("export-background-image");
 let originalBgDataURL = null;
+let blurredBackdropDataURL = null;
+let backdropCanvas = document.createElement('canvas');
+let backdropCtx = backdropCanvas.getContext('2d');
 
 function groupIntoRows(items, perRow) {
   const rows = [];
@@ -699,35 +752,124 @@ async function handleFiles(files, className) {
   }
 }
 
-document.getElementById("bg-image-upload").addEventListener("change", (e) => {
+document.getElementById("backdrop-upload").addEventListener("change", async (e) => {
   const file = e.target.files[0];
   if (!file) return;
 
   const reader = new FileReader();
-  reader.onload = (evt) => {
+  reader.onload = async (evt) => {
     const dataURL = evt.target.result;
-    originalBgDataURL = dataURL;
-
-    // Load the image to ensure it's valid
-    const testImg = new Image();
-    testImg.onload = () => {
-      bgImage.src = dataURL;
-      bgImage.style.display = "block";
-      updateBackgroundStyles();
-    };
-    testImg.onerror = () => {
-      console.error("Failed to load background image.");
-      bgImage.style.display = "none";
-      originalBgDataURL = null;
-      updateBackgroundStyles();
-    };
-    testImg.src = dataURL;
+    
+    try {
+      // Store original image data for later use
+      const originalImg = new Image();
+      originalImg.src = dataURL;
+      
+      await new Promise(resolve => {
+        originalImg.onload = resolve;
+      });
+      
+      window._originalBackdropImage = originalImg;
+      
+      // Apply blur with current slider value
+      const blurAmount = parseInt(document.getElementById("blur-amount").value);
+      applySmartBlur(originalImg, blurAmount);
+      
+    } catch (error) {
+      console.error("Error in backdrop processing:", error);
+      alert("There was an error processing your image. Please try another one.");
+    }
   };
+  
   reader.readAsDataURL(file);
-
-  // Reset input so the same file can be reselected later
   e.target.value = "";
 });
+
+document.getElementById("blur-amount").addEventListener("input", async (e) => {
+  if (!window._originalBackdropImage) return;
+  
+  const blurAmount = parseInt(e.target.value);
+  applySmartBlur(window._originalBackdropImage, blurAmount);
+});
+
+function applySmartBlur(originalImg, blurAmount) {
+  // Create a canvas for processing
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  
+  // Set canvas to a reasonable size (not too small to avoid excessive pixelation)
+  const scaleFactor = Math.max(0.1, 1 - (blurAmount * 0.03)); // Smoother scale reduction
+  
+  canvas.width = Math.floor(originalImg.width * scaleFactor);
+  canvas.height = Math.floor(originalImg.height * scaleFactor);
+  
+  // First pass - draw at reduced size (creates initial blur)
+  ctx.drawImage(originalImg, 0, 0, canvas.width, canvas.height);
+  
+  // Apply a CSS-style blur filter if blurAmount is high enough
+  if (blurAmount > 5) {
+    // This simulates a Gaussian blur
+    const blurPx = Math.min(20, blurAmount - 5);
+    ctx.filter = `blur(${blurPx}px)`;
+    ctx.drawImage(canvas, 0, 0, canvas.width, canvas.height);
+    ctx.filter = 'none';
+  }
+  
+  // Calculate dimensions with padding to ensure coverage to edges
+  const padding = 50; // Add extra padding to ensure full coverage
+  
+  // Second pass - scale back up with padding
+  const finalCanvas = document.createElement('canvas');
+  const finalCtx = finalCanvas.getContext('2d');
+  
+  // Use a size that matches the aspect ratio but is reasonably large
+  const maxDimension = Math.max(originalImg.width, originalImg.height);
+  const targetSize = Math.min(1920, maxDimension); // Cap at 1920px for performance
+  
+  let finalWidth, finalHeight;
+  if (originalImg.width > originalImg.height) {
+    finalWidth = targetSize + padding * 2;
+    finalHeight = ((originalImg.height / originalImg.width) * targetSize) + padding * 2;
+  } else {
+    finalHeight = targetSize + padding * 2;
+    finalWidth = ((originalImg.width / originalImg.height) * targetSize) + padding * 2;
+  }
+  
+  finalCanvas.width = finalWidth;
+  finalCanvas.height = finalHeight;
+  
+  // Use better quality interpolation
+  finalCtx.imageSmoothingEnabled = true;
+  finalCtx.imageSmoothingQuality = "high";
+  
+  // Draw the blurred image at larger size with padding
+  finalCtx.drawImage(canvas, -padding, -padding, finalWidth + padding * 2, finalHeight + padding * 2);
+  
+  // Add a subtle darkening overlay to make content stand out better
+  finalCtx.fillStyle = "rgba(0, 0, 0, 0.2)";
+  finalCtx.fillRect(0, 0, finalWidth, finalHeight);
+  
+  // Apply the blurred image as background
+  const blurredDataURL = finalCanvas.toDataURL('image/jpeg', 0.92);
+  blurredBackdropDataURL = blurredDataURL;
+  window._currentBackdropURL = blurredDataURL;
+  
+  // Apply to the export wrapper with adjusted background properties
+  const exportWrapper = document.getElementById("export-wrapper");
+  
+  // Update ALL background properties to ensure proper coverage
+  exportWrapper.style.background = "none";
+  exportWrapper.style.backgroundImage = `url('${blurredDataURL}')`;
+  exportWrapper.style.backgroundSize = "110% 110%"; // Slightly larger than container
+  exportWrapper.style.backgroundPosition = "center center";
+  exportWrapper.style.backgroundRepeat = "no-repeat";
+  
+  // Hide regular background
+  const bgContainer = document.getElementById("export-bg-container");
+  if (bgContainer) {
+    bgContainer.style.display = "none";
+  }
+}
 
 document.getElementById("file-input").addEventListener("change", async (e) => {
   await handleFiles(e.target.files, "poster");
@@ -773,6 +915,16 @@ function updateBackgroundStyles() {
   const exportWrapper = document.getElementById("export-wrapper");
   const bgContainer = document.getElementById("export-bg-container");
 
+  // If we have a blurred backdrop, it takes priority
+  if (window._currentBackdropURL) {
+    bgContainer.style.display = "none";
+    exportWrapper.style.background = "none";
+    exportWrapper.style.backgroundImage = `url(${window._currentBackdropURL})`;
+    exportWrapper.style.backgroundSize = "cover";
+    exportWrapper.style.backgroundPosition = "center";
+    return;
+  }
+
   if (originalBgDataURL) {
     bgContainer.style.display = "block";
     exportWrapper.style.background = "none"; // override gradient fallback
@@ -804,14 +956,72 @@ function fixBackgroundContainerSizing() {
     exportWrapper.style.outline = "none";
     exportWrapper.style.overflow = "hidden"; // Prevent content from spilling out
   }
+  
+  // Do the same for backdrop container if it exists
+  const backdropContainer = document.getElementById("backdrop-container");
+  if (exportWrapper && backdropContainer) {
+    backdropContainer.style.position = "absolute";
+    backdropContainer.style.top = "0";
+    backdropContainer.style.left = "0";
+    backdropContainer.style.right = "0";
+    backdropContainer.style.bottom = "0";
+    backdropContainer.style.overflow = "hidden";
+    backdropContainer.style.borderRadius = "12px";
+    backdropContainer.style.margin = "0";
+  }
+}
+
+async function blurImage(img, blurAmount) {
+  return new Promise((resolve, reject) => {
+    try {
+      // Set canvas dimensions to match image
+      backdropCanvas.width = img.width;
+      backdropCanvas.height = img.height;
+      
+      // Clear canvas
+      backdropCtx.clearRect(0, 0, backdropCanvas.width, backdropCanvas.height);
+      
+      // Draw the original image
+      backdropCtx.drawImage(img, 0, 0);
+      
+      // Apply stack blur algorithm - multiply the blur amount to make it stronger
+      // Change this line:
+      if (blurAmount > 0) {
+        // Apply the blur multiple times for stronger effect
+        const enhancedBlur = Math.min(blurAmount * 3, 150); // Limit max blur to 150px
+        stackBlur(backdropCtx, 0, 0, backdropCanvas.width, backdropCanvas.height, enhancedBlur);
+      }
+      
+      // Return the blurred image data URL
+      resolve(backdropCanvas.toDataURL('image/jpeg', 0.85));
+    } catch (error) {
+      reject(error);
+    }
+  });
+}
+// Function to check if sidebar needs scrolling
+function checkSidebarScroll() {
+  const sidebar = document.querySelector('.sidebar');
+  const layout = document.querySelector('.layout');
+  
+  // If sidebar content is taller than the available height
+  if (sidebar.scrollHeight > layout.clientHeight) {
+    sidebar.classList.add('scrollable');
+  } else {
+    sidebar.classList.remove('scrollable');
+  }
 }
 
 // Call these functions on page load
 fixBackgroundContainerSizing();
 updateBackgroundStyles();
+checkSidebarScroll();
 
 // Also call after relevant changes
-window.addEventListener("resize", fixBackgroundContainerSizing);
+window.addEventListener("resize", () => {
+  fixBackgroundContainerSizing();
+  checkSidebarScroll();
+});
 
 document.getElementById("resetBtn").addEventListener("click", () => {
   const overlay = document.getElementById('custom-confirm-overlay');
@@ -823,29 +1033,317 @@ document.getElementById("resetBtn").addEventListener("click", () => {
   confirmYes.onclick = () => location.reload();
   confirmNo.onclick = () => overlay.style.display = 'none';
 });
+
+// Stack Blur Algorithm by Mario Klingemann <mario@quasimondo.com>
+// http://www.quasimondo.com/StackBlurForCanvas/StackBlurDemo.html
+function stackBlur(ctx, x, y, width, height, radius) {
+  if (radius < 1) return;
+  
+  var imgData = ctx.getImageData(x, y, width, height);
+  var pixels = imgData.data;
+  
+  var x, y, i, p, yp, yi, yw, r_sum, g_sum, b_sum, a_sum, 
+      r_out_sum, g_out_sum, b_out_sum, a_out_sum,
+      r_in_sum, g_in_sum, b_in_sum, a_in_sum, 
+      pr, pg, pb, pa, rbs;
+      
+  var div = radius + radius + 1;
+  var widthMinus1  = width - 1;
+  var heightMinus1 = height - 1;
+  var radiusPlus1  = radius + 1;
+  var sumFactor = radiusPlus1 * (radiusPlus1 + 1) / 2;
+  
+  var stackStart = new BlurStack();
+  var stack = stackStart;
+  for (i = 1; i < div; i++) {
+    stack = stack.next = new BlurStack();
+    if (i == radiusPlus1) var stackEnd = stack;
+  }
+  stack.next = stackStart;
+  var stackIn = null;
+  var stackOut = null;
+  
+  yw = yi = 0;
+  
+  var mul_sum = mul_table[radius];
+  var shg_sum = shg_table[radius];
+  
+  for (y = 0; y < height; y++) {
+    r_in_sum = g_in_sum = b_in_sum = a_in_sum = r_sum = g_sum = b_sum = a_sum = 0;
+    
+    r_out_sum = radiusPlus1 * (pr = pixels[yi]);
+    g_out_sum = radiusPlus1 * (pg = pixels[yi+1]);
+    b_out_sum = radiusPlus1 * (pb = pixels[yi+2]);
+    a_out_sum = radiusPlus1 * (pa = pixels[yi+3]);
+    
+    r_sum += sumFactor * pr;
+    g_sum += sumFactor * pg;
+    b_sum += sumFactor * pb;
+    a_sum += sumFactor * pa;
+    
+    stack = stackStart;
+    
+    for (i = 0; i < radiusPlus1; i++) {
+      stack.r = pr;
+      stack.g = pg;
+      stack.b = pb;
+      stack.a = pa;
+      stack = stack.next;
+    }
+    
+    for (i = 1; i < radiusPlus1; i++) {
+      p = yi + ((widthMinus1 < i ? widthMinus1 : i) << 2);
+      r_sum += (stack.r = (pr = pixels[p])) * (rbs = radiusPlus1 - i);
+      g_sum += (stack.g = (pg = pixels[p+1])) * rbs;
+      b_sum += (stack.b = (pb = pixels[p+2])) * rbs;
+      a_sum += (stack.a = (pa = pixels[p+3])) * rbs;
+      
+      r_in_sum += pr;
+      g_in_sum += pg;
+      b_in_sum += pb;
+      a_in_sum += pa;
+      
+      stack = stack.next;
+    }
+    
+    stackIn = stackStart;
+    stackOut = stackEnd;
+    for (x = 0; x < width; x++) {
+      pixels[yi+3] = pa = (a_sum * mul_sum) >> shg_sum;
+      if (pa != 0) {
+        pa = 255 / pa;
+        pixels[yi]   = ((r_sum * mul_sum) >> shg_sum) * pa;
+        pixels[yi+1] = ((g_sum * mul_sum) >> shg_sum) * pa;
+        pixels[yi+2] = ((b_sum * mul_sum) >> shg_sum) * pa;
+      } else {
+        pixels[yi] = pixels[yi+1] = pixels[yi+2] = 0;
+      }
+      
+      r_sum -= r_out_sum;
+      g_sum -= g_out_sum;
+      b_sum -= b_out_sum;
+      a_sum -= a_out_sum;
+      
+      r_out_sum -= stackIn.r;
+      g_out_sum -= stackIn.g;
+      b_out_sum -= stackIn.b;
+      a_out_sum -= stackIn.a;
+      
+      p =  (yw + ((p = x + radius + 1) < widthMinus1 ? p : widthMinus1)) << 2;
+      
+      r_in_sum += (stackIn.r = pixels[p]);
+      g_in_sum += (stackIn.g = pixels[p+1]);
+      b_in_sum += (stackIn.b = pixels[p+2]);
+      a_in_sum += (stackIn.a = pixels[p+3]);
+      
+      r_sum += r_in_sum;
+      g_sum += g_in_sum;
+      b_sum += b_in_sum;
+      a_sum += a_in_sum;
+      
+      stackIn = stackIn.next;
+      
+      r_out_sum += (pr = stackOut.r);
+      g_out_sum += (pg = stackOut.g);
+      b_out_sum += (pb = stackOut.b);
+      a_out_sum += (pa = stackOut.a);
+      
+      r_in_sum -= pr;
+      g_in_sum -= pg;
+      b_in_sum -= pb;
+      a_in_sum -= pa;
+      
+      stackOut = stackOut.next;
+
+      yi += 4;
+    }
+    yw += width;
+  }
+  
+  for (x = 0; x < width; x++) {
+    g_in_sum = b_in_sum = a_in_sum = r_in_sum = g_sum = b_sum = a_sum = r_sum = 0;
+    
+    yi = x << 2;
+    r_out_sum = radiusPlus1 * (pr = pixels[yi]);
+    g_out_sum = radiusPlus1 * (pg = pixels[yi+1]);
+    b_out_sum = radiusPlus1 * (pb = pixels[yi+2]);
+    a_out_sum = radiusPlus1 * (pa = pixels[yi+3]);
+    
+    r_sum += sumFactor * pr;
+    g_sum += sumFactor * pg;
+    b_sum += sumFactor * pb;
+    a_sum += sumFactor * pa;
+    
+    stack = stackStart;
+    
+    for (i = 0; i < radiusPlus1; i++) {
+      stack.r = pr;
+      stack.g = pg;
+      stack.b = pb;
+      stack.a = pa;
+      stack = stack.next;
+    }
+    
+    yp = width;
+    
+    for (i = 1; i <= radius; i++) {
+      yi = (yp + x) << 2;
+      
+      r_sum += (stack.r = (pr = pixels[yi])) * (rbs = radiusPlus1 - i);
+      g_sum += (stack.g = (pg = pixels[yi+1])) * rbs;
+      b_sum += (stack.b = (pb = pixels[yi+2])) * rbs;
+      a_sum += (stack.a = (pa = pixels[yi+3])) * rbs;
+      
+      r_in_sum += pr;
+      g_in_sum += pg;
+      b_in_sum += pb;
+      a_in_sum += pa;
+      
+      stack = stack.next;
+    
+      if (i < heightMinus1) {
+        yp += width;
+      }
+    }
+    
+    yi = x;
+    stackIn = stackStart;
+    stackOut = stackEnd;
+    for (y = 0; y < height; y++) {
+      p = yi << 2;
+      pixels[p+3] = pa = (a_sum * mul_sum) >> shg_sum;
+      if (pa > 0) {
+        pa = 255 / pa;
+        pixels[p]   = ((r_sum * mul_sum) >> shg_sum) * pa;
+        pixels[p+1] = ((g_sum * mul_sum) >> shg_sum) * pa;
+        pixels[p+2] = ((b_sum * mul_sum) >> shg_sum) * pa;
+      } else {
+        pixels[p] = pixels[p+1] = pixels[p+2] = 0;
+      }
+      
+      r_sum -= r_out_sum;
+      g_sum -= g_out_sum;
+      b_sum -= b_out_sum;
+      a_sum -= a_out_sum;
+      
+      r_out_sum -= stackIn.r;
+      g_out_sum -= stackIn.g;
+      b_out_sum -= stackIn.b;
+      a_out_sum -= stackIn.a;
+      
+      p = (x + (((p = y + radiusPlus1) < heightMinus1 ? p : heightMinus1) * width)) << 2;
+      
+      r_sum += (r_in_sum += (stackIn.r = pixels[p]));
+      g_sum += (g_in_sum += (stackIn.g = pixels[p+1]));
+      b_sum += (b_in_sum += (stackIn.b = pixels[p+2]));
+      a_sum += (a_in_sum += (stackIn.a = pixels[p+3]));
+      
+      stackIn = stackIn.next;
+      
+      r_out_sum += (pr = stackOut.r);
+      g_out_sum += (pg = stackOut.g);
+      b_out_sum += (pb = stackOut.b);
+      a_out_sum += (pa = stackOut.a);
+      
+      r_in_sum -= pr;
+      g_in_sum -= pg;
+      b_in_sum -= pb;
+      a_in_sum -= pa;
+      
+      stackOut = stackOut.next;
+      
+      yi += width;
+    }
+  }
+  
+  ctx.putImageData(imgData, x, y);
+}
+
+// BlurStack class needed for the blur algorithm
+function BlurStack() {
+  this.r = 0;
+  this.g = 0;
+  this.b = 0;
+  this.a = 0;
+  this.next = null;
+}
+
+// Lookup tables for blur algorithm
+var mul_table = [
+  512,512,456,512,328,456,335,512,405,328,271,456,388,335,292,512,
+  454,405,364,328,298,271,496,456,420,388,360,335,312,292,273,512,
+  482,454,428,405,383,364,345,328,312,298,284,271,259,496,475,456,
+  437,420,404,388,374,360,347,335,323,312,302,292,282,273,265,512,
+  497,482,468,454,441,428,417,405,394,383,373,364,354,345,337,328,
+  320,312,305,298,291,284,278,271,265,259,507,496,485,475,465,456,
+  446,437,428,420,412,404,396,388,381,374,367,360,354,347,341,335,
+  329,323,318,312,307,302,297,292,287,282,278,273,269,265,261,512,
+  505,497,489,482,475,468,461,454,447,441,435,428,422,417,411,405,
+  399,394,389,383,378,373,368,364,359,354,350,345,341,337,332,328,
+  324,320,316,312,309,305,301,298,294,291,287,284,281,278,274,271,
+  268,265,262,259,257,507,501,496,491,485,480,475,470,465,460,456,
+  451,446,442,437,433,428,424,420,416,412,408,404,400,396,392,388,
+  385,381,377,374,370,367,363,360,357,354,350,347,344,341,338,335,
+  332,329,326,323,320,318,315,312,310,307,304,302,299,297,294,292,
+  289,287,285,282,280,278,275,273,271,269,267,265,263,261,259
+];
+
+var shg_table = [
+  9, 11, 12, 13, 13, 14, 14, 15, 15, 15, 15, 16, 16, 16, 16, 17, 
+  17, 17, 17, 17, 17, 17, 18, 18, 18, 18, 18, 18, 18, 18, 18, 19, 
+  19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 20, 20, 20,
+  20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 21,
+  21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21,
+  21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 22, 22, 22, 22, 22, 22, 
+  22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22,
+  22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 23, 
+  23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
+  23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
+  23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 
+  23, 23, 23, 23, 23, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 
+  24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
+  24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
+  24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
+  24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24
+];
+
 document.getElementById("downloadBtn").addEventListener("click", async () => {
   const wrapper = document.getElementById("export-wrapper");
-  const originalBg = originalBgDataURL; // Custom background image
   const borderRadius = 24; // Border radius value in pixels (for export)
+  
+  // Check for blurred backdrop
+  const hasBlurredBackdrop = window._currentBackdropURL ? true : false;
+  const originalBg = originalBgDataURL; // Custom background image
   
   // Clone the wrapper to avoid modifying the actual DOM
   const clone = wrapper.cloneNode(true);
   clone.querySelectorAll(".delete-btn").forEach(btn => btn.remove());
   
+  // Set proper styles for the clone
   clone.style.borderRadius = `${borderRadius}px`;
   clone.style.overflow = "hidden";
-  clone.style.background = getComputedStyle(wrapper).background;
-
+  
+  // IMPORTANT: Completely strip background from clone - we'll draw it manually
+  clone.style.background = "none";
+  clone.style.backgroundColor = "transparent";
+  clone.style.backgroundImage = "none";
+  
+  // Also clean the export-wrapper inside the clone
   const cloneExportWrapper = clone.querySelector("#export-wrapper");
   if (cloneExportWrapper) {
     cloneExportWrapper.style.borderRadius = `${borderRadius}px`;
     cloneExportWrapper.style.overflow = "hidden";
-    cloneExportWrapper.style.background = getComputedStyle(wrapper).background;
+    cloneExportWrapper.style.background = "none";
+    cloneExportWrapper.style.backgroundColor = "transparent";
+    cloneExportWrapper.style.backgroundImage = "none";
   }
   
-  // Remove bg container so html2canvas won't include it
-  const bgContainer = clone.querySelector("#export-bg-container");
-  if (bgContainer) bgContainer.remove();
+  // Remove ALL background containers from clone
+  const bgContainerClone = clone.querySelector("#export-bg-container");
+  if (bgContainerClone) bgContainerClone.remove();
+  
+  const backdropContainerClone = clone.querySelector("#backdrop-container");
+  if (backdropContainerClone) backdropContainerClone.remove();
 
   // Remove titlecard section if empty
   const titlecardGridClone = clone.querySelector("#titlecard-grid");
@@ -856,53 +1354,71 @@ document.getElementById("downloadBtn").addEventListener("click", async () => {
     if (wrapper) wrapper.remove();
   }
 
+  // Position clone off-screen for rendering
   clone.style.position = "absolute";
   clone.style.left = "-9999px";
-  clone.style.borderRadius = `${borderRadius}px`;
-  clone.style.overflow = "hidden";
   document.body.appendChild(clone);
 
   await new Promise(requestAnimationFrame); // wait for DOM paint
 
-  // Capture the main content area using html2canvas
+  // Capture ONLY the content (no background)
   const contentCanvas = await html2canvas(clone, {
     scale: 2,
-    backgroundColor: null // Set backgroundColor to null to prevent background from being rendered by html2canvas
+    backgroundColor: null, // Transparent background is crucial
+    logging: false,
+    onclone: (document) => {
+      // Double-ensure no backgrounds on any elements
+      const exportWrapper = document.getElementById("export-wrapper");
+      if (exportWrapper) {
+        exportWrapper.style.background = "none";
+        exportWrapper.style.backgroundColor = "transparent";
+        exportWrapper.style.backgroundImage = "none";
+      }
+    }
   });
 
   document.body.removeChild(clone);
 
-  // Create final canvas to draw both background and content
+  // Create final canvas with correct dimensions
   const finalCanvas = document.createElement("canvas");
   finalCanvas.width = contentCanvas.width;
   finalCanvas.height = contentCanvas.height;
   const ctx = finalCanvas.getContext("2d");
 
-  // Scale border radius for canvas (since we're using scale 2)
+  // Apply rounded corners via clipping path
   const scaledRadius = borderRadius * 2;
-  
-  // Helper function to draw rounded rectangle path
-  function roundedRect(ctx, x, y, width, height, radius) {
-    ctx.beginPath();
-    ctx.moveTo(x + radius, y);
-    ctx.lineTo(x + width - radius, y);
-    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-    ctx.lineTo(x + width, y + height - radius);
-    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-    ctx.lineTo(x + radius, y + height);
-    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-    ctx.lineTo(x, y + radius);
-    ctx.quadraticCurveTo(x, y, x + radius, y);
-    ctx.closePath();
-    return ctx;
-  }
-
-  // Create rounded rectangle clipping path
-  roundedRect(ctx, 0, 0, finalCanvas.width, finalCanvas.height, scaledRadius);
+  ctx.beginPath();
+  ctx.moveTo(scaledRadius, 0);
+  ctx.lineTo(finalCanvas.width - scaledRadius, 0);
+  ctx.quadraticCurveTo(finalCanvas.width, 0, finalCanvas.width, scaledRadius);
+  ctx.lineTo(finalCanvas.width, finalCanvas.height - scaledRadius);
+  ctx.quadraticCurveTo(finalCanvas.width, finalCanvas.height, finalCanvas.width - scaledRadius, finalCanvas.height);
+  ctx.lineTo(scaledRadius, finalCanvas.height);
+  ctx.quadraticCurveTo(0, finalCanvas.height, 0, finalCanvas.height - scaledRadius);
+  ctx.lineTo(0, scaledRadius);
+  ctx.quadraticCurveTo(0, 0, scaledRadius, 0);
+  ctx.closePath();
   ctx.clip();
 
-  // Step 1: Draw the custom background if available
-  if (originalBg) {
+  // Step 1: Draw the appropriate background covering the ENTIRE canvas
+  if (hasBlurredBackdrop && window._currentBackdropURL) {
+    // Use blurred backdrop
+    const bgImg = new Image();
+    await new Promise((resolve, reject) => {
+      bgImg.onload = resolve;
+      bgImg.onerror = reject;
+      bgImg.src = window._currentBackdropURL;
+    });
+
+    // Fill the entire canvas with the blurred backdrop
+    ctx.drawImage(bgImg, 0, 0, finalCanvas.width, finalCanvas.height);
+    
+    // Add slight darkening overlay for better contrast with content
+    ctx.fillStyle = "rgba(0, 0, 0, 0.15)";
+    ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
+  }
+  else if (originalBg) {
+    // Use regular background image
     const bgImg = new Image();
     await new Promise((resolve, reject) => {
       bgImg.onload = resolve;
@@ -910,10 +1426,9 @@ document.getElementById("downloadBtn").addEventListener("click", async () => {
       bgImg.src = originalBg;
     });
 
-    // Draw the background image onto the final canvas (with clipping applied)
     ctx.drawImage(bgImg, 0, 0, finalCanvas.width, finalCanvas.height);
   } else {
-    // Fallback gradient background if no image is uploaded
+    // Fallback to gradient
     const gradient = ctx.createLinearGradient(0, 0, finalCanvas.width, finalCanvas.height);
     gradient.addColorStop(0, getComputedStyle(wrapper).getPropertyValue('--bg-start') || '#2c3e50');
     gradient.addColorStop(1, getComputedStyle(wrapper).getPropertyValue('--bg-end') || '#6a11cb');
@@ -921,7 +1436,7 @@ document.getElementById("downloadBtn").addEventListener("click", async () => {
     ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
   }
   
-  // Step 2: Draw the content (posters, titlecards, etc.) on top of the background
+  // Step 2: Draw the content (posters, titlecards, etc.) on top
   ctx.drawImage(contentCanvas, 0, 0);
   
   // Step 3: Export as image
