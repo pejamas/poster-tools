@@ -641,16 +641,53 @@ document.getElementById("titlecard-input").addEventListener("change", async (e) 
   await handleFiles(e.target.files, "titlecard");
 });
 
+function updateGradientBackground() {
+  const exportWrapper = document.getElementById("export-wrapper");
+  const bgStart = document.getElementById("bg-start").value;
+  const bgEnd = document.getElementById("bg-end").value;
+  
+  console.log("Updating gradient with colors:", bgStart, bgEnd);
+  
+  // Store values in CSS variables
+  exportWrapper.style.setProperty("--bg-start", bgStart);
+  exportWrapper.style.setProperty("--bg-end", bgEnd);
+  
+  // Only update the visible background if backdrop is not active
+  if (!document.getElementById("use-backdrop-toggle").checked || !window._currentBackdropURL) {
+    // FORCE REDRAW: First completely remove all background properties
+    exportWrapper.style.removeProperty('background');
+    exportWrapper.style.removeProperty('backgroundImage');
+    exportWrapper.style.backgroundColor = 'transparent';
+    
+    // Force a browser repaint to clear any cached style values
+    void exportWrapper.offsetWidth;
+    
+    // Apply the new gradient style - multiple ways to ensure it takes effect
+    const gradientStyle = `linear-gradient(135deg, ${bgStart}, ${bgEnd})`;
+    exportWrapper.style.background = gradientStyle;
+    exportWrapper.style.backgroundImage = gradientStyle;
+    
+    // Update the bg-container too in case that's what's being displayed
+    const bgContainer = document.getElementById("export-bg-container");
+    if (bgContainer) {
+      bgContainer.style.background = gradientStyle;
+    }
+  }
+}
+
 function toggleBackgroundType(useBackdrop) {
   const exportWrapper = document.getElementById("export-wrapper");
-
-  // Hide/show the background image
   const bgImage = document.getElementById("export-background-image");
+  
+  console.log("Toggle background:", useBackdrop ? "Using backdrop" : "Using gradient");
+  console.log("Has backdrop URL:", !!window._currentBackdropURL);
+  
+  // Hide/show the background image
   if (bgImage) {
     bgImage.style.display = useBackdrop ? "block" : "none";
   }
 
-  // Clear conflicting background styles
+  // Clear all background styles first for a clean slate
   exportWrapper.style.removeProperty('background');
   exportWrapper.style.backgroundColor = 'transparent';
   exportWrapper.style.backgroundImage = 'none';
@@ -659,15 +696,14 @@ function toggleBackgroundType(useBackdrop) {
   void exportWrapper.offsetWidth;
 
   if (useBackdrop && window._currentBackdropURL) {
+    // Use the backdrop image
+    console.log("Applying backdrop URL:", window._currentBackdropURL.substring(0, 50) + "...");
     exportWrapper.style.backgroundImage = `url(${window._currentBackdropURL})`;
     exportWrapper.style.backgroundSize = "cover";
     exportWrapper.style.backgroundPosition = "center";
-    exportWrapper.style.borderRadius = "12px";
   } else {
-    const bgStart = document.getElementById("bg-start").value;
-    const bgEnd = document.getElementById("bg-end").value;
-    exportWrapper.style.background = `linear-gradient(135deg, ${bgStart}, ${bgEnd})`;
-    exportWrapper.style.borderRadius = "12px";
+    // Use gradient background
+    updateGradientBackground();
   }
 }
 	
@@ -975,11 +1011,13 @@ document.getElementById("backdrop-upload").addEventListener("change", async (e) 
       const blurAmount = parseInt(document.getElementById("blur-amount").value);
       
       // Auto-check the backdrop toggle when a new backdrop is uploaded
-      // IMPORTANT: Set this BEFORE calling applySmartBlur
       document.getElementById("use-backdrop-toggle").checked = true;
       
       // Process and apply the backdrop
       applySmartBlur(originalImg, blurAmount);
+      
+      // Ensure the toggle actually applies the backdrop
+      toggleBackgroundType(true);
       
     } catch (error) {
       console.error("Error in backdrop processing:", error);
@@ -1017,32 +1055,12 @@ document.getElementById("use-backdrop-toggle").addEventListener("change", e => {
   toggleBackgroundType(e.target.checked);
 });
 
-document.getElementById("bg-start").addEventListener("input", e => {
-  // Don't update styles if backdrop is active
-  if (document.getElementById("use-backdrop-toggle").checked && window._currentBackdropURL) {
-    document.getElementById("export-wrapper").style.setProperty("--bg-start", e.target.value);
-    return;
-  }
-  
-  // Otherwise update the gradient
-  const bgStart = e.target.value;
-  const bgEnd = document.getElementById("bg-end").value;
-  document.getElementById("export-wrapper").style.setProperty("--bg-start", bgStart);
-  document.getElementById("export-wrapper").style.background = `linear-gradient(135deg, ${bgStart}, ${bgEnd})`;
+document.getElementById("bg-start").addEventListener("input", () => {
+  updateGradientBackground();
 });
 
-document.getElementById("bg-end").addEventListener("input", e => {
-  // Don't update styles if backdrop is active
-  if (document.getElementById("use-backdrop-toggle").checked && window._currentBackdropURL) {
-    document.getElementById("export-wrapper").style.setProperty("--bg-end", e.target.value);
-    return;
-  }
-  
-  // Otherwise update the gradient
-  const bgEnd = e.target.value;
-  const bgStart = document.getElementById("bg-start").value;
-  document.getElementById("export-wrapper").style.setProperty("--bg-end", bgEnd);
-  document.getElementById("export-wrapper").style.background = `linear-gradient(135deg, ${bgStart}, ${bgEnd})`;
+document.getElementById("bg-end").addEventListener("input", () => {
+  updateGradientBackground();
 });
 
 function applySmartBlur(originalImg, blurAmount) {
