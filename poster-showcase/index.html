@@ -192,12 +192,13 @@
     max-width: 100%;
     box-sizing: border-box;
     gap: 1rem;
-    box-shadow: 0 0 12px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 0 12px rgba(0, 0, 0, 0.3) !important;
+	border-color: transparent !important;
     position: relative;
     z-index: 1;
-    border: none;
-    outline: none;
-    overflow: hidden;
+    border: none !important;
+    outline: none !important;
+    overflow: hidden !important;
   }
   #logo-preview {
     max-height: 100px;
@@ -448,30 +449,21 @@
 	  
 	  <div class="section-separator"></div>
 	  
-	  <label for="backdrop-upload" class="drop-zone">Upload Backdrop</label>
-      <input type="file" id="backdrop-upload" accept="image/*">
+	  <label for="file-input" class="drop-zone">Upload Posters</label>
+      <input type="file" id="file-input" multiple accept="image/*" />
 
-      <label for="blur-amount">Blur Amount</label>
-      <input type="range" id="blur-amount" min="0" max="30" step="1" value="5">
-      
-      <!-- Background toggle switch -->
-      <div class="toggle-container">
-        <span class="toggle-label">Use Backdrop</span>
-        <label class="toggle-switch">
-          <input type="checkbox" id="use-backdrop-toggle" checked>
-          <span class="toggle-slider"></span>
-        </label>
-      </div>
+      <label for="titlecard-input" class="drop-zone">Upload Titlecards</label>
+      <input type="file" id="titlecard-input" multiple accept="image/*" />
 
-      <label for="bg-start">Background Start</label>
-      <input type="color" id="bg-start" value="#2c3e50">
-
-      <label for="bg-end">Background End</label>
-      <input type="color" id="bg-end" value="#6a11cb">
-      
-      <div class="section-separator"></div>
-      
-      <label for="columns-select">Posters Per Row</label>
+      <label for="logo-upload" class="drop-zone">Upload Clear Logo</label>
+      <input type="file" id="logo-upload" accept="image/*" />
+	  
+	  <label for="logo-scale">Logo Scale</label>
+      <input type="range" id="logo-scale" min="0.3" max="2" step="0.1" value="1">
+	  
+	  <div class="section-separator"></div>
+	  
+	  <label for="columns-select">Posters Per Row</label>
       <select id="columns-select">
         <option value="2">2</option>
         <option value="3" selected>3</option>
@@ -503,23 +495,32 @@
           <span class="toggle-slider"></span>
         </label>
       </div>
+	  
+	  <div class="section-separator"></div>
+	  
+	  <label for="backdrop-upload" class="drop-zone">Upload Backdrop</label>
+      <input type="file" id="backdrop-upload" accept="image/*">
+
+      <label for="blur-amount">Blur Amount</label>
+      <input type="range" id="blur-amount" min="0" max="30" step="1" value="5">
+      
+      <!-- Background toggle switch -->
+      <div class="toggle-container">
+        <span class="toggle-label">Use Backdrop</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="use-backdrop-toggle" >
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <label for="bg-start">Background Start</label>
+      <input type="color" id="bg-start" value="#2c3e50">
+
+      <label for="bg-end">Background End</label>
+      <input type="color" id="bg-end" value="#6a11cb">
 
       <div class="section-separator"></div>
       
-      <label for="logo-scale">Logo Scale</label>
-      <input type="range" id="logo-scale" min="0.3" max="2" step="0.1" value="1">
-
-      <label for="logo-upload" class="drop-zone">Upload Clear Logo</label>
-      <input type="file" id="logo-upload" accept="image/*" />
-
-      <div class="section-separator"></div>
-      
-      <label for="file-input" class="drop-zone">Upload Posters</label>
-      <input type="file" id="file-input" multiple accept="image/*" />
-
-      <label for="titlecard-input" class="drop-zone">Upload Titlecards</label>
-      <input type="file" id="titlecard-input" multiple accept="image/*" />
-
       <button id="downloadBtn">Download Poster Wall</button>
       <button id="resetBtn">Reset Form</button>
     </div>
@@ -569,6 +570,20 @@
   </div>
 
 <script>
+(function initializeStyles() {
+  // Set default gradient background immediately
+  const exportWrapper = document.getElementById("export-wrapper");
+  if (exportWrapper) {
+    const bgStart = document.getElementById("bg-start")?.value || "#2c3e50";
+    const bgEnd = document.getElementById("bg-end")?.value || "#6a11cb";
+    
+    // Force the background to be visible
+    exportWrapper.style.setProperty("--bg-start", bgStart);
+    exportWrapper.style.setProperty("--bg-end", bgEnd);
+    exportWrapper.style.background = `linear-gradient(135deg, ${bgStart}, ${bgEnd})`;
+    exportWrapper.style.backgroundImage = 'none';
+  }
+})();
 // JavaScript - Full implementation
 document.getElementById("creator-icon-upload").addEventListener("change", (e) => {
   const file = e.target.files[0];
@@ -624,22 +639,26 @@ document.getElementById("titlecard-input").addEventListener("change", async (e) 
 function toggleBackgroundType(useBackdrop) {
   const exportWrapper = document.getElementById("export-wrapper");
   
+  // First clear ALL background properties to avoid conflicts
+  exportWrapper.style.removeProperty('background');
+  exportWrapper.style.backgroundColor = 'transparent';
+  exportWrapper.style.backgroundImage = 'none';
+  
+  // Force repaint to ensure clean state
+  void exportWrapper.offsetWidth;
+  
   if (useBackdrop && window._currentBackdropURL) {
-    // Use backdrop if available
+    // Use backdrop if available - apply immediately
     exportWrapper.style.backgroundImage = `url(${window._currentBackdropURL})`;
     exportWrapper.style.backgroundSize = "cover";
     exportWrapper.style.backgroundPosition = "center";
-    // Set background to none AFTER setting backgroundImage
-    exportWrapper.style.background = 'none';
+    exportWrapper.style.borderRadius = "12px";
   } else {
-    // Use gradient background - always show gradient when toggle is off
-    // First clear any background image
-    exportWrapper.style.backgroundImage = 'none';
-    
-    // Then set the gradient
+    // Use gradient background
     const bgStart = document.getElementById("bg-start").value;
     const bgEnd = document.getElementById("bg-end").value;
     exportWrapper.style.background = `linear-gradient(135deg, ${bgStart}, ${bgEnd})`;
+    exportWrapper.style.borderRadius = "12px";
   }
 }
 	
@@ -945,10 +964,13 @@ document.getElementById("backdrop-upload").addEventListener("change", async (e) 
       
       // Apply blur with current slider value
       const blurAmount = parseInt(document.getElementById("blur-amount").value);
-      applySmartBlur(originalImg, blurAmount);
       
       // Auto-check the backdrop toggle when a new backdrop is uploaded
+      // IMPORTANT: Set this BEFORE calling applySmartBlur
       document.getElementById("use-backdrop-toggle").checked = true;
+      
+      // Process and apply the backdrop
+      applySmartBlur(originalImg, blurAmount);
       
     } catch (error) {
       console.error("Error in backdrop processing:", error);
@@ -1014,24 +1036,6 @@ document.getElementById("bg-end").addEventListener("input", e => {
   document.getElementById("export-wrapper").style.background = `linear-gradient(135deg, ${bgStart}, ${bgEnd})`;
 });
 
-function toggleBackgroundType(useBackdrop) {
-  const exportWrapper = document.getElementById("export-wrapper");
-  
-  if (useBackdrop && window._currentBackdropURL) {
-    // Use backdrop
-    exportWrapper.style.background = "none";
-    exportWrapper.style.backgroundImage = `url(${window._currentBackdropURL})`;
-    exportWrapper.style.backgroundSize = "cover";
-    exportWrapper.style.backgroundPosition = "center";
-  } else {
-    // Use gradient background
-    const bgStart = document.getElementById("bg-start").value;
-    const bgEnd = document.getElementById("bg-end").value;
-    exportWrapper.style.background = `linear-gradient(135deg, ${bgStart}, ${bgEnd})`;
-    exportWrapper.style.backgroundImage = "none";
-  }
-}
-
 function applySmartBlur(originalImg, blurAmount) {
   // Create a canvas for processing
   const canvas = document.createElement('canvas');
@@ -1094,36 +1098,26 @@ function applySmartBlur(originalImg, blurAmount) {
   blurredBackdropDataURL = blurredDataURL;
   window._currentBackdropURL = blurredDataURL;
   
-  // Apply to the export wrapper based on toggle state
+  // IMPORTANT: Force the backdrop to be immediately visible if toggle is on
   const useBackdrop = document.getElementById("use-backdrop-toggle").checked;
-  
-if (useBackdrop) {
-  // Apply the backdrop background
-  const exportWrapper = document.getElementById("export-wrapper");
-  
-  // First clear existing background
-  exportWrapper.style.removeProperty('background');
-  exportWrapper.style.background = 'none';
-  
-  // Then set the backdrop image
-  exportWrapper.style.backgroundImage = `url('${blurredDataURL}')`;
-  exportWrapper.style.backgroundSize = "110% 110%";
-  exportWrapper.style.backgroundPosition = "center center";
-  exportWrapper.style.backgroundRepeat = "no-repeat";
-  exportWrapper.style.overflow = "hidden"; // Add this line
-} else {
-  // If toggle is off, use gradient instead
-  const exportWrapper = document.getElementById("export-wrapper");
-  const bgStart = document.getElementById("bg-start").value;
-  const bgEnd = document.getElementById("bg-end").value;
-  
-  // Clear background image first
-  exportWrapper.style.backgroundImage = 'none';
-  
-  // Then set the gradient
-  exportWrapper.style.background = `linear-gradient(135deg, ${bgStart}, ${bgEnd})`;
-  exportWrapper.style.overflow = "hidden"; // Add this line
-}
+  if (useBackdrop) {
+    // Apply to DOM synchronously
+    const exportWrapper = document.getElementById("export-wrapper");
+    exportWrapper.style.removeProperty('background');
+    exportWrapper.style.backgroundColor = 'transparent';
+    exportWrapper.style.backgroundImage = 'none';
+    
+    // Force a repaint
+    void exportWrapper.offsetWidth;
+    
+    // Apply the image immediately
+    exportWrapper.style.backgroundImage = `url('${blurredDataURL}')`;
+    exportWrapper.style.backgroundSize = "cover";
+    exportWrapper.style.backgroundPosition = "center";
+    exportWrapper.style.backgroundRepeat = "no-repeat";
+    exportWrapper.style.borderRadius = "12px";
+    exportWrapper.style.overflow = "hidden";
+  }
 }
 
 // Toggle switches for section headers
@@ -1326,6 +1320,15 @@ document.getElementById("downloadBtn").addEventListener("click", async () => {
   link.download = "poster-wall.png";
   link.href = finalCanvas.toDataURL("image/png");
   link.click();
+});
+
+window.addEventListener('DOMContentLoaded', () => {
+  // Set the gradient as default background
+  const exportWrapper = document.getElementById("export-wrapper");
+  const bgStart = document.getElementById("bg-start").value;
+  const bgEnd = document.getElementById("bg-end").value;
+  exportWrapper.style.background = `linear-gradient(135deg, ${bgStart}, ${bgEnd})`;
+  exportWrapper.style.backgroundImage = 'none';
 });
 </script>
 </body>
