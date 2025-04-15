@@ -1,1369 +1,2409 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Poster Showcase</title>
-  <link rel="icon" type="image/svg+xml" href="../assets/mediux.svg" />
-  <style>
-  @import url('https://fonts.googleapis.com/css2?family=Gabarito:wght@400;600;700&display=swap');
-  </style>  
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <style>
-  body {
-    margin: 0;
-    font-family: 'Gabarito', sans-serif;
-    background: linear-gradient(135deg, #000000, #1a0033);
-    color: white;
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-  }
-  header {
-    padding: 1rem 2rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: rgba(0, 0, 0, 0.6);
-    box-shadow: 0 0 30px rgba(0, 255, 255, 0.15);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(8px);
-    position: relative;
-    z-index: 10;
-  }
-  .header-left {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    position: absolute;
-    left: 2rem;
-  }
-  .header-left h1 {
-    font-size: 1.5rem;
-    margin: 0;
-    color: white;
-  }
-  .header-center {
-    display: flex;
-    justify-content: center;
-  }
-  .poster-tools-brand {
-    height: 60px;
-    filter: drop-shadow(0 0 6px rgba(0,255,255,0.5));
-    transform: translateX(140px);
-  }
-  .layout {
-    display: flex;
-    flex: 1;
-    overflow: hidden;
-  }
-  .sidebar {
-    width: 280px;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(6px);
-    box-shadow: 0 0 30px rgba(0, 255, 255, 0.1);
-    padding: 1.5rem;
-    border-right: 1px solid rgba(255, 255, 255, 0.05);
-    display: flex;
-    flex-direction: column;
-    gap: 0.7rem;
-    box-sizing: border-box;
-    /* Added these properties for scrolling */
-    overflow-y: auto;
-    max-height: 100%;
-    /* Improved scrollbar styling */
-    scrollbar-width: thin;
-    scrollbar-color: rgba(255, 255, 255, 0.3) rgba(0, 0, 0, 0.1);
-  }
-  /* Scrollbar styling for WebKit browsers (Chrome, Safari, etc.) */
-  .sidebar::-webkit-scrollbar {
-    width: 8px;
-  }
-  .sidebar::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.1);
-    border-radius: 4px;
-  }
-  .sidebar::-webkit-scrollbar-thumb {
-    background-color: rgba(255, 255, 255, 0.3);
-    border-radius: 4px;
-  }
-  .sidebar::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(255, 255, 255, 0.5);
-  }
-  .sidebar label {
-    font-size: 0.85rem;
-    color: #ccc;
-  }
-  .sidebar input,
-  .sidebar select {
-    width: 100%;
-    max-width: 100%;
-    padding: 0.5rem;
-    font-size: 0.9rem;
-    background: #333;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    box-sizing: border-box;
-  }
-  .sidebar input[type="range"] {
-    appearance: none;
-    width: 100%;
-    height: 4px;
-    background: #555;
-    border-radius: 4px;
-    outline: none;
-    margin: 0.4rem 0;
-  }
-  .sidebar input[type="range"]::-webkit-slider-thumb {
-    appearance: none;
-    width: 16px;
-    height: 16px;
-    background: white;
-    border-radius: 50%;
-    cursor: pointer;
-    box-shadow: 0 0 2px black;
-  }
-  .sidebar button {
-    padding: 0.6rem;
-    border-radius: 6px;
-    border: none;
-    background: white;
-    color: black;
-    font-weight: bold;
-    cursor: pointer;
-  }
-  #resetBtn {
-    background: #ff4d4d;
-    color: white;
-    font-weight: bold;
-  }
-  .drop-zone {
-    border: 2px dashed #ccc;
-    padding: 1rem;
-    text-align: center;
-    border-radius: 8px;
-    cursor: pointer;
-  }
-  .drop-zone:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.5);
-  }
-  #export-bg-container {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 0;
-    overflow: hidden;
-    border-radius: 12px;
-    margin: 0;
-    padding: 0;
-	background: linear-gradient(135deg, #2c3e50, #6a11cb);
-  }
-  #export-background-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: none;
-  }
-  #export-wrapper > *:not(#export-bg-container) {
-    position: relative;
-    z-index: 1;
-  }
-  .main {
-    flex: 1;
-    overflow-y: auto;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    padding: 2rem;
-  }
-  #export-wrapper {
-    --bg-start: #2c3e50;
-    --bg-end: #6a11cb;
-    background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
-	background-clip: padding-box;
-    padding: 2rem;
-    border-radius: 12px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-	min-width: 500px;
-    width: auto;
-    max-width: 100%;
-    box-sizing: border-box;
-    gap: 1rem;
-    box-shadow: none !important;
-	border-color: transparent !important;
-    position: relative;
-    z-index: 1;
-    border: none !important;
-    outline: none !important;
-    overflow: hidden !important;
-  }
-  #logo-preview {
-    max-height: 100px;
-    display: none;
-  }
-  #backdrop-container {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 0;
-    overflow: hidden;
-    border-radius: 12px;
-    margin: 0;
-    padding: 0;
-  }
-  #backdrop-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: none;
-  }
-  .section-title {
-    font-size: 1.4rem;
-    font-weight: 600;
-    color: #fff;
-    margin: 0.5rem 0 0.5rem 0;
-    text-shadow: 0 0 6px rgba(255, 255, 255, 0.25);
-  }
-  .grid-section {
-    display: flex;
-    justify-content: center;
-    width: 100%;
-  }
-  .row {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    margin-bottom: 14px;
-    flex-wrap: nowrap;
-  }
-  .season-header {
-    font-size: 1.1rem;
-    font-weight: bold;
-    margin-top: 0.25rem;
-	margin-bottom: 0.4rem;
-    align-self: flex-start;
-    width: 100%;
-    text-align: left;
-    padding-left: 10px;
-    color: white;
-    text-shadow: 0 0 4px rgba(0, 0, 0, 0.4);
-  }
-  .poster-wrapper, .titlecard-wrapper {
-    width: 200px;
-    position: relative;
-  }
-  .poster, .titlecard {
-    width: 100%;
-    border-radius: 6px;
-    object-fit: cover;
-    box-shadow: 0 0 10px rgba(0,0,0,0.4);
-  }
-  .delete-btn {
-    background: red;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 24px;
-    height: 24px;
-    position: absolute;
-    top: 4px;
-    right: 4px;
-    font-size: 1.2rem;
-    cursor: pointer;
-  }
-  .credit-line {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    font-size: 0.9rem;
-    text-shadow: 0 0 4px black;
-    margin-top: 1rem;
-  }
-  .credit-line img {
-    height: 22px;
-  }
-  .created-by {
-    display: flex;
-    align-items: center;
-    gap: 1px;
-  }
-  .powered-by {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  #creator-icon {
-    height: 40px;
-    width: auto;
-    object-fit: contain;
-    border-radius: 8px;
-    display: none;
-  }
-  .powered-by img {
-    height: 17px;
-    width: auto;
-	max-width: 100%;
-	margin-bottom: -0.1rem;
-	object-fit: contain;
-  }
-  .set-id-line {
-    font-size: 0.9rem;
-    text-shadow: 0 0 4px black;
-  }
-  #custom-confirm-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.8);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-  }
-  #custom-confirm-modal {
-    background: #1a1a1a;
-    border-radius: 12px;
-    box-shadow: 0 0 20px rgba(0,0,0,0.5);
-    padding: 20px 25px;
-    width: 320px;
-    text-align: center;
-    color: white;
-  }
-  .custom-confirm-buttons button {
-    padding: 8px 20px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: bold;
-    margin: 0 5px;
-  }
-  #confirmYes { background: #ff4d4d; color: white; }
-  #confirmNo { background: #ccc; color: #111; }
-  input[type="file"] {
-    display: none;
-  }
-  
-  /* Toggle switch styling */
-  .toggle-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    margin-bottom: 0.25rem;
-  }
-  
-  .toggle-switch {
-    position: relative;
-    display: inline-block;
-    width: 46px;
-    height: 24px;
-  }
-  
-  .toggle-switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-    margin: 0;
-  }
-  
-  .toggle-slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: #444;
-    transition: .3s;
-    border-radius: 24px;
-  }
-  
-  .toggle-slider:before {
-    position: absolute;
-    content: "";
-    height: 18px;
-    width: 18px;
-    left: 3px;
-    bottom: 3px;
-    background-color: white;
-    transition: .3s;
-    border-radius: 50%;
-  }
-  
-  input:checked + .toggle-slider {
-    background-color: #0088cc;
-  }
-  
-  input:checked + .toggle-slider:before {
-    transform: translateX(22px);
-  }
-  
-  .toggle-label {
-    font-size: 0.85rem;
-    color: #ccc;
-  }
-  
-  /* Section separator */
-  .section-separator {
-    width: 100%;
-    margin: 0.5rem 0;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    padding-top: 0.5rem;
-  }
-  
-  /* Media query for very small screens */
-  @media (max-height: 700px) {
-    .sidebar {
-      padding-right: 1rem; /* Slightly reduce padding to account for scrollbar */
-    }
-  }
-  </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Poster Showcase</title>
+    <link rel="icon" type="image/svg+xml" href="../assets/mediux.svg" />
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Gabarito:wght@400;600;700&display=swap');
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Gabarito', sans-serif;
+            background: linear-gradient(135deg, #000000, #1a0033);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        header {
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.6);
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.15);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(8px);
+            position: relative;
+            z-index: 10;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            position: absolute;
+            left: 2rem;
+        }
+
+        .header-left h1 {
+            font-size: 1.5rem;
+            margin: 0;
+            color: white;
+        }
+
+        .header-center {
+            display: flex;
+            justify-content: center;
+        }
+
+        .poster-tools-brand {
+            height: 60px;
+            filter: drop-shadow(0 0 6px rgba(0, 255, 255, 0.5));
+            transform: translateX(140px);
+        }
+
+        .layout {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(6px);
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.1);
+            padding: 1.5rem;
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 0.7rem;
+            box-sizing: border-box;
+
+            overflow-y: auto;
+            max-height: 100%;
+
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.3) rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .sidebar label,
+        .sidebar .toggle-label {
+            font-size: 0.95rem;
+            font-weight: 200;
+            color: #ffffff;
+            letter-spacing: 0.4px;
+            filter: brightness(1.2);
+        }
+
+        .sidebar input,
+        .sidebar select {
+            width: 100%;
+            max-width: 100%;
+            padding: 0.5rem;
+            font-size: 0.9rem;
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+
+        .sidebar input[type="range"] {
+            appearance: none;
+            width: 100%;
+            height: 4px;
+            background: #555;
+            border-radius: 4px;
+            outline: none;
+            margin: 0.4rem 0;
+        }
+
+        .sidebar input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            background: white;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 2px black;
+        }
+
+        .sidebar button {
+            padding: 0.6rem;
+            border-radius: 6px;
+            border: none;
+            background: white;
+            color: black;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 0.5rem;
+        }
+
+        #resetBtn {
+            background: #ff4d4d;
+            color: white;
+            font-weight: bold;
+        }
+
+        .drop-zone {
+            border: 1.5px dashed rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.025);
+            padding: 0.6rem 0.75rem;
+            font-size: 0.85rem;
+            text-align: center;
+            font-weight: 500;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            line-height: 1.1;
+        }
+
+        .drop-zone:hover {
+            background: rgba(255, 255, 255, 0.07);
+            border-color: rgba(0, 255, 255, 0.4);
+        }
+
+        #export-bg-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 0;
+            overflow: hidden;
+            border-radius: 12px;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #2c3e50, #6a11cb);
+        }
+
+        #export-background-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+
+        #export-wrapper>*:not(#export-bg-container) {
+            position: relative;
+            z-index: 1;
+        }
+
+        .main {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 2rem;
+        }
+
+        #export-wrapper {
+            --bg-start: #2c3e50;
+            --bg-end: #6a11cb;
+            background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
+            background-clip: padding-box;
+            padding: 2rem;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 500px;
+            width: auto;
+            max-width: 100%;
+            box-sizing: border-box;
+            gap: 1rem;
+            box-shadow: none !important;
+            border-color: transparent !important;
+            position: relative;
+            z-index: 1;
+            border: none !important;
+            outline: none !important;
+            overflow: hidden !important;
+        }
+
+        #logo-preview {
+            max-height: 100px;
+            display: none;
+        }
+
+        #backdrop-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 0;
+            overflow: hidden;
+            border-radius: 12px;
+            margin: 0;
+            padding: 0;
+        }
+
+        #backdrop-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+
+        .section-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #f0f0f0;
+            text-shadow: 0 0 2px rgba(255, 255, 255, 0.2);
+            margin: 0.5rem 0 0.5rem 0;
+        }
+
+        .grid-section {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .row {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 14px;
+            flex-wrap: nowrap;
+        }
+
+        .season-header {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-top: 0.25rem;
+            margin-bottom: 0.4rem;
+            align-self: flex-start;
+            width: 100%;
+            text-align: left;
+            padding-left: 10px;
+            color: white;
+            text-shadow: 0 0 4px rgba(0, 0, 0, 0.4);
+        }
+
+        .poster-wrapper,
+        .titlecard-wrapper {
+            width: 200px;
+            position: relative;
+        }
+
+        .poster,
+        .titlecard {
+            width: 100%;
+            border-radius: 6px;
+            object-fit: cover;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+        }
+
+        .delete-btn {
+            background: red;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        .credit-line {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            font-size: 0.9rem;
+            text-shadow: 0 0 4px black;
+            margin-top: 1rem;
+        }
+
+        .credit-line img {
+            height: 22px;
+        }
+
+        .created-by {
+            display: flex;
+            align-items: center;
+            gap: 1px;
+        }
+
+        .powered-by {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #creator-icon {
+            height: 35px;
+            width: auto;
+            object-fit: contain;
+            border-radius: 12px;
+            display: none;
+            margin-right: 9px;
+            margin-top: -4px;
+        }
+
+        .powered-by img {
+            height: 17px;
+            width: auto;
+            max-width: 100%;
+            margin-bottom: -0.1rem;
+            object-fit: contain;
+        }
+
+        .set-id-line {
+            font-size: 0.9rem;
+            text-shadow: 0 0 4px black;
+        }
+
+        #custom-confirm-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        #custom-confirm-modal {
+            background: #1a1a1a;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            padding: 20px 25px;
+            width: 320px;
+            text-align: center;
+            color: white;
+        }
+
+        .custom-confirm-buttons button {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 0 5px;
+        }
+
+        #confirmYes {
+            background: #ff4d4d;
+            color: white;
+        }
+
+        #confirmNo {
+            background: #ccc;
+            color: #111;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+
+        .toggle-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 0.25rem;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 46px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+            margin: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #444;
+            transition: .3s;
+            border-radius: 24px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+
+        input:checked+.toggle-slider {
+            background-color: #0088cc;
+        }
+
+        input:checked+.toggle-slider:before {
+            transform: translateX(22px);
+        }
+
+        .toggle-label {
+            font-size: 0.85rem;
+            color: #ccc;
+        }
+
+
+        .section-separator {
+            width: 100%;
+            border-top: 1px solid rgba(0, 255, 255, 0.1);
+            /* faint cyan line */
+            margin: 0.4rem 0;
+            padding: 0;
+            position: relative;
+        }
+
+        .section-separator::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: -1px;
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(to right, rgba(0, 255, 255, 0.3), rgba(255, 255, 255, 0.05), rgba(0, 255, 255, 0.3));
+            opacity: 0.5;
+        }
+
+        .api-section {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(0, 255, 255, 0.15);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 0 12px rgba(0, 255, 255, 0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .api-fields label {
+            font-size: 0.9rem;
+            font-weight: 300;
+            color: #ffffff;
+            /* Make label text white */
+            margin-bottom: 0.3rem;
+            display: block;
+            text-shadow: 0 0 2px rgba(0, 255, 255, 0.25);
+        }
+
+        .api-fields input {
+            background: rgba(255, 255, 255, 0.07);
+            color: white;
+            border: 1px solid rgba(0, 255, 255, 0.1);
+            border-radius: 6px;
+            padding: 0.45rem 0.6rem;
+            font-size: 0.9rem;
+            margin-bottom: 0.7rem;
+        }
+
+        #connect-api-btn {
+            background: linear-gradient(135deg, #00bfa5, #6a11cb);
+            color: white;
+            border: none;
+            width: 100%;
+            border-radius: 6px;
+            padding: 0.6rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        #connect-api-btn:hover {
+            background: linear-gradient(135deg, #00e5ff, #8e2de2);
+        }
+
+        #api-status {
+            font-size: 0.75rem;
+            font-weight: 500;
+            padding: 0.4rem 0.6rem;
+            border-radius: 6px;
+            text-align: center;
+            box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.3);
+            margin-top: 1rem;
+            margin-bottom: -0.2rem;
+        }
+
+        .status-connected {
+            background-color: rgba(0, 255, 127, 0.15);
+            color: #00ffcc;
+        }
+
+        .status-disconnected {
+            background-color: rgba(255, 0, 0, 0.15);
+            color: #ff6666;
+        }
+
+        .set-selector {
+            max-height: 240px;
+            overflow-y: auto;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(0, 255, 255, 0.15);
+            border-radius: 10px;
+            padding: 0.6rem;
+            margin-top: 0.6rem;
+            display: none;
+            box-shadow: 0 0 12px rgba(0, 255, 255, 0.05);
+        }
+
+        .set-item {
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 8px;
+            padding: 0.65rem;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease, box-shadow 0.2s ease;
+            color: white;
+        }
+
+        .set-item:hover {
+            background-color: rgba(0, 255, 255, 0.15);
+            box-shadow: 0 0 6px rgba(0, 255, 255, 0.2);
+        }
+
+        .set-item .set-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #ffffff;
+            margin-bottom: 0.2rem;
+            text-shadow: 0 0 4px rgba(0, 255, 255, 0.2);
+        }
+
+        .set-item .set-details {
+            font-size: 0.78rem;
+            color: #bbbbbb;
+            line-height: 1.3;
+            letter-spacing: 0.3px;
+        }
+
+        .sidebar-action-row {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: space-between;
+            margin-top: -0.75rem;
+        }
+
+        .icon-button {
+            background: rgba(255, 255, 255, 0.08);
+            border: none;
+            border-radius: 6px;
+            padding: 0.6rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            flex: 1;
+            transition: background 0.2s ease;
+        }
+
+        .icon-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .icon-button img.icon {
+            width: 22px;
+            height: 22px;
+            filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(1.5);
+        }
+
+        /* Colors */
+        .icon-button.teal {
+            background-color: #00bfa5;
+            color: white;
+        }
+
+        .icon-button.teal:hover {
+            background-color: #1de9b6;
+        }
+
+        .icon-button.red {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .icon-button.red:hover {
+            background-color: #e53935;
+        }
+
+        .icon {
+            width: 20px;
+            height: 20px;
+            filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(1.5);
+        }
+
+        .header-right {
+            position: absolute;
+            right: 2rem;
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .header-icon-button {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        .header-icon-button:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .header-icon-button img.icon {
+            width: 18px;
+            height: 18px;
+            filter: invert(100%);
+        }
+
+        .creator-row {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .creator-row input {
+            flex: 1;
+        }
+
+        .icon-upload-btn {
+            border: 1.5px dashed rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.025);
+            padding: 0.4rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-radius: 6px;
+            height: 22px;
+            width: 22px;
+            flex-shrink: 0;
+        }
+
+        .icon-upload-btn:hover {
+            background: rgba(255, 255, 255, 0.07);
+            border-color: rgba(0, 255, 255, 0.4);
+        }
+
+        .icon-upload-btn img.icon {
+            width: 18px;
+            height: 18px;
+            filter: invert(100%) brightness(1.5);
+        }
+
+        .toggle-pair-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 0.25rem;
+        }
+
+        .compact-row-selects {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+
+        .inline-select {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .inline-select label {
+            flex: 1;
+            font-size: 0.9rem;
+            font-weight: 400;
+            color: #ffffff;
+            text-shadow: 0 0 2px rgba(0, 255, 255, 0.2);
+            white-space: nowrap;
+        }
+
+        .inline-select select {
+            flex: 0 0 72px;
+            padding: 0.35rem 0.5rem;
+            font-size: 0.95rem;
+            font-weight: 400;
+            border-radius: 6px;
+            background: #111;
+            max-width: 70px;
+            color: white;
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            text-align: center;
+            box-shadow: 0 0 3px rgba(0, 255, 255, 0.1);
+        }
+
+        .slider-inline {
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            margin: 0.4rem 0;
+        }
+
+        .slider-inline label {
+            flex: 0 0 auto;
+            font-size: 0.9rem;
+            color: white;
+            font-weight: 500;
+            white-space: nowrap;
+            min-width: 80px;
+        }
+
+        .slider-inline input[type="range"] {
+            flex: 1;
+            height: 6px;
+            background: linear-gradient(to right, #00bfa5, #6a11cb);
+            border-radius: 4px;
+            appearance: none;
+            outline: none;
+            margin: 0;
+        }
+
+        /* Chrome/Safari Thumb */
+        .slider-inline input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            background: white;
+            border-radius: 50%;
+            border: 1px solid #000;
+            box-shadow: 0 0 4px rgba(0, 255, 255, 0.5);
+            cursor: pointer;
+            margin-top: -6px;
+        }
+
+        /* Firefox Thumb */
+        .slider-inline input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            background: white;
+            border: 1px solid #000;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 4px rgba(0, 255, 255, 0.5);
+        }
+
+        .gradient-section {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .gradient-label {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: white;
+            text-shadow: 0 0 3px rgba(0, 255, 255, 0.2);
+        }
+
+        .gradient-row {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .gradient-row input[type="color"] {
+            -webkit-appearance: none;
+            appearance: none;
+            border: none;
+            width: 100%;
+            height: 12px;
+            border-radius: 0px;
+            padding: 0;
+            cursor: pointer;
+            background-color: transparent;
+            outline: none;
+            box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12),
+                0 0 6px rgba(0, 255, 255, 0.15);
+            transition: all 0.2s ease;
+        }
+
+        .gradient-row input[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 0;
+            border-radius: 999px;
+        }
+
+        .gradient-row input[type="color"]::-webkit-color-swatch {
+            border: none;
+            border-radius: 999px;
+        }
+
+        .gradient-col {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+            flex: 1;
+        }
+
+        .mini-label {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-left: 2px;
+            margin-bottom: 2px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @media (max-height: 700px) {
+            .sidebar {
+                padding-right: 1rem;
+            }
+        }
+    </style>
 </head>
+
 <body>
-  
-  <header>
-    <div class="header-left">
-      <img src="/assets/mediux.svg" alt="Site Icon" height="28" />
-      <h1>Poster Showcase</h1>
-	</div>
-	<div class="header-center">
-	  <a href="../index.html">
-	    <img src="../assets/logo.png" alt="Poster Tools Logo" class="poster-tools-brand" />
-	  </a>
-	</div>
- </header>
 
-  <div class="layout">
-    <div class="sidebar">
-      <label for="creator-name">Creator Name</label>
-      <input type="text" id="creator-name" placeholder="Name Here" />
-	  
-	  <label for="creator-icon-upload" class="drop-zone">Upload Creator Icon</label>
-      <input type="file" id="creator-icon-upload" accept="image/*">
+    <header>
+        <div class="header-left">
+            <img src="/assets/mediux.svg" alt="Site Icon" height="28" />
+            <h1>Poster Showcase</h1>
+        </div>
+        <div class="header-center">
+            <a href="../index.html">
+                <img src="../assets/logo.png" alt="Poster Tools Logo" class="poster-tools-brand" />
+            </a>
+        </div>
+        <div class="header-right">
+            <button id="saveConfigBtn" class="header-icon-button">
+                <img src="../assets/poster-showcase icons/save.svg" class="icon" />
+                <span>Save Config</span>
+            </button>
+            <button id="loadConfigBtn" class="header-icon-button">
+                <img src="../assets/poster-showcase icons/upload.svg" class="icon" />
+                <span>Load Config</span>
+            </button>
+        </div>
+    </header>
 
-      <label for="set-id">Set ID</label>
-      <input type="text" id="set-id" placeholder="e.g. 01" />
-	  
-	  <div class="section-separator"></div>
-	  
-	  <label for="file-input" class="drop-zone">Upload Posters</label>
-      <input type="file" id="file-input" multiple accept="image/*" />
+    <div class="layout">
+        <div class="sidebar">
+            <div class="creator-row">
+                <input type="text" id="creator-name" placeholder="Creator Name" />
+                <label for="creator-icon-upload" class="icon-upload-btn" title="Upload Creator Icon">
+                    <img src="../assets/poster-showcase icons/upload.svg" class="icon" />
+                </label>
+                <input type="file" id="creator-icon-upload" accept="image/*">
+            </div>
 
-      <label for="titlecard-input" class="drop-zone">Upload Titlecards</label>
-      <input type="file" id="titlecard-input" multiple accept="image/*" />
+            <input type="text" id="set-id" placeholder="Footer Label: e.g. 12345" />
 
-      <label for="logo-upload" class="drop-zone">Upload Clear Logo</label>
-      <input type="file" id="logo-upload" accept="image/*" />
-	  
-	  <label for="logo-scale">Logo Scale</label>
-      <input type="range" id="logo-scale" min="0.3" max="2" step="0.1" value="1">
-	  
-	  <div class="section-separator"></div>
-	  
-	  <label for="columns-select">Posters Per Row</label>
-      <select id="columns-select">
-        <option value="2">2</option>
-        <option value="3" selected>3</option>
-        <option value="4">4</option>
-        <option value="5">5</option>
-        <option value="6">6</option>
-      </select>
+            <!-- API Connection Section -->
+            <div class="section-separator"></div>
 
-      <label for="titlecard-columns-select">Titlecards Per Row</label>
-      <select id="titlecard-columns-select">
-        <option value="2">2</option>
-        <option value="3" selected>3</option>
-        <option value="4">4</option>
-        <option value="5">5</option>
-      </select>
-      
-      <!-- Section headings toggles -->
-      <div class="toggle-container">
-        <span class="toggle-label">Show Posters Header</span>
-        <label class="toggle-switch">
-          <input type="checkbox" id="show-posters-header" checked>
-          <span class="toggle-slider"></span>
-        </label>
-      </div>
-      
-      <div class="toggle-container">
-        <span class="toggle-label">Show Titlecards Header</span>
-        <label class="toggle-switch">
-          <input type="checkbox" id="show-titlecards-header" checked>
-          <span class="toggle-slider"></span>
-        </label>
-      </div>
-	  
-	  <div class="section-separator"></div>
-	  
-	  <label for="backdrop-upload" class="drop-zone">Upload Backdrop</label>
-      <input type="file" id="backdrop-upload" accept="image/*">
+            <div class="toggle-container">
+                <span class="toggle-label">API Search</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="toggle-api">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
 
-      <label for="blur-amount">Blur Amount</label>
-      <input type="range" id="blur-amount" min="0" max="30" step="1" value="5">
-      
-      <!-- Background toggle switch -->
-      <div class="toggle-container">
-        <span class="toggle-label">Use Backdrop</span>
-        <label class="toggle-switch">
-          <input type="checkbox" id="use-backdrop-toggle" >
-          <span class="toggle-slider"></span>
-        </label>
-      </div>
+            <div class="api-section" id="api-section">
+                <div class="api-fields">
+                    <!-- API URL is fixed to https://staged.mediux.io -->
 
-      <label for="bg-start">Background Start</label>
-      <input type="color" id="bg-start" value="#2c3e50">
+                    <label for="api-key" style="display:none;">API Key</label>
+                    <input type="password" id="api-key" placeholder="Your API Key" />
 
-      <label for="bg-end">Background End</label>
-      <input type="color" id="bg-end" value="#6a11cb">
+                    <input type="text" id="show-id" placeholder="Show ID: e.g. 123456" />
 
-      <div class="section-separator"></div>
-      
-      <button id="downloadBtn">Download Poster Wall</button>
-      <button id="resetBtn">Reset Form</button>
+                    <button id="connect-api-btn">Connect & Fetch Sets</button>
+                    <div id="api-status" class="status-disconnected">Not Connected</div>
+                    <div class="loading-spinner" id="api-loading"></div>
+                </div>
+
+                <div class="set-selector" id="set-selector">
+                    <!-- Show sets will be displayed here -->
+                </div>
+            </div>
+
+            <div class="section-separator"></div>
+
+            <label for="file-input" class="drop-zone">Upload Posters</label>
+            <input type="file" id="file-input" multiple accept="image/*" />
+
+            <label for="titlecard-input" class="drop-zone">Upload Titlecards</label>
+            <input type="file" id="titlecard-input" multiple accept="image/*" />
+
+            <label for="logo-upload" class="drop-zone">Upload Clear Logo</label>
+            <input type="file" id="logo-upload" accept="image/*" />
+
+            <div class="slider-inline">
+                <label for="logo-scale">Logo Scale</label>
+                <input type="range" id="logo-scale" min="0.3" max="2" step="0.1" value="1">
+            </div>
+
+            <div class="section-separator"></div>
+
+            <div class="layout-card compact-row-selects">
+                <div class="inline-select">
+                    <label for="columns-select">Posters Per Row</label>
+                    <select id="columns-select">
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4" selected>4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                    </select>
+                </div>
+                <div class="inline-select">
+                    <label for="titlecard-columns-select">Titlecards Per Row</label>
+                    <select id="titlecard-columns-select">
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5" selected>5</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Section headings toggles -->
+            <div class="toggle-pair-row">
+                <div class="toggle-container">
+                    <span class="toggle-label">Posters Header</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="show-posters-header" checked />
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="toggle-container">
+                    <span class="toggle-label">Titlecards Header</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="show-titlecards-header" checked />
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="section-separator"></div>
+
+            <label for="backdrop-upload" class="drop-zone">Upload Backdrop</label>
+            <input type="file" id="backdrop-upload" accept="image/*">
+
+            <div class="slider-inline">
+                <label for="blur-amount">Blur Amount</label>
+                <input type="range" id="blur-amount" min="0" max="30" step="1" value="5">
+            </div>
+
+            <!-- Background toggle switch -->
+            <div class="toggle-container">
+                <span class="toggle-label">Use Backdrop</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="use-backdrop-toggle">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+
+            <div class="gradient-section">
+                <div class="gradient-row">
+                    <div class="gradient-col">
+                        <label class="mini-label" for="bg-start">Gradient Start</label>
+                        <input type="color" id="bg-start" value="#2c3e50">
+                    </div>
+                    <div class="gradient-col">
+                        <label class="mini-label" for="bg-end">Gradient End</label>
+                        <input type="color" id="bg-end" value="#6a11cb">
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-separator"></div>
+
+            <div class="sidebar-action-row">
+                <button id="downloadBtn" class="icon-button teal" title="Download">
+                    <img src="../assets/poster-showcase icons/download.svg" class="icon" />
+                </button>
+                <button id="resetBtn" class="icon-button red" title="Reset">
+                    <img src="../assets/poster-showcase icons/refresh-cw.svg" class="icon" />
+                </button>
+            </div>
+
+        </div>
+
+        <div class="main">
+            <div id="export-wrapper">
+                <div id="export-bg-container">
+                    <img id="export-background-image" />
+                </div>
+                <img id="logo-preview" alt="Clear Logo" />
+
+                <h2 class="section-title" id="posters-header">Posters</h2>
+                <div id="poster-grid-wrapper" class="grid-section">
+                    <div id="poster-grid"></div>
+                </div>
+
+                <hr style="width: 100%; border-color: rgba(255,255,255,0.2);">
+
+                <h2 class="section-title" id="titlecards-header">Titlecards</h2>
+                <div id="titlecard-grid-wrapper" class="grid-section">
+                    <div id="titlecard-grid"></div>
+                </div>
+
+                <div class="set-id-line" id="set-id-line"></div>
+                <div class="credit-line">
+                    <div class="created-by" id="created-by">
+                        <img id="creator-icon" src="" alt="Creator Icon" />
+                        <span>Created by <span id="credit-text"></span></span>
+                    </div>
+                    <div class="powered-by">
+                        <span>mediux.pro</span>
+                        <img src="../assets/mediux.svg" alt="Mediux Icon" />
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="main">
-      <div id="export-wrapper">
-	    <div id="export-bg-container">
-          <img id="export-background-image" />
+    <div id="custom-confirm-overlay">
+        <div id="custom-confirm-modal">
+            <p>Are you sure you want to reset the form? You will lose all current uploads and settings.</p>
+            <div class="custom-confirm-buttons">
+                <button id="confirmYes">Yes</button>
+                <button id="confirmNo">No</button>
+            </div>
         </div>
-        <img id="logo-preview" alt="Clear Logo" />
-
-        <h2 class="section-title" id="posters-header">Posters</h2>
-        <div id="poster-grid-wrapper" class="grid-section">
-          <div id="poster-grid"></div>
-        </div>
-
-        <hr style="width: 100%; border-color: rgba(255,255,255,0.2);">
-
-        <h2 class="section-title" id="titlecards-header">Titlecards</h2>
-        <div id="titlecard-grid-wrapper" class="grid-section">
-          <div id="titlecard-grid"></div>
-        </div>
-
-        <div class="set-id-line" id="set-id-line"></div>
-        <div class="credit-line">
-          <div class="created-by" id="created-by">
-            <img id="creator-icon" src="" alt="Creator Icon" />
-            <span>Created by <span id="credit-text"></span></span>
-          </div>
-          <div class="powered-by">
-            <span>mediux.pro</span>
-            <img src="../assets/mediux.svg" alt="Mediux Icon" />
-          </div>
-        </div>
-      </div>
     </div>
-  </div>
-		
-  <div id="custom-confirm-overlay">
-    <div id="custom-confirm-modal">
-      <p>Are you sure you want to reset the form? You will lose all current uploads and settings.</p>
-      <div class="custom-confirm-buttons">
-        <button id="confirmYes">Yes</button>
-        <button id="confirmNo">No</button>
-      </div>
-    </div>
-  </div>
 
-<script>
-(function initializeStyles() {
-  // Set default gradient background immediately
-  const exportWrapper = document.getElementById("export-wrapper");
-  if (exportWrapper) {
-    const bgStart = document.getElementById("bg-start")?.value || "#2c3e50";
-    const bgEnd = document.getElementById("bg-end")?.value || "#6a11cb";
-    
-    // Force the background to be visible
-    exportWrapper.style.setProperty("--bg-start", bgStart);
-    exportWrapper.style.setProperty("--bg-end", bgEnd);
-    exportWrapper.style.background = `linear-gradient(135deg, ${bgStart}, ${bgEnd})`;
-    exportWrapper.style.backgroundImage = 'none';
-  }
-})();
-// JavaScript - Full implementation
-document.getElementById("creator-icon-upload").addEventListener("change", (e) => {
-  const file = e.target.files[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = (evt) => {
-      const icon = document.getElementById("creator-icon");
-      icon.src = evt.target.result;
-      icon.style.display = "inline-block";
-    };
-    reader.readAsDataURL(file);
-  }
-});
+    <script>
+        (function initializeStyles() {
+            const exportWrapper = document.getElementById("export-wrapper");
+            if (exportWrapper) {
+                const bgStart = document.getElementById("bg-start")?.value || "#2c3e50";
+                const bgEnd = document.getElementById("bg-end")?.value || "#6a11cb";
 
-document.getElementById("creator-name").addEventListener("input", e => {
-  document.getElementById("credit-text").textContent = e.target.value;
-});
+                exportWrapper.style.setProperty("--bg-start", bgStart);
+                exportWrapper.style.setProperty("--bg-end", bgEnd);
+                exportWrapper.style.background = `linear-gradient(135deg, ${bgStart}, ${bgEnd})`;
+                exportWrapper.style.backgroundImage = 'none';
+            }
+        })();
 
-// Toggle switches for section headers
-document.getElementById("show-posters-header").addEventListener("change", e => {
-  document.getElementById("posters-header").style.display = e.target.checked ? "block" : "none";
-});
 
-document.getElementById("show-titlecards-header").addEventListener("change", e => {
-  document.getElementById("titlecards-header").style.display = e.target.checked ? "block" : "none";
-});
+        const apiState = {
+            connected: false,
+            url: '',
+            key: '',
+            showId: '',
+            showSets: null,
+            selectedSetId: null
+        };
 
-document.getElementById("logo-upload").addEventListener("change", e => {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = evt => {
-    const img = document.getElementById("logo-preview");
-    img.src = evt.target.result;
-    img.style.display = "block";
-  };
-  reader.readAsDataURL(file);
-});
 
-// Toggle for backdrop vs gradient background
-document.getElementById("use-backdrop-toggle").addEventListener("change", e => {
-  toggleBackgroundType(e.target.checked);
-});
+        function updateApiStatus(message, isConnected) {
+            const statusElement = document.getElementById('api-status');
+            statusElement.textContent = message;
 
-document.getElementById("file-input").addEventListener("change", async (e) => {
-  await handleFiles(e.target.files, "poster");
-});
-
-document.getElementById("titlecard-input").addEventListener("change", async (e) => {
-  await handleFiles(e.target.files, "titlecard");
-});
-
-function updateGradientBackground() {
-  const exportWrapper = document.getElementById("export-wrapper");
-  const bgStart = document.getElementById("bg-start").value;
-  const bgEnd = document.getElementById("bg-end").value;
-  
-  console.log("Updating gradient with colors:", bgStart, bgEnd);
-  
-  // Store values in CSS variables
-  exportWrapper.style.setProperty("--bg-start", bgStart);
-  exportWrapper.style.setProperty("--bg-end", bgEnd);
-  
-  // Only update the visible background if backdrop is not active
-  if (!document.getElementById("use-backdrop-toggle").checked || !window._currentBackdropURL) {
-    // FORCE REDRAW: First completely remove all background properties
-    exportWrapper.style.removeProperty('background');
-    exportWrapper.style.removeProperty('backgroundImage');
-    exportWrapper.style.backgroundColor = 'transparent';
-    
-    // Force a browser repaint to clear any cached style values
-    void exportWrapper.offsetWidth;
-    
-    // Apply the new gradient style - multiple ways to ensure it takes effect
-    const gradientStyle = `linear-gradient(135deg, ${bgStart}, ${bgEnd})`;
-    exportWrapper.style.background = gradientStyle;
-    exportWrapper.style.backgroundImage = gradientStyle;
-    
-    // Update the bg-container too in case that's what's being displayed
-    const bgContainer = document.getElementById("export-bg-container");
-    if (bgContainer) {
-      bgContainer.style.background = gradientStyle;
-    }
-  }
-}
-
-function toggleBackgroundType(useBackdrop) {
-  const exportWrapper = document.getElementById("export-wrapper");
-  const bgImage = document.getElementById("export-background-image");
-  
-  console.log("Toggle background:", useBackdrop ? "Using backdrop" : "Using gradient");
-  console.log("Has backdrop URL:", !!window._currentBackdropURL);
-  
-  // Hide/show the background image
-  if (bgImage) {
-    bgImage.style.display = useBackdrop ? "block" : "none";
-  }
-
-  // Clear all background styles first for a clean slate
-  exportWrapper.style.removeProperty('background');
-  exportWrapper.style.backgroundColor = 'transparent';
-  exportWrapper.style.backgroundImage = 'none';
-
-  // Force repaint to avoid flickers
-  void exportWrapper.offsetWidth;
-
-  if (useBackdrop && window._currentBackdropURL) {
-    // Use the backdrop image
-    console.log("Applying backdrop URL:", window._currentBackdropURL.substring(0, 50) + "...");
-    exportWrapper.style.backgroundImage = `url(${window._currentBackdropURL})`;
-    exportWrapper.style.backgroundSize = "cover";
-    exportWrapper.style.backgroundPosition = "center";
-  } else {
-    // Use gradient background
-    updateGradientBackground();
-  }
-}
-	
-const posterGrid = document.getElementById("poster-grid");
-const titlecardGrid = document.getElementById("titlecard-grid");
-const columnsSelect = document.getElementById("columns-select");
-const titlecardColumnsSelect = document.getElementById("titlecard-columns-select");
-const bgImage = document.getElementById("export-background-image");
-let originalBgDataURL = null;
-let blurredBackdropDataURL = null;
-let backdropCanvas = document.createElement('canvas');
-let backdropCtx = backdropCanvas.getContext('2d');
-
-function groupIntoRows(items, perRow) {
-  const rows = [];
-  for (let i = 0; i < items.length; i += perRow) {
-    const row = document.createElement("div");
-    row.className = "row";
-    row.append(...items.slice(i, i + perRow));
-    rows.push(row);
-  }
-  return rows;
-}
-
-function renderGrid(container, items, perRow) {
-  container.innerHTML = "";
-  groupIntoRows(items, perRow).forEach(row => container.appendChild(row));
-}
-
-function collectItems(gridClass) {
-  return [...document.querySelectorAll(`.${gridClass}`)].map(el => el.closest(`.${gridClass}-wrapper`));
-}
-
-function groupItemsWithHeaders(container, perRow) {
-  const elements = Array.from(container.querySelectorAll('.season-header, .titlecard-wrapper'));
-  container.innerHTML = '';
-
-  let currentRow = null, count = 0;
-
-  elements.forEach((el, index) => {
-    if (el.classList.contains('season-header')) {
-      if (currentRow && currentRow.children.length > 0) {
-        container.appendChild(currentRow);
-        currentRow = null;
-        count = 0;
-      }
-      
-      // Add divider before every header except the first one
-      if (index !== 0) {
-        const divider = document.createElement('hr');
-        divider.style.cssText = 'width: 100%; border-color: rgba(255,255,255,0.2); margin: 10px 0;';
-        container.appendChild(divider);
-      }
-
-      container.appendChild(el);
-    } else {
-      if (!currentRow || count >= perRow) {
-        if (currentRow) container.appendChild(currentRow);
-        currentRow = document.createElement('div');
-        currentRow.className = 'row';
-        count = 0;
-      }
-      currentRow.appendChild(el);
-      count++;
-    }
-  });
-
-  if (currentRow && currentRow.children.length > 0) {
-    container.appendChild(currentRow);
-  }
-}
-
-function rebuildGrids() {
-  const posterItems = collectItems("poster");
-  renderGrid(posterGrid, posterItems, parseInt(columnsSelect.value));
-
-  groupItemsWithHeaders(titlecardGrid, parseInt(titlecardColumnsSelect.value));
-}
-
-function createImageElement(src, className) {
-  const wrapper = document.createElement("div");
-  wrapper.className = `${className}-wrapper`;
-  const img = document.createElement("img");
-  img.src = src;
-  img.className = className;
-  img.draggable = true;
-
-  const btn = document.createElement("button");
-  btn.className = "delete-btn";
-  btn.textContent = "×";
-  btn.onclick = () => {
-    wrapper.remove();
-    rebuildGrids();
-  };
-
-  wrapper.appendChild(img);
-  wrapper.appendChild(btn);
-  img.addEventListener("dragstart", () => wrapper.dataset.dragging = true);
-  img.addEventListener("dragend", () => delete wrapper.dataset.dragging);
-  wrapper.addEventListener("dragover", e => e.preventDefault());
-  wrapper.addEventListener("drop", e => {
-    e.preventDefault();
-    const dragging = document.querySelector("[data-dragging]");
-    if (dragging && dragging !== wrapper) {
-      wrapper.parentNode.insertBefore(dragging.closest(`.${className}-wrapper`), wrapper);
-      rebuildGrids();
-    }
-  });
-
-  return wrapper;
-}
-
-async function handleFiles(files, className) {
-  const fileArray = [...files];
-
-  if (className === "poster") {
-    fileArray.sort((a, b) => {
-      const normalize = name => name.toLowerCase().replace(/\.[^/.]+$/, "").trim();
-      const getSortKey = (filename) => {
-        const name = normalize(filename.name);
-        const seasonMatch = name.match(/ - season (\d{1,3})$/i);
-        const baseName = name.replace(/ - season \d{1,3}$/i, "");
-        const seasonNumber = seasonMatch ? parseInt(seasonMatch[1], 10) : -1;
-        return { baseName, seasonNumber };
-      };
-      const aKey = getSortKey(a);
-      const bKey = getSortKey(b);
-      if (aKey.baseName !== bKey.baseName) {
-        return aKey.baseName.localeCompare(bKey.baseName);
-      }
-      return aKey.seasonNumber - bKey.seasonNumber;
-    });
-    
-    // Extract existing posters first
-    const container = document.querySelector(`#${className}-grid`);
-    const existingPosters = Array.from(container.querySelectorAll('.poster-wrapper')).map(wrapper => 
-      wrapper.querySelector('img').src
-    );
-
-    // Process new uploaded posters
-    const newPosterSrcs = await Promise.all(fileArray.map(async file => {
-      return await new Promise(resolve => {
-        const reader = new FileReader();
-        reader.onload = e => resolve(e.target.result);
-        reader.readAsDataURL(file);
-      });
-    }));
-
-    // Merge existing and new posters
-    const allPosterSrcs = [...existingPosters, ...newPosterSrcs];
-    
-    // Clear container and rebuild
-    container.innerHTML = "";
-    
-    // Create wrappers for all posters
-    const wrappers = allPosterSrcs.map(src => {
-      const wrapper = document.createElement("div");
-      wrapper.className = `${className}-wrapper`;
-
-      const img = document.createElement("img");
-      img.src = src;
-      img.className = className;
-      img.draggable = true;
-
-      const btn = document.createElement("button");
-      btn.className = "delete-btn";
-      btn.textContent = "×";
-      btn.onclick = () => {
-        wrapper.remove();
-        rebuildGrids();
-      };
-
-      wrapper.appendChild(img);
-      wrapper.appendChild(btn);
-
-      img.addEventListener("dragstart", () => wrapper.dataset.dragging = true);
-      img.addEventListener("dragend", () => delete wrapper.dataset.dragging);
-      wrapper.addEventListener("dragover", e => e.preventDefault());
-      wrapper.addEventListener("drop", e => {
-        e.preventDefault();
-        const dragging = document.querySelector("[data-dragging]");
-        if (dragging && dragging !== wrapper) {
-          wrapper.parentNode.insertBefore(dragging.closest(`.${className}-wrapper`), wrapper);
-          rebuildGrids();
+            if (isConnected) {
+                statusElement.className = 'status-connected';
+            } else {
+                statusElement.className = 'status-disconnected';
+            }
         }
-      });
 
-      return wrapper;
-    });
-    
-    wrappers.forEach(wrapper => container.appendChild(wrapper));
-    rebuildGrids();
-  } 
-  else if (className === "titlecard") {
-    const parseInfo = name => {
-      const cleaned = name.toLowerCase().replace(/\.[^/.]+$/, "").trim();
-      const match = cleaned.match(/s(\d{1,2})[\s\.]?e(\d{1,2})/i);
-      const season = match ? parseInt(match[1], 10) : 0;
-      const episode = match ? parseInt(match[2], 10) : 0;
-      return { name, season, episode };
-    };
+        function populateSetSelector(showSets) {
+            const selectorElement = document.getElementById('set-selector');
+            selectorElement.innerHTML = '';
 
-    const container = document.querySelector(`#${className}-grid`);
+            console.log(`Found ${showSets.length} total sets`);
 
-    // Extract existing titlecards first
-    const existingWrappers = Array.from(container.querySelectorAll('.titlecard-wrapper'));
-    const existingCards = existingWrappers.map(wrapper => ({
-      src: wrapper.querySelector('img').src,
-      season: parseInt(wrapper.dataset.season || "0"),
-      episode: parseInt(wrapper.dataset.episode || "0"),
-    }));
+            showSets.forEach((set, index) => {
+                // Log each set's content to help diagnose issues
+                const posterCount = (set.showPoster?.length || 0) + (set.seasonPosters?.length || 0);
+                const titlecardCount = set.titlecards?.length || 0;
 
-    // Process new uploaded titlecards
-    const newCards = await Promise.all(fileArray.map(async file => {
-      const src = await new Promise(resolve => {
-        const reader = new FileReader();
-        reader.onload = e => resolve(e.target.result);
-        reader.readAsDataURL(file);
-      });
-      const {season, episode} = parseInfo(file.name);
-      return {src, season, episode};
-    }));
+                console.log(`Set ${index + 1}: "${set.set_title || 'Unnamed'}" (ID: ${set.id})`);
+                console.log(` - Posters: ${posterCount}, Titlecards: ${titlecardCount}`);
 
-    // Merge and sort existing + new titlecards
-    const allCards = [...existingCards, ...newCards].sort((a, b) =>
-      a.season - b.season || a.episode - b.episode
-    );
+                // Create the set item in the UI
+                const setItem = document.createElement('div');
+                setItem.className = 'set-item';
+                setItem.dataset.setId = set.id;
 
-    // Clear container for fresh regrouping
-    container.innerHTML = '';
+                const createdDate = new Date(set.date_created);
+                const formattedDate = createdDate.toLocaleDateString();
 
-    let currentSeason = null;
+                setItem.innerHTML = `
+      <div class="set-title">${set.set_title || 'Untitled Set'}</div>
+      <div class="set-details">
+        Created by: ${set.user_created?.username || 'Unknown'}<br>
+        Created: ${formattedDate}<br>
+        Assets: ${posterCount} posters, ${titlecardCount} titlecards
+      </div>
+    `;
 
-    // Rebuild titlecards with headers
-    allCards.forEach(card => {
-      if (card.season !== currentSeason) {
-        currentSeason = card.season;
-        const heading = document.createElement("div");
-        heading.className = "season-header";
-        heading.textContent = `Season ${String(card.season).padStart(2, '0')}`;
-        container.appendChild(heading);
-      }
+                // Add click event to load this set
+                setItem.addEventListener('click', () => loadShowSet(set));
 
-      const wrapper = document.createElement("div");
-      wrapper.className = "titlecard-wrapper";
-      wrapper.dataset.season = card.season;
-      wrapper.dataset.episode = card.episode;
-
-      const img = document.createElement("img");
-      img.src = card.src;
-      img.className = "titlecard";
-      img.draggable = true;
-
-      const btn = document.createElement("button");
-      btn.className = "delete-btn";
-      btn.textContent = "×";
-      btn.onclick = () => {
-        wrapper.remove();
-        rebuildGrids();
-      };
-
-      wrapper.appendChild(img);
-      wrapper.appendChild(btn);
-
-      img.addEventListener("dragstart", () => wrapper.dataset.dragging = true);
-      img.addEventListener("dragend", () => delete wrapper.dataset.dragging);
-      wrapper.addEventListener("dragover", e => e.preventDefault());
-      wrapper.addEventListener("drop", e => {
-        e.preventDefault();
-        const dragging = document.querySelector("[data-dragging]");
-        if (dragging && dragging !== wrapper) {
-          wrapper.parentNode.insertBefore(dragging.closest('.titlecard-wrapper'), wrapper);
-          rebuildGrids();
+                selectorElement.appendChild(setItem);
+            });
         }
-      });
 
-      container.appendChild(wrapper);
-    });
+        function sortPostersAndTitlecards() {
+            const posterGrid = document.getElementById("poster-grid");
+            const posters = Array.from(posterGrid.querySelectorAll(".poster-wrapper"));
+            posters.sort((a, b) =>
+                a.querySelector("img").src.localeCompare(b.querySelector("img").src)
+            );
+            posters.forEach(p => posterGrid.appendChild(p));
 
-    // Final regroup into rows
-    groupItemsWithHeaders(container, parseInt(titlecardColumnsSelect.value));
-  }
-}
+            const titlecardGrid = document.getElementById("titlecard-grid");
+            const wrappers = Array.from(titlecardGrid.querySelectorAll(".titlecard-wrapper"));
+            wrappers.sort((a, b) => {
+                const seasonA = parseInt(a.dataset.season || "0");
+                const seasonB = parseInt(b.dataset.season || "0");
+                const epA = parseInt(a.dataset.episode || "0");
+                const epB = parseInt(b.dataset.episode || "0");
+                return seasonA - seasonB || epA - epB;
+            });
 
-document.getElementById("backdrop-upload").addEventListener("change", async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
+            const headers = Array.from(titlecardGrid.querySelectorAll('.season-header'));
+            titlecardGrid.innerHTML = '';
+            headers.forEach(header => {
+                titlecardGrid.appendChild(header);
+                const seasonNumber = parseInt(header.textContent.match(/\d+/)?.[0] || "0");
+                const matching = wrappers.filter(w => parseInt(w.dataset.season) === seasonNumber);
+                matching.forEach(el => titlecardGrid.appendChild(el));
+            });
+        }
 
-  const reader = new FileReader();
-  reader.onload = async (evt) => {
-    const dataURL = evt.target.result;
-    
-    try {
-      // Store original image data for later use
-      const originalImg = new Image();
-      originalImg.src = dataURL;
+        async function loadShowSet(set) {
+            document.getElementById('api-loading').style.display = 'block';
+            updateApiStatus('Loading assets...', true);
+
+            try {
+                apiState.selectedSetId = set.id;
+
+                const posterGrid = document.getElementById('poster-grid');
+                const titlecardGrid = document.getElementById('titlecard-grid');
+                posterGrid.innerHTML = '';
+                titlecardGrid.innerHTML = '';
+
+                // Set title & creator
+                if (set.set_title) {
+                    document.getElementById('set-id').value = set.set_title;
+                    document.getElementById('set-id-line').textContent = set.set_title;
+                }
+
+                if (set.user_created?.username) {
+                    document.getElementById('creator-name').value = set.user_created.username;
+                    document.getElementById('credit-text').textContent = set.user_created.username;
+                }
+
+                // Create arrays to hold all assets before adding to DOM
+                const allPosters = [];
+
+                // Load posters (show-level + season-level)
+                if (set.showPoster?.length) {
+                    for (const poster of set.showPoster) {
+                        try {
+                            const dataUrl = await fetchAssetAsDataUrl(poster.id);
+                            allPosters.push({
+                                dataUrl,
+                                id: poster.id,
+                                type: 'show',
+                                seasonNumber: -1 // Main show posters come first
+                            });
+                        } catch (error) {
+                            console.error(`Failed to load show poster ${poster.id}:`, error);
+                        }
+                    }
+                }
+
+                if (set.seasonPosters?.length) {
+                    for (const poster of set.seasonPosters) {
+                        try {
+                            const dataUrl = await fetchAssetAsDataUrl(poster.id);
+                            // Handle special case for "specials" or Season 0
+                            const seasonNum = poster.season?.season_number;
+                            let seasonNumber = -10; // Default for unknown
+
+                            if (seasonNum !== undefined && seasonNum !== null) {
+                                // Convert to number and handle special cases
+                                seasonNumber = Number(seasonNum);
+                                // Special handling for "specials" (Season 0)
+                                if (seasonNumber === 0) {
+                                    seasonNumber = -0.5; // Place specials after main posters but before other seasons
+                                }
+                            }
+
+                            allPosters.push({
+                                dataUrl,
+                                id: poster.id,
+                                type: 'season',
+                                seasonNumber: seasonNumber
+                            });
+                        } catch (error) {
+                            console.error(`Failed to load season poster ${poster.id}:`, error);
+                        }
+                    }
+                }
+
+                // Sort posters: main show posters first, then specials, then seasons in numerical order
+                allPosters.sort((a, b) => {
+                    // First by type (show posters come before season posters)
+                    if (a.type !== b.type) {
+                        return a.type === 'show' ? -1 : 1;
+                    }
+
+                    // Then by season number
+                    return a.seasonNumber - b.seasonNumber;
+                });
+
+                // Add sorted posters to the grid
+                for (const poster of allPosters) {
+                    addImageToGrid(poster.dataUrl, 'poster');
+                }
+
+                // Handle titlecards (code for titlecards remains the same)
+                if (set.titlecards?.length) {
+                    // Group by season
+                    const titlecardsBySeason = {};
+
+                    for (const titlecard of set.titlecards) {
+                        const season = titlecard.episode?.season_id?.season_number || 0;
+                        const episode = titlecard.episode?.episode_number || 0;
+
+                        if (!titlecardsBySeason[season]) {
+                            titlecardsBySeason[season] = [];
+                        }
+
+                        try {
+                            const dataUrl = await fetchAssetAsDataUrl(titlecard.id);
+                            titlecardsBySeason[season].push({
+                                dataUrl,
+                                id: titlecard.id,
+                                season: season,
+                                episode: episode
+                            });
+                        } catch (error) {
+                            console.error(`Failed to load titlecard ${titlecard.id}:`, error);
+                        }
+                    }
+
+                    // Sort seasons numerically
+                    const sortedSeasons = Object.keys(titlecardsBySeason)
+                        .map(Number)
+                        .sort((a, b) => a - b);
+
+                    // Process each season
+                    for (const season of sortedSeasons) {
+                        // Add season header
+                        const header = document.createElement('div');
+                        header.className = 'season-header';
+                        header.textContent = `Season ${String(season).padStart(2, '0')}`;
+                        titlecardGrid.appendChild(header);
+
+                        // Sort titlecards by episode number
+                        const seasonTitlecards = titlecardsBySeason[season];
+                        seasonTitlecards.sort((a, b) => a.episode - b.episode);
+
+                        // Add sorted titlecards to the season
+                        for (const tc of seasonTitlecards) {
+                            addTitlecardToGrid(tc.dataUrl, tc.season, tc.episode);
+                        }
+                    }
+                }
+
+                // Finally rebuild the grid structure
+                rebuildGrids();
+
+                updateApiStatus('Assets loaded successfully', true);
+            } catch (error) {
+                console.error('Error loading show set:', error);
+                updateApiStatus('Failed to load assets: ' + error.message, false);
+            } finally {
+                document.getElementById('api-loading').style.display = 'none';
+            }
+        }
+
+        // Helper function to fetch an asset and convert to data URL
+        async function fetchAssetAsDataUrl(fileId) {
+            if (!apiState.connected || !apiState.url || !apiState.key) {
+                throw new Error('API not connected');
+            }
+
+            const fileUrl = `${apiState.url}/assets/${fileId}`;
+            const corsProxyUrl = 'https://poster-proxy.pejamas.workers.dev/?url=';
+            const fullUrl = corsProxyUrl + encodeURIComponent(fileUrl);
+
+            const response = await fetch(fullUrl, {
+                headers: {
+                    'Authorization': `Bearer ${apiState.key}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to fetch file: ${response.statusText} (${response.status})`);
+            }
+
+            const blob = await response.blob();
+            return await blobToDataURL(blob);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM fully loaded - attaching API button handler');
+
+            const connectButton = document.getElementById('connect-api-btn');
+            if (connectButton) {
+                connectButton.addEventListener('click', function() {
+                    console.log('Connect button clicked!');
+                    connectAndFetchSets();
+                });
+            } else {
+                console.error('Connect API button not found in DOM');
+            }
+
+            // Set API URL (fixed for now)
+            apiState.url = "https://staged.mediux.io";
+
+            // Load saved API key from localStorage
+            const savedApiKey = localStorage.getItem('mediux_api_key');
+            if (savedApiKey) {
+                document.getElementById('api-key').value = savedApiKey;
+            }
+
+            // Save API key on change
+            document.getElementById('api-key').addEventListener('change', e => {
+                const value = e.target.value.trim();
+                if (value) {
+                    localStorage.setItem('mediux_api_key', value);
+                }
+            });
+
+            updateApiStatus('Not Connected', false);
+        });
+
+        async function connectAndFetchSets() {
+            const apiUrl = "https://staged.mediux.io";
+            const apiKey = document.getElementById('api-key').value.trim();
+            const showId = document.getElementById('show-id').value.trim();
+
+            document.getElementById('api-loading').style.display = 'block';
+            updateApiStatus('Connecting...', false);
+
+            if (!apiUrl || !apiKey || !showId) {
+                updateApiStatus('Please fill all API fields', false);
+                document.getElementById('api-loading').style.display = 'none';
+                return;
+            }
+
+            try {
+                // Modified GraphQL query to ensure we get ALL sets regardless of what they contain
+                const query = `
+  query {
+    shows_by_id(id: "${showId}") {
+      id
+      title
       
-      await new Promise(resolve => {
-        originalImg.onload = resolve;
-      });
-      
-      window._originalBackdropImage = originalImg;
-      
-      // Apply blur with current slider value
-      const blurAmount = parseInt(document.getElementById("blur-amount").value);
-      
-      // Auto-check the backdrop toggle when a new backdrop is uploaded
-      document.getElementById("use-backdrop-toggle").checked = true;
-      
-      // Process and apply the backdrop
-      applySmartBlur(originalImg, blurAmount);
-      
-      // Ensure the toggle actually applies the backdrop
-      toggleBackgroundType(true);
-      
-    } catch (error) {
-      console.error("Error in backdrop processing:", error);
-      alert("There was an error processing your image. Please try another one.");
-    }
-  };
-  
-  reader.readAsDataURL(file);
-  e.target.value = "";
-});
-
-document.getElementById("blur-amount").addEventListener("input", async (e) => {
-  if (!window._originalBackdropImage) return;
-  
-  const blurAmount = parseInt(e.target.value);
-  applySmartBlur(window._originalBackdropImage, blurAmount);
-});
-
-// Logo scale slider
-document.getElementById("logo-scale").addEventListener("input", e => {
-  document.getElementById("logo-preview").style.transform = `scale(${e.target.value})`;
-});
-
-// Grid column selectors
-document.getElementById("columns-select").addEventListener("change", rebuildGrids);
-document.getElementById("titlecard-columns-select").addEventListener("change", rebuildGrids);
-
-// Set ID field
-document.getElementById("set-id").addEventListener("input", e => {
-  document.getElementById("set-id-line").textContent = e.target.value ? `Set ID: ${e.target.value}` : "";
-});
-
-// Toggle for backdrop vs gradient background
-document.getElementById("use-backdrop-toggle").addEventListener("change", e => {
-  toggleBackgroundType(e.target.checked);
-});
-
-document.getElementById("bg-start").addEventListener("input", () => {
-  updateGradientBackground();
-});
-
-document.getElementById("bg-end").addEventListener("input", () => {
-  updateGradientBackground();
-});
-
-function applySmartBlur(originalImg, blurAmount) {
-  // Create a canvas for processing
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
-  
-  // Set canvas to a reasonable size (not too small to avoid excessive pixelation)
-  const scaleFactor = Math.max(0.1, 1 - (blurAmount * 0.03)); // Smoother scale reduction
-  
-  canvas.width = Math.floor(originalImg.width * scaleFactor);
-  canvas.height = Math.floor(originalImg.height * scaleFactor);
-  
-  // First pass - draw at reduced size (creates initial blur)
-  ctx.drawImage(originalImg, 0, 0, canvas.width, canvas.height);
-  
-  // Apply a CSS-style blur filter if blurAmount is high enough
-  if (blurAmount > 5) {
-    // This simulates a Gaussian blur
-    const blurPx = Math.min(20, blurAmount - 5);
-    ctx.filter = `blur(${blurPx}px)`;
-    ctx.drawImage(canvas, 0, 0, canvas.width, canvas.height);
-    ctx.filter = 'none';
-  }
-  
-  // Calculate dimensions with padding to ensure coverage to edges
-  const padding = 50; // Add extra padding to ensure full coverage
-  
-  // Second pass - scale back up with padding
-  const finalCanvas = document.createElement('canvas');
-  const finalCtx = finalCanvas.getContext('2d');
-  
-  // Use a size that matches the aspect ratio but is reasonably large
-  const maxDimension = Math.max(originalImg.width, originalImg.height);
-  const targetSize = Math.min(1920, maxDimension); // Cap at 1920px for performance
-  
-  let finalWidth, finalHeight;
-  if (originalImg.width > originalImg.height) {
-    finalWidth = targetSize + padding * 2;
-    finalHeight = ((originalImg.height / originalImg.width) * targetSize) + padding * 2;
-  } else {
-    finalHeight = targetSize + padding * 2;
-    finalWidth = ((originalImg.width / originalImg.height) * targetSize) + padding * 2;
-  }
-  
-  finalCanvas.width = finalWidth;
-  finalCanvas.height = finalHeight;
-  
-  // Use better quality interpolation
-  finalCtx.imageSmoothingEnabled = true;
-  finalCtx.imageSmoothingQuality = "high";
-  
-  // Draw the blurred image at larger size with padding
-  finalCtx.drawImage(canvas, -padding, -padding, finalWidth + padding * 2, finalHeight + padding * 2);
-  
-  // Add a subtle darkening overlay to make content stand out better
-  finalCtx.fillStyle = "rgba(0, 0, 0, 0.2)";
-  finalCtx.fillRect(0, 0, finalWidth, finalHeight);
-  
-  // Apply the blurred image as background
-  const blurredDataURL = finalCanvas.toDataURL('image/jpeg', 0.92);
-  blurredBackdropDataURL = blurredDataURL;
-  window._currentBackdropURL = blurredDataURL;
-  
-  const bgImage = document.getElementById("export-background-image");
-  if (bgImage) {
-  bgImage.src = blurredDataURL;
-  bgImage.style.display = "block";
-  }
-  
-  // IMPORTANT: Force the backdrop to be immediately visible if toggle is on
-  const useBackdrop = document.getElementById("use-backdrop-toggle").checked;
-  if (useBackdrop) {
-    // Apply to DOM synchronously
-    const exportWrapper = document.getElementById("export-wrapper");
-    exportWrapper.style.removeProperty('background');
-    exportWrapper.style.backgroundColor = 'transparent';
-    exportWrapper.style.backgroundImage = 'none';
-    
-    // Force a repaint
-    void exportWrapper.offsetWidth;
-    
-    // Apply the image immediately
-    exportWrapper.style.backgroundImage = `url('${blurredDataURL}')`;
-    exportWrapper.style.backgroundSize = "cover";
-    exportWrapper.style.backgroundPosition = "center";
-    exportWrapper.style.backgroundRepeat = "no-repeat";
-    exportWrapper.style.borderRadius = "12px";
-    exportWrapper.style.overflow = "hidden";
-  }
-}
-
-// Toggle switches for section headers
-document.getElementById("show-posters-header").addEventListener("change", e => {
-  document.getElementById("posters-header").style.display = e.target.checked ? "block" : "none";
-});
-
-document.getElementById("show-titlecards-header").addEventListener("change", e => {
-  document.getElementById("titlecards-header").style.display = e.target.checked ? "block" : "none";
-});
-
-function updateBackgroundStyles() {
-  const exportWrapper = document.getElementById("export-wrapper");
-  const bgContainer = document.getElementById("export-bg-container");
-  const useBackdrop = document.getElementById("use-backdrop-toggle").checked;
-
-  // If we have a blurred backdrop and the toggle is enabled
-  if (window._currentBackdropURL && useBackdrop) {
-    bgContainer.style.display = "none";
-    exportWrapper.style.removeProperty('background');
-    exportWrapper.style.background = 'none';
-    exportWrapper.style.backgroundImage = `url(${window._currentBackdropURL})`;
-    exportWrapper.style.backgroundSize = "cover";
-    exportWrapper.style.backgroundPosition = "center";
-  } else {
-    // Use gradient background
-    bgContainer.style.display = "none";
-    const bgStart = document.getElementById("bg-start").value;
-    const bgEnd = document.getElementById("bg-end").value;
-    
-    // Clear background image first
-    exportWrapper.style.backgroundImage = 'none';
-    
-    // Then set the gradient
-    exportWrapper.style.background = `linear-gradient(135deg, ${bgStart}, ${bgEnd})`;
-  }
-}
-
-document.getElementById("resetBtn").addEventListener("click", () => {
-  const overlay = document.getElementById('custom-confirm-overlay');
-  const confirmYes = document.getElementById('confirmYes');
-  const confirmNo = document.getElementById('confirmNo');
-
-  overlay.style.display = 'flex';
-
-  confirmYes.onclick = () => location.reload();
-  confirmNo.onclick = () => overlay.style.display = 'none';
-});
-
-document.getElementById("downloadBtn").addEventListener("click", async () => {
-  const wrapper = document.getElementById("export-wrapper");
-  const borderRadius = 24; // Border radius value in pixels (for export)
-  
-  // Check for blurred backdrop and if toggle is enabled
-  const useBackdrop = document.getElementById("use-backdrop-toggle").checked;
-  const hasBlurredBackdrop = window._currentBackdropURL && useBackdrop ? true : false;
-  const originalBg = originalBgDataURL; // Custom background image
-  
-  // Clone the wrapper to avoid modifying the actual DOM
-  const clone = wrapper.cloneNode(true);
-  clone.querySelectorAll(".delete-btn").forEach(btn => btn.remove());
-  
-  // Set proper styles for the clone
-  clone.style.borderRadius = `${borderRadius}px`;
-  clone.style.overflow = "hidden";
-  
-  // IMPORTANT: Completely strip background from clone - we'll draw it manually
-  clone.style.background = "none";
-  clone.style.backgroundColor = "transparent";
-  clone.style.backgroundImage = "none";
-  
-  // Also clean the export-wrapper inside the clone
-  const cloneExportWrapper = clone.querySelector("#export-wrapper");
-  if (cloneExportWrapper) {
-    cloneExportWrapper.style.borderRadius = `${borderRadius}px`;
-    cloneExportWrapper.style.overflow = "hidden";
-    cloneExportWrapper.style.background = "none";
-    cloneExportWrapper.style.backgroundColor = "transparent";
-    cloneExportWrapper.style.backgroundImage = "none";
-  }
-  
-  // Remove ALL background containers from clone
-  const bgContainerClone = clone.querySelector("#export-bg-container");
-  if (bgContainerClone) bgContainerClone.remove();
-  
-  const backdropContainerClone = clone.querySelector("#backdrop-container");
-  if (backdropContainerClone) backdropContainerClone.remove();
-
-  // Check section visibility based on toggle states
-  const showPostersHeader = document.getElementById("show-posters-header").checked;
-  const showTitlecardsHeader = document.getElementById("show-titlecards-header").checked;
-  
-  // Handle section headers visibility for export
-  const postersHeaderClone = clone.querySelector("#posters-header");
-  const titlecardsHeaderClone = clone.querySelector("#titlecards-header");
-  
-  if (postersHeaderClone) {
-    postersHeaderClone.style.display = showPostersHeader ? "block" : "none";
-  }
-  
-  if (titlecardsHeaderClone) {
-    titlecardsHeaderClone.style.display = showTitlecardsHeader ? "block" : "none";
-  }
-  
-  // Remove titlecard section if empty
-  const titlecardGridClone = clone.querySelector("#titlecard-grid");
-  if (!titlecardGridClone || titlecardGridClone.children.length === 0) {
-    if (titlecardsHeaderClone) titlecardsHeaderClone.remove();
-    const wrapper = clone.querySelector("#titlecard-grid-wrapper");
-    if (wrapper) wrapper.remove();
-  }
-
-  // Position clone off-screen for rendering
-  clone.style.position = "absolute";
-  clone.style.left = "-9999px";
-  document.body.appendChild(clone);
-
-  await new Promise(requestAnimationFrame); // wait for DOM paint
-
-  // Capture ONLY the content (no background)
-  const contentCanvas = await html2canvas(clone, {
-    scale: 2,
-    backgroundColor: null, // Transparent background is crucial
-    logging: false,
-    onclone: (document) => {
-      // Double-ensure no backgrounds on any elements
-      const exportWrapper = document.getElementById("export-wrapper");
-      if (exportWrapper) {
-        exportWrapper.style.background = "none";
-        exportWrapper.style.backgroundColor = "transparent";
-        exportWrapper.style.backgroundImage = "none";
+      # Get all sets without any filtering
+      show_sets {
+        id
+        set_title
+        user_created {
+          username
+        }
+        date_created
+        date_updated
+        description
+        
+        # Get posters and titlecards separately
+        # Each file type is an independent request, not linked to each other
+        showPoster: files(
+          filter: { 
+            _and: [ 
+              { file_type: { _eq: "poster" } }, 
+              { show: { id: { _neq: null } } } 
+            ] 
+          }
+        ) {
+          id
+          modified_on
+        }
+        
+        seasonPosters: files(
+          filter: { 
+            _and: [ 
+              { file_type: { _eq: "poster" } }, 
+              { season: { id: { _neq: null } } } 
+            ] 
+          }
+        ) {
+          id
+          modified_on
+          season { 
+            season_number 
+          }
+        }
+        
+        titlecards: files(
+          filter: { 
+            _and: [ 
+              { file_type: { _eq: "titlecard" } }, 
+              { episode: { id: { _neq: null } } } 
+            ] 
+          }
+        ) {
+          id
+          modified_on
+          episode {
+            episode_number
+            season_id { 
+              season_number 
+            }
+          }
+        }
       }
     }
-  });
-
-  document.body.removeChild(clone);
-
-  // Create final canvas with correct dimensions
-  const finalCanvas = document.createElement("canvas");
-  finalCanvas.width = contentCanvas.width;
-  finalCanvas.height = contentCanvas.height;
-  const ctx = finalCanvas.getContext("2d");
-
-  // Apply rounded corners via clipping path
-  const scaledRadius = borderRadius * 2;
-  ctx.beginPath();
-  ctx.moveTo(scaledRadius, 0);
-  ctx.lineTo(finalCanvas.width - scaledRadius, 0);
-  ctx.quadraticCurveTo(finalCanvas.width, 0, finalCanvas.width, scaledRadius);
-  ctx.lineTo(finalCanvas.width, finalCanvas.height - scaledRadius);
-  ctx.quadraticCurveTo(finalCanvas.width, finalCanvas.height, finalCanvas.width - scaledRadius, finalCanvas.height);
-  ctx.lineTo(scaledRadius, finalCanvas.height);
-  ctx.quadraticCurveTo(0, finalCanvas.height, 0, finalCanvas.height - scaledRadius);
-  ctx.lineTo(0, scaledRadius);
-  ctx.quadraticCurveTo(0, 0, scaledRadius, 0);
-  ctx.closePath();
-  ctx.clip();
-
-  // Step 1: Draw the appropriate background covering the ENTIRE canvas
-  if (hasBlurredBackdrop) {
-    // Use blurred backdrop
-    const bgImg = new Image();
-    await new Promise((resolve, reject) => {
-      bgImg.onload = resolve;
-      bgImg.onerror = reject;
-      bgImg.src = window._currentBackdropURL;
-    });
-
-    // Fill the entire canvas with the blurred backdrop
-    ctx.drawImage(bgImg, 0, 0, finalCanvas.width, finalCanvas.height);
-    
-    // Add slight darkening overlay for better contrast with content
-    ctx.fillStyle = "rgba(0, 0, 0, 0.15)";
-    ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
   }
-  else if (originalBg) {
-    // Use regular background image
-    const bgImg = new Image();
-    await new Promise((resolve, reject) => {
-      bgImg.onload = resolve;
-      bgImg.onerror = reject;
-      bgImg.src = originalBg;
-    });
+`;
 
-    ctx.drawImage(bgImg, 0, 0, finalCanvas.width, finalCanvas.height);
-  } else {
-    // Fallback to gradient
-    const gradient = ctx.createLinearGradient(0, 0, finalCanvas.width, finalCanvas.height);
-    gradient.addColorStop(0, getComputedStyle(wrapper).getPropertyValue('--bg-start') || '#2c3e50');
-    gradient.addColorStop(1, getComputedStyle(wrapper).getPropertyValue('--bg-end') || '#6a11cb');
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
-  }
-  
-  // Step 2: Draw the content (posters, titlecards, etc.) on top
-  ctx.drawImage(contentCanvas, 0, 0);
-  
-  // Step 3: Export as image
-  const link = document.createElement("a");
-  link.download = "poster-wall.png";
-  link.href = finalCanvas.toDataURL("image/png");
-  link.click();
-});
+                console.log('Connecting to API at:', apiUrl);
 
-window.addEventListener('DOMContentLoaded', () => {
-  // Set the gradient as default background
-  const exportWrapper = document.getElementById("export-wrapper");
-  const bgStart = document.getElementById("bg-start").value;
-  const bgEnd = document.getElementById("bg-end").value;
-  exportWrapper.style.background = `linear-gradient(135deg, ${bgStart}, ${bgEnd})`;
-  exportWrapper.style.backgroundImage = 'none';
-});
-</script>
+                const endpoint = `${apiUrl}/graphql`;
+                const proxied = `http://localhost:8081/${apiUrl}/graphql`;
+
+                console.log('Using endpoint:', proxied);
+
+                const response = await fetch(proxied, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify({
+                        query
+                    })
+                });
+
+                console.log('Response status:', response.status);
+
+                const text = await response.text();
+                let data;
+                try {
+                    data = JSON.parse(text);
+                    console.log('Raw API response:', data);
+                } catch (err) {
+                    console.error('JSON parse error:', err);
+                    throw new Error('Invalid JSON response from API');
+                }
+
+                if (!response.ok || !data?.data?.shows_by_id) {
+                    console.error('API error or missing data:', data?.errors || 'No show data found');
+                    throw new Error('Invalid API response or show not found');
+                }
+
+                const showData = data.data.shows_by_id;
+
+                // Log all sets directly to help diagnose issues
+                if (showData.show_sets) {
+                    showData.show_sets.forEach((set, index) => {
+                        console.log(`Set ${index + 1}: ${set.set_title || 'Untitled'} - ${set.id}`);
+                        console.log(`  Posters: Show=${set.showPoster?.length || 0}, Season=${set.seasonPosters?.length || 0}`);
+                        console.log(`  Titlecards: ${set.titlecards?.length || 0}`);
+                    });
+                }
+
+                if (!showData.show_sets || !showData.show_sets.length) {
+                    throw new Error('No sets found for this show');
+                }
+
+                // Store data in apiState
+                apiState.connected = true;
+                apiState.url = apiUrl;
+                apiState.key = apiKey;
+                apiState.showId = showId;
+                apiState.showSets = showData.show_sets;
+
+                // Update UI to show connection status
+                updateApiStatus(`Connected: ${showData.title} (${showData.show_sets.length} sets)`, true);
+                populateSetSelector(showData.show_sets);
+                document.getElementById('set-selector').style.display = 'block';
+            } catch (err) {
+                console.error('API Connection Error:', err);
+                updateApiStatus('Connection failed: ' + err.message, false);
+            } finally {
+                document.getElementById('api-loading').style.display = 'none';
+            }
+        }
+
+        // Fixed loadFileFromAPI function with correct URL construction
+        async function loadFileFromAPI(fileId, fileType, metadata = {}) {
+            if (!apiState.connected || !apiState.url || !apiState.key) {
+                throw new Error('API not connected');
+            }
+
+            try {
+                // Construct file URL - this needs the asset ID only
+                const fileUrl = `${apiState.url}/assets/${fileId}`;
+
+                // Use the correct proxy URL format
+                const corsProxyUrl = 'http://localhost:8081/';
+                const fullUrl = corsProxyUrl + fileUrl; // Don't append /graphql here
+
+                console.log(`Fetching ${fileType} (ID: ${fileId}) from: ${fullUrl}`);
+
+                const response = await fetch(fullUrl, {
+                    headers: {
+                        'Authorization': `Bearer ${apiState.key}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch file: ${response.statusText} (${response.status})`);
+                }
+
+                // Convert response to blob and then to data URL
+                const blob = await response.blob();
+                const dataUrl = await blobToDataURL(blob);
+
+                // Add file to the appropriate grid
+                if (fileType === 'poster') {
+                    addImageToGrid(dataUrl, 'poster');
+                } else if (fileType === 'titlecard') {
+                    addTitlecardToGrid(dataUrl, metadata.season, metadata.episode);
+                }
+
+                return true;
+            } catch (error) {
+                console.error(`Error loading file ${fileId}:`, error);
+                throw error;
+            }
+        }
+
+        function blobToDataURL(blob) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            });
+        }
+
+        function addImageToGrid(src, className) {
+            const wrapper = createImageElement(src, className);
+            document.getElementById(`${className}-grid`).appendChild(wrapper);
+        }
+
+        function addTitlecardToGrid(src, season, episode) {
+            const wrapper = document.createElement("div");
+            wrapper.className = "titlecard-wrapper";
+            wrapper.dataset.season = season;
+            wrapper.dataset.episode = episode;
+
+            const img = document.createElement("img");
+            img.src = src;
+            img.className = "titlecard";
+            img.draggable = true;
+
+            const btn = document.createElement("button");
+            btn.className = "delete-btn";
+            btn.textContent = "×";
+            btn.onclick = () => {
+                wrapper.remove();
+                rebuildGrids();
+            };
+
+            wrapper.appendChild(img);
+            wrapper.appendChild(btn);
+
+            img.addEventListener("dragstart", () => wrapper.dataset.dragging = true);
+            img.addEventListener("dragend", () => delete wrapper.dataset.dragging);
+            wrapper.addEventListener("dragover", e => e.preventDefault());
+            wrapper.addEventListener("drop", e => {
+                e.preventDefault();
+                const dragging = document.querySelector("[data-dragging]");
+                if (dragging && dragging !== wrapper) {
+                    wrapper.parentNode.insertBefore(dragging.closest('.titlecard-wrapper'), wrapper);
+                    rebuildGrids();
+                }
+            });
+
+            document.getElementById('titlecard-grid').appendChild(wrapper);
+        }
+
+
+        document.getElementById("creator-icon-upload").addEventListener("change", (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (evt) => {
+                    const icon = document.getElementById("creator-icon");
+                    icon.src = evt.target.result;
+                    icon.style.display = "inline-block";
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        document.getElementById("creator-name").addEventListener("input", e => {
+            document.getElementById("credit-text").textContent = e.target.value;
+        });
+
+        document.getElementById("show-posters-header").addEventListener("change", e => {
+            document.getElementById("posters-header").style.display = e.target.checked ? "block" : "none";
+        });
+
+        document.getElementById("show-titlecards-header").addEventListener("change", e => {
+            document.getElementById("titlecards-header").style.display = e.target.checked ? "block" : "none";
+        });
+
+        document.getElementById("logo-upload").addEventListener("change", e => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = evt => {
+                const img = document.getElementById("logo-preview");
+                img.src = evt.target.result;
+                img.style.display = "block";
+            };
+            reader.readAsDataURL(file);
+        });
+
+        document.getElementById("use-backdrop-toggle").addEventListener("change", e => {
+            toggleBackgroundType(e.target.checked);
+        });
+
+        document.getElementById("file-input").addEventListener("change", async (e) => {
+            await handleFiles(e.target.files, "poster");
+        });
+
+        document.getElementById("titlecard-input").addEventListener("change", async (e) => {
+            await handleFiles(e.target.files, "titlecard");
+        });
+
+        function updateGradientBackground() {
+            const exportWrapper = document.getElementById("export-wrapper");
+            const bgStart = document.getElementById("bg-start").value;
+            const bgEnd = document.getElementById("bg-end").value;
+
+            console.log("Updating gradient with colors:", bgStart, bgEnd);
+
+            exportWrapper.style.setProperty("--bg-start", bgStart);
+            exportWrapper.style.setProperty("--bg-end", bgEnd);
+
+            if (!document.getElementById("use-backdrop-toggle").checked || !window._currentBackdropURL) {
+                exportWrapper.style.removeProperty('background');
+                exportWrapper.style.removeProperty('backgroundImage');
+                exportWrapper.style.backgroundColor = 'transparent';
+
+                void exportWrapper.offsetWidth;
+
+                const gradientStyle = `linear-gradient(135deg, ${bgStart}, ${bgEnd})`;
+                exportWrapper.style.background = gradientStyle;
+                exportWrapper.style.backgroundImage = gradientStyle;
+
+                const bgContainer = document.getElementById("export-bg-container");
+                if (bgContainer) {
+                    bgContainer.style.background = gradientStyle;
+                }
+            }
+        }
+
+        function toggleBackgroundType(useBackdrop) {
+            const exportWrapper = document.getElementById("export-wrapper");
+            const bgImage = document.getElementById("export-background-image");
+
+            console.log("Toggle background:", useBackdrop ? "Using backdrop" : "Using gradient");
+            console.log("Has backdrop URL:", !!window._currentBackdropURL);
+
+            if (bgImage) {
+                bgImage.style.display = useBackdrop ? "block" : "none";
+            }
+
+            exportWrapper.style.removeProperty('background');
+            exportWrapper.style.backgroundColor = 'transparent';
+            exportWrapper.style.backgroundImage = 'none';
+
+            void exportWrapper.offsetWidth;
+
+            if (useBackdrop && window._currentBackdropURL) {
+                console.log("Applying backdrop URL:", window._currentBackdropURL.substring(0, 50) + "...");
+                exportWrapper.style.backgroundImage = `url(${window._currentBackdropURL})`;
+                exportWrapper.style.backgroundSize = "cover";
+                exportWrapper.style.backgroundPosition = "center";
+            } else {
+                updateGradientBackground();
+            }
+        }
+
+        const posterGrid = document.getElementById("poster-grid");
+        const titlecardGrid = document.getElementById("titlecard-grid");
+        const columnsSelect = document.getElementById("columns-select");
+        const titlecardColumnsSelect = document.getElementById("titlecard-columns-select");
+        const bgImage = document.getElementById("export-background-image");
+        let originalBgDataURL = null;
+        let blurredBackdropDataURL = null;
+        let backdropCanvas = document.createElement('canvas');
+        let backdropCtx = backdropCanvas.getContext('2d');
+
+        function groupIntoRows(items, perRow) {
+            const rows = [];
+            for (let i = 0; i < items.length; i += perRow) {
+                const row = document.createElement("div");
+                row.className = "row";
+                row.append(...items.slice(i, i + perRow));
+                rows.push(row);
+            }
+            return rows;
+        }
+
+        function renderGrid(container, items, perRow) {
+            container.innerHTML = "";
+            groupIntoRows(items, perRow).forEach(row => container.appendChild(row));
+        }
+
+        function collectItems(gridClass) {
+            return [...document.querySelectorAll(`.${gridClass}`)].map(el => el.closest(`.${gridClass}-wrapper`));
+        }
+
+        function groupItemsWithHeaders(container, perRow) {
+            const elements = Array.from(container.querySelectorAll('.season-header, .titlecard-wrapper'));
+            container.innerHTML = '';
+
+            let currentRow = null,
+                count = 0;
+
+            elements.forEach((el, index) => {
+                if (el.classList.contains('season-header')) {
+                    if (currentRow && currentRow.children.length > 0) {
+                        container.appendChild(currentRow);
+                        currentRow = null;
+                        count = 0;
+                    }
+
+                    if (index !== 0) {
+                        const divider = document.createElement('hr');
+                        divider.style.cssText = 'width: 100%; border-color: rgba(255,255,255,0.2); margin: 10px 0;';
+                        container.appendChild(divider);
+                    }
+
+                    container.appendChild(el);
+                } else {
+                    if (!currentRow || count >= perRow) {
+                        if (currentRow) container.appendChild(currentRow);
+                        currentRow = document.createElement('div');
+                        currentRow.className = 'row';
+                        count = 0;
+                    }
+                    currentRow.appendChild(el);
+                    count++;
+                }
+            });
+
+            if (currentRow && currentRow.children.length > 0) {
+                container.appendChild(currentRow);
+            }
+        }
+
+        function rebuildGrids() {
+            const posterItems = collectItems("poster");
+            renderGrid(posterGrid, posterItems, parseInt(columnsSelect.value));
+
+            groupItemsWithHeaders(titlecardGrid, parseInt(titlecardColumnsSelect.value));
+        }
+
+        function createImageElement(src, className) {
+            const wrapper = document.createElement("div");
+            wrapper.className = `${className}-wrapper`;
+            const img = document.createElement("img");
+            img.src = src;
+            img.className = className;
+            img.draggable = true;
+
+            const btn = document.createElement("button");
+            btn.className = "delete-btn";
+            btn.textContent = "×";
+            btn.onclick = () => {
+                wrapper.remove();
+                rebuildGrids();
+            };
+
+            wrapper.appendChild(img);
+            wrapper.appendChild(btn);
+            img.addEventListener("dragstart", () => wrapper.dataset.dragging = true);
+            img.addEventListener("dragend", () => delete wrapper.dataset.dragging);
+            wrapper.addEventListener("dragover", e => e.preventDefault());
+            wrapper.addEventListener("drop", e => {
+                e.preventDefault();
+                const dragging = document.querySelector("[data-dragging]");
+                if (dragging && dragging !== wrapper) {
+                    wrapper.parentNode.insertBefore(dragging.closest(`.${className}-wrapper`), wrapper);
+                    rebuildGrids();
+                }
+            });
+
+            return wrapper;
+        }
+
+        async function handleFiles(files, className) {
+            const fileArray = [...files];
+
+            if (className === "poster") {
+                fileArray.sort((a, b) => {
+                    const normalize = name => name.toLowerCase().replace(/\.[^/.]+$/, "").trim();
+                    const getSortKey = (filename) => {
+                        const name = normalize(filename.name);
+                        const seasonMatch = name.match(/ - season (\d{1,3})$/i);
+                        const baseName = name.replace(/ - season \d{1,3}$/i, "");
+                        const seasonNumber = seasonMatch ? parseInt(seasonMatch[1], 10) : -1;
+                        return {
+                            baseName,
+                            seasonNumber
+                        };
+                    };
+                    const aKey = getSortKey(a);
+                    const bKey = getSortKey(b);
+                    if (aKey.baseName !== bKey.baseName) {
+                        return aKey.baseName.localeCompare(bKey.baseName);
+                    }
+                    return aKey.seasonNumber - bKey.seasonNumber;
+                });
+
+                const container = document.querySelector(`#${className}-grid`);
+                const existingPosters = Array.from(container.querySelectorAll('.poster-wrapper')).map(wrapper =>
+                    wrapper.querySelector('img').src
+                );
+
+                const newPosterSrcs = await Promise.all(fileArray.map(async file => {
+                    return await new Promise(resolve => {
+                        const reader = new FileReader();
+                        reader.onload = e => resolve(e.target.result);
+                        reader.readAsDataURL(file);
+                    });
+                }));
+
+                const allPosterSrcs = [...existingPosters, ...newPosterSrcs];
+
+                container.innerHTML = "";
+
+                const wrappers = allPosterSrcs.map(src => {
+                    const wrapper = document.createElement("div");
+                    wrapper.className = `${className}-wrapper`;
+
+                    const img = document.createElement("img");
+                    img.src = src;
+                    img.className = className;
+                    img.draggable = true;
+
+                    const btn = document.createElement("button");
+                    btn.className = "delete-btn";
+                    btn.textContent = "×";
+                    btn.onclick = () => {
+                        wrapper.remove();
+                        rebuildGrids();
+                    };
+
+                    wrapper.appendChild(img);
+                    wrapper.appendChild(btn);
+
+                    img.addEventListener("dragstart", () => wrapper.dataset.dragging = true);
+                    img.addEventListener("dragend", () => delete wrapper.dataset.dragging);
+                    wrapper.addEventListener("dragover", e => e.preventDefault());
+                    wrapper.addEventListener("drop", e => {
+                        e.preventDefault();
+                        const dragging = document.querySelector("[data-dragging]");
+                        if (dragging && dragging !== wrapper) {
+                            wrapper.parentNode.insertBefore(dragging.closest(`.${className}-wrapper`), wrapper);
+                            rebuildGrids();
+                        }
+                    });
+
+                    return wrapper;
+                });
+
+                wrappers.forEach(wrapper => container.appendChild(wrapper));
+                rebuildGrids();
+            } else if (className === "titlecard") {
+                const parseInfo = name => {
+                    const cleaned = name.toLowerCase().replace(/\.[^/.]+$/, "").trim();
+                    const match = cleaned.match(/s(\d{1,2})[\s\.]?e(\d{1,2})/i);
+                    const season = match ? parseInt(match[1], 10) : 0;
+                    const episode = match ? parseInt(match[2], 10) : 0;
+                    return {
+                        name,
+                        season,
+                        episode
+                    };
+                };
+
+                const container = document.querySelector(`#${className}-grid`);
+
+                const existingWrappers = Array.from(container.querySelectorAll('.titlecard-wrapper'));
+                const existingCards = existingWrappers.map(wrapper => ({
+                    src: wrapper.querySelector('img').src,
+                    season: parseInt(wrapper.dataset.season || "0"),
+                    episode: parseInt(wrapper.dataset.episode || "0"),
+                }));
+
+                const newCards = await Promise.all(fileArray.map(async file => {
+                    const src = await new Promise(resolve => {
+                        const reader = new FileReader();
+                        reader.onload = e => resolve(e.target.result);
+                        reader.readAsDataURL(file);
+                    });
+                    const {
+                        season,
+                        episode
+                    } = parseInfo(file.name);
+                    return {
+                        src,
+                        season,
+                        episode
+                    };
+                }));
+
+                const allCards = [...existingCards, ...newCards].sort((a, b) =>
+                    a.season - b.season || a.episode - b.episode
+                );
+
+                container.innerHTML = '';
+
+                let currentSeason = null;
+
+                allCards.forEach(card => {
+                    if (card.season !== currentSeason) {
+                        currentSeason = card.season;
+                        const heading = document.createElement("div");
+                        heading.className = "season-header";
+                        heading.textContent = `Season ${String(card.season).padStart(2, '0')}`;
+                        container.appendChild(heading);
+                    }
+
+                    const wrapper = document.createElement("div");
+                    wrapper.className = "titlecard-wrapper";
+                    wrapper.dataset.season = card.season;
+                    wrapper.dataset.episode = card.episode;
+
+                    const img = document.createElement("img");
+                    img.src = card.src;
+                    img.className = "titlecard";
+                    img.draggable = true;
+
+                    const btn = document.createElement("button");
+                    btn.className = "delete-btn";
+                    btn.textContent = "×";
+                    btn.onclick = () => {
+                        wrapper.remove();
+                        rebuildGrids();
+                    };
+
+                    wrapper.appendChild(img);
+                    wrapper.appendChild(btn);
+
+                    img.addEventListener("dragstart", () => wrapper.dataset.dragging = true);
+                    img.addEventListener("dragend", () => delete wrapper.dataset.dragging);
+                    wrapper.addEventListener("dragover", e => e.preventDefault());
+                    wrapper.addEventListener("drop", e => {
+                        e.preventDefault();
+                        const dragging = document.querySelector("[data-dragging]");
+                        if (dragging && dragging !== wrapper) {
+                            wrapper.parentNode.insertBefore(dragging.closest('.titlecard-wrapper'), wrapper);
+                            rebuildGrids();
+                        }
+                    });
+
+                    container.appendChild(wrapper);
+                });
+
+                groupItemsWithHeaders(container, parseInt(titlecardColumnsSelect.value));
+            }
+        }
+
+        document.getElementById("backdrop-upload").addEventListener("change", async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async (evt) => {
+                const dataURL = evt.target.result;
+
+                try {
+                    const originalImg = new Image();
+                    originalImg.src = dataURL;
+
+                    await new Promise(resolve => {
+                        originalImg.onload = resolve;
+                    });
+
+                    window._originalBackdropImage = originalImg;
+
+                    const blurAmount = parseInt(document.getElementById("blur-amount").value);
+
+                    document.getElementById("use-backdrop-toggle").checked = true;
+
+                    applySmartBlur(originalImg, blurAmount);
+
+                    toggleBackgroundType(true);
+
+                } catch (error) {
+                    console.error("Error in backdrop processing:", error);
+                    alert("There was an error processing your image. Please try another one.");
+                }
+            };
+
+            reader.readAsDataURL(file);
+            e.target.value = "";
+        });
+
+        document.getElementById("blur-amount").addEventListener("input", async (e) => {
+            if (!window._originalBackdropImage) return;
+
+            const blurAmount = parseInt(e.target.value);
+            applySmartBlur(window._originalBackdropImage, blurAmount);
+        });
+
+        document.getElementById("logo-scale").addEventListener("input", e => {
+            document.getElementById("logo-preview").style.transform = `scale(${e.target.value})`;
+        });
+
+        document.getElementById("columns-select").addEventListener("change", rebuildGrids);
+        document.getElementById("titlecard-columns-select").addEventListener("change", rebuildGrids);
+
+        document.getElementById("set-id").addEventListener("input", e => {
+            document.getElementById("set-id-line").textContent = e.target.value || "";
+        });
+
+        document.getElementById("bg-start").addEventListener("input", updateGradientBackground);
+        document.getElementById("bg-end").addEventListener("input", updateGradientBackground);
+
+        function applySmartBlur(originalImg, blurAmount) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+
+            const scaleFactor = Math.max(0.1, 1 - (blurAmount * 0.03));
+            canvas.width = Math.floor(originalImg.width * scaleFactor);
+            canvas.height = Math.floor(originalImg.height * scaleFactor);
+
+            ctx.drawImage(originalImg, 0, 0, canvas.width, canvas.height);
+
+            if (blurAmount > 5) {
+                const blurPx = Math.min(20, blurAmount - 5);
+                ctx.filter = `blur(${blurPx}px)`;
+                ctx.drawImage(canvas, 0, 0, canvas.width, canvas.height);
+                ctx.filter = 'none';
+            }
+
+            const padding = 50;
+            const finalCanvas = document.createElement('canvas');
+            const finalCtx = finalCanvas.getContext('2d');
+
+            const maxDimension = Math.max(originalImg.width, originalImg.height);
+            const targetSize = Math.min(1920, maxDimension);
+            let finalWidth, finalHeight;
+            if (originalImg.width > originalImg.height) {
+                finalWidth = targetSize + padding * 2;
+                finalHeight = ((originalImg.height / originalImg.width) * targetSize) + padding * 2;
+            } else {
+                finalHeight = targetSize + padding * 2;
+                finalWidth = ((originalImg.width / originalImg.height) * targetSize) + padding * 2;
+            }
+
+            finalCanvas.width = finalWidth;
+            finalCanvas.height = finalHeight;
+
+            finalCtx.imageSmoothingEnabled = true;
+            finalCtx.imageSmoothingQuality = "high";
+
+            finalCtx.drawImage(canvas, -padding, -padding, finalWidth + padding * 2, finalHeight + padding * 2);
+
+            finalCtx.fillStyle = "rgba(0, 0, 0, 0.2)";
+            finalCtx.fillRect(0, 0, finalWidth, finalHeight);
+
+            const blurredDataURL = finalCanvas.toDataURL('image/jpeg', 0.92);
+            blurredBackdropDataURL = blurredDataURL;
+            window._currentBackdropURL = blurredDataURL;
+
+            const bgImage = document.getElementById("export-background-image");
+            if (bgImage) {
+                bgImage.src = blurredDataURL;
+                bgImage.style.display = "block";
+            }
+
+            const useBackdrop = document.getElementById("use-backdrop-toggle").checked;
+            if (useBackdrop) {
+                const exportWrapper = document.getElementById("export-wrapper");
+                exportWrapper.style.removeProperty('background');
+                exportWrapper.style.backgroundColor = 'transparent';
+                exportWrapper.style.backgroundImage = 'none';
+
+                void exportWrapper.offsetWidth;
+
+                exportWrapper.style.backgroundImage = `url('${blurredDataURL}')`;
+                exportWrapper.style.backgroundSize = "cover";
+                exportWrapper.style.backgroundPosition = "center";
+                exportWrapper.style.backgroundRepeat = "no-repeat";
+                exportWrapper.style.borderRadius = "12px";
+                exportWrapper.style.overflow = "hidden";
+            }
+        }
+
+        document.getElementById("resetBtn").addEventListener("click", () => {
+            const overlay = document.getElementById('custom-confirm-overlay');
+            const confirmYes = document.getElementById('confirmYes');
+            const confirmNo = document.getElementById('confirmNo');
+
+            overlay.style.display = 'flex';
+
+            confirmYes.onclick = () => location.reload();
+            confirmNo.onclick = () => overlay.style.display = 'none';
+        });
+
+        document.getElementById("downloadBtn").addEventListener("click", async () => {
+            const wrapper = document.getElementById("export-wrapper");
+            const borderRadius = 24;
+            const useBackdrop = document.getElementById("use-backdrop-toggle").checked;
+            const hasBlurredBackdrop = window._currentBackdropURL && useBackdrop ? true : false;
+            const originalBg = originalBgDataURL;
+            const clone = wrapper.cloneNode(true);
+            clone.querySelectorAll(".delete-btn").forEach(btn => btn.remove());
+
+            clone.style.borderRadius = `${borderRadius}px`;
+            clone.style.overflow = "hidden";
+
+            clone.style.background = "none";
+            clone.style.backgroundColor = "transparent";
+            clone.style.backgroundImage = "none";
+
+            const cloneExportWrapper = clone.querySelector("#export-wrapper");
+            if (cloneExportWrapper) {
+                cloneExportWrapper.style.borderRadius = `${borderRadius}px`;
+                cloneExportWrapper.style.overflow = "hidden";
+                cloneExportWrapper.style.background = "none";
+                cloneExportWrapper.style.backgroundColor = "transparent";
+                cloneExportWrapper.style.backgroundImage = "none";
+            }
+
+            const bgContainerClone = clone.querySelector("#export-bg-container");
+            if (bgContainerClone) bgContainerClone.remove();
+
+            const backdropContainerClone = clone.querySelector("#backdrop-container");
+            if (backdropContainerClone) backdropContainerClone.remove();
+
+            const showPostersHeader = document.getElementById("show-posters-header").checked;
+            const showTitlecardsHeader = document.getElementById("show-titlecards-header").checked;
+
+            const postersHeaderClone = clone.querySelector("#posters-header");
+            const titlecardsHeaderClone = clone.querySelector("#titlecards-header");
+
+            if (postersHeaderClone) {
+                postersHeaderClone.style.display = showPostersHeader ? "block" : "none";
+            }
+
+            if (titlecardsHeaderClone) {
+                titlecardsHeaderClone.style.display = showTitlecardsHeader ? "block" : "none";
+            }
+
+            const titlecardGridClone = clone.querySelector("#titlecard-grid");
+            if (!titlecardGridClone || titlecardGridClone.children.length === 0) {
+                if (titlecardsHeaderClone) titlecardsHeaderClone.remove();
+                const wrapper = clone.querySelector("#titlecard-grid-wrapper");
+                if (wrapper) wrapper.remove();
+            }
+
+            clone.style.position = "absolute";
+            clone.style.left = "-9999px";
+            document.body.appendChild(clone);
+
+            await new Promise(requestAnimationFrame);
+            const contentCanvas = await html2canvas(clone, {
+                scale: 2,
+                backgroundColor: null,
+                logging: false,
+                onclone: (document) => {
+                    const exportWrapper = document.getElementById("export-wrapper");
+                    if (exportWrapper) {
+                        exportWrapper.style.background = "none";
+                        exportWrapper.style.backgroundColor = "transparent";
+                        exportWrapper.style.backgroundImage = "none";
+                    }
+                }
+            });
+
+            document.body.removeChild(clone);
+
+            const finalCanvas = document.createElement("canvas");
+            finalCanvas.width = contentCanvas.width;
+            finalCanvas.height = contentCanvas.height;
+            const ctx = finalCanvas.getContext("2d");
+
+            const scaledRadius = borderRadius * 2;
+            ctx.beginPath();
+            ctx.moveTo(scaledRadius, 0);
+            ctx.lineTo(finalCanvas.width - scaledRadius, 0);
+            ctx.quadraticCurveTo(finalCanvas.width, 0, finalCanvas.width, scaledRadius);
+            ctx.lineTo(finalCanvas.width, finalCanvas.height - scaledRadius);
+            ctx.quadraticCurveTo(finalCanvas.width, finalCanvas.height, finalCanvas.width - scaledRadius, finalCanvas.height);
+            ctx.lineTo(scaledRadius, finalCanvas.height);
+            ctx.quadraticCurveTo(0, finalCanvas.height, 0, finalCanvas.height - scaledRadius);
+            ctx.lineTo(0, scaledRadius);
+            ctx.quadraticCurveTo(0, 0, scaledRadius, 0);
+            ctx.closePath();
+            ctx.clip();
+
+            if (hasBlurredBackdrop) {
+                const bgImg = new Image();
+                await new Promise((resolve, reject) => {
+                    bgImg.onload = resolve;
+                    bgImg.onerror = reject;
+                    bgImg.src = window._currentBackdropURL;
+                });
+
+                ctx.drawImage(bgImg, 0, 0, finalCanvas.width, finalCanvas.height);
+
+                ctx.fillStyle = "rgba(0, 0, 0, 0.15)";
+                ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
+            } else if (originalBg) {
+                const bgImg = new Image();
+                await new Promise((resolve, reject) => {
+                    bgImg.onload = resolve;
+                    bgImg.onerror = reject;
+                    bgImg.src = originalBg;
+                });
+
+                ctx.drawImage(bgImg, 0, 0, finalCanvas.width, finalCanvas.height);
+            } else {
+                const gradient = ctx.createLinearGradient(0, 0, finalCanvas.width, finalCanvas.height);
+                gradient.addColorStop(0, getComputedStyle(wrapper).getPropertyValue('--bg-start') || '#2c3e50');
+                gradient.addColorStop(1, getComputedStyle(wrapper).getPropertyValue('--bg-end') || '#6a11cb');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
+            }
+
+            ctx.drawImage(contentCanvas, 0, 0);
+
+            const link = document.createElement("a");
+            link.download = "poster-wall.png";
+            link.href = finalCanvas.toDataURL("image/png");
+            link.click();
+        });
+        document.addEventListener('DOMContentLoaded', () => {
+            const toggleApi = document.getElementById("toggle-api");
+            const apiSection = document.getElementById("api-section");
+            if (toggleApi && apiSection) {
+                toggleApi.addEventListener("change", () => {
+                    apiSection.style.display = toggleApi.checked ? "block" : "none";
+                });
+                apiSection.style.display = toggleApi.checked ? "block" : "none";
+            }
+        });
+        document.getElementById("saveConfigBtn").addEventListener("click", () => {
+            const config = {
+                creatorName: document.getElementById("creator-name").value,
+                setId: document.getElementById("set-id").value,
+                logoScale: document.getElementById("logo-scale").value,
+                showPostersHeader: document.getElementById("show-posters-header").checked,
+                showTitlecardsHeader: document.getElementById("show-titlecards-header").checked,
+                useBackdrop: document.getElementById("use-backdrop-toggle").checked,
+                bgStart: document.getElementById("bg-start").value,
+                bgEnd: document.getElementById("bg-end").value,
+                columns: document.getElementById("columns-select").value,
+                titlecardColumns: document.getElementById("titlecard-columns-select").value
+            };
+
+            const logoPreview = document.getElementById("logo-preview");
+            if (logoPreview && logoPreview.src) {
+                config.logoData = logoPreview.src;
+            }
+
+            const creatorIcon = document.getElementById("creator-icon");
+            if (creatorIcon && creatorIcon.src) {
+                config.creatorIconData = creatorIcon.src;
+            }
+
+            localStorage.setItem("posterToolsConfig", JSON.stringify(config));
+            alert("Config saved!");
+        });
+
+        document.getElementById("loadConfigBtn").addEventListener("click", () => {
+            const config = JSON.parse(localStorage.getItem("posterToolsConfig") || "{}");
+
+            // Only update creator name if the input is currently empty (not overridden by API)
+            const creatorNameInput = document.getElementById("creator-name");
+            const creditText = document.getElementById("credit-text");
+            if (config.creatorName && !creatorNameInput.value) {
+                creatorNameInput.value = config.creatorName;
+                creditText.textContent = config.creatorName;
+            }
+
+            // Only update creator icon if it exists in config
+            const creatorIcon = document.getElementById("creator-icon");
+            if (config.creatorIconData) {
+                creatorIcon.src = config.creatorIconData;
+                creatorIcon.style.display = "inline-block";
+            } else {
+                creatorIcon.style.display = "none";
+            }
+
+            // Show/hide Posters header
+            const showPostersHeader = typeof config.showPostersHeader === "boolean" ? config.showPostersHeader : true;
+            document.getElementById("show-posters-header").checked = showPostersHeader;
+            document.getElementById("posters-header").style.display = showPostersHeader ? "block" : "none";
+
+            // Show/hide Titlecards header
+            const showTitlecardsHeader = typeof config.showTitlecardsHeader === "boolean" ? config.showTitlecardsHeader : true;
+            document.getElementById("show-titlecards-header").checked = showTitlecardsHeader;
+            document.getElementById("titlecards-header").style.display = showTitlecardsHeader ? "block" : "none";
+
+            // Rebuild layout if needed
+            rebuildGrids();
+
+            alert("Config loaded!");
+        });
+    </script>
 </body>
+
 </html>
