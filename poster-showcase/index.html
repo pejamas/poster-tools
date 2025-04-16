@@ -2383,8 +2383,11 @@
 			const createdByDiv = document.getElementById("created-by");
             if (config.creatorIconData) {
                 creatorIcon.src = config.creatorIconData;
+				creatorIcon.alt = "Creator Icon";
                 creatorIcon.style.display = "inline-block";
             } else {
+			    creatorIcon.src = "";
+				creatorIcon.alt = "";
                 creatorIcon.style.display = "none";
 				creditText.textContent = config.creatorName || creditText.textContent;
             }
