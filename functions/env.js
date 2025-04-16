@@ -1,8 +1,7 @@
 export async function onRequest(context) {
-  const apiUrl = context.env.API_URL;
-  return new Response(`window.POSTER_API_URL = "${apiUrl}";`, {
+  return new Response(`window.POSTER_API_URL = "${context.env.API_URL}";`, {
     headers: {
-      'Content-Type': 'application/javascript'
-    }
+      "Content-Type": "application/javascript",
+    },
   });
 }
