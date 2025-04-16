@@ -1591,7 +1591,7 @@
                 const fileUrl = `${apiState.url}/assets/${fileId}`;
 
                 // Use the correct proxy URL format
-                const corsProxyUrl = 'http://localhost:8081/';
+                const corsProxyUrl = 'https://poster-proxy.pejamas.workers.dev/?url=';
                 const fullUrl = corsProxyUrl + fileUrl; // Don't append /graphql here
 
                 console.log(`Fetching ${fileType} (ID: ${fileId}) from: ${fullUrl}`);
