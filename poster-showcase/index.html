@@ -1512,9 +1512,8 @@
 `;
 
                 console.log('Connecting to API at:', apiUrl);
-
-                const endpoint = `${apiUrl}/graphql`;
-                const proxied = `http://localhost:8081/${apiUrl}/graphql`;
+                
+                const proxied = `https://poster-proxy.pejamas.workers.dev/?url=${encodeURIComponent(`${apiUrl}/graphql`)}`;
 
                 console.log('Using endpoint:', proxied);
 
