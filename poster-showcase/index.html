@@ -1511,11 +1511,11 @@
   }
 `;
 
-                console.log('Connecting to API at:', apiUrl);
+                console.log('Connecting to API...');
                 
                 const proxied = `https://poster-proxy.pejamas.workers.dev/?url=${encodeURIComponent(`${apiUrl}/graphql`)}`;
 
-                console.log('Using endpoint:', proxied);
+                console.log('Using endpoint:', proxied.replace(apiUrl, "[HIDDEN_API]"));
 
                 const response = await fetch(proxied, {
                     method: 'POST',
