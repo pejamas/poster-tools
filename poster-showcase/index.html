@@ -1377,8 +1377,8 @@
             }
 
             const fileUrl = `${apiState.url}/assets/${fileId}`;
-            const corsProxyUrl = 'http://localhost:8081/';
-            const fullUrl = corsProxyUrl + fileUrl;
+            const corsProxyUrl = 'https://poster-proxy.pejamas.workers.dev/?url=';
+            const fullUrl = corsProxyUrl + encodeURIComponent(fileUrl);
 
             const response = await fetch(fullUrl, {
                 headers: {
