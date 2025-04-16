@@ -2385,7 +2385,8 @@
                 creatorIcon.src = config.creatorIconData;
                 creatorIcon.style.display = "inline-block";
             } else {
-                createdByDiv.innerHTML = `<span>Created by <span id="credit-text">${config.creatorName || creditText.textContent}</span></span>`;
+                creatorIcon.style.display = "none";
+				creditText.textContent = config.creatorName || creditText.textContent;
             }
 
             // Show/hide Posters header
