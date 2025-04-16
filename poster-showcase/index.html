@@ -10,6 +10,7 @@
         @import url('https://fonts.googleapis.com/css2?family=Gabarito:wght@400;600;700&display=swap');
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+	<script src="/env.js"></script>
     <style>
         body {
             margin: 0;
@@ -954,7 +955,7 @@
 
             <div class="api-section" id="api-section">
                 <div class="api-fields">
-                    <!-- API URL is fixed to https://staged.mediux.io -->
+                    
 
                     <label for="api-key" style="display:none;">API Key</label>
                     <input type="password" id="api-key" placeholder="Your API Key" />
@@ -1408,7 +1409,7 @@
             }
 
             // Set API URL (fixed for now)
-            apiState.url = "https://staged.mediux.io";
+            apiState.url = window.POSTER_API_URL || "";
 
             // Load saved API key from localStorage
             const savedApiKey = localStorage.getItem('mediux_api_key');
@@ -1428,7 +1429,7 @@
         });
 
         async function connectAndFetchSets() {
-            const apiUrl = "https://staged.mediux.io";
+            const apiUrl = window.POSTER_API_URL || "";
             const apiKey = document.getElementById('api-key').value.trim();
             const showId = document.getElementById('show-id').value.trim();
 
