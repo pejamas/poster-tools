@@ -2380,6 +2380,7 @@
 
             // Only update creator icon if it exists in config
             const creatorIcon = document.getElementById("creator-icon");
+			const createdByDiv = document.getElementById("created-by");
             if (config.creatorIconData) {
                 creatorIcon.src = config.creatorIconData;
                 creatorIcon.style.display = "inline-block";
