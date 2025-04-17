@@ -354,21 +354,29 @@
         }
 
         #creator-icon {
-    height: 35px;
-    width: auto;
-    object-fit: contain;
-    border-radius: 12px;
-    display: none;
-}
-.creator-icon-container {
-    width: 35px;
-    height: 35px;
-    flex-shrink: 0;
-}
-.creator-text {
-    display: flex;
-    align-items: center;
-}
+            height: 35px;
+            width: auto;
+            object-fit: contain;
+            border-radius: 12px;
+            display: none;
+        }
+
+        .creator-icon-container {
+            width: 35px;
+            height: 35px;
+            flex-shrink: 0;
+        }
+
+        .creator-text {
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
+        }
+
+        #credit-text {
+            margin-left: 0;
+        }
+
         .powered-by img {
             height: 17px;
             width: auto;
@@ -1097,21 +1105,19 @@
 
                 <div class="set-id-line" id="set-id-line"></div>
                 <div class="credit-line">
-    <div class="created-by">
-        <!-- Icon container that's completely separate -->
-        <div class="creator-icon-container">
-            <img id="creator-icon" src="" alt="" />
-        </div>
-        <!-- Text container that's completely separate -->
-        <div class="creator-text">
-            Created by <span id="credit-text"></span>
-        </div>
-    </div>
-    <div class="powered-by">
-        <span>mediux.pro</span>
-        <img src="../assets/mediux.svg" alt="Mediux Icon" />
-    </div>
-</div>
+                    <div class="created-by">
+                        <div class="creator-icon-container">
+                            <img id="creator-icon" src="" alt="" />
+                        </div>
+                        <div class="creator-text">
+                            Created by&nbsp;<span id="credit-text"></span>
+                        </div>
+                    </div>
+                    <div class="powered-by">
+                        <span>mediux.pro</span>
+                        <img src="../assets/mediux.svg" alt="Mediux Icon" />
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -1380,37 +1386,37 @@
 
         // Helper function to fetch an asset and convert to data URL
         async function fetchAssetAsDataUrl(fileId) {
-  if (!apiState.connected) {
-    throw new Error('API not connected');
-  }
+            if (!apiState.connected) {
+                throw new Error('API not connected');
+            }
 
-  try {
-    // Call your worker with the asset ID
-    const workerUrl = 'https://api-frontend.pejamas.workers.dev'; // No trailing slash
-    
-    const response = await fetch(workerUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        endpoint: `/assets/${fileId}`,
-        body: {} // Empty body for asset requests
-      })
-    });
+            try {
+                // Call your worker with the asset ID
+                const workerUrl = 'https://api-frontend.pejamas.workers.dev'; // No trailing slash
 
-    if (!response.ok) {
-      throw new Error(`Failed to fetch file: ${response.statusText} (${response.status})`);
-    }
+                const response = await fetch(workerUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        endpoint: `/assets/${fileId}`,
+                        body: {} // Empty body for asset requests
+                    })
+                });
 
-    // Convert response to blob and then to data URL
-    const blob = await response.blob();
-    return await blobToDataURL(blob);
-  } catch (error) {
-    console.error(`Error loading file ${fileId}:`, error);
-    throw error;
-  }
-}
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch file: ${response.statusText} (${response.status})`);
+                }
+
+                // Convert response to blob and then to data URL
+                const blob = await response.blob();
+                return await blobToDataURL(blob);
+            } catch (error) {
+                console.error(`Error loading file ${fileId}:`, error);
+                throw error;
+            }
+        }
 
         document.addEventListener('DOMContentLoaded', function() {
             console.log('DOM fully loaded - attaching API button handler');
@@ -1432,33 +1438,33 @@
         });
 
         async function connectAndFetchSets() {
-    // Reference DOM elements safely
-    const showIdInput = document.getElementById('show-id');
-    const apiLoadingEl = document.getElementById('api-loading');
-    const apiStatusEl = document.getElementById('api-status');
-    
-    if (!showIdInput) {
-        console.error('show-id input element not found');
-        return;
-    }
-    
-    const showId = showIdInput.value.trim();
-    
-    if (apiLoadingEl) {
-        apiLoadingEl.style.display = 'block';
-    }
-    
-    updateApiStatus('Connecting...', false);
+            // Reference DOM elements safely
+            const showIdInput = document.getElementById('show-id');
+            const apiLoadingEl = document.getElementById('api-loading');
+            const apiStatusEl = document.getElementById('api-status');
 
-    if (!showId) {
-        updateApiStatus('Please enter a Show ID', false);
-        if (apiLoadingEl) apiLoadingEl.style.display = 'none';
-        return;
-    }
+            if (!showIdInput) {
+                console.error('show-id input element not found');
+                return;
+            }
 
-    try {
-        // The GraphQL query remains the same
-        const query = `
+            const showId = showIdInput.value.trim();
+
+            if (apiLoadingEl) {
+                apiLoadingEl.style.display = 'block';
+            }
+
+            updateApiStatus('Connecting...', false);
+
+            if (!showId) {
+                updateApiStatus('Please enter a Show ID', false);
+                if (apiLoadingEl) apiLoadingEl.style.display = 'none';
+                return;
+            }
+
+            try {
+                // The GraphQL query remains the same
+                const query = `
   query {
     shows_by_id(id: "${showId}") {
       id
@@ -1525,60 +1531,62 @@
   }
 `;
 
-        console.log('Connecting to API via worker...');
-        
-        // Call your worker with the GraphQL query
-        const workerUrl = 'https://api-frontend.pejamas.workers.dev';
-        
-        const response = await fetch(workerUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                endpoint: '/graphql',
-                body: { query }
-            })
-        });
+                console.log('Connecting to API via worker...');
 
-        console.log('Response status:', response.status);
+                // Call your worker with the GraphQL query
+                const workerUrl = 'https://api-frontend.pejamas.workers.dev';
 
-        if (!response.ok) {
-            throw new Error(`API error: ${response.status} ${response.statusText}`);
+                const response = await fetch(workerUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        endpoint: '/graphql',
+                        body: {
+                            query
+                        }
+                    })
+                });
+
+                console.log('Response status:', response.status);
+
+                if (!response.ok) {
+                    throw new Error(`API error: ${response.status} ${response.statusText}`);
+                }
+
+                // Process the response
+                const data = await response.json();
+
+                if (!data?.data?.shows_by_id) {
+                    throw new Error('Invalid API response or show not found');
+                }
+
+                const showData = data.data.shows_by_id;
+
+                // Store data in apiState
+                apiState.connected = true;
+                apiState.url = atob("aHR0cHM6Ly9zdGFnZWQubWVkaXV4Lmlv");
+                apiState.showId = showId;
+                apiState.showSets = showData.show_sets;
+
+                // Update UI
+                updateApiStatus(`Connected: ${showData.title} (${showData.show_sets.length} sets)`, true);
+
+                const setSelectorEl = document.getElementById('set-selector');
+                if (setSelectorEl) {
+                    populateSetSelector(showData.show_sets);
+                    setSelectorEl.style.display = 'block';
+                }
+            } catch (err) {
+                console.error('API Connection Error:', err);
+                updateApiStatus('Connection failed: ' + err.message, false);
+            } finally {
+                if (apiLoadingEl) {
+                    apiLoadingEl.style.display = 'none';
+                }
+            }
         }
-
-        // Process the response
-        const data = await response.json();
-        
-        if (!data?.data?.shows_by_id) {
-            throw new Error('Invalid API response or show not found');
-        }
-
-        const showData = data.data.shows_by_id;
-
-        // Store data in apiState
-        apiState.connected = true;
-        apiState.url = atob("aHR0cHM6Ly9zdGFnZWQubWVkaXV4Lmlv");
-        apiState.showId = showId;
-        apiState.showSets = showData.show_sets;
-
-        // Update UI
-        updateApiStatus(`Connected: ${showData.title} (${showData.show_sets.length} sets)`, true);
-        
-        const setSelectorEl = document.getElementById('set-selector');
-        if (setSelectorEl) {
-            populateSetSelector(showData.show_sets);
-            setSelectorEl.style.display = 'block';
-        }
-    } catch (err) {
-        console.error('API Connection Error:', err);
-        updateApiStatus('Connection failed: ' + err.message, false);
-    } finally {
-        if (apiLoadingEl) {
-            apiLoadingEl.style.display = 'none';
-        }
-    }
-}
 
         // Fixed loadFileFromAPI function with correct URL construction
         async function loadFileFromAPI(fileId, fileType, metadata = {}) {
@@ -1683,6 +1691,7 @@
                 reader.onload = (evt) => {
                     const icon = document.getElementById("creator-icon");
                     icon.src = evt.target.result;
+                    icon.alt = ""; // No alt text
                     icon.style.display = "inline-block";
                 };
                 reader.readAsDataURL(file);
@@ -2198,7 +2207,51 @@
 
             overlay.style.display = 'flex';
 
-            confirmYes.onclick = () => location.reload();
+            confirmYes.onclick = () => {
+                // Don't clear localStorage! We want to keep saved config
+
+                // Clear form fields directly
+                document.getElementById("creator-name").value = "";
+                document.getElementById("credit-text").textContent = "";
+                document.getElementById("set-id").value = "";
+                document.getElementById("set-id-line").textContent = "";
+
+                // Clear creator icon
+                const creatorIcon = document.getElementById("creator-icon");
+                creatorIcon.src = "";
+                creatorIcon.style.display = "none";
+
+                // Clear logo preview
+                const logoPreview = document.getElementById("logo-preview");
+                logoPreview.src = "";
+                logoPreview.style.display = "none";
+
+                // Clear posters and titlecards
+                document.getElementById("poster-grid").innerHTML = "";
+                document.getElementById("titlecard-grid").innerHTML = "";
+
+                // Reset other form elements
+                document.getElementById("columns-select").value = "4";
+                document.getElementById("titlecard-columns-select").value = "5";
+                document.getElementById("show-posters-header").checked = true;
+                document.getElementById("show-titlecards-header").checked = true;
+                document.getElementById("posters-header").style.display = "block";
+                document.getElementById("titlecards-header").style.display = "block";
+
+                // Reset backdrop
+                document.getElementById("use-backdrop-toggle").checked = false;
+                window._currentBackdropURL = null;
+                document.getElementById("export-background-image").style.display = "none";
+
+                // Reset gradients
+                document.getElementById("bg-start").value = "#2c3e50";
+                document.getElementById("bg-end").value = "#6a11cb";
+                updateGradientBackground();
+
+                // Close the dialog
+                overlay.style.display = 'none';
+            };
+
             confirmNo.onclick = () => overlay.style.display = 'none';
         });
 
@@ -2341,73 +2394,127 @@
             }
         });
         document.getElementById("saveConfigBtn").addEventListener("click", () => {
-    const config = {
-        creatorName: document.getElementById("creator-name").value,
-        setId: document.getElementById("set-id").value,
-        logoScale: document.getElementById("logo-scale").value,
-        showPostersHeader: document.getElementById("show-posters-header").checked,
-        showTitlecardsHeader: document.getElementById("show-titlecards-header").checked,
-        useBackdrop: document.getElementById("use-backdrop-toggle").checked,
-        bgStart: document.getElementById("bg-start").value,
-        bgEnd: document.getElementById("bg-end").value,
-        columns: document.getElementById("columns-select").value,
-        titlecardColumns: document.getElementById("titlecard-columns-select").value
-    };
+            const config = {
+                creatorName: document.getElementById("creator-name").value,
+                setId: document.getElementById("set-id").value,
+                logoScale: document.getElementById("logo-scale").value,
+                showPostersHeader: document.getElementById("show-posters-header").checked,
+                showTitlecardsHeader: document.getElementById("show-titlecards-header").checked,
+                useBackdrop: document.getElementById("use-backdrop-toggle").checked,
+                bgStart: document.getElementById("bg-start").value,
+                bgEnd: document.getElementById("bg-end").value,
+                columns: document.getElementById("columns-select").value,
+                titlecardColumns: document.getElementById("titlecard-columns-select").value
+            };
 
-    const logoPreview = document.getElementById("logo-preview");
-    if (logoPreview && logoPreview.src) {
-        config.logoData = logoPreview.src;
-    }
+            const logoPreview = document.getElementById("logo-preview");
+            if (logoPreview && logoPreview.src && logoPreview.src !== window.location.href) {
+                config.logoData = logoPreview.src;
+            }
 
-    // Save creator icon data if it exists and is displayed
-    const creatorIcon = document.getElementById("creator-icon");
-    if (creatorIcon && creatorIcon.src && creatorIcon.style.display !== "none") {
-        config.creatorIconData = creatorIcon.src;
-    }
+            // Fix: Properly save creator icon data
+            const creatorIcon = document.getElementById("creator-icon");
+            if (creatorIcon && creatorIcon.src && creatorIcon.src !== window.location.href && creatorIcon.style.display !== "none") {
+                config.creatorIconData = creatorIcon.src;
+            }
 
-    localStorage.setItem("posterToolsConfig", JSON.stringify(config));
-    alert("Config saved!");
-});
+            // Always save creator name when saving config
+            config.creatorName = document.getElementById("creator-name").value;
 
-document.getElementById("loadConfigBtn").addEventListener("click", () => {
-    const config = JSON.parse(localStorage.getItem("posterToolsConfig") || "{}");
+            localStorage.setItem("posterToolsConfig", JSON.stringify(config));
+            alert("Config saved!");
+        });
 
-    // Only update creator name if the input is currently empty (not overridden by API)
-    const creatorNameInput = document.getElementById("creator-name");
-    const creditText = document.getElementById("credit-text");
-    if (config.creatorName && !creatorNameInput.value) {
-        creatorNameInput.value = config.creatorName;
-        creditText.textContent = config.creatorName;
-    }
+        function resetCreatorFields() {
+            const savedConfig = JSON.parse(localStorage.getItem("posterToolsConfig") || "{}");
+            const creatorIcon = document.getElementById("creator-icon");
+            const creatorNameInput = document.getElementById("creator-name");
+            const creditText = document.getElementById("credit-text");
 
-    // Only update creator icon if it exists in config
-    const creatorIcon = document.getElementById("creator-icon");
-    if (config.creatorIconData) {
-        creatorIcon.src = config.creatorIconData;
-        creatorIcon.alt = "Creator Icon"; // Set alt text only when image exists
-        creatorIcon.style.display = "inline-block";
-    } else {
-        creatorIcon.src = "";
-        creatorIcon.alt = ""; // Clear alt text when no image
-        creatorIcon.style.display = "none";
-        creditText.textContent = config.creatorName || creditText.textContent;
-    }
+            // Only show icon if it exists in saved config
+            if (savedConfig.creatorIconData) {
+                creatorIcon.src = savedConfig.creatorIconData;
+                creatorIcon.style.display = "inline-block";
+            } else {
+                creatorIcon.style.display = "none";
+                creatorIcon.src = "";
+            }
 
-    // Show/hide Posters header
-    const showPostersHeader = typeof config.showPostersHeader === "boolean" ? config.showPostersHeader : true;
-    document.getElementById("show-posters-header").checked = showPostersHeader;
-    document.getElementById("posters-header").style.display = showPostersHeader ? "block" : "none";
+            // Set creator name in both input field and display area
+            if (savedConfig.creatorName) {
+                creatorNameInput.value = savedConfig.creatorName;
+                creditText.textContent = savedConfig.creatorName;
+            } else {
+                creatorNameInput.value = "";
+                creditText.textContent = "";
+            }
 
-    // Show/hide Titlecards header
-    const showTitlecardsHeader = typeof config.showTitlecardsHeader === "boolean" ? config.showTitlecardsHeader : true;
-    document.getElementById("show-titlecards-header").checked = showTitlecardsHeader;
-    document.getElementById("titlecards-header").style.display = showTitlecardsHeader ? "block" : "none";
+            // Set footer label if available
+            if (savedConfig.setId) {
+                document.getElementById("set-id").value = savedConfig.setId;
+                document.getElementById("set-id-line").textContent = savedConfig.setId;
+            }
+        }
 
-    // Rebuild layout if needed
-    rebuildGrids();
+        // Call this function when the page loads
+        document.addEventListener('DOMContentLoaded', resetCreatorFields);
 
-    alert("Config loaded!");
-});
+        document.getElementById("loadConfigBtn").addEventListener("click", () => {
+            const config = JSON.parse(localStorage.getItem("posterToolsConfig") || "{}");
+
+            // Update creator name ALWAYS when available in config, ensuring it appears in both places
+            const creatorNameInput = document.getElementById("creator-name");
+            const creditText = document.getElementById("credit-text");
+
+            if (config.creatorName) {
+                creatorNameInput.value = config.creatorName;
+                creditText.textContent = config.creatorName;
+            } else {
+                creatorNameInput.value = "";
+                creditText.textContent = "";
+            }
+
+            // Fix: Update creator icon properly
+            const creatorIcon = document.getElementById("creator-icon");
+            if (config.creatorIconData) {
+                creatorIcon.src = config.creatorIconData;
+                creatorIcon.alt = ""; // No alt text to avoid showing text when image fails
+                creatorIcon.style.display = "inline-block";
+            } else {
+                creatorIcon.src = "";
+                creatorIcon.alt = ""; // No alt text
+                creatorIcon.style.display = "none";
+            }
+
+            // Set ID
+            if (config.setId) {
+                document.getElementById("set-id").value = config.setId;
+                document.getElementById("set-id-line").textContent = config.setId;
+            } else {
+                document.getElementById("set-id").value = "";
+                document.getElementById("set-id-line").textContent = "";
+            }
+
+            // Show/hide Posters header
+            const showPostersHeader = typeof config.showPostersHeader === "boolean" ? config.showPostersHeader : true;
+            document.getElementById("show-posters-header").checked = showPostersHeader;
+            document.getElementById("posters-header").style.display = showPostersHeader ? "block" : "none";
+
+            // Show/hide Titlecards header
+            const showTitlecardsHeader = typeof config.showTitlecardsHeader === "boolean" ? config.showTitlecardsHeader : true;
+            document.getElementById("show-titlecards-header").checked = showTitlecardsHeader;
+            document.getElementById("titlecards-header").style.display = showTitlecardsHeader ? "block" : "none";
+
+            // Rebuild layout if needed
+            rebuildGrids();
+
+            alert("Config loaded!");
+        });
+
+        // Update name label when typing in creator name field
+        document.getElementById("creator-name").addEventListener("input", e => {
+            document.getElementById("credit-text").textContent = e.target.value;
+        });
     </script>
 </body>
 
