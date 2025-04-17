@@ -1369,27 +1369,37 @@
 
         // Helper function to fetch an asset and convert to data URL
         async function fetchAssetAsDataUrl(fileId) {
-            if (!apiState.connected || !apiState.url || !apiState.key) {
-                throw new Error('API not connected');
-            }
+  if (!apiState.connected) {
+    throw new Error('API not connected');
+  }
 
-            const fileUrl = `${apiState.url}/assets/${fileId}`;
-            const corsProxyUrl = 'https://poster-proxy.pejamas.workers.dev/?url=';
-            const fullUrl = corsProxyUrl + encodeURIComponent(fileUrl);
+  try {
+    // Call your worker with the asset ID
+    const workerUrl = 'https://api-frontend.pejamas.workers.dev'; // No trailing slash
+    
+    const response = await fetch(workerUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        endpoint: `/assets/${fileId}`,
+        body: {} // Empty body for asset requests
+      })
+    });
 
-            const response = await fetch(fullUrl, {
-                headers: {
-                    'Authorization': `Bearer ${apiState.key}`
-                }
-            });
+    if (!response.ok) {
+      throw new Error(`Failed to fetch file: ${response.statusText} (${response.status})`);
+    }
 
-            if (!response.ok) {
-                throw new Error(`Failed to fetch file: ${response.statusText} (${response.status})`);
-            }
-
-            const blob = await response.blob();
-            return await blobToDataURL(blob);
-        }
+    // Convert response to blob and then to data URL
+    const blob = await response.blob();
+    return await blobToDataURL(blob);
+  } catch (error) {
+    console.error(`Error loading file ${fileId}:`, error);
+    throw error;
+  }
+}
 
         document.addEventListener('DOMContentLoaded', function() {
             console.log('DOM fully loaded - attaching API button handler');
