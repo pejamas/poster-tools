@@ -905,6 +905,56 @@
             margin-bottom: 2px;
         }
 
+        .custom-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .custom-modal {
+            background: #1a1a1a;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            padding: 20px 25px;
+            width: 320px;
+            text-align: center;
+            color: white;
+        }
+
+        .custom-buttons {
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .custom-btn {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 0 5px;
+        }
+
+        .custom-btn-red {
+            background: #ff4d4d;
+            color: white;
+        }
+
+        .custom-btn-blue {
+            background: #0088cc;
+            color: white;
+        }
+
+        .custom-btn-gray {
+            background: #ccc;
+            color: #111;
+        }
+
         @keyframes spin {
             to {
                 transform: rotate(360deg);
@@ -1122,12 +1172,30 @@
         </div>
     </div>
 
-    <div id="custom-confirm-overlay">
-        <div id="custom-confirm-modal">
+    <div id="custom-confirm-overlay" class="custom-overlay">
+        <div class="custom-modal">
             <p>Are you sure you want to reset the form? You will lose all current uploads and settings.</p>
-            <div class="custom-confirm-buttons">
-                <button id="confirmYes">Yes</button>
-                <button id="confirmNo">No</button>
+            <div class="custom-buttons">
+                <button id="confirmYes" class="custom-btn custom-btn-red">Yes</button>
+                <button id="confirmNo" class="custom-btn custom-btn-gray">No</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="save-confirm-overlay" class="custom-overlay">
+        <div class="custom-modal">
+            <p>Configuration saved successfully!</p>
+            <div class="custom-buttons">
+                <button id="saveConfirmOk" class="custom-btn custom-btn-blue">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="load-confirm-overlay" class="custom-overlay">
+        <div class="custom-modal">
+            <p>Configuration loaded successfully!</p>
+            <div class="custom-buttons">
+                <button id="loadConfirmOk" class="custom-btn custom-btn-blue">OK</button>
             </div>
         </div>
     </div>
@@ -2422,7 +2490,14 @@
             config.creatorName = document.getElementById("creator-name").value;
 
             localStorage.setItem("posterToolsConfig", JSON.stringify(config));
-            alert("Config saved!");
+
+            // Show custom save confirmation popup instead of alert
+            const overlay = document.getElementById('save-confirm-overlay');
+            overlay.style.display = 'flex';
+
+            document.getElementById('saveConfirmOk').onclick = () => {
+                overlay.style.display = 'none';
+            };
         });
 
         function resetCreatorFields() {
@@ -2461,6 +2536,12 @@
 
         document.getElementById("loadConfigBtn").addEventListener("click", () => {
             const config = JSON.parse(localStorage.getItem("posterToolsConfig") || "{}");
+
+            // Check if config is empty (no saved configuration)
+            if (Object.keys(config).length === 0) {
+                alert("No saved configuration found.");
+                return;
+            }
 
             // Update creator name ALWAYS when available in config, ensuring it appears in both places
             const creatorNameInput = document.getElementById("creator-name");
@@ -2508,12 +2589,13 @@
             // Rebuild layout if needed
             rebuildGrids();
 
-            alert("Config loaded!");
-        });
+            // Show custom load confirmation popup instead of alert
+            const overlay = document.getElementById('load-confirm-overlay');
+            overlay.style.display = 'flex';
 
-        // Update name label when typing in creator name field
-        document.getElementById("creator-name").addEventListener("input", e => {
-            document.getElementById("credit-text").textContent = e.target.value;
+            document.getElementById('loadConfirmOk').onclick = () => {
+                overlay.style.display = 'none';
+            };
         });
     </script>
 </body>
