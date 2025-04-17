@@ -954,7 +954,6 @@
 
             <div class="api-section" id="api-section">
                 <div class="api-fields">
-                    <!-- API URL is fixed to https://staged.mediux.io -->
 
                     <input type="text" id="show-id" placeholder="Show ID: e.g. 123456" />
 
@@ -1547,7 +1546,7 @@
 
         // Store data in apiState
         apiState.connected = true;
-        apiState.url = "https://staged.mediux.io"; // This is fine to store client-side
+        apiState.url = atob("aHR0cHM6Ly9zdGFnZWQubWVkaXV4Lmlv");
         apiState.showId = showId;
         apiState.showSets = showData.show_sets;
 
