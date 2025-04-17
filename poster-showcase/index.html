@@ -2330,77 +2330,73 @@
             }
         });
         document.getElementById("saveConfigBtn").addEventListener("click", () => {
-            const config = {
-                creatorName: document.getElementById("creator-name").value,
-                setId: document.getElementById("set-id").value,
-                logoScale: document.getElementById("logo-scale").value,
-                showPostersHeader: document.getElementById("show-posters-header").checked,
-                showTitlecardsHeader: document.getElementById("show-titlecards-header").checked,
-                useBackdrop: document.getElementById("use-backdrop-toggle").checked,
-                bgStart: document.getElementById("bg-start").value,
-                bgEnd: document.getElementById("bg-end").value,
-                columns: document.getElementById("columns-select").value,
-                titlecardColumns: document.getElementById("titlecard-columns-select").value
-            };
+    const config = {
+        creatorName: document.getElementById("creator-name").value,
+        setId: document.getElementById("set-id").value,
+        logoScale: document.getElementById("logo-scale").value,
+        showPostersHeader: document.getElementById("show-posters-header").checked,
+        showTitlecardsHeader: document.getElementById("show-titlecards-header").checked,
+        useBackdrop: document.getElementById("use-backdrop-toggle").checked,
+        bgStart: document.getElementById("bg-start").value,
+        bgEnd: document.getElementById("bg-end").value,
+        columns: document.getElementById("columns-select").value,
+        titlecardColumns: document.getElementById("titlecard-columns-select").value
+    };
 
-            const logoPreview = document.getElementById("logo-preview");
-            if (logoPreview && logoPreview.src) {
-                config.logoData = logoPreview.src;
-            }
+    const logoPreview = document.getElementById("logo-preview");
+    if (logoPreview && logoPreview.src) {
+        config.logoData = logoPreview.src;
+    }
 
-            const creatorIcon = document.getElementById("creator-icon");
-			const creatorIconURL = config.creatorIconData;
-            if (creatorIconURL) {
-                creatorIcon.src = creatorIconURL;
-				creatorIcon.style.display = "inline-block";
-		    } else {
-			    creatorIcon.style.display = "none";
-            }
+    // Save creator icon data if it exists and is displayed
+    const creatorIcon = document.getElementById("creator-icon");
+    if (creatorIcon && creatorIcon.src && creatorIcon.style.display !== "none") {
+        config.creatorIconData = creatorIcon.src;
+    }
 
-            localStorage.setItem("posterToolsConfig", JSON.stringify(config));
-            alert("Config saved!");
-        });
+    localStorage.setItem("posterToolsConfig", JSON.stringify(config));
+    alert("Config saved!");
+});
 
-        document.getElementById("loadConfigBtn").addEventListener("click", () => {
-            const config = JSON.parse(localStorage.getItem("posterToolsConfig") || "{}");
+document.getElementById("loadConfigBtn").addEventListener("click", () => {
+    const config = JSON.parse(localStorage.getItem("posterToolsConfig") || "{}");
 
-            // Only update creator name if the input is currently empty (not overridden by API)
-            const creatorNameInput = document.getElementById("creator-name");
-            const creditText = document.getElementById("credit-text");
-            if (config.creatorName && !creatorNameInput.value) {
-                creatorNameInput.value = config.creatorName;
-                creditText.textContent = config.creatorName;
-            }
+    // Only update creator name if the input is currently empty (not overridden by API)
+    const creatorNameInput = document.getElementById("creator-name");
+    const creditText = document.getElementById("credit-text");
+    if (config.creatorName && !creatorNameInput.value) {
+        creatorNameInput.value = config.creatorName;
+        creditText.textContent = config.creatorName;
+    }
 
-            // Only update creator icon if it exists in config
-            const creatorIcon = document.getElementById("creator-icon");
-			const createdByDiv = document.getElementById("created-by");
-            if (config.creatorIconData) {
-                creatorIcon.src = config.creatorIconData;
-				creatorIcon.alt = "Creator Icon";
-                creatorIcon.style.display = "inline-block";
-            } else {
-			    creatorIcon.src = "";
-				creatorIcon.alt = "";
-                creatorIcon.style.display = "none";
-				creditText.textContent = config.creatorName || creditText.textContent;
-            }
+    // Only update creator icon if it exists in config
+    const creatorIcon = document.getElementById("creator-icon");
+    if (config.creatorIconData) {
+        creatorIcon.src = config.creatorIconData;
+        creatorIcon.alt = "Creator Icon";
+        creatorIcon.style.display = "inline-block";
+    } else {
+        creatorIcon.src = "";
+        creatorIcon.alt = "";
+        creatorIcon.style.display = "none";
+        creditText.textContent = config.creatorName || creditText.textContent;
+    }
 
-            // Show/hide Posters header
-            const showPostersHeader = typeof config.showPostersHeader === "boolean" ? config.showPostersHeader : true;
-            document.getElementById("show-posters-header").checked = showPostersHeader;
-            document.getElementById("posters-header").style.display = showPostersHeader ? "block" : "none";
+    // Show/hide Posters header
+    const showPostersHeader = typeof config.showPostersHeader === "boolean" ? config.showPostersHeader : true;
+    document.getElementById("show-posters-header").checked = showPostersHeader;
+    document.getElementById("posters-header").style.display = showPostersHeader ? "block" : "none";
 
-            // Show/hide Titlecards header
-            const showTitlecardsHeader = typeof config.showTitlecardsHeader === "boolean" ? config.showTitlecardsHeader : true;
-            document.getElementById("show-titlecards-header").checked = showTitlecardsHeader;
-            document.getElementById("titlecards-header").style.display = showTitlecardsHeader ? "block" : "none";
+    // Show/hide Titlecards header
+    const showTitlecardsHeader = typeof config.showTitlecardsHeader === "boolean" ? config.showTitlecardsHeader : true;
+    document.getElementById("show-titlecards-header").checked = showTitlecardsHeader;
+    document.getElementById("titlecards-header").style.display = showTitlecardsHeader ? "block" : "none";
 
-            // Rebuild layout if needed
-            rebuildGrids();
+    // Rebuild layout if needed
+    rebuildGrids();
 
-            alert("Config loaded!");
-        });
+    alert("Config loaded!");
+});
     </script>
 </body>
 
