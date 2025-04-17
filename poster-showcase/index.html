@@ -956,16 +956,6 @@
                 <div class="api-fields">
                     <!-- API URL is fixed to https://staged.mediux.io -->
 
-                    <label for="api-key" style="display:none;">API Key</label>
-                    <input type="password" id="api-key" placeholder="Your API Key" />
-
-                    <input type="text" id="show-id" placeholder="Show ID: e.g. 123456" />
-
-                    <button id="connect-api-btn">Connect & Fetch Sets</button>
-                    <div id="api-status" class="status-disconnected">Not Connected</div>
-                    <div class="loading-spinner" id="api-loading"></div>
-                </div>
-
                 <div class="set-selector" id="set-selector">
                     <!-- Show sets will be displayed here -->
                 </div>
@@ -1372,27 +1362,32 @@
 
         // Helper function to fetch an asset and convert to data URL
         async function fetchAssetAsDataUrl(fileId) {
-            if (!apiState.connected || !apiState.url || !apiState.key) {
-                throw new Error('API not connected');
-            }
+    if (!apiState.connected) {
+        throw new Error('API not connected');
+    }
 
-            const fileUrl = `${apiState.url}/assets/${fileId}`;
-            const corsProxyUrl = 'https://poster-proxy.pejamas.workers.dev/?url=';
-            const fullUrl = corsProxyUrl + encodeURIComponent(fileUrl);
+    // Call your worker with the asset ID
+    const workerUrl = 'https://your-worker-name.your-account.workers.dev';
+    
+    const response = await fetch(workerUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            endpoint: `/assets/${fileId}`,
+            body: {} // Empty body for GET requests
+        })
+    });
 
-            const response = await fetch(fullUrl, {
-                headers: {
-                    'Authorization': `Bearer ${apiState.key}`
-                }
-            });
+    if (!response.ok) {
+        throw new Error(`Failed to fetch file: ${response.statusText} (${response.status})`);
+    }
 
-            if (!response.ok) {
-                throw new Error(`Failed to fetch file: ${response.statusText} (${response.status})`);
-            }
-
-            const blob = await response.blob();
-            return await blobToDataURL(blob);
-        }
+    // Convert response to blob and then to data URL
+    const blob = await response.blob();
+    return await blobToDataURL(blob);
+}
 
         document.addEventListener('DOMContentLoaded', function() {
             console.log('DOM fully loaded - attaching API button handler');
@@ -1428,22 +1423,21 @@
         });
 
         async function connectAndFetchSets() {
-            const apiUrl = "https://staged.mediux.io";
-            const apiKey = document.getElementById('api-key').value.trim();
-            const showId = document.getElementById('show-id').value.trim();
+    const apiKey = document.getElementById('api-key').value.trim();
+    const showId = document.getElementById('show-id').value.trim();
 
-            document.getElementById('api-loading').style.display = 'block';
-            updateApiStatus('Connecting...', false);
+    document.getElementById('api-loading').style.display = 'block';
+    updateApiStatus('Connecting...', false);
 
-            if (!apiUrl || !apiKey || !showId) {
-                updateApiStatus('Please fill all API fields', false);
-                document.getElementById('api-loading').style.display = 'none';
-                return;
-            }
+    if (!showId) {
+        updateApiStatus('Please enter a Show ID', false);
+        document.getElementById('api-loading').style.display = 'none';
+        return;
+    }
 
-            try {
-                // Modified GraphQL query to ensure we get ALL sets regardless of what they contain
-                const query = `
+    try {
+        // The GraphQL query remains the same
+        const query = `
   query {
     shows_by_id(id: "${showId}") {
       id
@@ -1511,73 +1505,51 @@
   }
 `;
 
-                console.log('Connecting to API...');
-                
-                const proxied = `https://poster-proxy.pejamas.workers.dev/?url=${encodeURIComponent(`${apiUrl}/graphql`)}`;
+        console.log('Connecting to API...');
+        
+        // Instead of calling the API directly, call your Worker
+        const workerUrl = 'https://your-worker-name.your-account.workers.dev';
+        
+        const response = await fetch(workerUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                endpoint: '/graphql',
+                body: { query }
+            })
+        });
 
-                console.log('Using endpoint:', proxied.replace(apiUrl, "[HIDDEN_API]"));
+        console.log('Response status:', response.status);
 
-                const response = await fetch(proxied, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${apiKey}`
-                    },
-                    body: JSON.stringify({
-                        query
-                    })
-                });
-
-                console.log('Response status:', response.status);
-
-                const text = await response.text();
-                let data;
-                try {
-                    data = JSON.parse(text);
-                    console.log('Raw API response:', data);
-                } catch (err) {
-                    console.error('JSON parse error:', err);
-                    throw new Error('Invalid JSON response from API');
-                }
-
-                if (!response.ok || !data?.data?.shows_by_id) {
-                    console.error('API error or missing data:', data?.errors || 'No show data found');
-                    throw new Error('Invalid API response or show not found');
-                }
-
-                const showData = data.data.shows_by_id;
-
-                // Log all sets directly to help diagnose issues
-                if (showData.show_sets) {
-                    showData.show_sets.forEach((set, index) => {
-                        console.log(`Set ${index + 1}: ${set.set_title || 'Untitled'} - ${set.id}`);
-                        console.log(`  Posters: Show=${set.showPoster?.length || 0}, Season=${set.seasonPosters?.length || 0}`);
-                        console.log(`  Titlecards: ${set.titlecards?.length || 0}`);
-                    });
-                }
-
-                if (!showData.show_sets || !showData.show_sets.length) {
-                    throw new Error('No sets found for this show');
-                }
-
-                // Store data in apiState
-                apiState.connected = true;
-                apiState.url = apiUrl;
-                apiState.key = apiKey;
-                apiState.showId = showId;
-                apiState.showSets = showData.show_sets;
-
-                // Update UI to show connection status
-                updateApiStatus(`Connected: ${showData.title} (${showData.show_sets.length} sets)`, true);
-                populateSetSelector(showData.show_sets);
-                document.getElementById('set-selector').style.display = 'block';
-            } catch (err) {
-                console.error('API Connection Error:', err);
-                updateApiStatus('Connection failed: ' + err.message, false);
-            } finally {
-                document.getElementById('api-loading').style.display = 'none';
-            }
+        // Process the response as normal
+        const data = await response.json();
+        
+        // The rest of your code remains the same
+        if (!data?.data?.shows_by_id) {
+            throw new Error('Invalid API response or show not found');
         }
+
+        const showData = data.data.shows_by_id;
+
+        // Store data in apiState (but don't store the API key anymore)
+        apiState.connected = true;
+        apiState.url = "https://staged.mediux.io"; // This is fine to store client-side
+        apiState.showId = showId;
+        apiState.showSets = showData.show_sets;
+
+        // Update UI
+        updateApiStatus(`Connected: ${showData.title} (${showData.show_sets.length} sets)`, true);
+        populateSetSelector(showData.show_sets);
+        document.getElementById('set-selector').style.display = 'block';
+    } catch (err) {
+        console.error('API Connection Error:', err);
+        updateApiStatus('Connection failed: ' + err.message, false);
+    } finally {
+        document.getElementById('api-loading').style.display = 'none';
+    }
+}
 
         // Fixed loadFileFromAPI function with correct URL construction
         async function loadFileFromAPI(fileId, fileType, metadata = {}) {
