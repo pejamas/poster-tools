@@ -344,7 +344,7 @@
         .created-by {
             display: flex;
             align-items: center;
-            gap: 1px;
+            gap: 8px;
         }
 
         .powered-by {
@@ -354,15 +354,21 @@
         }
 
         #creator-icon {
-            height: 35px;
-            width: auto;
-            object-fit: contain;
-            border-radius: 12px;
-            display: none;
-            margin-right: 9px;
-            margin-top: -4px;
-        }
-
+    height: 35px;
+    width: auto;
+    object-fit: contain;
+    border-radius: 12px;
+    display: none;
+}
+.creator-icon-container {
+    width: 35px;
+    height: 35px;
+    flex-shrink: 0;
+}
+.creator-text {
+    display: flex;
+    align-items: center;
+}
         .powered-by img {
             height: 17px;
             width: auto;
@@ -1091,15 +1097,21 @@
 
                 <div class="set-id-line" id="set-id-line"></div>
                 <div class="credit-line">
-                    <div class="created-by" id="created-by">
-                        <img id="creator-icon" src="" alt="" />
-                        <span>Created by <span id="credit-text"></span></span>
-                    </div>
-                    <div class="powered-by">
-                        <span>mediux.pro</span>
-                        <img src="../assets/mediux.svg" alt="Mediux Icon" />
-                    </div>
-                </div>
+    <div class="created-by">
+        <!-- Icon container that's completely separate -->
+        <div class="creator-icon-container">
+            <img id="creator-icon" src="" alt="" />
+        </div>
+        <!-- Text container that's completely separate -->
+        <div class="creator-text">
+            Created by <span id="credit-text"></span>
+        </div>
+    </div>
+    <div class="powered-by">
+        <span>mediux.pro</span>
+        <img src="../assets/mediux.svg" alt="Mediux Icon" />
+    </div>
+</div>
             </div>
         </div>
     </div>
