@@ -2359,8 +2359,12 @@
             }
 
             const creatorIcon = document.getElementById("creator-icon");
-            if (creatorIcon && creatorIcon.src) {
-                config.creatorIconData = creatorIcon.src;
+			const creatorIconURL = config.creatorIconData;
+            if (creatorIconURL) {
+                creatorIcon.src = creatorIconURL;
+				creatorIcon.style.display = "inline-block";
+		    } else {
+			    creatorIcon.style.display = "none";
             }
 
             localStorage.setItem("posterToolsConfig", JSON.stringify(config));
