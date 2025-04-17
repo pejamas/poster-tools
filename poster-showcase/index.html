@@ -2372,11 +2372,11 @@ document.getElementById("loadConfigBtn").addEventListener("click", () => {
     const creatorIcon = document.getElementById("creator-icon");
     if (config.creatorIconData) {
         creatorIcon.src = config.creatorIconData;
-        creatorIcon.alt = "Creator Icon";
+        creatorIcon.alt = "Creator Icon"; // Set alt text only when image exists
         creatorIcon.style.display = "inline-block";
     } else {
         creatorIcon.src = "";
-        creatorIcon.alt = "";
+        creatorIcon.alt = ""; // Clear alt text when no image
         creatorIcon.style.display = "none";
         creditText.textContent = config.creatorName || creditText.textContent;
     }
