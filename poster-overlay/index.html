@@ -118,7 +118,7 @@
             /* Added letter spacing */
             filter: brightness(1.2);
             /* Brighter appearance */
-            margin-bottom: 0.2rem;
+            margin-bottom: 0.5rem;
             display: block;
             width: 100%;
             text-align: left;
@@ -190,7 +190,7 @@
             justify-content: center;
             align-items: center;
             margin-bottom: 0.75rem;
-            margin-top: -1rem;
+            margin-top: -0.5rem;
         }
 
         .section-separator {
@@ -278,7 +278,7 @@
         /* Section spacing and grouping */
         .sidebar-section {
             width: 100%;
-            margin-bottom: 0.75rem;
+            margin-bottom: 0.1rem;
         }
 
         .sidebar-section-title {
@@ -679,10 +679,11 @@
         .media-type-btn {
             flex: 1;
             padding: 10px;
+            padding-right: 24px !Important;
             text-align: center;
             background: transparent;
             color: white;
-            font-weight: bold;
+            font-weight: 200;
             cursor: pointer;
             transition: all 0.25s ease;
             border: none;
@@ -891,7 +892,7 @@
         }
 
         .pickr .pcr-button {
-            margin-top: 13px !important;
+            margin-top: 18px !important;
             /* Adjust as needed */
         }
 
@@ -948,6 +949,34 @@
             align-items: center;
             justify-content: center;
         }
+
+        .media-type-btn.active::after {
+            content: "✓";
+            font-size: 1rem;
+            color: white;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            right: 10px;
+            margin-left: 6px;
+            font-weight: bold;
+            pointer-events: none;
+        }
+
+        .media-type-btn:not(.active) {
+            opacity: 0.6;
+            filter: grayscale(50%);
+        }
+
+        .sidebar-section .media-type-selector~small {
+            font-size: 0.85rem !Important;
+            color: #ccc !Important;
+            margin-top: 6px;
+            display: block;
+            text-align: left;
+            padding-left: 2px;
+            line-height: 1.4;
+        }
     </style>
 </head>
 
@@ -970,6 +999,9 @@
                     <button class="media-type-btn active" data-type="movie">Movies</button>
                     <button class="media-type-btn" data-type="tv">TV Shows</button>
                 </div>
+                <small style="color: #aaa; display: block; margin-top: 4px; font-size: 0.75rem;">
+                    Select before uploading a poster.
+                </small>
             </div>
 
             <div class="sidebar-section">
@@ -987,13 +1019,15 @@
 
             <div class="section-separator"></div>
 
-            <label for="overlay-select">Movie Banner</label>
-            <select id="overlay-select">
-                <option value="none">None</option>
-                <option value="../assets/overlays/4K with DV.png">Dolby Vision</option>
-                <option value="../assets/overlays/4K with HDR.png">HDR</option>
-                <option value="../assets/overlays/4K no HDR.png">Ultra HD</option>
-            </select>
+            <div class="sidebar-section">
+                <label for="overlay-select">Movie Banner</label>
+                <select id="overlay-select">
+                    <option value="none">None</option>
+                    <option value="../assets/overlays/4K with DV.png">Dolby Vision</option>
+                    <option value="../assets/overlays/4K with HDR.png">HDR</option>
+                    <option value="../assets/overlays/4K no HDR.png">Ultra HD</option>
+                </select>
+            </div>
 
             <!-- Network Logo Section -->
             <div class="logo-row-aligned">
