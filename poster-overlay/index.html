@@ -126,11 +126,11 @@
 
         .sidebar select,
         .sidebar input[type="text"],
-        #tmdb-search-input {
+        #tmdb-search-input,
+        #mediux-search-input,
+        .drop-zone-label {
             width: 100%;
-            max-width: 100%;
             padding: 0.5rem;
-            /* Changed from 0.75rem */
             font-size: 0.9rem;
             background: #333;
             color: white;
@@ -138,6 +138,11 @@
             border-radius: 6px;
             box-sizing: border-box;
             margin-bottom: 0.5rem;
+        }
+
+        .sidebar-section:nth-of-type(3) {
+            margin-top: -0.8rem;
+            /* pull it closer to the TMDB section */
         }
 
         .sidebar select:focus,
@@ -603,6 +608,27 @@
             max-width: 1440px;
         }
 
+        .custom-tooltip {
+            position: fixed;
+            background: rgba(0, 0, 0, 0.85);
+            color: #00ffff;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s, transform 0.2s;
+            z-index: 99999;
+            /* <-- bump this up higher */
+            transform: translateY(-8px);
+            box-shadow: 0 4px 12px rgba(0, 255, 255, 0.25);
+            font-weight: 600;
+            font-family: 'Gabarito', sans-serif;
+            backdrop-filter: blur(6px);
+            /* optional glow */
+        }
+
         .poster-wrapper {
             scrollbar-gutter: stable both-edges;
         }
@@ -999,7 +1025,6 @@
                     <button class="media-type-btn active" data-type="movie">Movies</button>
                     <button class="media-type-btn" data-type="tv">TV Shows</button>
                 </div>
-
             </div>
 
             <div class="sidebar-section">
@@ -1007,6 +1032,13 @@
                 <div class="tmdb-search">
                     <input type="text" id="tmdb-search-input" placeholder="Search for a title..." autocomplete="off" />
                     <div class="autocomplete-suggestions" id="tmdb-suggestions"></div>
+                </div>
+            </div>
+            <div class="sidebar-section">
+                <label for="mediux-search-input">Search Mediux</label>
+                <div class="tmdb-search">
+                    <input type="text" id="mediux-search-input" placeholder="Search for a title..." autocomplete="off" />
+                    <div class="autocomplete-suggestions" id="mediux-suggestions"></div>
                 </div>
             </div>
 
@@ -1646,6 +1678,667 @@
             }
         });
 
+        // MEDIUX SEARCH SECTION - OPTIMIZED VERSION
+        const mediuxInput = document.getElementById('mediux-search-input');
+        const mediuxSuggestions = document.getElementById('mediux-suggestions');
+
+        // Set up debounce function to avoid excessive API calls
+        function debounce(func, wait) {
+            let timeout;
+            return function(...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), wait);
+            };
+        }
+
+        // Add event listener with debounce
+        mediuxInput.addEventListener('input', debounce(() => {
+            const query = mediuxInput.value.trim();
+            if (!query) {
+                mediuxSuggestions.innerHTML = '';
+                return;
+            }
+
+            // Show loading indicator
+            mediuxSuggestions.innerHTML = '<div class="search-result-item">Searching...</div>';
+
+            searchMediux(query);
+        }, 300)); // 300ms debounce
+
+        // Function to search Mediux API with the optimal query structure
+        function searchMediux(query) {
+            // First try searching directly in Mediux
+            const gqlQuery = `
+    query {
+      movies(
+        limit: 15, 
+        filter: {title: {_icontains: "${query}"}}
+      ) {
+        id
+        title
+        release_date
+        posters: files(
+          filter: {
+            _and: [
+              { file_type: { _eq: "poster" } }
+              { movie: { id: { _neq: null } } }
+            ]
+          }
+        ) {
+          id
+          uploaded_by {
+            username
+          }
+        }
+        collection_id {
+          id
+          collection_name
+        }
+      }
+    }
+  `;
+
+            // Show loading indicator
+            mediuxSuggestions.innerHTML = '<div class="search-result-item">Searching...</div>';
+
+            // First try the Mediux API
+            fetch("https://api-frontend.pejamas.workers.dev", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        endpoint: "/graphql",
+                        body: {
+                            query: gqlQuery
+                        }
+                    })
+                })
+                .then(res => {
+                    if (!res.ok) {
+                        throw new Error(`API returned status ${res.status}: ${res.statusText}`);
+                    }
+                    return res.json();
+                })
+                .then(data => {
+                    const movies = data.data?.movies || [];
+
+                    // If we found results in Mediux, display them
+                    if (movies.length > 0) {
+                        displayMediuxResults(movies);
+                    } else {
+                        // If no results in Mediux, try TMDB as a fallback
+                        mediuxSuggestions.innerHTML = '<div class="search-result-item">Searching TMDB...</div>';
+                        searchTMDBForMediux(query);
+                    }
+                })
+                .catch(err => {
+                    console.error("Error fetching Mediux data:", err);
+                    // On error, also try TMDB as a fallback
+                    mediuxSuggestions.innerHTML = '<div class="search-result-item">Searching TMDB...</div>';
+                    searchTMDBForMediux(query);
+                });
+        }
+
+        // Helper function to search TMDB as a fallback for Mediux
+        function searchTMDBForMediux(query) {
+            fetch(`https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(query)}&api_key=${TMDB_API_KEY}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.results || data.results.length === 0) {
+                        mediuxSuggestions.innerHTML = '<div class="search-result-item">No results found</div>';
+                        return;
+                    }
+
+                    // Format TMDB results to display in the Mediux search
+                    const tmdbResults = data.results
+                        .filter(movie => movie.poster_path) // Only show movies with posters
+                        .slice(0, 10)
+                        .map(movie => ({
+                            id: movie.id.toString(), // Convert ID to string for consistency
+                            title: movie.title,
+                            release_date: movie.release_date,
+                            tmdb_id: movie.id, // Keep the original TMDB ID
+                            is_tmdb_result: true // Flag to identify as TMDB result
+                        }));
+
+                    // Display the TMDB results with special formatting
+                    displayTMDBResultsForMediux(tmdbResults);
+                })
+                .catch(err => {
+                    console.error("Error in TMDB fallback search:", err);
+                    mediuxSuggestions.innerHTML = '<div class="search-result-item">Search failed</div>';
+                });
+        }
+
+        // Display TMDB results in the Mediux suggestion box
+        function displayTMDBResultsForMediux(movies) {
+            mediuxSuggestions.innerHTML = '';
+
+            if (movies.length === 0) {
+                mediuxSuggestions.innerHTML = '<div class="search-result-item">No results found</div>';
+                return;
+            }
+
+            // Add a header indicating these are TMDB results
+            const header = document.createElement('div');
+            header.className = 'result-header';
+            header.textContent = 'Results from TMDB';
+            header.style.backgroundColor = 'rgba(1, 180, 228, 0.3)'; // TMDB blue
+            mediuxSuggestions.appendChild(header);
+
+            // Display each result
+            movies.forEach(movie => {
+                const div = document.createElement('div');
+                div.className = 'search-result-item';
+
+                // Add movie badge
+                const badge = document.createElement('span');
+                badge.className = 'type-badge movie';
+                badge.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="white" viewBox="0 0 24 24"><path d="M2 6h20v12H2z" fill="none" stroke="white" stroke-width="2"/><path d="M7 6v12M17 6v12" stroke="white" stroke-width="2"/></svg>`;
+
+                // Format year from release date
+                const year = movie.release_date ? movie.release_date.substring(0, 4) : '—';
+
+                // Add a small badge indicating it's from TMDB
+                const tmdbBadge = document.createElement('span');
+                tmdbBadge.style.marginLeft = '8px';
+                tmdbBadge.style.padding = '2px 5px';
+                tmdbBadge.style.fontSize = '0.7rem';
+                tmdbBadge.style.backgroundColor = 'rgba(1, 180, 228, 0.3)'; // TMDB blue
+                tmdbBadge.style.borderRadius = '4px';
+                tmdbBadge.textContent = 'TMDB';
+
+                // Set content and append badges
+                div.textContent = `${movie.title} (${year})`;
+                div.appendChild(tmdbBadge);
+                div.appendChild(badge);
+
+                // Handle click to use TMDB ID to try to find matching Mediux content
+                div.addEventListener('click', () => {
+                    mediuxInput.value = movie.title;
+                    mediuxSuggestions.innerHTML = '';
+
+                    // Try to find this TMDB movie in Mediux by title
+                    lookupMediuxByTMDBId(movie.tmdb_id, movie.title);
+                });
+
+                mediuxSuggestions.appendChild(div);
+            });
+        }
+
+        // Function to look up Mediux content by TMDB ID or title
+        function lookupMediuxByTMDBId(tmdbId, title) {
+            // Try to find a movie with matching TMDB ID
+            const gqlQuery = `
+    query {
+      movies(
+        filter: {
+          _or: [
+            { tmdb_id: { _eq: "${tmdbId}" } },
+            { title: { _eq: "${title}" } }
+          ]
+        }
+      ) {
+        id
+        title
+        release_date
+      }
+    }
+  `;
+
+            // Show a loading message in the poster modal
+            showPosterModal(`Looking for "${title}" in Mediux...`);
+
+            fetch("https://api-frontend.pejamas.workers.dev", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        endpoint: "/graphql",
+                        body: {
+                            query: gqlQuery
+                        }
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    const mediuxMovies = data.data?.movies || [];
+
+                    if (mediuxMovies.length > 0) {
+                        // Found a matching movie in Mediux!
+                        fetchMoviePosters(mediuxMovies[0].id, mediuxMovies[0].title);
+                    } else {
+                        // No matching movie found, inform the user
+                        showPosterModal(`"${title}" was found in TMDB but not in Mediux yet. Try searching for another title.`);
+                    }
+                })
+                .catch(err => {
+                    console.error("Error looking up movie in Mediux:", err);
+                    showPosterModal(`Error looking up "${title}" in Mediux.`);
+                });
+        }
+
+        function displayMediuxResults(movies) {
+            mediuxSuggestions.innerHTML = '';
+
+            if (movies.length === 0) {
+                mediuxSuggestions.innerHTML = '<div class="search-result-item">No results found</div>';
+                return;
+            }
+
+            // Show all movies, marking those that have posters
+            movies.forEach(movie => {
+                const div = document.createElement('div');
+                div.className = 'search-result-item';
+
+                // Add movie badge
+                const badge = document.createElement('span');
+                badge.className = 'type-badge movie';
+                badge.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="white" viewBox="0 0 24 24"><path d="M2 6h20v12H2z" fill="none" stroke="white" stroke-width="2"/><path d="M7 6v12M17 6v12" stroke="white" stroke-width="2"/></svg>`;
+
+                // Format year from release date
+                const year = movie.release_date ? movie.release_date.substring(0, 4) : '—';
+
+                // Check if this movie has any posters (direct, in sets, or collection)
+                const hasDirectPosters = movie.posters && movie.posters.length > 0;
+                const hasSetPosters = movie.movie_sets &&
+                    movie.movie_sets.some(set => set.files && set.files.length > 0);
+                const hasCollection = movie.collection_id && movie.collection_id.id;
+
+                // Set content and append badge
+                div.textContent = `${movie.title} (${year})`;
+
+                // Add indicators based on available poster sources
+                if (hasDirectPosters || hasSetPosters) {
+                    const posterBadge = document.createElement('span');
+                    posterBadge.style.marginLeft = '8px';
+                    posterBadge.style.padding = '2px 5px';
+                    posterBadge.style.fontSize = '0.7rem';
+                    posterBadge.style.backgroundColor = 'rgba(0, 255, 0, 0.3)';
+                    posterBadge.style.borderRadius = '4px';
+                    posterBadge.textContent = 'Has Posters';
+                    div.appendChild(posterBadge);
+                } else if (hasCollection) {
+                    const collectionBadge = document.createElement('span');
+                    collectionBadge.style.marginLeft = '8px';
+                    collectionBadge.style.padding = '2px 5px';
+                    collectionBadge.style.fontSize = '0.7rem';
+                    collectionBadge.style.backgroundColor = 'rgba(255, 215, 0, 0.3)'; // Gold
+                    collectionBadge.style.borderRadius = '4px';
+                    collectionBadge.textContent = 'Collection';
+                    div.appendChild(collectionBadge);
+                } else {
+                    const noPosterBadge = document.createElement('span');
+                    noPosterBadge.style.marginLeft = '8px';
+                    noPosterBadge.style.padding = '2px 5px';
+                    noPosterBadge.style.fontSize = '0.7rem';
+                    noPosterBadge.style.backgroundColor = 'rgba(255, 0, 0, 0.2)';
+                    noPosterBadge.style.borderRadius = '4px';
+                    noPosterBadge.textContent = 'No Posters';
+                    div.appendChild(noPosterBadge);
+                }
+
+                div.appendChild(badge);
+
+                // Handle click to fetch posters - now with false for includeCollection
+                div.addEventListener('click', () => {
+                    mediuxInput.value = movie.title;
+                    mediuxSuggestions.innerHTML = '';
+
+                    if (hasDirectPosters || hasSetPosters || hasCollection) {
+                        fetchMoviePosters(movie.id, movie.title, false); // Default to not including collection posters
+                    } else {
+                        showPosterModal(`No custom posters found for "${movie.title}"`);
+                    }
+                });
+
+                mediuxSuggestions.appendChild(div);
+            });
+        }
+
+        // Function to fetch all posters for a movie with collection control
+        function fetchMoviePosters(movieId, movieTitle) {
+            // Show a loading message in the poster modal
+            showPosterModal(`Loading posters for "${movieTitle}"...`);
+
+            // Our validated working query
+            const gqlQuery = `
+    query {
+      movies_by_id(id: ${movieId}) {
+        id
+        title
+        files(filter: {file_type: {_eq: "poster"}}) {
+          id
+          uploaded_by {
+            username
+          }
+        }
+        movie_sets {
+          id
+          set_title
+          files(filter: {file_type: {_eq: "poster"}}) {
+            id
+            uploaded_by {
+              username
+            }
+          }
+        }
+        collection_id {
+          id
+          collection_name
+          files(filter: {file_type: {_eq: "poster"}}) {
+            id
+            uploaded_by {
+              username
+            }
+          }
+        }
+      }
+    }
+  `;
+
+            console.log("Fetching Mediux posters for movie ID:", movieId);
+
+            fetch("https://api-frontend.pejamas.workers.dev", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        endpoint: "/graphql",
+                        body: {
+                            query: gqlQuery
+                        }
+                    })
+                })
+                .then(res => {
+                    if (!res.ok) {
+                        throw new Error(`API returned status ${res.status}: ${res.statusText}`);
+                    }
+                    return res.json();
+                })
+                .then(data => {
+                    console.log("API response:", data);
+
+                    if (!data.data || !data.data.movies_by_id) {
+                        console.error("Movie not found or invalid response format:", data);
+                        showPosterModal(`Movie not found or invalid response`);
+                        return;
+                    }
+
+                    const movie = data.data.movies_by_id;
+                    const allPosters = [];
+                    const posterPromises = [];
+
+                    // Process direct posters
+                    const directPosters = movie.files || [];
+                    console.log(`Found ${directPosters.length} direct posters`);
+
+                    directPosters.forEach(file => {
+                        posterPromises.push(
+                            fetchAssetAsDataUrl(file.id)
+                            .then(dataUrl => {
+                                if (dataUrl) {
+                                    allPosters.push({
+                                        id: file.id,
+                                        dataUrl,
+                                        set: 'Direct Poster',
+                                        creator: file.uploaded_by?.username || 'Unknown'
+                                    });
+                                }
+                            })
+                            .catch(error => {
+                                console.error(`Error fetching direct poster ${file.id}:`, error);
+                            })
+                        );
+                    });
+
+                    // Process movie set posters
+                    const movieSets = movie.movie_sets || [];
+                    movieSets.forEach(set => {
+                        const setPosters = set.files || [];
+                        console.log(`Found ${setPosters.length} posters in set "${set.set_title}"`);
+
+                        setPosters.forEach(file => {
+                            posterPromises.push(
+                                fetchAssetAsDataUrl(file.id)
+                                .then(dataUrl => {
+                                    if (dataUrl) {
+                                        allPosters.push({
+                                            id: file.id,
+                                            dataUrl,
+                                            set: set.set_title || 'Untitled Set',
+                                            creator: file.uploaded_by?.username || 'Unknown'
+                                        });
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error(`Error fetching set poster ${file.id}:`, error);
+                                })
+                            );
+                        });
+                    });
+
+                    // Process collection posters if available - but ONLY for the current movie, not other movies in collection
+                    if (movie.collection_id) {
+                        // Collection posters
+                        const collectionPosters = movie.collection_id.files || [];
+                        console.log(`Found ${collectionPosters.length} collection posters for ${movie.collection_id.collection_name}`);
+
+                        // Include collection-level posters as they're relevant to this movie
+                        collectionPosters.forEach(file => {
+                            posterPromises.push(
+                                fetchAssetAsDataUrl(file.id)
+                                .then(dataUrl => {
+                                    if (dataUrl) {
+                                        allPosters.push({
+                                            id: file.id,
+                                            dataUrl,
+                                            set: `Collection: ${movie.collection_id.collection_name}`,
+                                            creator: file.uploaded_by?.username || 'Unknown'
+                                        });
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error(`Error fetching collection poster ${file.id}:`, error);
+                                })
+                            );
+                        });
+
+                        // DO NOT include posters from other movies in the collection
+                    }
+
+                    // Exit early if no posters found
+                    if (posterPromises.length === 0) {
+                        console.log("No posters found");
+                        showPosterModal(`No posters found for "${movieTitle}"`);
+                        return;
+                    }
+
+                    // Fetch all posters
+                    Promise.allSettled(posterPromises)
+                        .then(results => {
+                            console.log(`Finished processing ${results.length} posters. Success: ${results.filter(r => r.status === 'fulfilled').length}, Failed: ${results.filter(r => r.status === 'rejected').length}`);
+
+                            if (allPosters.length === 0) {
+                                showPosterModal(`Could not load any posters for "${movieTitle}"`);
+                            } else {
+                                displayPosters(allPosters, movieTitle);
+                            }
+                        });
+                })
+                .catch(err => {
+                    console.error("Error fetching movie details:", err);
+                    showPosterModal(`Error: ${err.message}`);
+                });
+        }
+
+        // Updated function to fetch a file asset as a data URL
+        function fetchAssetAsDataUrl(fileId) {
+            console.log(`Fetching asset: ${fileId}`);
+
+            return fetch("https://api-frontend.pejamas.workers.dev", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        endpoint: `/assets/${fileId}`,
+                        body: {} // Empty body for asset requests
+                    })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        console.error(`Asset fetch failed: ${response.status} ${response.statusText}`);
+                        throw new Error(`Failed to fetch asset: ${response.status} ${response.statusText}`);
+                    }
+                    return response.blob();
+                })
+                .then(blob => {
+                    if (!blob || blob.size === 0) {
+                        console.error(`Asset ${fileId} is empty (0 bytes)`);
+                        throw new Error("Received empty asset");
+                    }
+
+                    return new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                            console.log(`Successfully converted asset ${fileId} to data URL`);
+                            resolve(reader.result);
+                        };
+                        reader.onerror = (err) => {
+                            console.error(`Error reading blob for asset ${fileId}:`, err);
+                            reject(err);
+                        };
+                        reader.readAsDataURL(blob);
+                    });
+                });
+        }
+
+        function displayPosters(posters, title) {
+            const modal = document.getElementById('poster-modal');
+            const container = document.getElementById('poster-results');
+            container.innerHTML = '';
+
+            // Update modal title
+            modal.querySelector('.close-modal').textContent = `Close (${posters.length} posters)`;
+
+            // Show all posters
+            posters.forEach(poster => {
+                const posterWrapper = document.createElement('div');
+                posterWrapper.style.position = 'relative';
+                posterWrapper.style.display = 'inline-block';
+
+                const img = document.createElement('img');
+                img.src = poster.dataUrl;
+                img.alt = title || 'Movie Poster';
+
+                // Tooltip handling
+                img.addEventListener('mouseenter', (e) => {
+                    const tooltip = document.getElementById('tooltip');
+                    tooltip.textContent = `by ${poster.creator}`;
+                    tooltip.style.opacity = 1;
+                    tooltip.style.transform = 'translateY(-8px)';
+                });
+
+                img.addEventListener('mousemove', (e) => {
+                    const tooltip = document.getElementById('tooltip');
+                    tooltip.style.left = `${e.pageX + 12}px`;
+                    tooltip.style.top = `${e.pageY - 28}px`;
+                });
+
+                img.addEventListener('mouseleave', () => {
+                    const tooltip = document.getElementById('tooltip');
+                    tooltip.style.opacity = 0;
+                });
+
+                // Handle click to use this poster
+                img.addEventListener('click', () => {
+                    const image = new Image();
+                    image.crossOrigin = 'anonymous';
+                    image.onload = () => {
+                        baseImage = image;
+
+                        // Ensure overlay is redrawn
+                        if (overlaySelect.value !== "none") {
+                            overlayImage.src = overlaySelect.value;
+                        }
+
+                        drawCanvas();
+                        modal.style.display = 'none';
+
+                        // Fetch TMDB metadata after selecting the poster
+                        fetchTMDBMetadataForTitle(title);
+                    };
+                    image.src = poster.dataUrl;
+                });
+
+                posterWrapper.appendChild(img);
+                container.appendChild(posterWrapper);
+            });
+
+            // Show the modal
+            modal.style.display = 'flex';
+        }
+
+        // Function to fetch TMDB metadata for a title
+        function fetchTMDBMetadataForTitle(title) {
+            // Show loading state in metadata panel
+            metaPanel.style.display = 'flex';
+            document.getElementById('meta-title').textContent = title;
+            document.getElementById('meta-overview').textContent = "Loading metadata...";
+
+            // Search TMDB
+            fetch(`https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(title)}&api_key=${TMDB_API_KEY}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.results && data.results.length > 0) {
+                        // Get the first (most relevant) result
+                        const movieId = data.results[0].id;
+                        // Fetch full details
+                        fetchMetadataById(movieId, 'movie');
+                    } else {
+                        // No results, try TV show search instead
+                        return fetch(`https://api.themoviedb.org/3/search/tv?query=${encodeURIComponent(title)}&api_key=${TMDB_API_KEY}`)
+                            .then(res => res.json())
+                            .then(tvData => {
+                                if (tvData.results && tvData.results.length > 0) {
+                                    // Get the first TV show result
+                                    const showId = tvData.results[0].id;
+                                    fetchMetadataById(showId, 'tv');
+                                } else {
+                                    // No results found in either movies or TV
+                                    document.getElementById('meta-overview').textContent =
+                                        "No detailed metadata found. The poster was loaded successfully.";
+                                }
+                            });
+                    }
+                })
+                .catch(err => {
+                    console.error("Error fetching TMDB data:", err);
+                    document.getElementById('meta-overview').textContent =
+                        "Error loading metadata. The poster was loaded successfully.";
+                });
+        }
+
+        // Helper function to show a message in the poster modal
+        function showPosterModal(message) {
+            const modal = document.getElementById('poster-modal');
+            const container = document.getElementById('poster-results');
+
+            container.innerHTML = `<p style="color:white; padding: 1rem; text-align:center; width:100%;">${message}</p>`;
+            modal.style.display = 'flex';
+        }
+
+        // Close the suggestions when clicking elsewhere
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('#mediux-search-input')) {
+                mediuxSuggestions.innerHTML = '';
+            }
+        });
+
         // Function to display search results
         function displaySearchResults(results) {
             suggestionsBox.innerHTML = '';
@@ -2119,7 +2812,19 @@
 
         document.getElementById('download-btn').addEventListener('click', () => {
             const link = document.createElement('a');
-            link.download = 'poster-overlay.png';
+
+            // Get the current title from the metadata panel if available
+            let filename = 'poster-overlay.png';
+            const titleElement = document.getElementById('meta-title');
+            if (titleElement && titleElement.textContent && titleElement.textContent !== 'Title') {
+                // Use the meta-title content and sanitize it for filename use
+                // Replace any characters that aren't suitable for filenames
+                filename = titleElement.textContent
+                    .replace(/[/\\?%*:|"<>]/g, '-') // Replace invalid filename chars with hyphen
+                    .trim() + '.png';
+            }
+
+            link.download = filename;
             link.href = canvas.toDataURL('image/png');
             link.click();
         });
@@ -2132,6 +2837,10 @@
 
             document.getElementById('tmdb-search-input').value = '';
             document.getElementById('tmdb-suggestions').innerHTML = '';
+
+            // Add this line to clear mediux search box
+            document.getElementById('mediux-search-input').value = '';
+            document.getElementById('mediux-suggestions').innerHTML = '';
 
             document.getElementById('poster-modal').style.display = 'none';
             document.getElementById('poster-results').innerHTML = '';
@@ -2146,6 +2855,7 @@
             overlaySelect.value = 'none';
         });
     </script>
+    <div id="tooltip" class="custom-tooltip"></div>
 </body>
 
 </html>
