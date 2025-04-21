@@ -422,14 +422,14 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 4rem;
-            gap: 2rem;
+            padding: 5rem;
+            gap: 1rem;
             overflow-y: auto;
         }
 
         .main-content {
             display: flex;
-            gap: 2rem;
+            gap: 1rem;
             justify-content: center;
             align-items: flex-start;
             flex-wrap: wrap;
@@ -540,7 +540,7 @@
             display: none;
             flex-direction: column;
             align-items: center;
-            margin-top: 2rem;
+            margin-top: 1rem;
         }
 
         .poster-grid {
@@ -601,7 +601,7 @@
 
         .poster-grid-wrapper {
             overflow-x: auto;
-            padding: 0 1rem;
+            padding: 0rem;
             /* consistent left and right padding */
             scroll-snap-type: x mandatory;
             -webkit-overflow-scrolling: touch;
@@ -1003,6 +1003,18 @@
             padding-left: 2px;
             line-height: 1.4;
         }
+
+        .sidebar-section:nth-of-type(4) {
+            margin-top: -0.8rem;
+        }
+
+        .sidebar-section:nth-of-type(4) label {
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-section:nth-of-type(4) input {
+            margin-bottom: 1rem;
+        }
     </style>
 </head>
 
@@ -1040,6 +1052,11 @@
                     <input type="text" id="mediux-search-input" placeholder="Search for a title..." autocomplete="off" />
                     <div class="autocomplete-suggestions" id="mediux-suggestions"></div>
                 </div>
+            </div>
+
+            <div class="sidebar-section">
+                <label for="mediux-username-filter">Filter by Mediux User</label>
+                <input type="text" id="mediux-username-filter" placeholder="Leave empty to show all posters..." autocomplete="off" />
             </div>
 
             <div class="sidebar-section">
@@ -2003,13 +2020,29 @@
             // Show a loading message in the poster modal
             showPosterModal(`Loading posters for "${movieTitle}"...`);
 
-            // Our validated working query
+            // Check if we have a username filter
+            const usernameFilter = document.getElementById('mediux-username-filter').value.trim();
+
+            // Build the username filter part of the query if a username is provided
+            let usernameFilterQuery = '';
+            if (usernameFilter) {
+                usernameFilterQuery = `, { uploaded_by: { username: { _icontains: "${usernameFilter}" } } }`;
+            }
+
+            // Our validated working query - now with optional username filter
             const gqlQuery = `
     query {
       movies_by_id(id: ${movieId}) {
         id
         title
-        files(filter: {file_type: {_eq: "poster"}}) {
+        files(
+          filter: {
+            _and: [
+              { file_type: { _eq: "poster" } }
+              ${usernameFilter ? usernameFilterQuery : ''}
+            ]
+          }
+        ) {
           id
           uploaded_by {
             username
@@ -2018,7 +2051,14 @@
         movie_sets {
           id
           set_title
-          files(filter: {file_type: {_eq: "poster"}}) {
+          files(
+            filter: {
+              _and: [
+                { file_type: { _eq: "poster" } }
+                ${usernameFilter ? usernameFilterQuery : ''}
+              ]
+            }
+          ) {
             id
             uploaded_by {
               username
@@ -2028,7 +2068,14 @@
         collection_id {
           id
           collection_name
-          files(filter: {file_type: {_eq: "poster"}}) {
+          files(
+            filter: {
+              _and: [
+                { file_type: { _eq: "poster" } }
+                ${usernameFilter ? usernameFilterQuery : ''}
+              ]
+            }
+          ) {
             id
             uploaded_by {
               username
@@ -2039,7 +2086,7 @@
     }
   `;
 
-            console.log("Fetching Mediux posters for movie ID:", movieId);
+            console.log("Fetching Mediux posters for movie ID:", movieId, usernameFilter ? `filtered by username: ${usernameFilter}` : '');
 
             fetch("https://api-frontend.pejamas.workers.dev", {
                     method: "POST",
@@ -2162,8 +2209,14 @@
                         .then(results => {
                             console.log(`Finished processing ${results.length} posters. Success: ${results.filter(r => r.status === 'fulfilled').length}, Failed: ${results.filter(r => r.status === 'rejected').length}`);
 
+                            const usernameFilter = document.getElementById('mediux-username-filter').value.trim();
+
                             if (allPosters.length === 0) {
-                                showPosterModal(`Could not load any posters for "${movieTitle}"`);
+                                if (usernameFilter) {
+                                    showPosterModal(`No posters found for "${movieTitle}" by creator "${usernameFilter}"`);
+                                } else {
+                                    showPosterModal(`Could not load any posters for "${movieTitle}"`);
+                                }
                             } else {
                                 displayPosters(allPosters, movieTitle);
                             }
@@ -2222,15 +2275,20 @@
             const container = document.getElementById('poster-results');
             container.innerHTML = '';
 
-            // Update modal title
-            modal.querySelector('.close-modal').textContent = `Close (${posters.length} posters)`;
+            const usernameFilter = document.getElementById('mediux-username-filter').value.trim();
 
-            // Show all posters
+            // Update modal title with filter info if applicable
+            if (usernameFilter) {
+                modal.querySelector('.close-modal').textContent = `${posters.length} posters by "${usernameFilter}"`;
+            } else {
+                modal.querySelector('.close-modal').textContent = `Close (${posters.length} posters)`;
+            }
+
+            // Make sure the container has the poster-grid class to use your existing CSS
+            container.className = 'poster-grid';
+
+            // Show all posters directly in the container
             posters.forEach(poster => {
-                const posterWrapper = document.createElement('div');
-                posterWrapper.style.position = 'relative';
-                posterWrapper.style.display = 'inline-block';
-
                 const img = document.createElement('img');
                 img.src = poster.dataUrl;
                 img.alt = title || 'Movie Poster';
@@ -2256,8 +2314,12 @@
 
                 // Handle click to use this poster
                 img.addEventListener('click', () => {
+                    // Store the data URL in a local variable to ensure it's preserved
+                    const imageDataUrl = poster.dataUrl;
+
                     const image = new Image();
                     image.crossOrigin = 'anonymous';
+
                     image.onload = () => {
                         baseImage = image;
 
@@ -2272,15 +2334,26 @@
                         // Fetch TMDB metadata after selecting the poster
                         fetchTMDBMetadataForTitle(title);
                     };
-                    image.src = poster.dataUrl;
+
+                    // Use the stored data URL
+                    image.src = imageDataUrl;
                 });
 
-                posterWrapper.appendChild(img);
-                container.appendChild(posterWrapper);
+                container.appendChild(img);
             });
+
+            // Make sure the wrapper is also using the proper class
+            const gridWrapper = document.querySelector('.poster-grid-wrapper');
+            if (gridWrapper) {
+                // Make sure it doesn't have any inline styles overriding the CSS
+                gridWrapper.removeAttribute('style');
+            }
 
             // Show the modal
             modal.style.display = 'flex';
+
+            // Enable horizontal scrolling on the poster grid
+            enableHorizontalScrolling();
         }
 
         // Function to fetch TMDB metadata for a title
@@ -2330,6 +2403,9 @@
 
             container.innerHTML = `<p style="color:white; padding: 1rem; text-align:center; width:100%;">${message}</p>`;
             modal.style.display = 'flex';
+
+            // Enable horizontal scrolling on the poster grid
+            enableHorizontalScrolling();
         }
 
         // Close the suggestions when clicking elsewhere
@@ -2420,6 +2496,7 @@
 
                     container.scrollLeft = 0;
                     document.getElementById('poster-modal').style.display = 'flex';
+                    enableHorizontalScrolling();
                 })
                 .catch(err => {
                     container.innerHTML = '<p style="color:white;">Error loading posters.</p>';
@@ -2689,6 +2766,21 @@
                 });
         }
 
+        function enableHorizontalScrolling() {
+            const posterGrid = document.querySelector('.poster-grid');
+
+            if (posterGrid) {
+                posterGrid.addEventListener('wheel', function(event) {
+                    // Prevent the default vertical scroll
+                    event.preventDefault();
+
+                    // Scroll horizontally instead
+                    const scrollAmount = event.deltaY;
+                    posterGrid.scrollLeft += scrollAmount;
+                });
+            }
+        }
+
         function displayMovieMetadata(details) {
             document.getElementById('meta-title').textContent = details.title;
             document.getElementById('meta-rating').textContent = details.vote_average?.toFixed(1) || '—';
@@ -2844,6 +2936,9 @@
 
             document.getElementById('poster-modal').style.display = 'none';
             document.getElementById('poster-results').innerHTML = '';
+
+            // Add this line to also clear the username filter
+            document.getElementById('mediux-username-filter').value = '';
 
             // Reset network logo options
             networkLogoSelect.value = 'none';
