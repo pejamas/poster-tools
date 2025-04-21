@@ -918,7 +918,7 @@
         }
 
         .pickr .pcr-button {
-            margin-top: 18px !important;
+            margin-top: 1px !important;
             /* Adjust as needed */
         }
 
@@ -1015,6 +1015,65 @@
         .sidebar-section:nth-of-type(4) input {
             margin-bottom: 1rem;
         }
+
+        .network-logo-search-container {
+            position: relative;
+            width: 100%;
+        }
+
+        #network-logo-search {
+            width: 100%;
+            padding: 0.5rem;
+            font-size: 0.9rem;
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+
+        .network-logo-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: #222;
+            color: white;
+            border-radius: 0 0 6px 6px;
+            overflow: hidden;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            max-height: 300px;
+            /* Increased from 220px */
+            overflow-y: auto;
+            display: none;
+        }
+
+        .suggestion-item {
+            padding: 0.75rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            justify-content: center;
+            /* Center content horizontally */
+            align-items: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            min-height: 40px;
+            /* Ensure minimum height for each item */
+        }
+
+        .suggestion-item:hover {
+            background: #444;
+        }
+
+
+        .logo-preview-img {
+            max-width: 120px;
+            max-height: 30px;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+        }
     </style>
 </head>
 
@@ -1079,44 +1138,19 @@
             <!-- Network Logo Section -->
             <div class="logo-row-aligned">
                 <div class="logo-select-container">
-                    <label for="network-logo-select">Network Logo</label>
-                    <select id="network-logo-select">
-                        <option value="none">None</option>
-                        <option value="../assets/logos/ABC (AU).png">ABC (AU)</option>
-                        <option value="../assets/logos/ABC (US).png">ABC (US)</option>
-                        <option value="../assets/logos/Adult Swim.png">Adult Swim</option>
-                        <option value="../assets/logos/AMC+.png">AMC+</option>
-                        <option value="../assets/logos/Apple TV+.png">Apple TV+</option>
-                        <option value="../assets/logos/BBC.png">BBC</option>
-                        <option value="../assets/logos/BET+.png">BET+</option>
-                        <option value="../assets/logos/Channel 4.png">Channel 4</option>
-                        <option value="../assets/logos/Comedy Central.png">Comedy Central</option>
-                        <option value="../assets/logos/Discovery.png">Discovery</option>
-                        <option value="../assets/logos/FOX.png">FOX</option>
-                        <option value="../assets/logos/Fuji TV.png">Fuji TV</option>
-                        <option value="../assets/logos/FX.png">FX</option>
-                        <option value="../assets/logos/FXX.png">FXX</option>
-                        <option value="../assets/logos/Hbo Max.png">Hbo Max</option>
-                        <option value="../assets/logos/HBO.png">HBO</option>
-                        <option value="../assets/logos/History.png">History</option>
-                        <option value="../assets/logos/Hulu.png">Hulu</option>
-                        <option value="../assets/logos/itv.png">Itv</option>
-                        <option value="../assets/logos/MGM+.png">MGM+</option>
-                        <option value="../assets/logos/National Geographic.png">National Geographic</option>
-                        <option value="../assets/logos/NBC.png">NBC</option>
-                        <option value="../assets/logos/Netflix.png">Netflix</option>
-                        <option value="../assets/logos/Network 10.png">Network 10</option>
-                        <option value="../assets/logos/Paramount+.png">Paramount+</option>
-                        <option value="../assets/logos/Peacock.png">Peacock</option>
-                        <option value="../assets/logos/Prime Video.png">Prime Video</option>
-                        <option value="../assets/logos/Sky.png">Sky</option>
-                        <option value="../assets/logos/Spike.png">Spike</option>
-                        <option value="../assets/logos/Stan.png">Stan</option>
-                        <option value="../assets/logos/Starz.png">Starz</option>
-                        <option value="../assets/logos/Syfy.png">Syfy</option>
-                    </select>
+                    <label for="network-logo-search">Network Logo</label>
+                    <div class="network-logo-search-container" style="display: flex; align-items: center; gap: 0.5rem; width: 100%;">
+                        <input type="text" id="network-logo-search" placeholder="Search for logo..." autocomplete="off" style="flex: 1;">
+                        <div class="network-logo-suggestions" id="network-logo-suggestions" style="position: absolute; top: 100%; left: 0; right: 0; z-index: 100; background: #222; color: white; border-radius: 0 0 6px 6px; overflow: hidden; box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3); max-height: 220px; overflow-y: auto; display: none;"></div>
+                    </div>
                 </div>
-                <div id="pickr" class="pickr-inline-square"></div>
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 24px;">
+                    <label class="theme-checkbox-container" style="margin: 0; display: flex; align-items: center; cursor: pointer; font-size: 0.85rem;">
+                        <input type="checkbox" id="network-logo-checkbox" style="margin-right: 4px;">
+                        <span></span>
+                    </label>
+                    <div id="pickr" class="pickr-inline-square"></div>
+                </div>
             </div>
             <!-- End Network Logo Section -->
 
@@ -1451,16 +1485,218 @@
         });
 
         // Handle network logo selection
-        networkLogoSelect.addEventListener('change', updateNetworkLogo);
+        const networkLogoSearch = document.getElementById('network-logo-search');
+        const networkLogoSuggestions = document.getElementById('network-logo-suggestions');
+        const networkLogoCheckbox = document.getElementById('network-logo-checkbox');
 
-        function updateNetworkLogo() {
-            if (networkLogoSelect.value === 'none') {
+        // List of all available logos
+        const availableLogos = [{
+                name: 'ABC (AU)',
+                path: '../assets/logos/ABC (AU).png'
+            },
+            {
+                name: 'ABC (US)',
+                path: '../assets/logos/ABC (US).png'
+            },
+            {
+                name: 'Adult Swim',
+                path: '../assets/logos/Adult Swim.png'
+            },
+            {
+                name: 'AMC+',
+                path: '../assets/logos/AMC+.png'
+            },
+            {
+                name: 'Apple TV+',
+                path: '../assets/logos/Apple TV+.png'
+            },
+            {
+                name: 'BBC',
+                path: '../assets/logos/BBC.png'
+            },
+            {
+                name: 'BET+',
+                path: '../assets/logos/BET+.png'
+            },
+            {
+                name: 'Channel 4',
+                path: '../assets/logos/Channel 4.png'
+            },
+            {
+                name: 'Comedy Central',
+                path: '../assets/logos/Comedy Central.png'
+            },
+            {
+                name: 'Discovery',
+                path: '../assets/logos/Discovery.png'
+            },
+            {
+                name: 'FOX',
+                path: '../assets/logos/FOX.png'
+            },
+            {
+                name: 'Fuji TV',
+                path: '../assets/logos/Fuji TV.png'
+            },
+            {
+                name: 'FX',
+                path: '../assets/logos/FX.png'
+            },
+            {
+                name: 'FXX',
+                path: '../assets/logos/FXX.png'
+            },
+            {
+                name: 'Hbo Max',
+                path: '../assets/logos/Hbo Max.png'
+            },
+            {
+                name: 'HBO',
+                path: '../assets/logos/HBO.png'
+            },
+            {
+                name: 'History',
+                path: '../assets/logos/History.png'
+            },
+            {
+                name: 'Hulu',
+                path: '../assets/logos/Hulu.png'
+            },
+            {
+                name: 'ITV',
+                path: '../assets/logos/itv.png'
+            },
+            {
+                name: 'MGM+',
+                path: '../assets/logos/MGM+.png'
+            },
+            {
+                name: 'National Geographic',
+                path: '../assets/logos/National Geographic.png'
+            },
+            {
+                name: 'NBC',
+                path: '../assets/logos/NBC.png'
+            },
+            {
+                name: 'Netflix',
+                path: '../assets/logos/Netflix.png'
+            },
+            {
+                name: 'Network 10',
+                path: '../assets/logos/Network 10.png'
+            },
+            {
+                name: 'Paramount+',
+                path: '../assets/logos/Paramount+.png'
+            },
+            {
+                name: 'Peacock',
+                path: '../assets/logos/Peacock.png'
+            },
+            {
+                name: 'Prime Video',
+                path: '../assets/logos/Prime Video.png'
+            },
+            {
+                name: 'Sky',
+                path: '../assets/logos/Sky.png'
+            },
+            {
+                name: 'Spike',
+                path: '../assets/logos/Spike.png'
+            },
+            {
+                name: 'Stan',
+                path: '../assets/logos/Stan.png'
+            },
+            {
+                name: 'Starz',
+                path: '../assets/logos/Starz.png'
+            },
+            {
+                name: 'Syfy',
+                path: '../assets/logos/Syfy.png'
+            }
+        ];
+
+        // Function to filter logos based on search query
+        function filterLogos(query) {
+            query = query.toLowerCase();
+            return availableLogos.filter(logo =>
+                logo.name.toLowerCase().includes(query)
+            );
+        }
+
+        // Function to display filtered logos as suggestions
+        function displayLogoSuggestions(logos) {
+            networkLogoSuggestions.innerHTML = '';
+
+            if (logos.length === 0) {
+                networkLogoSuggestions.innerHTML = '<div class="suggestion-item">No logos found</div>';
+                return;
+            }
+
+            logos.forEach(logo => {
+                const div = document.createElement('div');
+                div.className = 'suggestion-item';
+
+                // Use actual img elements instead of background-image for better control
+                const logoImg = document.createElement('img');
+                logoImg.src = logo.path;
+                logoImg.alt = logo.name;
+                logoImg.className = 'logo-preview-img';
+                logoImg.style.maxWidth = '120px';
+                logoImg.style.maxHeight = '30px';
+                logoImg.style.width = 'auto';
+                logoImg.style.height = 'auto';
+                logoImg.style.display = 'block';
+
+                // Fallback if image fails to load
+                logoImg.onerror = () => {
+                    logoImg.style.display = 'none';
+                    const fallbackText = document.createElement('div');
+                    fallbackText.textContent = logo.name;
+                    fallbackText.style.textAlign = 'center';
+                    fallbackText.style.color = 'white';
+                    fallbackText.style.fontSize = '0.9rem';
+                    div.appendChild(fallbackText);
+                    console.log(`Failed to load logo: ${logo.path}`);
+                };
+
+                div.appendChild(logoImg);
+
+                // Handle click to select this logo
+                div.addEventListener('click', () => {
+                    networkLogoSearch.value = logo.name;
+                    networkLogoSuggestions.style.display = 'none';
+                    currentLogoPath = logo.path;
+
+                    // Only update the logo if the checkbox is checked
+                    if (networkLogoCheckbox.checked) {
+                        updateNetworkLogo(logo.path);
+                    } else {
+                        // If checkbox is unchecked, automatically check it when selecting a logo
+                        networkLogoCheckbox.checked = true;
+                        updateNetworkLogo(logo.path);
+                    }
+                });
+
+                networkLogoSuggestions.appendChild(div);
+            });
+
+            networkLogoSuggestions.style.display = 'block';
+        }
+
+        // Updated function to update network logo
+        function updateNetworkLogo(logoPath) {
+            if (!logoPath) {
                 networkLogoImage = null;
                 if (baseImage) drawCanvas();
                 return;
             }
 
-            currentLogoPath = networkLogoSelect.value;
+            currentLogoPath = logoPath;
 
             networkLogoImage = new Image();
             networkLogoImage.crossOrigin = "Anonymous"; // Enable coloring of cross-origin images
@@ -1479,6 +1715,72 @@
 
             networkLogoImage.src = currentLogoPath;
         }
+
+        // Event listener for the search input
+        networkLogoSearch.addEventListener('input', () => {
+            const query = networkLogoSearch.value.trim();
+
+            if (query === '') {
+                networkLogoSuggestions.style.display = 'none';
+
+                // Don't clear logo when emptying search box if checkbox is checked
+                if (!networkLogoCheckbox.checked) {
+                    networkLogoImage = null;
+                    currentLogoPath = null;
+                    if (baseImage) drawCanvas();
+                }
+                return;
+            }
+
+            const filteredLogos = filterLogos(query);
+            displayLogoSuggestions(filteredLogos);
+        });
+
+        // Show all logos when focusing on empty search field
+        networkLogoSearch.addEventListener('focus', () => {
+            if (networkLogoSearch.value.trim() === '') {
+                displayLogoSuggestions(availableLogos);
+            }
+        });
+
+        // Close suggestions when clicking elsewhere
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.network-logo-search-container')) {
+                networkLogoSuggestions.style.display = 'none';
+            }
+        });
+
+        // Handle checkbox toggling
+        networkLogoCheckbox.addEventListener('change', () => {
+            if (networkLogoCheckbox.checked) {
+                // Logo is enabled - use the current path or reset if none
+                if (!currentLogoPath || currentLogoPath === 'none') {
+                    // If nothing was selected yet, don't do anything
+                    return;
+                }
+
+                // Load and display the network logo
+                networkLogoImage = new Image();
+                networkLogoImage.crossOrigin = "Anonymous";
+
+                networkLogoImage.onload = () => {
+                    if (baseImage && baseImage.complete && baseImage.naturalWidth > 0) {
+                        drawCanvas();
+                    }
+                };
+
+                networkLogoImage.onerror = () => {
+                    console.warn("Network logo failed to load:", currentLogoPath);
+                    networkLogoImage = null;
+                };
+
+                networkLogoImage.src = currentLogoPath;
+            } else {
+                // Logo is disabled - remove it but keep the path
+                networkLogoImage = null;
+                if (baseImage) drawCanvas();
+            }
+        });
 
         function drawCanvas() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -2851,46 +3153,51 @@
             if (details.networks && details.networks.length > 0) {
                 const networkName = details.networks[0].name.toLowerCase();
 
-                const logoMap = {
-                    "abc (au)": "../assets/logos/ABC (AU).png",
-                    "abc (us)": "../assets/logos/ABC (US).png",
-                    "adult swim": "../assets/logos/Adult Swim.png",
-                    "amc+": "../assets/logos/AMC+.png",
-                    "apple tv+": "../assets/logos/Apple TV+.png",
-                    "bbc": "../assets/logos/BBC.png",
-                    "bet+": "../assets/logos/BET+.png",
-                    "channel 4": "../assets/logos/Channel 4.png",
-                    "comedy central": "../assets/logos/Comedy Central.png",
-                    "discovery": "../assets/logos/Discovery.png",
-                    "fox": "../assets/logos/FOX.png",
-                    "fuji tv": "../assets/logos/Fuji TV.png",
-                    "fx": "../assets/logos/FX.png",
-                    "fxx": "../assets/logos/FXX.png",
-                    "hbo max": "../assets/logos/Hbo Max.png",
-                    "hbo": "../assets/logos/HBO.png",
-                    "history": "../assets/logos/History.png",
-                    "hulu": "../assets/logos/Hulu.png",
-                    "itv": "../assets/logos/Itv.png",
-                    "mgm+": "../assets/logos/MGM+.png",
-                    "national geographic": "../assets/logos/National Geographic.png",
-                    "nbc": "../assets/logos/NBC.png",
-                    "netflix": "../assets/logos/Netflix.png",
-                    "network 10": "../assets/logos/Network 10.png",
-                    "paramount+": "../assets/logos/Paramount+.png",
-                    "peacock": "../assets/logos/Peacock.png",
-                    "prime video": "../assets/logos/Prime Video.png",
-                    "sky": "../assets/logos/Sky.png",
-                    "spike": "../assets/logos/Spike.png",
-                    "stan": "../assets/logos/Stan.png",
-                    "starz": "../assets/logos/Starz.png",
-                    "syfy": "../assets/logos/Syfy.png"
-                };
+                // First try exact match
+                let exactMatch = availableLogos.find(logo =>
+                    logo.name.toLowerCase() === networkName
+                );
 
-                for (let key in logoMap) {
-                    if (networkName.includes(key)) {
-                        networkLogoSelect.value = logoMap[key];
-                        updateNetworkLogo();
-                        break;
+                // If we found exact match, use it
+                if (exactMatch) {
+                    networkLogoSearch.value = exactMatch.name;
+                    updateNetworkLogo(exactMatch.path);
+                    networkLogoCheckbox.checked = true;
+                } else {
+                    // Otherwise try matching by special cases first
+                    const specialCases = {
+                        "hbo": "HBO", // Will match exactly "HBO" not "HBO Max"
+                        "hbo max": "Hbo Max",
+                        "fx": "FX", // Will match exactly "FX" not "FXX"
+                        "fxx": "FXX"
+                    };
+
+                    if (specialCases[networkName]) {
+                        const specialMatch = availableLogos.find(logo =>
+                            logo.name === specialCases[networkName]
+                        );
+
+                        if (specialMatch) {
+                            networkLogoSearch.value = specialMatch.name;
+                            updateNetworkLogo(specialMatch.path);
+                            networkLogoCheckbox.checked = true;
+                        }
+                    } else {
+                        // Finally try partial matching for other cases
+                        for (const logo of availableLogos) {
+                            const logoName = logo.name.toLowerCase();
+                            // Only match if the network name is found as a complete word in the logo name
+                            // or vice versa, using word boundary check with regex
+                            const networkRegex = new RegExp(`\\b${networkName}\\b`);
+                            const logoRegex = new RegExp(`\\b${logoName}\\b`);
+
+                            if (networkRegex.test(logoName) || logoRegex.test(networkName)) {
+                                networkLogoSearch.value = logo.name;
+                                updateNetworkLogo(logo.path);
+                                networkLogoCheckbox.checked = true;
+                                break;
+                            }
+                        }
                     }
                 }
             }
@@ -2941,7 +3248,8 @@
             document.getElementById('mediux-username-filter').value = '';
 
             // Reset network logo options
-            networkLogoSelect.value = 'none';
+            networkLogoSearch.value = '';
+            networkLogoCheckbox.checked = false; // Ensure checkbox is unchecked
             pickr.setColor('#ffffff');
             selectedLogoColor = '#ffffff';
             networkLogoImage = null;
