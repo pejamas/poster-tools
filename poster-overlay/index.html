@@ -917,9 +917,19 @@
             margin-top: 2px;
         }
 
-        .pickr .pcr-button {
-            margin-top: 1px !important;
-            /* Adjust as needed */
+        .pickr-bar-container {
+            width: 100%;
+            margin-top: -5px !Important;
+            margin-bottom: 10px !Important;
+            height: 12px;
+        }
+
+        /* Override Pickr's button styling to make it a bar */
+        .pickr-bar-container .pcr-button {
+            width: 100% !important;
+            height: 12px !important;
+            border-radius: 6px !important;
+            border: 1px solid #444 !important;
         }
 
         .pcr-app[data-theme='monolith'] {
@@ -1018,18 +1028,22 @@
 
         .network-logo-search-container {
             position: relative;
+            display: flex;
+            align-items: center;
             width: 100%;
+            margin-bottom: 8px;
         }
 
         #network-logo-search {
-            width: 100%;
-            padding: 0.5rem;
-            font-size: 0.9rem;
+            flex: 1;
+            /* Change from 0.8 to 1 */
+            max-width: none;
+            /* Remove the 75% restriction */
+            padding: 8px 10px;
+            border-radius: 6px;
             background: #333;
             color: white;
             border: none;
-            border-radius: 6px;
-            box-sizing: border-box;
         }
 
         .network-logo-suggestions {
@@ -1043,8 +1057,7 @@
             border-radius: 0 0 6px 6px;
             overflow: hidden;
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-            max-height: 300px;
-            /* Increased from 220px */
+            max-height: 220px;
             overflow-y: auto;
             display: none;
         }
@@ -1073,6 +1086,71 @@
             width: auto;
             height: auto;
             object-fit: contain;
+        }
+
+        .toggle-switch-container {
+            margin-left: auto;
+            /* Push to the right */
+            padding-left: 10px;
+            /* Add space between search and toggle */
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 46px !Important;
+            height: 24px;
+            margin-left: 8px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+            margin: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #444;
+            transition: .3s;
+            border-radius: 24px;
+            overflow: hidden;
+            /* Keep content inside the slider */
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+            z-index: 2;
+            /* Make sure it's above any text */
+        }
+
+        input:checked+.toggle-slider {
+            background-color: #0088cc;
+            /* Use solid bright blue instead of gradient */
+        }
+
+        input:checked+.toggle-slider:before {
+            transform: translateX(22px);
+        }
+
+        /* Remove the ✓/✕ indicators since they're not in your other site's implementation */
+        .toggle-slider:after,
+        input:checked+.toggle-slider:after {
+            content: none;
         }
     </style>
 </head>
@@ -1136,20 +1214,22 @@
             </div>
 
             <!-- Network Logo Section -->
-            <div class="logo-row-aligned">
-                <div class="logo-select-container">
-                    <label for="network-logo-search">Network Logo</label>
-                    <div class="network-logo-search-container" style="display: flex; align-items: center; gap: 0.5rem; width: 100%;">
-                        <input type="text" id="network-logo-search" placeholder="Search for logo..." autocomplete="off" style="flex: 1;">
-                        <div class="network-logo-suggestions" id="network-logo-suggestions" style="position: absolute; top: 100%; left: 0; right: 0; z-index: 100; background: #222; color: white; border-radius: 0 0 6px 6px; overflow: hidden; box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3); max-height: 220px; overflow-y: auto; display: none;"></div>
+            <div class="sidebar-section">
+                <label for="network-logo-search">Network Logo</label>
+                <!-- First row: search and toggle -->
+                <div class="network-logo-search-container">
+                    <input type="text" id="network-logo-search" placeholder="Search for logo..." autocomplete="off">
+                    <div class="toggle-switch-container">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="network-logo-checkbox">
+                            <span class="toggle-slider"></span>
+                        </label>
                     </div>
+                    <div class="network-logo-suggestions" id="network-logo-suggestions"></div>
                 </div>
-                <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 24px;">
-                    <label class="theme-checkbox-container" style="margin: 0; display: flex; align-items: center; cursor: pointer; font-size: 0.85rem;">
-                        <input type="checkbox" id="network-logo-checkbox" style="margin-right: 4px;">
-                        <span></span>
-                    </label>
-                    <div id="pickr" class="pickr-inline-square"></div>
+                <!-- Second row: Pickr bar underneath -->
+                <div class="pickr-bar-container">
+                    <div id="pickr"></div>
                 </div>
             </div>
             <!-- End Network Logo Section -->
@@ -1503,6 +1583,10 @@
                 path: '../assets/logos/Adult Swim.png'
             },
             {
+                name: 'AMC',
+                path: '../assets/logos/AMC.png'
+            },
+            {
                 name: 'AMC+',
                 path: '../assets/logos/AMC+.png'
             },
@@ -1519,20 +1603,52 @@
                 path: '../assets/logos/BET+.png'
             },
             {
+                name: 'BritBox',
+                path: '../assets/logos/BritBox.png'
+            },
+            {
+                name: 'CBS',
+                path: '../assets/logos/CBS.png'
+            },
+            {
                 name: 'Channel 4',
                 path: '../assets/logos/Channel 4.png'
+            },
+            {
+                name: 'Cinemax',
+                path: '../assets/logos/Cinemax.png'
             },
             {
                 name: 'Comedy Central',
                 path: '../assets/logos/Comedy Central.png'
             },
             {
+                name: 'Crave',
+                path: '../assets/logos/Crave.png'
+            },
+            {
                 name: 'Discovery',
                 path: '../assets/logos/Discovery.png'
             },
             {
+                name: 'discovery+',
+                path: '../assets/logos/discovery+.png'
+            },
+            {
+                name: 'Disney+',
+                path: '../assets/logos/Disney+.png'
+            },
+            {
+                name: 'Epix',
+                path: '../assets/logos/Epix.png'
+            },
+            {
                 name: 'FOX',
                 path: '../assets/logos/FOX.png'
+            },
+            {
+                name: 'Freevee',
+                path: '../assets/logos/Freevee.png'
             },
             {
                 name: 'Fuji TV',
@@ -1547,8 +1663,8 @@
                 path: '../assets/logos/FXX.png'
             },
             {
-                name: 'Hbo Max',
-                path: '../assets/logos/Hbo Max.png'
+                name: 'HBO Max',
+                path: '../assets/logos/HBO Max.png'
             },
             {
                 name: 'HBO',
@@ -1564,7 +1680,7 @@
             },
             {
                 name: 'ITV',
-                path: '../assets/logos/Itv.png'
+                path: '../assets/logos/itv.png'
             },
             {
                 name: 'MGM+',
@@ -1591,12 +1707,24 @@
                 path: '../assets/logos/Paramount+.png'
             },
             {
+                name: 'PBS',
+                path: '../assets/logos/PBS.png'
+            },
+            {
                 name: 'Peacock',
                 path: '../assets/logos/Peacock.png'
             },
             {
                 name: 'Prime Video',
                 path: '../assets/logos/Prime Video.png'
+            },
+            {
+                name: 'Showcase',
+                path: '../assets/logos/Showcase.png'
+            },
+            {
+                name: 'Showtime',
+                path: '../assets/logos/Showtime.png'
             },
             {
                 name: 'Sky',
@@ -1617,6 +1745,30 @@
             {
                 name: 'Syfy',
                 path: '../assets/logos/Syfy.png'
+            },
+            {
+                name: 'TBS',
+                path: '../assets/logos/TBS.png'
+            },
+            {
+                name: 'The CW',
+                path: '../assets/logos/The CW.png'
+            },
+            {
+                name: 'TNT',
+                path: '../assets/logos/TNT.png'
+            },
+            {
+                name: 'truTV',
+                path: '../assets/logos/truTV.png'
+            },
+            {
+                name: 'USA Network',
+                path: '../assets/logos/USA Network.png'
+            },
+            {
+                name: 'Vice',
+                path: '../assets/logos/Vice.png'
             }
         ];
 
