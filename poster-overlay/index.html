@@ -1569,208 +1569,23 @@
         const networkLogoSuggestions = document.getElementById('network-logo-suggestions');
         const networkLogoCheckbox = document.getElementById('network-logo-checkbox');
 
-        // List of all available logos
-        const availableLogos = [{
-                name: 'ABC (AU)',
-                path: '../assets/logos/ABC (AU).png'
-            },
-            {
-                name: 'ABC (US)',
-                path: '../assets/logos/ABC (US).png'
-            },
-            {
-                name: 'Adult Swim',
-                path: '../assets/logos/Adult Swim.png'
-            },
-            {
-                name: 'AMC',
-                path: '../assets/logos/AMC.png'
-            },
-            {
-                name: 'AMC+',
-                path: '../assets/logos/AMC+.png'
-            },
-            {
-                name: 'Apple TV+',
-                path: '../assets/logos/Apple TV+.png'
-            },
-            {
-                name: 'BBC',
-                path: '../assets/logos/BBC.png'
-            },
-            {
-                name: 'BET+',
-                path: '../assets/logos/BET+.png'
-            },
-            {
-                name: 'BritBox',
-                path: '../assets/logos/BritBox.png'
-            },
-            {
-                name: 'CBS',
-                path: '../assets/logos/CBS.png'
-            },
-            {
-                name: 'Channel 4',
-                path: '../assets/logos/Channel 4.png'
-            },
-            {
-                name: 'Cinemax',
-                path: '../assets/logos/Cinemax.png'
-            },
-            {
-                name: 'Comedy Central',
-                path: '../assets/logos/Comedy Central.png'
-            },
-            {
-                name: 'Crave',
-                path: '../assets/logos/Crave.png'
-            },
-            {
-                name: 'Discovery',
-                path: '../assets/logos/Discovery.png'
-            },
-            {
-                name: 'discovery+',
-                path: '../assets/logos/discovery+.png'
-            },
-            {
-                name: 'Disney+',
-                path: '../assets/logos/Disney+.png'
-            },
-            {
-                name: 'Epix',
-                path: '../assets/logos/Epix.png'
-            },
-            {
-                name: 'FOX',
-                path: '../assets/logos/FOX.png'
-            },
-            {
-                name: 'Freevee',
-                path: '../assets/logos/Freevee.png'
-            },
-            {
-                name: 'Fuji TV',
-                path: '../assets/logos/Fuji TV.png'
-            },
-            {
-                name: 'FX',
-                path: '../assets/logos/FX.png'
-            },
-            {
-                name: 'FXX',
-                path: '../assets/logos/FXX.png'
-            },
-            {
-                name: 'HBO Max',
-                path: '../assets/logos/Hbo Max.png'
-            },
-            {
-                name: 'HBO',
-                path: '../assets/logos/HBO.png'
-            },
-            {
-                name: 'History',
-                path: '../assets/logos/History.png'
-            },
-            {
-                name: 'Hulu',
-                path: '../assets/logos/Hulu.png'
-            },
-            {
-                name: 'ITV',
-                path: '../assets/logos/Itv.png'
-            },
-            {
-                name: 'MGM+',
-                path: '../assets/logos/MGM+.png'
-            },
-            {
-                name: 'National Geographic',
-                path: '../assets/logos/National Geographic.png'
-            },
-            {
-                name: 'NBC',
-                path: '../assets/logos/NBC.png'
-            },
-            {
-                name: 'Netflix',
-                path: '../assets/logos/Netflix.png'
-            },
-            {
-                name: 'Network 10',
-                path: '../assets/logos/Network 10.png'
-            },
-            {
-                name: 'Paramount+',
-                path: '../assets/logos/Paramount+.png'
-            },
-            {
-                name: 'PBS',
-                path: '../assets/logos/PBS.png'
-            },
-            {
-                name: 'Peacock',
-                path: '../assets/logos/Peacock.png'
-            },
-            {
-                name: 'Prime Video',
-                path: '../assets/logos/Prime Video.png'
-            },
-            {
-                name: 'Showcase',
-                path: '../assets/logos/Showcase.png'
-            },
-            {
-                name: 'Showtime',
-                path: '../assets/logos/Showtime.png'
-            },
-            {
-                name: 'Sky',
-                path: '../assets/logos/Sky.png'
-            },
-            {
-                name: 'Spike',
-                path: '../assets/logos/Spike.png'
-            },
-            {
-                name: 'Stan',
-                path: '../assets/logos/Stan.png'
-            },
-            {
-                name: 'Starz',
-                path: '../assets/logos/Starz.png'
-            },
-            {
-                name: 'Syfy',
-                path: '../assets/logos/Syfy.png'
-            },
-            {
-                name: 'TBS',
-                path: '../assets/logos/TBS.png'
-            },
-            {
-                name: 'The CW',
-                path: '../assets/logos/The CW.png'
-            },
-            {
-                name: 'TNT',
-                path: '../assets/logos/TNT.png'
-            },
-            {
-                name: 'truTV',
-                path: '../assets/logos/truTV.png'
-            },
-            {
-                name: 'USA Network',
-                path: '../assets/logos/USA Network.png'
-            },
-            {
-                name: 'Vice',
-                path: '../assets/logos/Vice.png'
-            }
+        const logoNames = [
+            'ABC (AU)', 'ABC (US)', 'Adult Swim', 'AMC', 'AMC+', 'Apple TV+', 'BBC', 'BET+',
+            'BritBox', 'CBS', 'Channel 4', 'Cinemax', 'Comedy Central', 'Crave', 'Discovery',
+            'discovery+', 'Disney+', 'Epix', 'FOX', 'Freevee', 'Fuji TV', 'FX', 'FXX',
+            'HBO Max', 'HBO', 'History', 'Hulu', 'ITV', 'MGM+', 'National Geographic', 'NBC',
+            'Netflix', 'Network 10', 'Paramount+', 'PBS', 'Peacock', 'Prime Video', 'Showcase',
+            'Showtime', 'Sky', 'Spike', 'Stan', 'Starz', 'Syfy', 'TBS', 'The CW', 'TNT',
+            'truTV', 'USA Network', 'Vice', 'CNN', 'Nebula', 'YouTube', 'Facebook Watch',
+            'The WB', 'MTV', 'Nick Jr', 'Nickelodeon', 'Hallmark', 'Dropout', 'Disney Channel',
+            'Dave', 'CBC Gem', 'CBC', 'Cartoon Network', 'Hbo Max', 'Apple TV+'
         ];
+
+        // Generate the full array with paths automatically
+        const availableLogos = logoNames.map(name => ({
+            name,
+            path: `../assets/logos/${name}.png`
+        }));
 
         // Function to filter logos based on search query
         function filterLogos(query) {
