@@ -8,6 +8,8 @@
     <link rel="icon" type="image/svg+xml" href="../assets/mediux.svg" />
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Gabarito:wght@400;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/monolith.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
@@ -173,11 +175,11 @@
                 <div class="gradient-row">
                     <div class="gradient-col">
                         <label class="mini-label" for="bg-start">Gradient Start</label>
-                        <input type="color" id="bg-start" value="#2c3e50">
+                        <div id="bg-start-pickr" class="pickr-bar-container"></div>
                     </div>
                     <div class="gradient-col">
                         <label class="mini-label" for="bg-end">Gradient End</label>
-                        <input type="color" id="bg-end" value="#6a11cb">
+                        <div id="bg-end-pickr" class="pickr-bar-container"></div>
                     </div>
                 </div>
             </div>
@@ -282,13 +284,17 @@
         (function initializeStyles() {
             const exportWrapper = document.getElementById("export-wrapper");
             if (exportWrapper) {
-                const bgStart = document.getElementById("bg-start")?.value || "#2c3e50";
-                const bgEnd = document.getElementById("bg-end")?.value || "#6a11cb";
+                // Set default gradient colors
+                const bgStart = "#2c3e50";
+                const bgEnd = "#6a11cb";
 
+                document.documentElement.style.setProperty("--bg-start", bgStart);
+                document.documentElement.style.setProperty("--bg-end", bgEnd);
+                
                 exportWrapper.style.setProperty("--bg-start", bgStart);
                 exportWrapper.style.setProperty("--bg-end", bgEnd);
                 exportWrapper.style.background = `linear-gradient(135deg, ${bgStart}, ${bgEnd})`;
-                exportWrapper.style.backgroundImage = 'none';
+                exportWrapper.style.backgroundImage = `linear-gradient(135deg, ${bgStart}, ${bgEnd})`;
             }
         })();
 
@@ -930,8 +936,9 @@
 
         function updateGradientBackground() {
             const exportWrapper = document.getElementById("export-wrapper");
-            const bgStart = document.getElementById("bg-start").value;
-            const bgEnd = document.getElementById("bg-end").value;
+            // Get colors from CSS variables instead of non-existent input elements
+            const bgStart = getComputedStyle(document.documentElement).getPropertyValue('--bg-start') || "#2c3e50";
+            const bgEnd = getComputedStyle(document.documentElement).getPropertyValue('--bg-end') || "#6a11cb";
 
             console.log("Updating gradient with colors:", bgStart, bgEnd);
 
@@ -1326,8 +1333,7 @@
             document.getElementById("set-id-line").textContent = e.target.value || "";
         });
 
-        document.getElementById("bg-start").addEventListener("input", updateGradientBackground);
-        document.getElementById("bg-end").addEventListener("input", updateGradientBackground);
+        // Removed old event listeners for bg-start and bg-end inputs as they no longer exist
 
         function applySmartBlur(originalImg, blurAmount) {
             const canvas = document.createElement('canvas');
@@ -1443,9 +1449,15 @@
                 window._currentBackdropURL = null;
                 document.getElementById("export-background-image").style.display = "none";
 
-                // Reset gradients
-                document.getElementById("bg-start").value = "#2c3e50";
-                document.getElementById("bg-end").value = "#6a11cb";
+                // Reset gradients using Pickr instances - use proper Pickr methods
+                const defaultStartColor = "#2c3e50";
+                const defaultEndColor = "#6a11cb";
+                
+                bgStartPickr.setColor(defaultStartColor);
+                bgEndPickr.setColor(defaultEndColor);
+                
+                document.documentElement.style.setProperty('--bg-start', defaultStartColor);
+                document.documentElement.style.setProperty('--bg-end', defaultEndColor);
                 updateGradientBackground();
 
                 // Close the dialog
@@ -1570,8 +1582,11 @@
                 ctx.drawImage(bgImg, 0, 0, finalCanvas.width, finalCanvas.height);
             } else {
                 const gradient = ctx.createLinearGradient(0, 0, finalCanvas.width, finalCanvas.height);
-                gradient.addColorStop(0, getComputedStyle(wrapper).getPropertyValue('--bg-start') || '#2c3e50');
-                gradient.addColorStop(1, getComputedStyle(wrapper).getPropertyValue('--bg-end') || '#6a11cb');
+                // Get colors directly from CSS variables for consistency
+                const startColor = getComputedStyle(document.documentElement).getPropertyValue('--bg-start').trim() || '#2c3e50';
+                const endColor = getComputedStyle(document.documentElement).getPropertyValue('--bg-end').trim() || '#6a11cb';
+                gradient.addColorStop(0, startColor);
+                gradient.addColorStop(1, endColor);
                 ctx.fillStyle = gradient;
                 ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
             }
@@ -1602,8 +1617,9 @@
                 showAlbumArtHeader: document.getElementById("show-album-art-header").checked,
                 showTitlecardsHeader: document.getElementById("show-titlecards-header").checked,
                 useBackdrop: document.getElementById("use-backdrop-toggle").checked,
-                bgStart: document.getElementById("bg-start").value,
-                bgEnd: document.getElementById("bg-end").value,
+                // Get color values from CSS variables instead of input elements
+                bgStart: getComputedStyle(document.documentElement).getPropertyValue('--bg-start').trim() || "#2c3e50",
+                bgEnd: getComputedStyle(document.documentElement).getPropertyValue('--bg-end').trim() || "#6a11cb",
                 columns: document.getElementById("columns-select").value,
                 titlecardColumns: document.getElementById("titlecard-columns-select").value
             };
@@ -1728,6 +1744,21 @@
             // Rebuild layout if needed
             rebuildGrids();
 
+            // Update gradient colors if they exist in config
+            if (config.bgStart) {
+                bgStartPickr.setColor(config.bgStart);
+                document.getElementById('bg-start-pickr').style.background = config.bgStart;
+                document.documentElement.style.setProperty('--bg-start', config.bgStart);
+            }
+            
+            if (config.bgEnd) {
+                bgEndPickr.setColor(config.bgEnd);
+                document.getElementById('bg-end-pickr').style.background = config.bgEnd;
+                document.documentElement.style.setProperty('--bg-end', config.bgEnd);
+            }
+            
+            updateGradientBackground();
+
             // Show custom load confirmation popup instead of alert
             const overlay = document.getElementById('load-confirm-overlay');
             overlay.style.display = 'flex';
@@ -1784,6 +1815,71 @@
                 };
                 reader.readAsDataURL(file);
             }
+        });
+
+        // Initialize the Pickr color pickers
+        const bgStartPickr = Pickr.create({
+            el: document.getElementById('bg-start-pickr'),
+            theme: 'monolith',
+            position: 'right-middle',
+            padding: 40,
+            default: '#2c3e50',
+            components: {
+                preview: true,
+                opacity: false,
+                hue: true,
+                interaction: {
+                    hex: true,
+                    input: true,
+                    save: true
+                }
+            }
+        });
+
+        const bgEndPickr = Pickr.create({
+            el: document.getElementById('bg-end-pickr'),
+            theme: 'monolith',
+            position: 'right-middle',
+            padding: 40,
+            default: '#6a11cb',
+            components: {
+                preview: true,
+                opacity: false,
+                hue: true,
+                interaction: {
+                    hex: true,
+                    input: true,
+                    save: true
+                }
+            }
+        });
+
+        // Add event listeners for color changes
+        bgStartPickr.on('change', (color) => {
+            const hex = color.toHEXA().toString();
+            // Use the Pickr's own methods to update its representation
+            document.documentElement.style.setProperty('--bg-start', hex);
+            updateGradientBackground();
+        });
+
+        bgStartPickr.on('save', (color) => {
+            const hex = color.toHEXA().toString();
+            document.documentElement.style.setProperty('--bg-start', hex);
+            updateGradientBackground();
+            bgStartPickr.hide();
+        });
+
+        bgEndPickr.on('change', (color) => {
+            const hex = color.toHEXA().toString();
+            document.documentElement.style.setProperty('--bg-end', hex);
+            updateGradientBackground();
+        });
+
+        bgEndPickr.on('save', (color) => {
+            const hex = color.toHEXA().toString();
+            document.documentElement.style.setProperty('--bg-end', hex);
+            updateGradientBackground();
+            bgEndPickr.hide();
         });
     </script>
 </body>
