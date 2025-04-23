@@ -71,7 +71,7 @@
       -webkit-background-clip: text;
       background-clip: text;
       -webkit-text-fill-color: transparent;
-      display: none;
+      display: none; /* Always hidden by default */
     }
     
     .nav-links {
@@ -602,15 +602,11 @@
       .poster-preview-group {
         overflow-x: auto;
         padding-bottom: 15px;
-        justify-content: flex-start;
-        padding: 15px;
-        -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
       }
       
       .poster-preview-image {
-        height: 200px; /* Slightly smaller on mobile */
+        height: 220px;
         flex-shrink: 0;
-        margin-right: 10px;
       }
       
       .nav-links {
@@ -625,10 +621,10 @@
         padding: 1rem;
       }
       
-      /* Hide the site title on mobile as requested */
-      .site-title {
-        display: none;
-      }
+      /* Remove this line that is overriding our global setting */
+      /* .site-title {
+        display: block;
+      } */
     }
     
     .section-title {
@@ -689,9 +685,10 @@
         padding: 1rem;
       }
       
-      .site-title {
+      /* Removing this line that displays the site title on mobile */
+      /* .site-title {
         display: block;
-      }
+      } */
     }
     
     .features-section {
@@ -805,6 +802,26 @@
       
       .features-section {
         padding: 4rem 1.5rem;
+      }
+    }
+    
+    /* Fix the mobile poster preview */
+    @media (max-width: 768px) {
+      .poster-preview-group {
+        overflow-x: auto;
+        padding: 15px;
+        -webkit-overflow-scrolling: touch;
+        display: flex;
+        flex-wrap: nowrap;
+        width: 100%;
+        justify-content: flex-start;
+      }
+      
+      .poster-preview-image {
+        height: 200px;
+        width: auto;
+        flex-shrink: 0;
+        margin-right: 10px;
       }
     }
   </style>
