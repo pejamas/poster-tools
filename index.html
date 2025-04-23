@@ -6,6 +6,8 @@
   <title>Poster Tools</title>
   <link rel="icon" type="image/svg+xml" href="assets/mediux.svg" />
   <link href="https://fonts.googleapis.com/css2?family=Gabarito:wght@400;600;700&display=swap" rel="stylesheet">
+  <!-- Add Lucide icons for the feature section -->
+  <script src="https://unpkg.com/lucide@latest"></script>
   <style>
     :root {
       --primary-gradient: linear-gradient(to right, #00fff0, #a600ff);
@@ -129,13 +131,27 @@
     .burger-menu {
       display: none;
       flex-direction: column;
-      gap: 4px;
+      justify-content: center;
+      align-items: center;
+      gap: 5px;
       cursor: pointer;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(0, 255, 240, 0.1), rgba(166, 0, 255, 0.1));
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+      padding: 8px;
+    }
+    
+    .burger-menu:hover {
+      background: linear-gradient(135deg, rgba(0, 255, 240, 0.2), rgba(166, 0, 255, 0.2));
+      box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
     }
     
     .burger-line {
-      width: 25px;
-      height: 3px;
+      width: 22px;
+      height: 2px;
       background: var(--text-primary);
       border-radius: 5px;
       transition: all 0.3s ease;
@@ -586,6 +602,74 @@
       .poster-preview-group {
         overflow-x: auto;
         padding-bottom: 15px;
+        justify-content: flex-start;
+        padding: 15px;
+        -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+      }
+      
+      .poster-preview-image {
+        height: 200px; /* Slightly smaller on mobile */
+        flex-shrink: 0;
+        margin-right: 10px;
+      }
+      
+      .nav-links {
+        display: none;
+      }
+      
+      .burger-menu {
+        display: flex;
+      }
+      
+      header {
+        padding: 1rem;
+      }
+      
+      /* Hide the site title on mobile as requested */
+      .site-title {
+        display: none;
+      }
+    }
+    
+    .section-title {
+      font-size: 2.2rem;
+      margin-bottom: 2rem;
+      position: relative;
+      display: inline-block;
+      text-align: left;
+    }
+    
+    .section-title::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 0;
+      width: 60px;
+      height: 3px;
+      background: var(--primary-gradient);
+      border-radius: 3px;
+    }
+    
+    @media (max-width: 768px) {
+      .hero-title {
+        font-size: 2.5rem;
+      }
+      
+      .hero-subtitle {
+        font-size: 1.2rem;
+      }
+      
+      .tool-details {
+        flex-direction: column;
+      }
+      
+      .tool-detail {
+        flex-basis: 100%;
+      }
+      
+      .poster-preview-group {
+        overflow-x: auto;
+        padding-bottom: 15px;
       }
       
       .poster-preview-image {
@@ -593,24 +677,6 @@
         flex-shrink: 0;
       }
       
-      .section-title {
-  font-size: 2.2rem;
-  margin-bottom: 2rem;
-  position: relative;
-  display: inline-block;
-  text-align: left;
-}
-
-.section-title::after {
-  content: '';
-  position: absolute;
-  bottom: -10px;
-  left: 0;
-  width: 60px;
-  height: 3px;
-  background: var(--primary-gradient);
-  border-radius: 3px;
-}
       .nav-links {
         display: none;
       }
@@ -680,12 +746,7 @@
     }
     
     .feature-icon {
-      font-size: 2rem;
-      margin-bottom: 1rem;
-      background: var(--primary-gradient);
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
+      font-size: 1.5rem;
       width: 60px;
       height: 60px;
       display: flex;
@@ -696,6 +757,7 @@
       border: 1px solid rgba(255, 255, 255, 0.1);
       margin-bottom: 1.5rem;
       transition: all 0.3s ease;
+      color: var(--text-primary);
     }
     
     .feature-card:hover .feature-icon {
@@ -852,28 +914,36 @@
     </div>
   </section>
 
-  <!-- Features Section -->
+  <!-- Features Section with Lucide icons -->
   <section class="features-section">
     <div class="features-container">
       <h2 class="section-title">Why Choose Poster Tools</h2>
       <div class="features-grid">
         <div class="feature-card">
-          <div class="feature-icon">⚡</div>
+          <div class="feature-icon">
+            <i data-lucide="zap" width="24" height="24"></i>
+          </div>
           <h3 class="feature-title">No-Code Required</h3>
           <p class="feature-description">Create professional media visuals without writing a single line of code or complex design tools.</p>
         </div>
         <div class="feature-card">
-          <div class="feature-icon">🔄</div>
+          <div class="feature-icon">
+            <i data-lucide="refresh-cw" width="24" height="24"></i>
+          </div>
           <h3 class="feature-title">Live Preview</h3>
           <p class="feature-description">See your changes in real-time as you create and adjust your poster designs and showcases.</p>
         </div>
         <div class="feature-card">
-          <div class="feature-icon">✨</div>
+          <div class="feature-icon">
+            <i data-lucide="palette" width="24" height="24"></i>
+          </div>
           <h3 class="feature-title">Customizable</h3>
           <p class="feature-description">Extensive options to tailor every aspect of your media presentation to your exact preferences.</p>
         </div>
         <div class="feature-card">
-          <div class="feature-icon">📱</div>
+          <div class="feature-icon">
+            <i data-lucide="smartphone" width="24" height="24"></i>
+          </div>
           <h3 class="feature-title">Mobile Friendly</h3>
           <p class="feature-description">Create and edit your media presentations from any device with a responsive interface.</p>
         </div>
@@ -897,6 +967,9 @@
   </footer>
 
   <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+    
     // Mobile menu functionality
     const burgerMenu = document.querySelector('.burger-menu');
     const navLinks = document.querySelector('.nav-links');
