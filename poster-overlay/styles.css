@@ -12,32 +12,86 @@ body {
 header {
     padding: 1rem 2rem;
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
     background: rgba(0, 0, 0, 0.6);
     box-shadow: 0 0 30px rgba(0, 255, 255, 0.15);
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(8px);
-    position: relative;
-    z-index: 10;
+    position: sticky;
+    top: 0;
+    z-index: 100;
 }
 .header-left {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    position: absolute;
-    left: 2rem;
 }
+
+.header-left img {
+    margin-top: 4px; /* Add this to move the Mediux logo down slightly */
+}
+
 .header-left h1 {
     font-size: 1.5rem;
     margin: 0;
     color: white;
     position: relative;
-    top: -1px;
+    font-weight: 700;
+    background: linear-gradient(to right, #00fff0, #a600ff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 .header-center {
+    display: none; /* Hide the center logo as requested */
+}
+.nav-links {
     display: flex;
-    justify-content: center;
+    gap: 1.5rem;
+    align-items: center;
+}
+.nav-link {
+    color: #cccccc;
+    text-decoration: none;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+.nav-link::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 2px;
+    background: linear-gradient(to right, #00fff0, #a600ff);
+    transition: width 0.3s ease;
+}
+.nav-link:hover {
+    color: white;
+}
+.nav-link:hover::before {
+    width: 80%;
+}
+.nav-button {
+    background: linear-gradient(135deg, rgba(0, 255, 240, 0.1), rgba(166, 0, 255, 0.1));
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 0.5rem 1.2rem;
+    border-radius: 20px;
+    color: white;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+.nav-button:hover {
+    background: linear-gradient(135deg, rgba(0, 255, 240, 0.2), rgba(166, 0, 255, 0.2));
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 255, 255, 0.2);
 }
 .poster-tools-brand {
     height: 60px;
@@ -51,7 +105,7 @@ header {
 }
 .sidebar {
     width: 280px;
-    background: rgba(0, 0, 0, 0.85) !important;
+    background: rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(6px);
     box-shadow: 0 0 30px rgba(0, 255, 255, 0.1);
     padding: 1.5rem;
@@ -988,4 +1042,38 @@ input:checked+.toggle-slider:before {
 
 @keyframes spin {
     to { transform: rotate(360deg); }
+}
+
+.header-actions {
+    display: flex;
+    gap: 0.8rem;
+    align-items: center;
+}
+
+.action-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: linear-gradient(135deg, rgba(0, 255, 240, 0.1), rgba(166, 0, 255, 0.1));
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 0.45rem 0.9rem;
+    border-radius: 20px;
+    color: white;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    height: 36px;
+}
+
+.action-button:hover {
+    background: linear-gradient(135deg, rgba(0, 255, 240, 0.2), rgba(166, 0, 255, 0.2));
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 255, 255, 0.15);
+}
+
+.action-icon {
+    width: 16px;
+    height: 16px;
+    filter: invert(100%);
 }

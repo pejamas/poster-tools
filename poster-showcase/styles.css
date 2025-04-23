@@ -1,7 +1,7 @@
 body {
     margin: 0;
     font-family: 'Gabarito', sans-serif;
-    background: linear-gradient(135deg, #000000, #1a0033);
+    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
     color: white;
     display: flex;
     flex-direction: column;
@@ -10,30 +10,117 @@ body {
 header {
     padding: 1rem 2rem;
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
     background: rgba(0, 0, 0, 0.6);
     box-shadow: 0 0 30px rgba(0, 255, 255, 0.15);
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(8px);
-    position: relative;
-    z-index: 10;
+    position: sticky;
+    top: 0;
+    z-index: 100;
 }
 .header-left {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    position: absolute;
-    left: 2rem;
+    position: relative;
+}
+.header-left img {
+    margin-top: 4px; /* Same vertical adjustment as in poster-overlay */
 }
 .header-left h1 {
     font-size: 1.5rem;
     margin: 0;
     color: white;
+    position: relative;
+    font-weight: 700;
+    background: linear-gradient(to right, #00fff0, #a600ff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 .header-center {
+    display: none; /* Hide the center logo as in poster-overlay */
+}
+.nav-links {
     display: flex;
-    justify-content: center;
+    gap: 1.5rem;
+    align-items: center;
+}
+.nav-link {
+    color: #cccccc;
+    text-decoration: none;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+.nav-link::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 2px;
+    background: linear-gradient(to right, #00fff0, #a600ff);
+    transition: width 0.3s ease;
+}
+.nav-link:hover {
+    color: white;
+}
+.nav-link:hover::before {
+    width: 80%;
+}
+.nav-button {
+    background: linear-gradient(135deg, rgba(0, 255, 240, 0.1), rgba(166, 0, 255, 0.1));
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 0.5rem 1.2rem;
+    border-radius: 20px;
+    color: white;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+.nav-button:hover {
+    background: linear-gradient(135deg, rgba(0, 255, 240, 0.2), rgba(166, 0, 255, 0.2));
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 255, 255, 0.2);
+}
+.header-right {
+    position: relative;
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+    height: 36px; /* Fixed height to match other header elements */
+}
+.header-icon-button {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: none;
+    padding: 0.35rem 0.7rem;
+    border-radius: 6px;
+    color: white;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    height: 36px;
+}
+.header-icon-button:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 255, 255, 0.15);
+}
+.header-icon-button img.icon {
+    width: 16px;
+    height: 16px;
+    filter: invert(100%);
 }
 .poster-tools-brand {
     height: 60px;
@@ -595,35 +682,6 @@ input:checked+.toggle-slider:before {
     height: 20px;
     filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(1.5);
 }
-.header-right {
-    position: absolute;
-    right: 2rem;
-    display: flex;
-    gap: 0.75rem;
-    align-items: center;
-}
-.header-icon-button {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    background: rgba(255, 255, 255, 0.05);
-    border: none;
-    padding: 0.4rem 0.8rem;
-    border-radius: 8px;
-    color: white;
-    cursor: pointer;
-    font-size: 0.9rem;
-    font-weight: 600;
-    transition: background 0.2s;
-}
-.header-icon-button:hover {
-    background: rgba(255, 255, 255, 0.15);
-}
-.header-icon-button img.icon {
-    width: 18px;
-    height: 18px;
-    filter: invert(100%);
-}
 .creator-row {
     display: flex;
     gap: 0.5rem;
@@ -928,4 +986,34 @@ input:checked+.toggle-slider:before {
 .pcr-app[data-theme='monolith'] .pcr-slider {
     border-radius: 6px !important;
     height: 10px !important;
+}
+.header-actions {
+    display: flex;
+    gap: 0.8rem;
+    align-items: center;
+}
+.action-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: linear-gradient(135deg, rgba(0, 255, 240, 0.1), rgba(166, 0, 255, 0.1));
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 0.45rem 0.9rem;
+    border-radius: 20px;
+    color: white;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    height: 36px;
+}
+.action-button:hover {
+    background: linear-gradient(135deg, rgba(0, 255, 240, 0.2), rgba(166, 0, 255, 0.2));
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 255, 255, 0.15);
+}
+.action-icon {
+    width: 16px;
+    height: 16px;
+    filter: invert(100%);
 }
