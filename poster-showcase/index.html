@@ -105,6 +105,16 @@
                     </select>
                 </div>
                 <div class="inline-select">
+                    <label for="album-art-columns-select">Album Art Per Row</label>
+                    <select id="album-art-columns-select">
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4" selected>4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                    </select>
+                </div>
+                <div class="inline-select">
                     <label for="titlecard-columns-select">Titlecards Per Row</label>
                     <select id="titlecard-columns-select">
                         <option value="2">2</option>
@@ -985,6 +995,11 @@
         function rebuildGrids() {
             const posterItems = collectItems("poster");
             renderGrid(posterGrid, posterItems, parseInt(columnsSelect.value));
+            
+            const albumArtItems = collectItems("album-art");
+            const albumArtGrid = document.getElementById("album-art-grid");
+            const albumArtColumnsSelect = document.getElementById("album-art-columns-select");
+            renderGrid(albumArtGrid, albumArtItems, parseInt(albumArtColumnsSelect.value));
 
             groupItemsWithHeaders(titlecardGrid, parseInt(titlecardColumnsSelect.value));
         }
@@ -1244,6 +1259,7 @@
         });
 
         document.getElementById("columns-select").addEventListener("change", rebuildGrids);
+        document.getElementById("album-art-columns-select").addEventListener("change", rebuildGrids);
         document.getElementById("titlecard-columns-select").addEventListener("change", rebuildGrids);
 
         document.getElementById("set-id").addEventListener("input", e => {
