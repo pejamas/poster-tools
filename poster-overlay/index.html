@@ -1,1160 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Poster Overlay</title>
+    <link rel="stylesheet" href="styles.css">
     <link rel="icon" type="image/svg+xml" href="../assets/mediux.svg" />
     <link href="https://fonts.googleapis.com/css2?family=Gabarito:wght@400;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/monolith.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr"></script>
-    <style>
-        body {
-            margin: 0;
-            font-family: 'Gabarito', sans-serif;
-            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-            color: white;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            overflow-x: hidden;
-            overflow-y: auto;
-        }
-
-        header {
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: rgba(0, 0, 0, 0.6);
-            box-shadow: 0 0 30px rgba(0, 255, 255, 0.15);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(8px);
-            position: relative;
-            z-index: 10;
-        }
-
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            position: absolute;
-            left: 2rem;
-        }
-
-        .header-left h1 {
-            font-size: 1.5rem;
-            margin: 0;
-            color: white;
-            position: relative;
-            top: -1px;
-        }
-
-        .header-center {
-            display: flex;
-            justify-content: center;
-        }
-
-        .poster-tools-brand {
-            height: 60px;
-            filter: drop-shadow(0 0 6px rgba(0, 255, 255, 0.5));
-            transform: translateX(140px);
-        }
-
-        .layout {
-            display: flex;
-            flex: 1;
-            overflow: hidden;
-        }
-
-        .sidebar {
-            width: 280px;
-            background: rgba(0, 0, 0, 0.85) !important;
-            backdrop-filter: blur(6px);
-            box-shadow: 0 0 30px rgba(0, 255, 255, 0.1);
-            padding: 1.5rem;
-            border-right: 1px solid rgba(255, 255, 255, 0.05);
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-            box-sizing: border-box;
-            align-items: center;
-            overflow-y: auto;
-            overflow: visible;
-            position: relative;
-            max-height: 100%;
-            scrollbar-width: thin;
-            scrollbar-color: rgba(255, 255, 255, 0.3) rgba(0, 0, 0, 0.1);
-        }
-
-        /* Scrollbar styling for WebKit browsers (Chrome, Safari, etc.) */
-        .sidebar::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        .sidebar::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.1);
-            border-radius: 4px;
-        }
-
-        .sidebar::-webkit-scrollbar-thumb {
-            background-color: rgba(255, 255, 255, 0.3);
-            border-radius: 4px;
-        }
-
-        .sidebar::-webkit-scrollbar-thumb:hover {
-            background-color: rgba(255, 255, 255, 0.5);
-        }
-
-        .sidebar label {
-            font-size: 0.95rem;
-            /* Increase from 0.85rem */
-            font-weight: 200;
-            /* Lighter weight */
-            color: #ffffff;
-            /* Brighter color */
-            letter-spacing: 0.4px;
-            /* Added letter spacing */
-            filter: brightness(1.2);
-            /* Brighter appearance */
-            margin-bottom: 0.6rem;
-            display: block;
-            width: 100%;
-            text-align: left;
-        }
-
-        .sidebar select,
-        .sidebar input[type="text"],
-        #tmdb-search-input,
-        #mediux-search-input,
-        .drop-zone-label {
-            width: 100%;
-            padding: 0.5rem;
-            font-size: 0.9rem;
-            background: #333;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            box-sizing: border-box;
-            margin-bottom: 0.5rem;
-        }
-
-        .sidebar-section:nth-of-type(3) {
-            margin-top: -0.8rem;
-            /* pull it closer to the TMDB section */
-        }
-
-        .sidebar select:focus,
-        .sidebar input:focus,
-        #tmdb-search-input:focus {
-            outline: 1px solid rgba(0, 255, 255, 0.5);
-        }
-
-        .sidebar button {
-            width: 100%;
-            padding: 0.6rem;
-            font-size: 0.95rem;
-            border: none;
-            border-radius: 6px;
-            margin-top: 0.5rem;
-            background: white;
-            color: black;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.2s;
-            margin-top: 0;
-        }
-
-        .sidebar button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        #reset-btn {
-            background: #ff4d4d;
-            color: white;
-        }
-
-        .drop-zone-label {
-            border: 1.5px dashed rgba(255, 255, 255, 0.3);
-            background: rgba(0, 0, 0, 0.2);
-            padding: 1rem 0;
-            padding-bottom: 1.6rem;
-            font-size: 0.85rem;
-            height: 1px;
-            text-align: center !Important;
-            font-weight: 500;
-            color: white;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            line-height: 1;
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 0.75rem;
-            margin-top: -0.5rem;
-        }
-
-        .section-separator {
-            width: 100%;
-            border-top: 1px solid rgba(0, 255, 255, 0.1);
-            margin: 0.4rem 0;
-            padding: 0;
-            position: relative;
-        }
-
-        .section-separator::after {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: -1px;
-            width: 100%;
-            height: 1px;
-            background: linear-gradient(to right, rgba(0, 255, 255, 0.3), rgba(255, 255, 255, 0.05), rgba(0, 255, 255, 0.3));
-            opacity: 0.5;
-        }
-
-        .sidebar-action-row {
-            display: flex;
-            gap: 0.5rem;
-            justify-content: space-between;
-            margin-top: 0.5rem;
-            /* Adjusted from negative margin */
-            width: 100%;
-        }
-
-        .icon-button {
-            background: rgba(255, 255, 255, 0.08);
-            border: none;
-            border-radius: 6px;
-            padding: 0.6rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            flex: 1;
-            transition: background 0.2s ease;
-        }
-
-        .icon-button:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        .icon-button img.icon {
-            width: 22px;
-            height: 22px;
-            filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(1.5);
-        }
-
-        #download-btn.icon-button.teal {
-            background-color: #00bfa5;
-        }
-
-        #download-btn.icon-button.teal:hover {
-            background-color: #1de9b6;
-        }
-
-        .icon-button.red {
-            background-color: #f44336;
-        }
-
-        .icon-button.red:hover {
-            background-color: #e53935;
-        }
-
-        .drop-zone-label span {
-            width: 100%;
-            text-align: center;
-            line-height: 1;
-        }
-
-        .drop-zone-label:hover {
-            background: rgba(255, 255, 255, 0.07);
-            border-color: rgba(0, 255, 255, 0.4);
-        }
-
-        .sidebar input[type="file"] {
-            display: none;
-        }
-
-        /* Section spacing and grouping */
-        .sidebar-section {
-            width: 100%;
-            margin-bottom: 0.1rem;
-        }
-
-        .sidebar-section-title {
-            font-size: 1rem;
-            color: white;
-            margin-bottom: 0.5rem;
-        }
-
-        /* TMDB search styling */
-        .tmdb-search {
-            position: relative;
-            width: 100%;
-            margin-bottom: 0.75rem;
-        }
-
-        #tmdb-search-input {
-            width: 100%;
-            background: #333;
-            color: white;
-            border-radius: 6px;
-        }
-
-        .autocomplete-suggestions {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            z-index: 100;
-            background: #222;
-            color: white;
-            border-radius: 0 0 6px 6px;
-            overflow: hidden;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-            max-height: 220px;
-            overflow-y: auto;
-        }
-
-        .autocomplete-suggestions div {
-            padding: 0.6rem 0.75rem;
-            cursor: pointer;
-            transition: background 0.2s;
-            font-weight: 600;
-            color: white;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .autocomplete-suggestions div:hover {
-            background: #444;
-        }
-
-        /* Network logo styling */
-        .network-logo-select {
-            position: relative;
-            width: 100%;
-        }
-
-        .network-logo-select select {
-            appearance: none;
-            width: 100%;
-            padding: 0.75rem;
-            padding-left: 50px;
-            /* Space for the logo */
-            background-color: #333;
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-        }
-
-        .network-logo-select select:hover {
-            background-color: #444;
-        }
-
-        .network-logo-select::after {
-            content: '';
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 0;
-            height: 0;
-            border-left: 5px solid transparent;
-            border-right: 5px solid transparent;
-            border-top: 5px solid white;
-            pointer-events: none;
-        }
-
-        .network-logo-preview {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 30px;
-            height: 15px;
-            background-size: contain;
-            background-position: center;
-            background-repeat: no-repeat;
-            z-index: 2;
-        }
-
-        #network-logo-select,
-        #overlay-select {
-            background: #333;
-            color: white;
-            text-align: left;
-            font-weight: 400;
-        }
-
-        .logo-options label {
-            margin-bottom: 0.25rem;
-            color: white;
-        }
-
-        .color-picker-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            width: 100%;
-        }
-
-        #logo-color-picker {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 100%;
-            height: 22px;
-            border: none;
-            border-radius: 6px;
-            background: #333;
-            cursor: pointer;
-        }
-
-        /* Main content area */
-        .main {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 5rem;
-            gap: 1rem;
-            overflow-y: auto;
-        }
-
-        .main-content {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            align-items: flex-start;
-            flex-wrap: wrap;
-        }
-
-        .canvas-container {
-            width: 550px;
-            height: 800px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: #111;
-            border-radius: 12px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
-        }
-
-        canvas {
-            width: 100%;
-            height: 100%;
-            border-radius: 12px;
-        }
-
-        .metadata-panel {
-            width: 380px;
-            height: 8;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            gap: 1.2rem;
-            padding: 2rem;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(16px);
-            border-radius: 20px;
-            box-shadow: 0 0 30px rgba(0, 255, 255, 0.15);
-            color: white;
-            font-size: 1rem;
-            overflow-y: auto;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .title-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .title-row h2 {
-            font-size: 1.6rem;
-            margin: 0;
-            flex: 1;
-            color: white;
-        }
-
-        .rating-badge {
-            background: linear-gradient(135deg, #ffcc00, #ffa500);
-            color: #111;
-            font-weight: 800;
-            font-size: 1rem;
-            padding: 6px 10px;
-            border-radius: 12px;
-            box-shadow: 0 0 8px rgba(255, 204, 0, 0.3);
-            white-space: nowrap;
-        }
-
-        .info-pair {
-            font-weight: 600;
-            color: #ccc;
-        }
-
-        .info-group {
-            background: rgba(255, 255, 255, 0.03);
-            padding: 1rem;
-            border-radius: 10px;
-            margin-bottom: 1rem;
-            display: flex;
-            flex-direction: column;
-            gap: 0.9rem;
-        }
-
-        .info-item {
-            font-size: 1rem;
-            line-height: 1.5;
-            color: #ddd;
-        }
-
-        .info-item .label {
-            color: #fff;
-            font-weight: 700;
-            margin-right: 0.4rem;
-        }
-
-        .tagline {
-            font-style: italic;
-            font-size: 1.05rem;
-            color: #aaa;
-        }
-
-        .overview {
-            margin-top: auto;
-            font-size: 1rem;
-            line-height: 1.6;
-            color: #ddd;
-        }
-
-        /* Poster modal styling */
-        #poster-modal {
-            width: 100%;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            margin-top: 1rem;
-        }
-
-        .poster-grid {
-            display: flex;
-            flex-direction: row;
-            gap: 0.75rem;
-            padding: 1rem;
-            width: calc(130px * 10 + 0.7rem * 9);
-            /* 10 posters + 9 gaps */
-            max-width: 100%;
-            overflow-x: auto;
-            scroll-snap-type: x mandatory;
-            scrollbar-width: thin;
-            scrollbar-color: #00ffff rgba(255, 255, 255, 0.05);
-            scroll-behavior: smooth;
-            scroll-padding-left: 1rem;
-            background: rgba(0, 0, 0, 0.35);
-            border-radius: 12px;
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.1);
-            white-space: nowrap;
-        }
-
-        .poster-grid::-webkit-scrollbar {
-            height: 8px;
-        }
-
-        .poster-grid::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 6px;
-        }
-
-        .poster-grid::-webkit-scrollbar-thumb {
-            background-color: #00ffff;
-            border-radius: 6px;
-            border: 2px solid rgba(15, 10, 30, 0.9);
-        }
-
-        .poster-grid::-webkit-scrollbar-thumb:hover {
-            background-color: #0ff;
-        }
-
-        .poster-grid img {
-            width: 130px;
-            /* tighter fit for more headroom */
-            height: 200px;
-            object-fit: cover;
-            flex: 0 0 auto;
-            border-radius: 6px;
-            scroll-snap-align: start;
-            cursor: pointer;
-            transition: transform 0.2s;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
-        }
-
-        .poster-grid img:hover {
-            transform: scale(1.05);
-        }
-
-        .poster-grid-wrapper {
-            overflow-x: auto;
-            padding: 0rem;
-            /* consistent left and right padding */
-            scroll-snap-type: x mandatory;
-            -webkit-overflow-scrolling: touch;
-            max-width: 1440px;
-        }
-
-        .custom-tooltip {
-            position: fixed;
-            background: rgba(0, 0, 0, 0.85);
-            color: #00ffff;
-            padding: 6px 10px;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            white-space: nowrap;
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.2s, transform 0.2s;
-            z-index: 99999;
-            /* <-- bump this up higher */
-            transform: translateY(-8px);
-            box-shadow: 0 4px 12px rgba(0, 255, 255, 0.25);
-            font-weight: 600;
-            font-family: 'Gabarito', sans-serif;
-            backdrop-filter: blur(6px);
-            /* optional glow */
-        }
-
-        .poster-wrapper {
-            scrollbar-gutter: stable both-edges;
-        }
-
-        .close-modal {
-            position: absolute;
-            top: -2.5rem;
-            right: 0;
-            background: #ff4d4d;
-            color: white;
-            padding: 0.4rem 0.8rem;
-            border: none;
-            font-weight: bold;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-
-        /* Style for the type badges in search results */
-        .result-header {
-            background: rgba(0, 255, 255, 0.1);
-            color: #00ffff;
-            font-weight: bold;
-            padding: 8px;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            border-bottom: 1px solid rgba(0, 255, 255, 0.3);
-        }
-
-        .type-badge {
-            display: inline-block;
-            padding: 2px 6px;
-            margin-left: 8px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-
-        .type-badge.movie {
-            background: linear-gradient(135deg, #ff7043, #f44336);
-            color: white;
-        }
-
-        .type-badge.tv {
-            background: linear-gradient(135deg, #2196f3, #3f51b5);
-            color: white;
-        }
-
-        /* Update the meta-badges container */
-        .meta-badges {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        /* Style for the content type indicator in the metadata panel */
-        #content-type-indicator {
-            font-size: 0.85rem;
-            padding: 4px 8px;
-        }
-
-        /* Media selector styling */
-        .media-type-selector {
-            display: flex;
-            width: 100%;
-            border-radius: 6px;
-            overflow: hidden;
-            background: rgba(255, 255, 255, 0.08);
-            /* fallback background */
-            box-shadow: 0 0 6px rgba(0, 255, 255, 0.15);
-        }
-
-        .media-type-btn {
-            flex: 1;
-            padding: 10px;
-            padding-right: 24px !Important;
-            text-align: center;
-            background: transparent;
-            color: white;
-            font-weight: 200;
-            cursor: pointer;
-            transition: all 0.25s ease;
-            border: none;
-            border-radius: 0;
-            position: relative;
-            z-index: 1;
-        }
-
-        .media-type-btn.active {
-            background: linear-gradient(to right, #00bfa5, #8e24aa);
-            /* Teal to Purple */
-            color: white;
-            box-shadow: inset 0 0 8px rgba(0, 255, 255, 0.4);
-            z-index: 2;
-        }
-
-        .media-type-btn:hover:not(.active) {
-            background: rgba(255, 255, 255, 0.15);
-        }
-
-        .media-type-btn:first-child {
-            border-radius: 6px 0 0 6px;
-        }
-
-        .media-type-btn:last-child {
-            border-radius: 0 6px 6px 0;
-        }
-
-        /* Modal dialog styling */
-        .modal-dialog {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.8);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-
-        .modal-content {
-            background: #222;
-            border-radius: 12px;
-            padding: 2.5rem;
-            width: 90%;
-            max-width: 600px;
-            color: white;
-            box-shadow: 0 0 30px rgba(0, 255, 255, 0.2);
-            border: 1px solid rgba(0, 255, 255, 0.1);
-            text-align: center;
-        }
-
-        .modal-content h3 {
-            margin-top: 0;
-            font-size: 1.4rem;
-            color: white !Important;
-        }
-
-        .large-modal {
-            max-width: 800px !important;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        .result-section {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-        }
-
-        .result-section h4 {
-            font-size: 1.2rem;
-            margin-bottom: 0.5rem;
-            border-bottom: 1px solid rgba(0, 255, 255, 0.2);
-            padding-bottom: 0.25rem;
-            color: #00ffff;
-        }
-
-        .dialog-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            margin-top: 1.5rem;
-        }
-
-        .dialog-btn {
-            padding: 0.7rem 1.5rem;
-            border: none;
-            border-radius: 6px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .dialog-btn:hover {
-            transform: translateY(-2px);
-        }
-
-        .dialog-btn.movie {
-            background: linear-gradient(135deg, #ff7043, #f44336);
-            color: white;
-        }
-
-        .dialog-btn.tv {
-            background: linear-gradient(135deg, #2196f3, #3f51b5);
-            color: white;
-        }
-
-        .search-results-list {
-            max-height: 400px;
-            overflow-y: auto;
-            margin: 1rem 0;
-            padding: 0.5rem;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 8px;
-            text-align: left;
-        }
-
-        .search-result-item {
-            padding: 0.75rem;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .search-result-item:hover {
-            background: rgba(0, 255, 255, 0.1);
-        }
-
-        .result-poster img,
-        .no-poster {
-            width: 60px;
-            height: 90px;
-            object-fit: cover;
-            border-radius: 4px;
-        }
-
-        .no-poster {
-            background: #333;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: #999;
-            font-size: 0.8rem;
-        }
-
-        .result-info {
-            flex: 1;
-        }
-
-        .result-title {
-            font-weight: bold;
-            margin-bottom: 0.3rem;
-        }
-
-        .result-year {
-            font-size: 0.9rem;
-            color: #aaa;
-        }
-
-        .loading,
-        .no-results,
-        .error {
-            padding: 1rem;
-            text-align: center;
-            color: #aaa;
-        }
-
-        .error {
-            color: #ff6b6b;
-        }
-
-        #pickr {
-            width: 100%;
-            height: 32px;
-            border-radius: 6px;
-            background: #ffffff;
-            cursor: pointer;
-            border: 1px solid #555;
-        }
-
-        .logo-row-aligned {
-            position: relative;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            width: 100%;
-        }
-
-        .logo-select-container {
-            flex: 1;
-        }
-
-        .pickr-inline-square {
-            width: 32px;
-            height: 32px;
-            border-radius: 6px;
-            border: 1px solid #555;
-            cursor: pointer;
-            margin-top: 2px;
-        }
-
-        .pickr-bar-container {
-            width: 100%;
-            margin-top: -5px !Important;
-            margin-bottom: 10px !Important;
-            height: 12px;
-        }
-
-        /* Override Pickr's button styling to make it a bar */
-        .pickr-bar-container .pcr-button {
-            width: 100% !important;
-            height: 12px !important;
-            border-radius: 6px !important;
-            border: 1px solid #444 !important;
-        }
-
-        .pcr-app[data-theme='monolith'] {
-            background: #111 !important;
-            border-radius: 10px !important;
-            border: 1px solid rgba(0, 255, 255, 0.2) !important;
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.1) !important;
-            color: white !important;
-            z-index: 1000 !important;
-        }
-
-        .pcr-app[data-theme='monolith'] .pcr-result {
-            background: #222 !important;
-            color: #fff !important;
-            border: 1px solid rgba(255, 255, 255, 0.15) !important;
-        }
-
-        .pcr-app[data-theme='monolith'] input {
-            background: #222 !important;
-            color: white !important;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        }
-
-        .pcr-app[data-theme='monolith'] .pcr-save {
-            background: linear-gradient(135deg, #00bfa5, #8e24aa) !important;
-            color: white !important;
-            font-weight: bold;
-            border: none !important;
-            border-radius: 6px !important;
-            padding: 0.4rem 0.8rem !important;
-            box-shadow: 0 0 6px rgba(0, 255, 255, 0.2) !important;
-        }
-
-        .pcr-app[data-theme='monolith'] .pcr-slider {
-            border-radius: 6px !important;
-            height: 10px !important;
-        }
-
-        .result-type {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            margin-top: 4px;
-            font-weight: 600;
-            color: white;
-        }
-
-        .icon-badge {
-            background: linear-gradient(to bottom right, #2196f3, #3f51b5);
-            padding: 6px;
-            border-radius: 6px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .media-type-btn.active::after {
-            content: "✓";
-            font-size: 1rem;
-            color: white;
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            right: 10px;
-            margin-left: 6px;
-            font-weight: bold;
-            pointer-events: none;
-        }
-
-        .media-type-btn:not(.active) {
-            opacity: 0.6;
-            filter: grayscale(50%);
-        }
-
-        .sidebar-section .media-type-selector~small {
-            font-size: 0.85rem !Important;
-            color: #ccc !Important;
-            margin-top: 6px;
-            display: block;
-            text-align: left;
-            padding-left: 2px;
-            line-height: 1.4;
-        }
-
-        .sidebar-section:nth-of-type(4) {
-            margin-top: -0.8rem;
-        }
-
-        .sidebar-section:nth-of-type(4) label {
-            margin-bottom: 0.5rem;
-        }
-
-        .sidebar-section:nth-of-type(4) input {
-            margin-bottom: 1rem;
-        }
-
-        .network-logo-search-container {
-            position: relative;
-            display: flex;
-            align-items: center;
-            width: 100%;
-            margin-bottom: 8px;
-        }
-
-        #network-logo-search {
-            flex: 1;
-            /* Change from 0.8 to 1 */
-            max-width: none;
-            /* Remove the 75% restriction */
-            padding: 8px 10px;
-            border-radius: 6px;
-            background: #333;
-            color: white;
-            border: none;
-        }
-
-        .network-logo-suggestions {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            z-index: 100;
-            background: #222;
-            color: white;
-            border-radius: 0 0 6px 6px;
-            overflow: hidden;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-            max-height: 220px;
-            overflow-y: auto;
-            display: none;
-        }
-
-        .suggestion-item {
-            padding: 0.75rem;
-            cursor: pointer;
-            transition: background 0.2s;
-            display: flex;
-            justify-content: center;
-            /* Center content horizontally */
-            align-items: center;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-            min-height: 40px;
-            /* Ensure minimum height for each item */
-        }
-
-        .suggestion-item:hover {
-            background: #444;
-        }
-
-
-        .logo-preview-img {
-            max-width: 120px;
-            max-height: 30px;
-            width: auto;
-            height: auto;
-            object-fit: contain;
-        }
-
-        .toggle-switch-container {
-            margin-left: auto;
-            /* Push to the right */
-            padding-left: 10px;
-            /* Add space between search and toggle */
-        }
-
-        .toggle-switch {
-            position: relative;
-            display: inline-block;
-            width: 46px !Important;
-            height: 24px;
-            margin-left: 8px;
-        }
-
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-            margin: 0;
-        }
-
-        .toggle-slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #444;
-            transition: .3s;
-            border-radius: 24px;
-            overflow: hidden;
-            /* Keep content inside the slider */
-        }
-
-        .toggle-slider:before {
-            position: absolute;
-            content: "";
-            height: 18px;
-            width: 18px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: .3s;
-            border-radius: 50%;
-            z-index: 2;
-            /* Make sure it's above any text */
-        }
-
-        input:checked+.toggle-slider {
-            background-color: #0088cc;
-            /* Use solid bright blue instead of gradient */
-        }
-
-        input:checked+.toggle-slider:before {
-            transform: translateX(22px);
-        }
-
-        /* Remove the ✓/✕ indicators since they're not in your other site's implementation */
-        .toggle-slider:after,
-        input:checked+.toggle-slider:after {
-            content: none;
-        }
-    </style>
 </head>
-
 <body>
     <header>
         <div class="header-left">
@@ -1165,7 +20,6 @@
             <a href="../index.html"><img src="../assets/logo.png" alt="Poster Tools" class="poster-tools-brand" /></a>
         </div>
     </header>
-
     <div class="layout">
         <div class="sidebar">
             <div class="sidebar-section">
@@ -1175,7 +29,6 @@
                     <button class="media-type-btn" data-type="tv">TV Shows</button>
                 </div>
             </div>
-
             <div class="sidebar-section">
                 <label for="tmdb-search-input">Search TMDB</label>
                 <div class="tmdb-search">
@@ -1190,19 +43,15 @@
                     <div class="autocomplete-suggestions" id="mediux-suggestions"></div>
                 </div>
             </div>
-
             <div class="sidebar-section">
                 <label for="mediux-username-filter">Filter by Mediux User</label>
                 <input type="text" id="mediux-username-filter" placeholder="Leave empty to show all posters..." autocomplete="off" />
             </div>
-
             <div class="sidebar-section">
                 <label for="poster-upload" class="drop-zone-label"><span>Upload Poster</span></label>
                 <input type="file" id="poster-upload" accept="image/*">
             </div>
-
             <div class="section-separator"></div>
-
             <div class="sidebar-section">
                 <label for="overlay-select">Movie Banner</label>
                 <select id="overlay-select">
@@ -1212,11 +61,8 @@
                     <option value="../assets/overlays/4K no HDR.png">Ultra HD</option>
                 </select>
             </div>
-
-            <!-- Network Logo Section -->
             <div class="sidebar-section">
                 <label for="network-logo-search">Network Logo</label>
-                <!-- First row: search and toggle -->
                 <div class="network-logo-search-container">
                     <input type="text" id="network-logo-search" placeholder="Search for logo..." autocomplete="off">
                     <div class="toggle-switch-container">
@@ -1227,15 +73,11 @@
                     </div>
                     <div class="network-logo-suggestions" id="network-logo-suggestions"></div>
                 </div>
-                <!-- Second row: Pickr bar underneath -->
                 <div class="pickr-bar-container">
                     <div id="pickr"></div>
                 </div>
             </div>
-            <!-- End Network Logo Section -->
-
             <div class="section-separator"></div>
-
             <div class="sidebar-action-row">
                 <button id="download-btn" class="icon-button teal" title="Download">
                     <img src="../assets/poster-overlay-icons/download.svg" class="icon" />
@@ -1244,15 +86,12 @@
                     <img src="../assets/poster-overlay-icons/refresh-cw.svg" class="icon" />
                 </button>
             </div>
-
         </div>
-
         <div class="main">
             <div class="main-content">
                 <div class="canvas-container">
                     <canvas id="overlay-canvas" width="1000" height="1500"></canvas>
                 </div>
-
                 <div class="metadata-panel" id="metadata-panel" style="display: none;">
                     <div class="title-row">
                         <h2 id="meta-title">Title</h2>
@@ -1262,18 +101,12 @@
                         </div>
                     </div>
                     <div id="meta-tagline" class="tagline"></div>
-
                     <div class="info-group">
                         <div class="info-item"><span class="label">Year:</span> <span id="meta-year"></span></div>
                         <div class="info-item"><span class="label">Runtime:</span> <span id="meta-runtime"></span></div>
                         <div class="info-item"><span class="label">Genres:</span> <span id="meta-genres"></span></div>
-
-                        <!-- Movie specific field label changes dynamically -->
                         <div class="info-item"><span class="label" id="creator-label">Director:</span> <span id="meta-director"></span></div>
-
                         <div class="info-item"><span class="label">Cast:</span> <span id="meta-cast"></span></div>
-
-                        <!-- TV Show specific fields (hidden for movies) -->
                         <div class="info-item" id="meta-seasons-row" style="display: none;">
                             <span class="label">Seasons:</span> <span id="meta-seasons"></span>
                         </div>
@@ -1283,16 +116,12 @@
                         <div class="info-item" id="meta-network-row" style="display: none;">
                             <span class="label">Network:</span> <span id="meta-network"></span>
                         </div>
-
                         <div class="info-item"><span class="label">Language:</span> <span id="meta-language"></span></div>
                         <div class="info-item"><span class="label">Country:</span> <span id="meta-country"></span></div>
                     </div>
-
                     <div class="overview" id="meta-overview"></div>
                 </div>
             </div>
-
-            <!-- Poster Modal inserted BELOW canvas and metadata -->
             <div id="poster-modal" style="display: none;">
                 <button class="close-modal" onclick="document.getElementById('poster-modal').style.display='none'">Close</button>
                 <div class="poster-grid-wrapper">
@@ -1312,9 +141,8 @@
 
         const metaPanel = document.getElementById('metadata-panel');
         const TMDB_API_KEY = '96c821c9e98fab6a43bff8021d508d1d';
-
-        // Network Logo Functionality
         const networkLogoSelect = document.getElementById('network-logo-select');
+
         let networkLogoImage = null;
         let currentLogoPath = 'none';
         let selectedLogoColor = '#ffffff';
@@ -1338,12 +166,10 @@
             }
         });
 
-        // Store a direct reference to the color picker element
         pickr.on('change', (color) => {
             const hex = color.toHEXA().toString();
             selectedLogoColor = hex;
 
-            // Update the background color directly on the element we stored
             pickrElement.style.background = hex;
 
             if (networkLogoImage && baseImage) {
@@ -1355,7 +181,6 @@
             const hex = color.toHEXA().toString();
             selectedLogoColor = hex;
 
-            // Update the background color directly on the element we stored
             pickrElement.style.background = hex;
 
             if (networkLogoImage && baseImage) {
@@ -1368,149 +193,102 @@
         const LOGO_WIDTH = 160;
         const LOGO_MARGIN_LEFT = 50;
         const LOGO_MARGIN_TOP = 50;
-
-
-
-        // Media type selection logic
         const mediaTypeButtons = document.querySelectorAll('.media-type-btn');
-        let currentMediaType = 'movie'; // Default to movies
+        let currentMediaType = 'movie';
 
         mediaTypeButtons.forEach(button => {
             button.addEventListener('click', () => {
-                // Update active state
                 mediaTypeButtons.forEach(btn => btn.classList.remove('active'));
                 button.classList.add('active');
 
-                // Update current media type
                 currentMediaType = button.dataset.type;
 
-                // Clear search input when switching media types
                 document.getElementById('tmdb-search-input').value = '';
                 document.getElementById('tmdb-suggestions').innerHTML = '';
             });
         });
 
-        /**
-         * Enhanced filename parser for better content type detection
-         * This function uses various strategies to determine whether a file is likely
-         * a TV show or movie poster
-         */
         function advancedContentTypeDetection(filename) {
-            // Convert to lowercase and remove file extension
             const cleanName = filename.toLowerCase().replace(/\.[^/.]+$/, '');
 
-            // TV show pattern matches
             const tvPatterns = [
-                // Season and episode patterns
-                /s\d{1,2}e\d{1,2}/, // S01E01, s1e01
-                /season\s*\d+/i, // Season 1
-                /\d{1,2}x\d{1,2}/, // 1x01
-                /episode\s*\d+\b/i, // Episode 1
-
-                // TV show specific terminology
-                /\bseries\b/i, // Series 
-                /\bseason\b/i, // Season in the name
-                /\bshow\b/i, // Show in the name
-                /\bpilot\b/i, // Pilot episode
-                /\bfinale\b/i, // Season/series finale
-                /\bepisodes?\b/i, // Episode/Episodes
-
-                // Common TV show naming patterns
-                /\b(tv|television)\b/i, // TV or Television in the name
-                /\bseries\s+\d+\b/i, // Series 1, Series 2, etc.
-                /\bcomplete\s+series\b/i, // Complete Series
-                /\bbox\s+set\b/i, // Box Set (more common for TV)
-                /[\s.-]complete[\s.-]/i, // Complete in the name
+                /s\d{1,2}e\d{1,2}/,
+                /season\s*\d+/i,
+                /\d{1,2}x\d{1,2}/,
+                /episode\s*\d+\b/i,
+                /\bseries\b/i,
+                /\bseason\b/i,
+                /\bshow\b/i,
+                /\bpilot\b/i,
+                /\bfinale\b/i,
+                /\bepisodes?\b/i,
+                /\b(tv|television)\b/i,
+                /\bseries\s+\d+\b/i,
+                /\bcomplete\s+series\b/i,
+                /\bbox\s+set\b/i,
+                /[\s.-]complete[\s.-]/i,
             ];
 
-            // Movie pattern matches (less definitive but can help)
             const moviePatterns = [
-                // Movie specific terminology
-                /\bfilm\b/i, // Film in the name
-                /\bmovie\b/i, // Movie in the name
-                /\bcinema\b/i, // Cinema in the name
-                /\bfeature\b/i, // Feature film
-                /\bextended\b/i, // Extended edition (more common for movies)
-                /\bdirectors?.?cut\b/i, // Director's Cut
-                /\btheatrical\b/i, // Theatrical release
-                /\b(dvdscr|camrip|hdts)\b/i, // Common movie release terms
-                /\b(bluray|brrip)\b/i, // Blu-ray related terms
+                /\bfilm\b/i,
+                /\bmovie\b/i,
+                /\bcinema\b/i,
+                /\bfeature\b/i,
+                /\bextended\b/i,
+                /\bdirectors?.?cut\b/i,
+                /\btheatrical\b/i,
+                /\b(dvdscr|camrip|hdts)\b/i,
+                /\b(bluray|brrip)\b/i,
             ];
 
-            // Check TV patterns
             for (const pattern of tvPatterns) {
                 if (pattern.test(cleanName)) {
                     return 'tv';
                 }
             }
 
-            // Check movie patterns
             for (const pattern of moviePatterns) {
                 if (pattern.test(cleanName)) {
                     return 'movie';
                 }
             }
 
-            // Look for year patterns that help differentiate
             const yearMatch = cleanName.match(/\b(19|20)\d{2}\b/);
             if (yearMatch) {
-                // Check if there are multiple years separated by a hyphen (common for TV shows)
-                // Example: Show.Name.2018-2022
                 const multiYearMatch = cleanName.match(/\b(19|20)\d{2}[-–]\s*(19|20)\d{2}\b/);
                 if (multiYearMatch) {
                     return 'tv';
                 }
 
-                // If a single year is at the end of the filename, it's more likely a movie
-                // Example: Movie.Name.2022
                 const yearPosition = yearMatch.index;
                 if (yearPosition > cleanName.length - 6) {
                     return 'movie';
                 }
             }
 
-            // If we have title words and quality markers, analyze the structure
-            // Movies often follow pattern: Title.Year.Quality
-            // TV often follows pattern: Title.S01E01.Quality
             const qualityMarkers = /(480p|720p|1080p|2160p|4k|uhd|hdr|x264|x265|hevc|aac|dd5\.1)/i;
             if (qualityMarkers.test(cleanName)) {
-                // If filename contains quality markers but no TV show patterns,
-                // it's more likely to be a movie
                 return 'movie';
             }
 
-            // Default case - we'll try both but start with movie as it's more likely for single posters
             return 'movie';
         }
 
-        /**
-         * Advanced filename parser that attempts to extract the true title
-         * from common naming patterns
-         */
         function parseFileName(filename) {
-            // Remove common file appendages
             let cleanName = filename
-                // Remove quality markers
                 .replace(/(480p|720p|1080p|2160p|4k|uhd|hdr|x264|x265|hevc|aac|dd5\.1)/gi, '')
-                // Remove years
                 .replace(/\b(19|20)\d{2}\b/g, '')
-                // Remove season/episode notation
                 .replace(/s\d{1,2}e\d{1,2}/gi, '')
-                // Remove other common suffixes
                 .replace(/\b(complete|extended|directors.?cut|theatrical|unrated)\b/gi, '')
-                // Remove brackets and their contents
                 .replace(/\[[^\]]*\]/g, '')
                 .replace(/\([^)]*\)/g, '')
-                // Remove common separators
                 .replace(/[._-]/g, ' ')
-                // Cleanup multiple spaces
                 .replace(/\s+/g, ' ')
                 .trim();
 
             return cleanName;
         }
 
-        // Update the poster upload event to use the enhanced detection
         posterUpload.addEventListener('change', e => {
             const file = e.target.files[0];
             if (!file) return;
@@ -1521,33 +299,26 @@
                 baseImage.onload = () => {
                     drawCanvas();
 
-                    // Use the advanced content type detection
                     const suggestedType = advancedContentTypeDetection(file.name);
 
-                    // Try the multi-step search approach
                     multiStepSearch(file.name, currentMediaType)
                         .then(results => {
                             if (results.length === 1) {
-                                // Single clear match - use it directly
                                 fetchMetadataById(results[0].id, results[0].type);
                             } else if (results.length > 1) {
-                                // Multiple matches - let user choose
                                 showSearchResultsDialog(results);
                             } else {
-                                // No good matches - try the other content type
                                 const alternateType = suggestedType === 'movie' ? 'tv' : 'movie';
 
                                 multiStepSearch(file.name, alternateType)
                                     .then(alternateResults => {
                                         if (alternateResults.length > 0) {
-                                            // Found matches with the alternate type
                                             if (alternateResults.length === 1) {
                                                 fetchMetadataById(alternateResults[0].id, alternateResults[0].type);
                                             } else {
                                                 showSearchResultsDialog(alternateResults);
                                             }
                                         } else {
-                                            // Still no matches - prompt user to choose the content type manually
                                             showContentTypeDialog(parseFileName(file.name));
                                         }
                                     });
@@ -1564,30 +335,27 @@
             drawCanvas();
         });
 
-        // Handle network logo selection
         const networkLogoSearch = document.getElementById('network-logo-search');
         const networkLogoSuggestions = document.getElementById('network-logo-suggestions');
         const networkLogoCheckbox = document.getElementById('network-logo-checkbox');
 
-        const logoNames = [
-            'ABC TV', 'ABC', 'Adult Swim', 'AMC', 'AMC+', 'Apple TV+', 'BBC', 'BET+',
-            'BritBox', 'CBS', 'Channel 4', 'Cinemax', 'Comedy Central', 'Crave', 'Discovery',
-            'discovery+', 'Disney+', 'Epix', 'FOX', 'Freevee', 'Fuji TV', 'FX', 'FXX',
-            'HBO Max', 'HBO', 'History', 'Hulu', 'ITV', 'MGM+', 'National Geographic', 'NBC',
-            'Netflix', 'Network 10', 'Paramount+', 'PBS', 'Peacock', 'Prime Video', 'Showcase',
-            'Showtime', 'Sky', 'Spike', 'Stan', 'Starz', 'Syfy', 'TBS', 'The CW', 'TNT',
-            'truTV', 'USA Network', 'Vice', 'CNN', 'Nebula', 'YouTube', 'Facebook Watch',
-            'The WB', 'MTV', 'Nick Jr', 'Nickelodeon', 'Hallmark', 'Dropout', 'Disney Channel',
-            'Dave', 'CBC Gem', 'CBC', 'Cartoon Network', 'Hbo Max', 'Apple TV+'
-        ];
+const logoNames = [
+    'ABC (AU)', 'ABC (US)', 'Adult Swim', 'AMC', 'AMC+', 'Apple TV+', 'BBC', 'BET+',
+    'BritBox', 'CBS', 'Channel 4', 'Cinemax', 'Comedy Central', 'Crave', 'Discovery',
+    'discovery+', 'Disney+', 'Epix', 'FOX', 'Freevee', 'Fuji TV', 'FX', 'FXX',
+    'HBO Max', 'HBO', 'History', 'Hulu', 'ITV', 'MGM+', 'National Geographic', 'NBC',
+    'Netflix', 'Network 10', 'Paramount+', 'PBS', 'Peacock', 'Prime Video', 'Showcase',
+    'Showtime', 'Sky', 'Spike', 'Stan', 'Starz', 'Syfy', 'TBS', 'The CW', 'TNT',
+    'truTV', 'USA Network', 'Vice', 'CNN', 'Nebula', 'YouTube', 'Facebook Watch',
+    'The WB', 'MTV', 'Nick Jr', 'Nickelodeon', 'Hallmark', 'Dropout', 'Disney Channel',
+    'Dave', 'CBC Gem', 'CBC', 'Cartoon Network', 'Hbo Max', 'Apple TV+'
+];
 
-        // Generate the full array with paths automatically
-        const availableLogos = logoNames.map(name => ({
-            name,
-            path: `../assets/logos/${name}.png`
-        }));
+const availableLogos = logoNames.map(name => ({
+    name,
+    path: `../assets/logos/${name}.png`
+}));
 
-        // Function to filter logos based on search query
         function filterLogos(query) {
             query = query.toLowerCase();
             return availableLogos.filter(logo =>
@@ -1595,7 +363,6 @@
             );
         }
 
-        // Function to display filtered logos as suggestions
         function displayLogoSuggestions(logos) {
             networkLogoSuggestions.innerHTML = '';
 
@@ -1607,8 +374,6 @@
             logos.forEach(logo => {
                 const div = document.createElement('div');
                 div.className = 'suggestion-item';
-
-                // Use actual img elements instead of background-image for better control
                 const logoImg = document.createElement('img');
                 logoImg.src = logo.path;
                 logoImg.alt = logo.name;
@@ -1619,7 +384,6 @@
                 logoImg.style.height = 'auto';
                 logoImg.style.display = 'block';
 
-                // Fallback if image fails to load
                 logoImg.onerror = () => {
                     logoImg.style.display = 'none';
                     const fallbackText = document.createElement('div');
@@ -1633,17 +397,14 @@
 
                 div.appendChild(logoImg);
 
-                // Handle click to select this logo
                 div.addEventListener('click', () => {
                     networkLogoSearch.value = logo.name;
                     networkLogoSuggestions.style.display = 'none';
                     currentLogoPath = logo.path;
 
-                    // Only update the logo if the checkbox is checked
                     if (networkLogoCheckbox.checked) {
                         updateNetworkLogo(logo.path);
                     } else {
-                        // If checkbox is unchecked, automatically check it when selecting a logo
                         networkLogoCheckbox.checked = true;
                         updateNetworkLogo(logo.path);
                     }
@@ -1655,7 +416,6 @@
             networkLogoSuggestions.style.display = 'block';
         }
 
-        // Updated function to update network logo
         function updateNetworkLogo(logoPath) {
             if (!logoPath) {
                 networkLogoImage = null;
@@ -1664,12 +424,9 @@
             }
 
             currentLogoPath = logoPath;
-
             networkLogoImage = new Image();
-            networkLogoImage.crossOrigin = "Anonymous"; // Enable coloring of cross-origin images
-
+            networkLogoImage.crossOrigin = "Anonymous";
             networkLogoImage.onload = () => {
-                // Only draw if baseImage is fully loaded and valid
                 if (baseImage && baseImage.complete && baseImage.naturalWidth > 0) {
                     drawCanvas();
                 }
@@ -1683,14 +440,12 @@
             networkLogoImage.src = currentLogoPath;
         }
 
-        // Event listener for the search input
         networkLogoSearch.addEventListener('input', () => {
             const query = networkLogoSearch.value.trim();
 
             if (query === '') {
                 networkLogoSuggestions.style.display = 'none';
 
-                // Don't clear logo when emptying search box if checkbox is checked
                 if (!networkLogoCheckbox.checked) {
                     networkLogoImage = null;
                     currentLogoPath = null;
@@ -1703,30 +458,24 @@
             displayLogoSuggestions(filteredLogos);
         });
 
-        // Show all logos when focusing on empty search field
         networkLogoSearch.addEventListener('focus', () => {
             if (networkLogoSearch.value.trim() === '') {
                 displayLogoSuggestions(availableLogos);
             }
         });
 
-        // Close suggestions when clicking elsewhere
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.network-logo-search-container')) {
                 networkLogoSuggestions.style.display = 'none';
             }
         });
 
-        // Handle checkbox toggling
         networkLogoCheckbox.addEventListener('change', () => {
             if (networkLogoCheckbox.checked) {
-                // Logo is enabled - use the current path or reset if none
                 if (!currentLogoPath || currentLogoPath === 'none') {
-                    // If nothing was selected yet, don't do anything
                     return;
                 }
 
-                // Load and display the network logo
                 networkLogoImage = new Image();
                 networkLogoImage.crossOrigin = "Anonymous";
 
@@ -1743,7 +492,6 @@
 
                 networkLogoImage.src = currentLogoPath;
             } else {
-                // Logo is disabled - remove it but keep the path
                 networkLogoImage = null;
                 if (baseImage) drawCanvas();
             }
@@ -1752,46 +500,31 @@
         function drawCanvas() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Draw the base image
             ctx.drawImage(baseImage, 0, 0, canvas.width, canvas.height);
 
-            // Draw the network logo if one is selected
             if (networkLogoImage) {
-                // Target area dimensions (fixed region where logo should appear)
                 const TARGET_WIDTH = 250;
-                const TARGET_HEIGHT = 43; // Approximate height, will depend on logo aspect ratio
+                const TARGET_HEIGHT = 43;
                 const MARGIN_LEFT = 54;
                 const MARGIN_TOP = 55;
-
-                // Calculate scaling to fit logo within target area while maintaining aspect ratio
                 const logoRatio = networkLogoImage.width / networkLogoImage.height;
                 let logoWidth, logoHeight;
 
-                // Determine if width or height is the limiting factor
                 if (logoRatio > TARGET_WIDTH / TARGET_HEIGHT) {
-                    // Logo is wider (relative to height) than target area
                     logoWidth = TARGET_WIDTH;
                     logoHeight = logoWidth / logoRatio;
                 } else {
-                    // Logo is taller (relative to width) than target area
                     logoHeight = TARGET_HEIGHT;
                     logoWidth = logoHeight * logoRatio;
                 }
 
-                // Create a temporary canvas for coloring the logo
                 const tempCanvas = document.createElement('canvas');
                 tempCanvas.width = networkLogoImage.width;
                 tempCanvas.height = networkLogoImage.height;
                 const tempCtx = tempCanvas.getContext('2d');
-
-                // Draw the original logo to the temporary canvas
                 tempCtx.drawImage(networkLogoImage, 0, 0);
-
-                // Get the image data and apply color transformation
                 const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
                 const data = imageData.data;
-
-                // Convert hex color to RGB
                 const hexToRgb = (hex) => {
                     const r = parseInt(hex.slice(1, 3), 16);
                     const g = parseInt(hex.slice(3, 5), 16);
@@ -1805,23 +538,18 @@
 
                 const targetColor = hexToRgb(selectedLogoColor);
 
-                // Apply the color to the white parts of the logo
                 for (let i = 0; i < data.length; i += 4) {
-                    // If pixel is white or close to white (allows for some anti-aliasing)
                     if (data[i] > 200 && data[i + 1] > 200 && data[i + 2] > 200 && data[i + 3] > 0) {
-                        // Set the pixel to the selected color while preserving its alpha
-                        const alpha = data[i + 3]; // Store original alpha
-                        data[i] = targetColor.r; // R
-                        data[i + 1] = targetColor.g; // G
-                        data[i + 2] = targetColor.b; // B
-                        data[i + 3] = alpha; // Restore original alpha
+                        const alpha = data[i + 3];
+                        data[i] = targetColor.r;
+                        data[i + 1] = targetColor.g;
+                        data[i + 2] = targetColor.b;
+                        data[i + 3] = alpha;
                     }
                 }
 
-                // Put the modified image data back on the temp canvas
                 tempCtx.putImageData(imageData, 0, 0);
 
-                // Draw the colored logo onto the main canvas
                 ctx.drawImage(
                     tempCanvas,
                     MARGIN_LEFT,
@@ -1831,7 +559,6 @@
                 );
             }
 
-            // Only draw the overlay if one is explicitly selected and not "none"
             if (overlaySelect.value !== "none") {
                 overlayImage = new Image();
                 overlayImage.onload = () => {
@@ -1841,24 +568,15 @@
             }
         }
 
-        /**
-         * Performs a multi-step search to find the best match for a given title
-         * 1. Tries exact title match
-         * 2. If that fails, tries searching with advanced parsing
-         * 3. If still no results, tries with keywords
-         */
         function multiStepSearch(title, type) {
-            // Clean up the title
             const originalTitle = title.replace(/\.[^/.]+$/, '').replace(/[_.-]/g, ' ').trim();
 
-            // Step 1: Try exact title match
             return searchTMDB(originalTitle, type)
                 .then(results => {
                     if (results.length > 0) {
-                        return results; // Found exact matches
+                        return results;
                     }
 
-                    // Step 2: Try with advanced parsing
                     const parsedTitle = parseFileName(originalTitle);
                     if (parsedTitle !== originalTitle) {
                         return searchTMDB(parsedTitle, type);
@@ -1868,16 +586,15 @@
                 })
                 .then(results => {
                     if (results.length > 0) {
-                        return results; // Found matches with advanced parsing
+                        return results;
                     }
 
-                    // Step 3: Try keyword search by splitting the title
                     const keywords = originalTitle
                         .split(/\s+/)
-                        .filter(word => word.length > 2) // Skip small words
-                        .filter(word => !/(480p|720p|1080p|4k|uhd|hdr|x264|x265|hevc)/i.test(word)); // Skip quality terms
+                        .filter(word => word.length > 2)
+                        .filter(word => !/(480p|720p|1080p|4k|uhd|hdr|x264|x265|hevc)/i.test(word));
 
-                    const keywordTitle = keywords.slice(0, 3).join(' '); // Use first 3 meaningful words
+                    const keywordTitle = keywords.slice(0, 3).join(' ');
 
                     if (keywordTitle && keywordTitle !== originalTitle) {
                         return searchTMDB(keywordTitle, type);
@@ -1887,9 +604,6 @@
                 });
         }
 
-        /**
-         * Searches TMDB for a given query
-         */
         function searchTMDB(query, type) {
             return fetch(`https://api.themoviedb.org/3/search/${type}?query=${encodeURIComponent(query)}&api_key=${TMDB_API_KEY}`)
                 .then(res => res.json())
@@ -1911,10 +625,8 @@
                 });
         }
 
-        // Update search function to respect the selected media type
         const searchInput = document.getElementById('tmdb-search-input');
         const suggestionsBox = document.getElementById('tmdb-suggestions');
-
         searchInput.addEventListener('input', () => {
             const query = searchInput.value.trim();
             if (!query) {
@@ -1922,13 +634,10 @@
                 return;
             }
 
-            // Use the selected media type
             if (currentMediaType === 'movie') {
-                // Search only movies
                 fetch(`https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(query)}&api_key=${TMDB_API_KEY}&language=en-US&include_adult=false`)
                     .then(res => res.json())
                     .then(data => {
-                        // Filter and prepare movie results
                         const results = data.results
                             .filter(movie => movie.poster_path)
                             .slice(0, 10)
@@ -1943,11 +652,9 @@
                         displaySearchResults(results);
                     });
             } else {
-                // Search only TV shows
                 fetch(`https://api.themoviedb.org/3/search/tv?query=${encodeURIComponent(query)}&api_key=${TMDB_API_KEY}&language=en-US&include_adult=false`)
                     .then(res => res.json())
                     .then(data => {
-                        // Filter and prepare TV show results
                         const results = data.results
                             .filter(show => show.poster_path)
                             .slice(0, 10)
@@ -1964,11 +671,9 @@
             }
         });
 
-        // MEDIUX SEARCH SECTION - OPTIMIZED VERSION
         const mediuxInput = document.getElementById('mediux-search-input');
         const mediuxSuggestions = document.getElementById('mediux-suggestions');
 
-        // Set up debounce function to avoid excessive API calls
         function debounce(func, wait) {
             let timeout;
             return function(...args) {
@@ -1977,7 +682,6 @@
             };
         }
 
-        // Add event listener with debounce
         mediuxInput.addEventListener('input', debounce(() => {
             const query = mediuxInput.value.trim();
             if (!query) {
@@ -1985,15 +689,12 @@
                 return;
             }
 
-            // Show loading indicator
             mediuxSuggestions.innerHTML = '<div class="search-result-item">Searching...</div>';
 
             searchMediux(query);
-        }, 300)); // 300ms debounce
+        }, 300));
 
-        // Function to search Mediux API with the optimal query structure
         function searchMediux(query) {
-            // First try searching directly in Mediux
             const gqlQuery = `
     query {
       movies(
@@ -2024,10 +725,8 @@
     }
   `;
 
-            // Show loading indicator
             mediuxSuggestions.innerHTML = '<div class="search-result-item">Searching...</div>';
 
-            // First try the Mediux API
             fetch("https://api-frontend.pejamas.workers.dev", {
                     method: "POST",
                     headers: {
@@ -2049,24 +748,20 @@
                 .then(data => {
                     const movies = data.data?.movies || [];
 
-                    // If we found results in Mediux, display them
                     if (movies.length > 0) {
                         displayMediuxResults(movies);
                     } else {
-                        // If no results in Mediux, try TMDB as a fallback
                         mediuxSuggestions.innerHTML = '<div class="search-result-item">Searching TMDB...</div>';
                         searchTMDBForMediux(query);
                     }
                 })
                 .catch(err => {
                     console.error("Error fetching Mediux data:", err);
-                    // On error, also try TMDB as a fallback
                     mediuxSuggestions.innerHTML = '<div class="search-result-item">Searching TMDB...</div>';
                     searchTMDBForMediux(query);
                 });
         }
 
-        // Helper function to search TMDB as a fallback for Mediux
         function searchTMDBForMediux(query) {
             fetch(`https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(query)}&api_key=${TMDB_API_KEY}`)
                 .then(res => res.json())
@@ -2076,19 +771,17 @@
                         return;
                     }
 
-                    // Format TMDB results to display in the Mediux search
                     const tmdbResults = data.results
-                        .filter(movie => movie.poster_path) // Only show movies with posters
+                        .filter(movie => movie.poster_path)
                         .slice(0, 10)
                         .map(movie => ({
-                            id: movie.id.toString(), // Convert ID to string for consistency
+                            id: movie.id.toString(),
                             title: movie.title,
                             release_date: movie.release_date,
-                            tmdb_id: movie.id, // Keep the original TMDB ID
-                            is_tmdb_result: true // Flag to identify as TMDB result
+                            tmdb_id: movie.id,
+                            is_tmdb_result: true
                         }));
 
-                    // Display the TMDB results with special formatting
                     displayTMDBResultsForMediux(tmdbResults);
                 })
                 .catch(err => {
@@ -2097,7 +790,6 @@
                 });
         }
 
-        // Display TMDB results in the Mediux suggestion box
         function displayTMDBResultsForMediux(movies) {
             mediuxSuggestions.innerHTML = '';
 
@@ -2106,46 +798,33 @@
                 return;
             }
 
-            // Add a header indicating these are TMDB results
             const header = document.createElement('div');
             header.className = 'result-header';
             header.textContent = 'Results from TMDB';
-            header.style.backgroundColor = 'rgba(1, 180, 228, 0.3)'; // TMDB blue
+            header.style.backgroundColor = 'rgba(1, 180, 228, 0.3)';
             mediuxSuggestions.appendChild(header);
 
-            // Display each result
             movies.forEach(movie => {
                 const div = document.createElement('div');
                 div.className = 'search-result-item';
-
-                // Add movie badge
                 const badge = document.createElement('span');
                 badge.className = 'type-badge movie';
                 badge.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="white" viewBox="0 0 24 24"><path d="M2 6h20v12H2z" fill="none" stroke="white" stroke-width="2"/><path d="M7 6v12M17 6v12" stroke="white" stroke-width="2"/></svg>`;
-
-                // Format year from release date
                 const year = movie.release_date ? movie.release_date.substring(0, 4) : '—';
-
-                // Add a small badge indicating it's from TMDB
                 const tmdbBadge = document.createElement('span');
                 tmdbBadge.style.marginLeft = '8px';
                 tmdbBadge.style.padding = '2px 5px';
                 tmdbBadge.style.fontSize = '0.7rem';
-                tmdbBadge.style.backgroundColor = 'rgba(1, 180, 228, 0.3)'; // TMDB blue
+                tmdbBadge.style.backgroundColor = 'rgba(1, 180, 228, 0.3)';
                 tmdbBadge.style.borderRadius = '4px';
                 tmdbBadge.textContent = 'TMDB';
-
-                // Set content and append badges
                 div.textContent = `${movie.title} (${year})`;
                 div.appendChild(tmdbBadge);
                 div.appendChild(badge);
-
-                // Handle click to use TMDB ID to try to find matching Mediux content
                 div.addEventListener('click', () => {
                     mediuxInput.value = movie.title;
                     mediuxSuggestions.innerHTML = '';
 
-                    // Try to find this TMDB movie in Mediux by title
                     lookupMediuxByTMDBId(movie.tmdb_id, movie.title);
                 });
 
@@ -2153,9 +832,7 @@
             });
         }
 
-        // Function to look up Mediux content by TMDB ID or title
         function lookupMediuxByTMDBId(tmdbId, title) {
-            // Try to find a movie with matching TMDB ID
             const gqlQuery = `
     query {
       movies(
@@ -2173,7 +850,6 @@
     }
   `;
 
-            // Show a loading message in the poster modal
             showPosterModal(`Looking for "${title}" in Mediux...`);
 
             fetch("https://api-frontend.pejamas.workers.dev", {
@@ -2193,10 +869,8 @@
                     const mediuxMovies = data.data?.movies || [];
 
                     if (mediuxMovies.length > 0) {
-                        // Found a matching movie in Mediux!
                         fetchMoviePosters(mediuxMovies[0].id, mediuxMovies[0].title);
                     } else {
-                        // No matching movie found, inform the user
                         showPosterModal(`"${title}" was found in TMDB but not in Mediux yet. Try searching for another title.`);
                     }
                 })
@@ -2214,29 +888,19 @@
                 return;
             }
 
-            // Show all movies, marking those that have posters
             movies.forEach(movie => {
                 const div = document.createElement('div');
                 div.className = 'search-result-item';
-
-                // Add movie badge
                 const badge = document.createElement('span');
                 badge.className = 'type-badge movie';
                 badge.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="white" viewBox="0 0 24 24"><path d="M2 6h20v12H2z" fill="none" stroke="white" stroke-width="2"/><path d="M7 6v12M17 6v12" stroke="white" stroke-width="2"/></svg>`;
-
-                // Format year from release date
                 const year = movie.release_date ? movie.release_date.substring(0, 4) : '—';
-
-                // Check if this movie has any posters (direct, in sets, or collection)
                 const hasDirectPosters = movie.posters && movie.posters.length > 0;
                 const hasSetPosters = movie.movie_sets &&
-                    movie.movie_sets.some(set => set.files && set.files.length > 0);
+                movie.movie_sets.some(set => set.files && set.files.length > 0);
                 const hasCollection = movie.collection_id && movie.collection_id.id;
-
-                // Set content and append badge
                 div.textContent = `${movie.title} (${year})`;
 
-                // Add indicators based on available poster sources
                 if (hasDirectPosters || hasSetPosters) {
                     const posterBadge = document.createElement('span');
                     posterBadge.style.marginLeft = '8px';
@@ -2251,7 +915,7 @@
                     collectionBadge.style.marginLeft = '8px';
                     collectionBadge.style.padding = '2px 5px';
                     collectionBadge.style.fontSize = '0.7rem';
-                    collectionBadge.style.backgroundColor = 'rgba(255, 215, 0, 0.3)'; // Gold
+                    collectionBadge.style.backgroundColor = 'rgba(255, 215, 0, 0.3)';
                     collectionBadge.style.borderRadius = '4px';
                     collectionBadge.textContent = 'Collection';
                     div.appendChild(collectionBadge);
@@ -2267,14 +931,12 @@
                 }
 
                 div.appendChild(badge);
-
-                // Handle click to fetch posters - now with false for includeCollection
                 div.addEventListener('click', () => {
                     mediuxInput.value = movie.title;
                     mediuxSuggestions.innerHTML = '';
 
                     if (hasDirectPosters || hasSetPosters || hasCollection) {
-                        fetchMoviePosters(movie.id, movie.title, false); // Default to not including collection posters
+                        fetchMoviePosters(movie.id, movie.title, false);
                     } else {
                         showPosterModal(`No custom posters found for "${movie.title}"`);
                     }
@@ -2284,21 +946,16 @@
             });
         }
 
-        // Function to fetch all posters for a movie with collection control
         function fetchMoviePosters(movieId, movieTitle) {
-            // Show a loading message in the poster modal
             showPosterModal(`Loading posters for "${movieTitle}"...`);
 
-            // Check if we have a username filter
             const usernameFilter = document.getElementById('mediux-username-filter').value.trim();
 
-            // Build the username filter part of the query if a username is provided
             let usernameFilterQuery = '';
             if (usernameFilter) {
                 usernameFilterQuery = `, { uploaded_by: { username: { _icontains: "${usernameFilter}" } } }`;
             }
 
-            // Our validated working query - now with optional username filter
             const gqlQuery = `
     query {
       movies_by_id(id: ${movieId}) {
@@ -2387,8 +1044,6 @@
                     const movie = data.data.movies_by_id;
                     const allPosters = [];
                     const posterPromises = [];
-
-                    // Process direct posters
                     const directPosters = movie.files || [];
                     console.log(`Found ${directPosters.length} direct posters`);
 
@@ -2411,7 +1066,6 @@
                         );
                     });
 
-                    // Process movie set posters
                     const movieSets = movie.movie_sets || [];
                     movieSets.forEach(set => {
                         const setPosters = set.files || [];
@@ -2437,13 +1091,10 @@
                         });
                     });
 
-                    // Process collection posters if available - but ONLY for the current movie, not other movies in collection
                     if (movie.collection_id) {
-                        // Collection posters
                         const collectionPosters = movie.collection_id.files || [];
                         console.log(`Found ${collectionPosters.length} collection posters for ${movie.collection_id.collection_name}`);
 
-                        // Include collection-level posters as they're relevant to this movie
                         collectionPosters.forEach(file => {
                             posterPromises.push(
                                 fetchAssetAsDataUrl(file.id)
@@ -2463,21 +1114,17 @@
                             );
                         });
 
-                        // DO NOT include posters from other movies in the collection
                     }
 
-                    // Exit early if no posters found
                     if (posterPromises.length === 0) {
                         console.log("No posters found");
                         showPosterModal(`No posters found for "${movieTitle}"`);
                         return;
                     }
 
-                    // Fetch all posters
                     Promise.allSettled(posterPromises)
                         .then(results => {
                             console.log(`Finished processing ${results.length} posters. Success: ${results.filter(r => r.status === 'fulfilled').length}, Failed: ${results.filter(r => r.status === 'rejected').length}`);
-
                             const usernameFilter = document.getElementById('mediux-username-filter').value.trim();
 
                             if (allPosters.length === 0) {
@@ -2497,7 +1144,6 @@
                 });
         }
 
-        // Updated function to fetch a file asset as a data URL
         function fetchAssetAsDataUrl(fileId) {
             console.log(`Fetching asset: ${fileId}`);
 
@@ -2508,7 +1154,7 @@
                     },
                     body: JSON.stringify({
                         endpoint: `/assets/${fileId}`,
-                        body: {} // Empty body for asset requests
+                        body: {}
                     })
                 })
                 .then(response => {
@@ -2543,26 +1189,20 @@
             const modal = document.getElementById('poster-modal');
             const container = document.getElementById('poster-results');
             container.innerHTML = '';
-
             const usernameFilter = document.getElementById('mediux-username-filter').value.trim();
 
-            // Update modal title with filter info if applicable
             if (usernameFilter) {
                 modal.querySelector('.close-modal').textContent = `${posters.length} posters by "${usernameFilter}"`;
             } else {
                 modal.querySelector('.close-modal').textContent = `Close (${posters.length} posters)`;
             }
 
-            // Make sure the container has the poster-grid class to use your existing CSS
             container.className = 'poster-grid';
-
-            // Show all posters directly in the container
             posters.forEach(poster => {
                 const img = document.createElement('img');
                 img.src = poster.dataUrl;
                 img.alt = title || 'Movie Poster';
 
-                // Tooltip handling
                 img.addEventListener('mouseenter', (e) => {
                     const tooltip = document.getElementById('tooltip');
                     tooltip.textContent = `by ${poster.creator}`;
@@ -2581,9 +1221,7 @@
                     tooltip.style.opacity = 0;
                 });
 
-                // Handle click to use this poster
                 img.addEventListener('click', () => {
-                    // Store the data URL in a local variable to ensure it's preserved
                     const imageDataUrl = poster.dataUrl;
 
                     const image = new Image();
@@ -2592,7 +1230,6 @@
                     image.onload = () => {
                         baseImage = image;
 
-                        // Ensure overlay is redrawn
                         if (overlaySelect.value !== "none") {
                             overlayImage.src = overlaySelect.value;
                         }
@@ -2600,58 +1237,47 @@
                         drawCanvas();
                         modal.style.display = 'none';
 
-                        // Fetch TMDB metadata after selecting the poster
                         fetchTMDBMetadataForTitle(title);
                     };
 
-                    // Use the stored data URL
                     image.src = imageDataUrl;
                 });
 
                 container.appendChild(img);
             });
 
-            // Make sure the wrapper is also using the proper class
             const gridWrapper = document.querySelector('.poster-grid-wrapper');
             if (gridWrapper) {
-                // Make sure it doesn't have any inline styles overriding the CSS
                 gridWrapper.removeAttribute('style');
             }
 
-            // Show the modal
             modal.style.display = 'flex';
 
-            // Enable horizontal scrolling on the poster grid
             enableHorizontalScrolling();
         }
 
-        // Function to fetch TMDB metadata for a title
         function fetchTMDBMetadataForTitle(title) {
-            // Show loading state in metadata panel
             metaPanel.style.display = 'flex';
             document.getElementById('meta-title').textContent = title;
             document.getElementById('meta-overview').textContent = "Loading metadata...";
 
-            // Search TMDB
             fetch(`https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(title)}&api_key=${TMDB_API_KEY}`)
                 .then(res => res.json())
                 .then(data => {
                     if (data.results && data.results.length > 0) {
-                        // Get the first (most relevant) result
                         const movieId = data.results[0].id;
-                        // Fetch full details
                         fetchMetadataById(movieId, 'movie');
                     } else {
-                        // No results, try TV show search instead
+
                         return fetch(`https://api.themoviedb.org/3/search/tv?query=${encodeURIComponent(title)}&api_key=${TMDB_API_KEY}`)
                             .then(res => res.json())
                             .then(tvData => {
                                 if (tvData.results && tvData.results.length > 0) {
-                                    // Get the first TV show result
+
                                     const showId = tvData.results[0].id;
                                     fetchMetadataById(showId, 'tv');
                                 } else {
-                                    // No results found in either movies or TV
+
                                     document.getElementById('meta-overview').textContent =
                                         "No detailed metadata found. The poster was loaded successfully.";
                                 }
@@ -2665,26 +1291,22 @@
                 });
         }
 
-        // Helper function to show a message in the poster modal
+
         function showPosterModal(message) {
             const modal = document.getElementById('poster-modal');
             const container = document.getElementById('poster-results');
-
             container.innerHTML = `<p style="color:white; padding: 1rem; text-align:center; width:100%;">${message}</p>`;
             modal.style.display = 'flex';
 
-            // Enable horizontal scrolling on the poster grid
             enableHorizontalScrolling();
         }
 
-        // Close the suggestions when clicking elsewhere
         document.addEventListener('click', (e) => {
             if (!e.target.closest('#mediux-search-input')) {
                 mediuxSuggestions.innerHTML = '';
             }
         });
 
-        // Function to display search results
         function displaySearchResults(results) {
             suggestionsBox.innerHTML = '';
 
@@ -2698,10 +1320,7 @@
             results.forEach(item => {
                 const div = document.createElement('div');
                 div.className = 'search-result-item';
-
                 div.textContent = `${item.title} (${item.year})`;
-
-                // Add a small badge to indicate type
                 const badge = document.createElement('span');
                 badge.className = `type-badge ${item.type}`;
                 badge.innerHTML = item.type === 'movie' ?
@@ -2709,7 +1328,6 @@
                     `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="white" viewBox="0 0 24 24"><path d="M4 4h16v12H4z" fill="none" stroke="white" stroke-width="2"/><path d="M2 20h20M12 16v4" stroke="white" stroke-width="2"/></svg>`;
 
                 div.appendChild(badge);
-
                 div.addEventListener('click', () => {
                     searchInput.value = item.title;
                     suggestionsBox.innerHTML = '';
@@ -2721,12 +1339,10 @@
             });
         }
 
-        // Update fetchAndDisplayPostersById function to handle TV shows
+
         function fetchAndDisplayPostersById(id, title, type = 'movie') {
             const container = document.getElementById('poster-results');
             container.innerHTML = '';
-
-            // Store the content type with the container for later reference
             container.dataset.contentType = type;
 
             fetch(`https://api.themoviedb.org/3/${type}/${id}/images?api_key=${TMDB_API_KEY}`)
@@ -2753,7 +1369,6 @@
                             image.onload = () => {
                                 baseImage = image;
                                 drawCanvas();
-                                // Pass the content type to fetchMetadata
                                 fetchMetadataById(id, type);
                                 document.getElementById('poster-modal').style.display = 'none';
                             };
@@ -2773,11 +1388,8 @@
                 });
         }
 
-        /**
-         * Shows a dialog with multiple search results for user selection
-         */
         function showSearchResultsDialog(results) {
-            // Create modal if it doesn't exist
+
             if (!document.getElementById('search-results-dialog')) {
                 const dialog = document.createElement('div');
                 dialog.id = 'search-results-dialog';
@@ -2792,20 +1404,14 @@
             `;
 
                 document.body.appendChild(dialog);
-
-                // Add event listener for close button
                 document.getElementById('close-search-dialog').addEventListener('click', () => {
                     document.getElementById('search-results-dialog').style.display = 'none';
                 });
             }
 
-            // Show the dialog
             document.getElementById('search-results-dialog').style.display = 'flex';
-
-            // Update results list
             const resultsList = document.getElementById('search-results-list');
             resultsList.innerHTML = '';
-
             results.forEach(item => {
                 const resultItem = document.createElement('div');
                 resultItem.className = 'search-result-item';
@@ -2842,9 +1448,6 @@
             });
         }
 
-        /**
-         * Shows a dialog when content type is ambiguous, allowing user to choose
-         */
         function showContentTypeDialog(title) {
             Promise.all([
                     searchTMDB(title, 'movie'),
@@ -2932,11 +1535,8 @@
             });
         }
 
-        /**
-         * Shows a dialog with search results when initial search was ambiguous
-         */
         function showContentSearchDialog(title, type) {
-            // Create modal if it doesn't exist
+
             if (!document.getElementById('search-results-dialog')) {
                 const dialog = document.createElement('div');
                 dialog.id = 'search-results-dialog';
@@ -2954,20 +1554,16 @@
 
                 document.body.appendChild(dialog);
 
-                // Add event listener for close button
+
                 document.getElementById('close-search-dialog').addEventListener('click', () => {
                     document.getElementById('search-results-dialog').style.display = 'none';
                 });
             }
 
-            // Show the dialog
             document.getElementById('search-results-dialog').style.display = 'flex';
-
-            // Update results list
             const resultsList = document.getElementById('search-results-list');
             resultsList.innerHTML = '<div class="loading">Searching...</div>';
 
-            // Fetch search results
             fetch(`https://api.themoviedb.org/3/search/${type}?query=${encodeURIComponent(title)}&api_key=${TMDB_API_KEY}`)
                 .then(res => res.json())
                 .then(data => {
@@ -2982,7 +1578,6 @@
                     data.results.slice(0, 8).forEach(item => {
                         const resultItem = document.createElement('div');
                         resultItem.className = 'search-result-item';
-
                         const title = type === 'movie' ? item.title : item.name;
                         const year = type === 'movie' ?
                             (item.release_date?.slice(0, 4) || '—') :
@@ -3015,12 +1610,11 @@
                 });
         }
 
-        // Separate functions for displaying movie vs TV show metadata
         function fetchMetadataById(id, type) {
             fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${TMDB_API_KEY}&append_to_response=credits`)
                 .then(res => res.json())
                 .then(details => {
-                    // Update metadata panel with type-specific information
+
                     if (type === 'movie') {
                         displayMovieMetadata(details);
                     } else {
@@ -3040,10 +1634,10 @@
 
             if (posterGrid) {
                 posterGrid.addEventListener('wheel', function(event) {
-                    // Prevent the default vertical scroll
+
                     event.preventDefault();
 
-                    // Scroll horizontally instead
+
                     const scrollAmount = event.deltaY;
                     posterGrid.scrollLeft += scrollAmount;
                 });
@@ -3054,14 +1648,9 @@
             document.getElementById('meta-title').textContent = details.title;
             document.getElementById('meta-rating').textContent = details.vote_average?.toFixed(1) || '—';
             document.getElementById('meta-tagline').textContent = details.tagline || '';
-
             const director = details.credits?.crew?.find(p => p.job === 'Director');
             const cast = details.credits?.cast?.slice(0, 5).map(p => p.name).join(', ');
-
-            // Update label for creator/director field
             document.getElementById('creator-label').textContent = 'Director:';
-
-            // Update metadata fields
             document.getElementById('meta-year').textContent = details.release_date?.slice(0, 4) || '—';
             document.getElementById('meta-runtime').textContent = details.runtime ? `${details.runtime} mins` : '—';
             document.getElementById('meta-genres').textContent = details.genres?.map(g => g.name).join(', ') || '—';
@@ -3070,13 +1659,9 @@
             document.getElementById('meta-language').textContent = details.original_language?.toUpperCase() || '—';
             document.getElementById('meta-country').textContent = details.production_countries?.[0]?.name || '—';
             document.getElementById('meta-overview').textContent = details.overview || '—';
-
-            // Update TV-specific fields to be hidden
             document.getElementById('meta-seasons-row').style.display = 'none';
             document.getElementById('meta-episodes-row').style.display = 'none';
             document.getElementById('meta-network-row').style.display = 'none';
-
-            // Add content type indicator
             document.getElementById('content-type-indicator').textContent = 'Movie';
             document.getElementById('content-type-indicator').className = 'type-badge movie';
         }
@@ -3085,14 +1670,9 @@
             document.getElementById('meta-title').textContent = details.name;
             document.getElementById('meta-rating').textContent = details.vote_average?.toFixed(1) || '—';
             document.getElementById('meta-tagline').textContent = details.tagline || '';
-
-            // Update label for creator/director field
             document.getElementById('creator-label').textContent = 'Creator:';
-
             const creator = details.created_by?.[0]?.name || '—';
             const cast = details.credits?.cast?.slice(0, 5).map(p => p.name).join(', ');
-
-            // Update metadata fields
             document.getElementById('meta-year').textContent = `${details.first_air_date?.slice(0, 4) || '—'} - ${details.status === 'Ended' ? (details.last_air_date?.slice(0, 4) || '—') : 'Present'}`;
             document.getElementById('meta-runtime').textContent = details.episode_run_time?.length ? `${details.episode_run_time[0]} mins` : '—';
             document.getElementById('meta-genres').textContent = details.genres?.map(g => g.name).join(', ') || '—';
@@ -3101,41 +1681,31 @@
             document.getElementById('meta-language').textContent = details.original_language?.toUpperCase() || '—';
             document.getElementById('meta-country').textContent = details.origin_country?.[0] || '—';
             document.getElementById('meta-overview').textContent = details.overview || '—';
-
-            // Update TV-specific fields
             document.getElementById('meta-seasons-row').style.display = 'flex';
             document.getElementById('meta-seasons').textContent = details.number_of_seasons || '—';
-
             document.getElementById('meta-episodes-row').style.display = 'flex';
             document.getElementById('meta-episodes').textContent = details.number_of_episodes || '—';
-
             document.getElementById('meta-network-row').style.display = 'flex';
             document.getElementById('meta-network').textContent = details.networks?.map(n => n.name).join(', ') || '—';
-
-            // Add content type indicator
             document.getElementById('content-type-indicator').textContent = 'TV Show';
             document.getElementById('content-type-indicator').className = 'type-badge tv';
 
-            // Try to auto-select a network logo based on metadata
             if (details.networks && details.networks.length > 0) {
                 const networkName = details.networks[0].name.toLowerCase();
-
-                // First try exact match
                 let exactMatch = availableLogos.find(logo =>
                     logo.name.toLowerCase() === networkName
                 );
 
-                // If we found exact match, use it
                 if (exactMatch) {
                     networkLogoSearch.value = exactMatch.name;
                     updateNetworkLogo(exactMatch.path);
                     networkLogoCheckbox.checked = true;
                 } else {
-                    // Otherwise try matching by special cases first
+
                     const specialCases = {
-                        "hbo": "HBO", // Will match exactly "HBO" not "HBO Max"
+                        "hbo": "HBO",
                         "hbo max": "Hbo Max",
-                        "fx": "FX", // Will match exactly "FX" not "FXX"
+                        "fx": "FX",
                         "fxx": "FXX"
                     };
 
@@ -3150,11 +1720,10 @@
                             networkLogoCheckbox.checked = true;
                         }
                     } else {
-                        // Finally try partial matching for other cases
+
                         for (const logo of availableLogos) {
                             const logoName = logo.name.toLowerCase();
-                            // Only match if the network name is found as a complete word in the logo name
-                            // or vice versa, using word boundary check with regex
+
                             const networkRegex = new RegExp(`\\b${networkName}\\b`);
                             const logoRegex = new RegExp(`\\b${logoName}\\b`);
 
@@ -3178,15 +1747,12 @@
 
         document.getElementById('download-btn').addEventListener('click', () => {
             const link = document.createElement('a');
-
-            // Get the current title from the metadata panel if available
             let filename = 'poster-overlay.png';
             const titleElement = document.getElementById('meta-title');
             if (titleElement && titleElement.textContent && titleElement.textContent !== 'Title') {
-                // Use the meta-title content and sanitize it for filename use
-                // Replace any characters that aren't suitable for filenames
+
                 filename = titleElement.textContent
-                    .replace(/[/\\?%*:|"<>]/g, '-') // Replace invalid filename chars with hyphen
+                    .replace(/[/\\?%*:|"<>]/g, '-')
                     .trim() + '.png';
             }
 
@@ -3200,32 +1766,21 @@
             posterUpload.value = '';
             baseImage = null;
             metaPanel.style.display = 'none';
-
             document.getElementById('tmdb-search-input').value = '';
             document.getElementById('tmdb-suggestions').innerHTML = '';
-
-            // Add this line to clear mediux search box
             document.getElementById('mediux-search-input').value = '';
             document.getElementById('mediux-suggestions').innerHTML = '';
-
             document.getElementById('poster-modal').style.display = 'none';
             document.getElementById('poster-results').innerHTML = '';
-
-            // Add this line to also clear the username filter
             document.getElementById('mediux-username-filter').value = '';
-
-            // Reset network logo options
             networkLogoSearch.value = '';
-            networkLogoCheckbox.checked = false; // Ensure checkbox is unchecked
+            networkLogoCheckbox.checked = false;
             pickr.setColor('#ffffff');
             selectedLogoColor = '#ffffff';
             networkLogoImage = null;
-
-            // Reset overlay to none
             overlaySelect.value = 'none';
         });
     </script>
     <div id="tooltip" class="custom-tooltip"></div>
 </body>
-
 </html>
