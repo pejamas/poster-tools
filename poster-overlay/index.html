@@ -56,9 +56,9 @@
                 <label for="overlay-select">Movie Banner</label>
                 <select id="overlay-select">
                     <option value="none">None</option>
-                    <option value="../assets/overlays/4K with DV.png">Dolby Vision</option>
-                    <option value="../assets/overlays/4K with HDR.png">HDR</option>
-                    <option value="../assets/overlays/4K no HDR.png">Ultra HD</option>
+                    <option value="../assets/movie-overlays/4K with DV.png">Dolby Vision</option>
+                    <option value="../assets/movie-overlays/4K with HDR.png">HDR</option>
+                    <option value="../assets/movie-overlays/4K no HDR.png">Ultra HD</option>
                 </select>
             </div>
             <div class="sidebar-section">
@@ -353,7 +353,7 @@ const logoNames = [
 
 const availableLogos = logoNames.map(name => ({
     name,
-    path: `../assets/logos/${name}.png`
+    path: `../assets/network-logos/${name}.png`
 }));
 
         function filterLogos(query) {
