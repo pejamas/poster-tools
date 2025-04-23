@@ -1360,54 +1360,109 @@ const availableLogos = logoNames.map(name => ({
                     posters.forEach(poster => {
                         const img = document.createElement('img');
                         const posterUrl = `https://image.tmdb.org/t/p/w500${poster.file_path}`;
-                        img.src = posterUrl;
+                        
+                        // Use a proxy URL to avoid CORS issues
+                        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(posterUrl)}`;
+                        
+                        img.src = posterUrl; // Keep the original URL for display
                         img.alt = title;
                         img.title = title;
 
                         img.addEventListener('click', () => {
-                            // Create a temporary canvas to handle CORS issues in Chrome
-                            const tempCanvas = document.createElement('canvas');
-                            const tempCtx = tempCanvas.getContext('2d');
+                            // Show loading indicator
+                            const loadingIndicator = document.createElement('div');
+                            loadingIndicator.className = 'loading-indicator';
+                            loadingIndicator.innerHTML = '<p>Loading poster...</p>';
+                            document.body.appendChild(loadingIndicator);
+                            
+                            // Try different methods to load the image
                             const tempImage = new Image();
                             tempImage.crossOrigin = 'anonymous';
                             
                             tempImage.onload = () => {
-                                // Set canvas dimensions to match image
-                                tempCanvas.width = tempImage.width;
-                                tempCanvas.height = tempImage.height;
-                                
-                                // Draw image to canvas
-                                tempCtx.drawImage(tempImage, 0, 0);
-                                
                                 try {
+                                    const tempCanvas = document.createElement('canvas');
+                                    tempCanvas.width = tempImage.width;
+                                    tempCanvas.height = tempImage.height;
+                                    const tempCtx = tempCanvas.getContext('2d');
+                                    tempCtx.drawImage(tempImage, 0, 0);
+                                    
                                     // Convert canvas to data URL
                                     const dataUrl = tempCanvas.toDataURL('image/png');
                                     
-                                    // Now create the final image from the data URL (which has no CORS issues)
+                                    // Final image from data URL
                                     baseImage = new Image();
                                     baseImage.onload = () => {
                                         drawCanvas();
                                         fetchMetadataById(id, type);
                                         document.getElementById('poster-modal').style.display = 'none';
+                                        document.body.removeChild(loadingIndicator);
                                     };
                                     baseImage.src = dataUrl;
                                 } catch (e) {
-                                    console.error("CORS error with TMDB image:", e);
+                                    console.warn("Canvas toDataURL failed, trying fetch method:", e);
                                     
-                                    // Fallback method if CORS still causes issues
-                                    baseImage = tempImage;
-                                    drawCanvas();
-                                    fetchMetadataById(id, type);
-                                    document.getElementById('poster-modal').style.display = 'none';
+                                    // Try using fetch API as alternative
+                                    fetch(proxyUrl)
+                                        .then(response => response.blob())
+                                        .then(blob => {
+                                            const objectUrl = URL.createObjectURL(blob);
+                                            baseImage = new Image();
+                                            baseImage.onload = () => {
+                                                drawCanvas();
+                                                fetchMetadataById(id, type);
+                                                document.getElementById('poster-modal').style.display = 'none';
+                                                document.body.removeChild(loadingIndicator);
+                                            };
+                                            baseImage.src = objectUrl;
+                                        })
+                                        .catch(fetchError => {
+                                            console.error("All image loading methods failed:", fetchError);
+                                            document.body.removeChild(loadingIndicator);
+                                            
+                                            // Try a final fallback without CORS
+                                            baseImage = tempImage;
+                                            drawCanvas();
+                                            fetchMetadataById(id, type);
+                                            document.getElementById('poster-modal').style.display = 'none';
+                                        });
                                 }
                             };
                             
-                            tempImage.onerror = (err) => {
-                                console.error("Error loading TMDB image:", err);
-                                alert("Failed to load the image. This may be due to cross-origin restrictions in your browser.");
+                            tempImage.onerror = () => {
+                                console.warn("Direct image load failed, trying fetch API with proxy");
+                                
+                                // Try using fetch API with proxy
+                                fetch(proxyUrl)
+                                    .then(response => response.blob())
+                                    .then(blob => {
+                                        const objectUrl = URL.createObjectURL(blob);
+                                        baseImage = new Image();
+                                        baseImage.onload = () => {
+                                            drawCanvas();
+                                            fetchMetadataById(id, type);
+                                            document.getElementById('poster-modal').style.display = 'none';
+                                            document.body.removeChild(loadingIndicator);
+                                        };
+                                        baseImage.src = objectUrl;
+                                    })
+                                    .catch(fetchError => {
+                                        console.error("Fetch method also failed:", fetchError);
+                                        document.body.removeChild(loadingIndicator);
+                                        
+                                        // Just try direct load as last resort without proxy or CORS
+                                        baseImage = new Image();
+                                        baseImage.onload = () => {
+                                            drawCanvas();
+                                            fetchMetadataById(id, type);
+                                            document.getElementById('poster-modal').style.display = 'none';
+                                        };
+                                        baseImage.src = posterUrl;
+                                    });
                             };
                             
-                            tempImage.src = posterUrl;
+                            // Start loading with proxy URL
+                            tempImage.src = proxyUrl;
                         });
 
                         container.appendChild(img);
