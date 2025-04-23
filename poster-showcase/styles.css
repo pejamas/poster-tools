@@ -751,7 +751,7 @@ input:checked+.toggle-slider:before {
 }
 .gradient-row {
     display: flex;
-    gap: 0.5rem;
+    gap: 1rem;
     align-items: center;
     justify-content: space-between;
 }
@@ -783,12 +783,26 @@ input:checked+.toggle-slider:before {
     flex-direction: column;
     gap: 0.2rem;
     flex: 1;
+    width: 100%;
 }
 .mini-label {
     font-size: 0.75rem;
     color: rgba(255, 255, 255, 0.8);
     margin-left: 2px;
     margin-bottom: 2px;
+}
+/* Adjust the Pickr container to match label width */
+.pickr-bar-container {
+    height: 18px !important; /* Thinner height as requested */
+    width: 100%;
+}
+/* Make sure the Pickr button sizes correctly */
+.pickr .pcr-button {
+    width: 100% !important;
+    height: 18px !important; /* Match the container height */
+    border-radius: 4px !important;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12),
+        0 0 6px rgba(0, 255, 255, 0.15);
 }
 .custom-overlay {
     position: fixed;
