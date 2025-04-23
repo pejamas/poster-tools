@@ -14,7 +14,7 @@
 
     <header>
         <div class="header-left">
-            <img src="/assets/mediux.svg" alt="Site Icon" height="28" />
+            <img src="../assets/mediux.svg" alt="Site Icon" height="28" />
             <h1>Poster Showcase</h1>
         </div>
         <div class="header-center">
@@ -77,6 +77,9 @@
             <label for="file-input" class="drop-zone">Upload Posters</label>
             <input type="file" id="file-input" multiple accept="image/*" />
 
+            <label for="album-art-upload" class="drop-zone">Upload Album Art</label>
+            <input type="file" id="album-art-upload" multiple accept="image/*" />
+
             <label for="titlecard-input" class="drop-zone">Upload Titlecards</label>
             <input type="file" id="titlecard-input" multiple accept="image/*" />
 
@@ -118,6 +121,13 @@
                     <span class="toggle-label">Posters Header</span>
                     <label class="toggle-switch">
                         <input type="checkbox" id="show-posters-header" checked />
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="toggle-container">
+                    <span class="toggle-label">Album Art Header</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="show-album-art-header" checked />
                         <span class="toggle-slider"></span>
                     </label>
                 </div>
@@ -185,6 +195,11 @@
                 <h2 class="section-title" id="posters-header">Posters</h2>
                 <div id="poster-grid-wrapper" class="grid-section">
                     <div id="poster-grid"></div>
+                </div>
+
+                <h2 class="section-title" id="album-art-header">Album Art</h2>
+                <div id="album-art-grid-wrapper" class="grid-section">
+                    <div id="album-art-grid"></div>
                 </div>
 
                 <hr style="width: 100%; border-color: rgba(255,255,255,0.2);">
@@ -1337,6 +1352,7 @@
 
                 // Clear posters and titlecards
                 document.getElementById("poster-grid").innerHTML = "";
+                document.getElementById("album-art-grid").innerHTML = "";
                 document.getElementById("titlecard-grid").innerHTML = "";
 
                 // Reset other form elements
@@ -1508,6 +1524,7 @@
                 setId: document.getElementById("set-id").value,
                 logoScale: document.getElementById("logo-scale").value,
                 showPostersHeader: document.getElementById("show-posters-header").checked,
+                showAlbumArtHeader: document.getElementById("show-album-art-header").checked,
                 showTitlecardsHeader: document.getElementById("show-titlecards-header").checked,
                 useBackdrop: document.getElementById("use-backdrop-toggle").checked,
                 bgStart: document.getElementById("bg-start").value,
@@ -1621,6 +1638,12 @@
             const showPostersHeader = typeof config.showPostersHeader === "boolean" ? config.showPostersHeader : true;
             document.getElementById("show-posters-header").checked = showPostersHeader;
             document.getElementById("posters-header").style.display = showPostersHeader ? "block" : "none";
+            
+            // Show/hide Album Art header
+            const showAlbumArtHeader = typeof config.showAlbumArtHeader === "boolean" ? config.showAlbumArtHeader : true;
+            document.getElementById("show-album-art-header").checked = showAlbumArtHeader;
+            document.getElementById("album-art-header").style.display = showAlbumArtHeader ? "block" : "none";
+            document.getElementById("album-art-grid-wrapper").style.display = showAlbumArtHeader ? "flex" : "none";
 
             // Show/hide Titlecards header
             const showTitlecardsHeader = typeof config.showTitlecardsHeader === "boolean" ? config.showTitlecardsHeader : true;
@@ -1637,6 +1660,55 @@
             document.getElementById('loadConfirmOk').onclick = () => {
                 overlay.style.display = 'none';
             };
+        });
+        document.getElementById("show-album-art-header").addEventListener("change", e => {
+            document.getElementById("album-art-header").style.display = e.target.checked ? "block" : "none";
+            document.getElementById("album-art-grid-wrapper").style.display = e.target.checked ? "flex" : "none";
+        });
+
+        document.getElementById("album-art-upload").addEventListener("change", async (e) => {
+            const files = e.target.files;
+            const container = document.getElementById("album-art-grid");
+            
+            for (const file of files) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const wrapper = document.createElement("div");
+                    wrapper.className = "album-art-wrapper";
+                    
+                    const img = document.createElement("img");
+                    img.src = event.target.result;
+                    img.className = "album-art";
+                    img.draggable = true;
+                    
+                    const btn = document.createElement("button");
+                    btn.className = "delete-btn";
+                    btn.textContent = "×";
+                    btn.onclick = () => {
+                        wrapper.remove();
+                        rebuildGrids();
+                    };
+                    
+                    wrapper.appendChild(img);
+                    wrapper.appendChild(btn);
+                    
+                    img.addEventListener("dragstart", () => wrapper.dataset.dragging = true);
+                    img.addEventListener("dragend", () => delete wrapper.dataset.dragging);
+                    wrapper.addEventListener("dragover", e => e.preventDefault());
+                    wrapper.addEventListener("drop", e => {
+                        e.preventDefault();
+                        const dragging = document.querySelector("[data-dragging]");
+                        if (dragging && dragging !== wrapper) {
+                            wrapper.parentNode.insertBefore(dragging, wrapper);
+                            rebuildGrids();
+                        }
+                    });
+                    
+                    container.appendChild(wrapper);
+                    rebuildGrids();
+                };
+                reader.readAsDataURL(file);
+            }
         });
     </script>
 </body>
