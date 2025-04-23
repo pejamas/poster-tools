@@ -951,3 +951,41 @@ input:checked+.toggle-slider:before {
 .toggle-slider:after, input:checked+.toggle-slider:after {
     content: none;
 }
+
+/* Add styling for the loading indicator */
+.loading-indicator {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(25, 26, 47, 0.9);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 6px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    z-index: 1000;
+    font-family: 'Gabarito', sans-serif;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.loading-indicator p {
+    margin: 0;
+    font-size: 14px;
+}
+
+.loading-indicator::before {
+    content: '';
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    margin-right: 10px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
