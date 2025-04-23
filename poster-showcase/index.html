@@ -266,6 +266,18 @@
         </div>
     </div>
 
+    <div id="loading-overlay" class="custom-overlay">
+        <div class="custom-modal loading-modal">
+            <div class="loading-spinner-large"></div>
+            <h3 id="loading-title">Loading Assets</h3>
+            <p id="loading-message">Please wait while assets are being downloaded...</p>
+            <div class="progress-container">
+                <div id="loading-progress-bar" class="progress-bar"></div>
+            </div>
+            <p id="loading-details">Starting download...</p>
+        </div>
+    </div>
+
     <script>
         (function initializeStyles() {
             const exportWrapper = document.getElementById("export-wrapper");
@@ -369,6 +381,15 @@
         }
 
         async function loadShowSet(set) {
+            // Show loading overlay
+            const loadingOverlay = document.getElementById('loading-overlay');
+            const progressBar = document.getElementById('loading-progress-bar');
+            const loadingDetails = document.getElementById('loading-details');
+            
+            loadingOverlay.style.display = 'flex';
+            progressBar.style.width = '0%';
+            loadingDetails.textContent = 'Starting download...';
+
             document.getElementById('api-loading').style.display = 'block';
             updateApiStatus('Loading assets...', true);
 
@@ -394,8 +415,24 @@
                 // Create arrays to hold all assets before adding to DOM
                 const allPosters = [];
 
+                // Calculate total assets for progress tracking
+                const totalShowPosters = set.showPoster?.length || 0;
+                const totalSeasonPosters = set.seasonPosters?.length || 0;
+                const totalTitlecards = set.titlecards?.length || 0;
+                const totalAssets = totalShowPosters + totalSeasonPosters + totalTitlecards;
+                let assetsLoaded = 0;
+                
+                // Update progress function
+                const updateProgress = (assetType) => {
+                    assetsLoaded++;
+                    const percentage = Math.floor((assetsLoaded / totalAssets) * 100);
+                    progressBar.style.width = `${percentage}%`;
+                    loadingDetails.textContent = `Loading ${assetType}... (${assetsLoaded}/${totalAssets})`;
+                };
+
                 // Load posters (show-level + season-level)
                 if (set.showPoster?.length) {
+                    loadingDetails.textContent = 'Loading show posters...';
                     for (const poster of set.showPoster) {
                         try {
                             const dataUrl = await fetchAssetAsDataUrl(poster.id);
@@ -405,13 +442,16 @@
                                 type: 'show',
                                 seasonNumber: -1 // Main show posters come first
                             });
+                            updateProgress('show posters');
                         } catch (error) {
                             console.error(`Failed to load show poster ${poster.id}:`, error);
+                            updateProgress('show posters');
                         }
                     }
                 }
 
                 if (set.seasonPosters?.length) {
+                    loadingDetails.textContent = 'Loading season posters...';
                     for (const poster of set.seasonPosters) {
                         try {
                             const dataUrl = await fetchAssetAsDataUrl(poster.id);
@@ -434,8 +474,10 @@
                                 type: 'season',
                                 seasonNumber: seasonNumber
                             });
+                            updateProgress('season posters');
                         } catch (error) {
                             console.error(`Failed to load season poster ${poster.id}:`, error);
+                            updateProgress('season posters');
                         }
                     }
                 }
@@ -456,7 +498,8 @@
                     addImageToGrid(poster.dataUrl, 'poster');
                 }
 
-                // Handle titlecards (code for titlecards remains the same)
+                // Handle titlecards
+                loadingDetails.textContent = 'Loading titlecards...';
                 if (set.titlecards?.length) {
                     // Group by season
                     const titlecardsBySeason = {};
@@ -477,8 +520,10 @@
                                 season: season,
                                 episode: episode
                             });
+                            updateProgress('titlecards');
                         } catch (error) {
                             console.error(`Failed to load titlecard ${titlecard.id}:`, error);
+                            updateProgress('titlecards');
                         }
                     }
 
@@ -506,13 +551,28 @@
                     }
                 }
 
+                // Finalize with a complete status
+                loadingDetails.textContent = 'All assets loaded successfully!';
+                progressBar.style.width = '100%';
+                
                 // Finally rebuild the grid structure
                 rebuildGrids();
 
                 updateApiStatus('Assets loaded successfully', true);
+                
+                // Hide loading overlay after a short delay to show completion
+                setTimeout(() => {
+                    loadingOverlay.style.display = 'none';
+                }, 1000);
             } catch (error) {
                 console.error('Error loading show set:', error);
+                loadingDetails.textContent = `Error: ${error.message}`;
                 updateApiStatus('Failed to load assets: ' + error.message, false);
+                
+                // Hide loading overlay on error after delay
+                setTimeout(() => {
+                    loadingOverlay.style.display = 'none';
+                }, 2000);
             } finally {
                 document.getElementById('api-loading').style.display = 'none';
             }
@@ -1334,7 +1394,6 @@
                 exportWrapper.style.backgroundImage = `url('${blurredDataURL}')`;
                 exportWrapper.style.backgroundSize = "cover";
                 exportWrapper.style.backgroundPosition = "center";
-                exportWrapper.style.backgroundRepeat = "no-repeat";
                 exportWrapper.style.borderRadius = "12px";
                 exportWrapper.style.overflow = "hidden";
             }
