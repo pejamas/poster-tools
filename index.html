@@ -34,7 +34,7 @@
     header {
       padding: 1rem 2rem;
       display: flex;
-      justify-content: center;
+      justify-content: space-between;
       align-items: center;
       background: rgba(0, 0, 0, 0.6);
       box-shadow: 0 0 30px rgba(0, 255, 255, 0.15);
@@ -45,9 +45,100 @@
       z-index: 100;
     }
     
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    
     header img {
       height: 60px;
       filter: drop-shadow(0 0 6px rgba(0,255,255,0.5));
+      transition: all 0.3s ease;
+    }
+    
+    header img:hover {
+      filter: drop-shadow(0 0 10px rgba(0,255,255,0.8));
+      transform: scale(1.05);
+    }
+    
+    .site-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      background: var(--primary-gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: none;
+    }
+    
+    .nav-links {
+      display: flex;
+      gap: 1.5rem;
+      align-items: center;
+    }
+    
+    .nav-link {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-weight: 600;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .nav-link::before {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 2px;
+      background: var(--primary-gradient);
+      transition: width 0.3s ease;
+    }
+    
+    .nav-link:hover {
+      color: var(--text-primary);
+    }
+    
+    .nav-link:hover::before {
+      width: 80%;
+    }
+    
+    .nav-button {
+      background: linear-gradient(135deg, rgba(0, 255, 240, 0.1), rgba(166, 0, 255, 0.1));
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 0.5rem 1.2rem;
+      border-radius: 20px;
+      color: var(--text-primary);
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+    
+    .nav-button:hover {
+      background: linear-gradient(135deg, rgba(0, 255, 240, 0.2), rgba(166, 0, 255, 0.2));
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0, 255, 255, 0.2);
+    }
+    
+    .burger-menu {
+      display: none;
+      flex-direction: column;
+      gap: 4px;
+      cursor: pointer;
+    }
+    
+    .burger-line {
+      width: 25px;
+      height: 3px;
+      background: var(--text-primary);
+      border-radius: 5px;
+      transition: all 0.3s ease;
     }
     
     .hero-section {
@@ -99,6 +190,42 @@
       z-index: 1;
       animation: fadeIn 1s ease-out 0.3s forwards;
       opacity: 0;
+    }
+    
+    .hero-buttons {
+      display: flex;
+      gap: 1rem;
+      margin-top: 2rem;
+      animation: fadeIn 1s ease-out 0.6s forwards;
+      opacity: 0;
+      justify-content: center;
+    }
+    
+    .hero-button {
+      padding: 0.8rem 2rem;
+      border-radius: 30px;
+      font-size: 1rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(5px);
+      color: var(--text-primary);
+    }
+    
+    .hero-button.primary {
+      background: linear-gradient(135deg, rgba(0, 255, 240, 0.2), rgba(166, 0, 255, 0.2));
+      box-shadow: 0 0 20px rgba(0, 255, 255, 0.15);
+    }
+    
+    .hero-button:not(.primary) {
+      background: rgba(0, 0, 0, 0.3);
+    }
+    
+    .hero-button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0, 255, 255, 0.25);
+      border-color: rgba(255, 255, 255, 0.15);
     }
     
     .tool-features {
@@ -317,7 +444,7 @@
     
     .author-info p {
       font-size: 0.8rem;
-      color: var(--text-secondary);
+      color: var (--text-secondary);
     }
     
     .cta-section {
@@ -484,21 +611,171 @@
   background: var(--primary-gradient);
   border-radius: 3px;
 }
+      .nav-links {
+        display: none;
+      }
+      
+      .burger-menu {
+        display: flex;
+      }
+      
+      header {
+        padding: 1rem;
+      }
+      
+      .site-title {
+        display: block;
+      }
+    }
+    
+    .features-section {
+      padding: 6rem 2rem;
+      position: relative;
+      background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1), transparent);
+    }
+    
+    .features-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      position: relative;
+    }
+    
+    .features-container::before {
+      content: '';
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(166, 0, 255, 0.1), transparent 70%);
+      z-index: -1;
+      filter: blur(100px);
+      opacity: 0.8;
+      top: -100px;
+      left: -100px;
+    }
+    
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 2rem;
+      margin-top: 3rem;
+    }
+    
+    .feature-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 2rem;
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+    
+    .feature-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(0, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+    
+    .feature-icon {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      background: var(--primary-gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      width: 60px;
+      height: 60px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(0, 255, 240, 0.1), rgba(166, 0, 255, 0.1));
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      margin-bottom: 1.5rem;
+      transition: all 0.3s ease;
+    }
+    
+    .feature-card:hover .feature-icon {
+      background: linear-gradient(135deg, rgba(0, 255, 240, 0.2), rgba(166, 0, 255, 0.2));
+      box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+      transform: scale(1.1);
+    }
+    
+    .feature-title {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+      color: var(--text-primary);
+      position: relative;
+    }
+    
+    .feature-title::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 30px;
+      height: 2px;
+      background: var(--primary-gradient);
+      border-radius: 2px;
+    }
+    
+    .feature-description {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+    
+    @media (max-width: 992px) {
+      .features-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+      }
+    }
+    
+    @media (max-width: 576px) {
+      .features-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .features-section {
+        padding: 4rem 1.5rem;
+      }
     }
   </style>
 </head>
 <body>
   <!-- Header (kept as per your request) -->
   <header>
-    <img src="assets/logo.png" alt="Poster Tools Logo" />
+    <div class="logo-container">
+      <img src="assets/logo.png" alt="Poster Tools Logo" />
+      <span class="site-title">Poster Tools</span>
+    </div>
+    <nav class="nav-links">
+      <a href="poster-showcase/" class="nav-link">Poster Showcase</a>
+      <a href="poster-overlay/" class="nav-link">Poster Overlay</a>
+      <a href="https://github.com/mediuxpro/poster-tools" target="_blank" class="nav-button">GitHub</a>
+    </nav>
+    <div class="burger-menu">
+      <div class="burger-line"></div>
+      <div class="burger-line"></div>
+      <div class="burger-line"></div>
+    </div>
   </header>
 
-  <!-- Streamlined Hero Section (reduced height, no buttons) -->
+  <!-- Streamlined Hero Section with more dynamic design -->
   <section class="hero-section">
     <div class="hero-bg"></div>
     <div class="hero-content">
       <h1 class="hero-title">Build & Showcase Your Visuals</h1>
       <p class="hero-subtitle">Curate your media with sleek, powerful tools designed for creators who demand perfection.</p>
+      <div class="hero-buttons">
+        <a href="poster-showcase/" class="hero-button primary">Poster Showcase</a>
+        <a href="poster-overlay/" class="hero-button">Poster Overlay</a>
+      </div>
     </div>
   </section>
 
@@ -530,7 +807,6 @@
             </div>
           </div>
           
-          <a href="poster-showcase/" class="tool-link">Explore Poster Showcase</a>
         </div>
         
         <div class="tool-preview">
@@ -563,7 +839,6 @@
             </div>
           </div>
           
-          <a href="poster-overlay/" class="tool-link">Explore Poster Overlay</a>
         </div>
         
         <div class="tool-preview">
@@ -577,59 +852,34 @@
     </div>
   </section>
 
-  <!-- Testimonials Section -->
-  <section class="testimonials">
-    <div class="testimonial-container">
-      <h2 class="section-title tool-title">What Users Say</h2>
-      <div class="testimonial-cards">
-  <!-- Card 1 -->
-  <div class="testimonial-card">
-    <p class="testimonial-text">"Poster Tools has completely transformed my Plex library. The overlay tool saves me hours of work and the results look professional every time."</p>
-    <div class="testimonial-author">
-      <div class="author-avatar">M</div>
-      <div class="author-info">
-        <h4>Michael T.</h4>
-        <p>Media Enthusiast</p>
+  <!-- Features Section -->
+  <section class="features-section">
+    <div class="features-container">
+      <h2 class="section-title">Why Choose Poster Tools</h2>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">⚡</div>
+          <h3 class="feature-title">No-Code Required</h3>
+          <p class="feature-description">Create professional media visuals without writing a single line of code or complex design tools.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🔄</div>
+          <h3 class="feature-title">Live Preview</h3>
+          <p class="feature-description">See your changes in real-time as you create and adjust your poster designs and showcases.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">✨</div>
+          <h3 class="feature-title">Customizable</h3>
+          <p class="feature-description">Extensive options to tailor every aspect of your media presentation to your exact preferences.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📱</div>
+          <h3 class="feature-title">Mobile Friendly</h3>
+          <p class="feature-description">Create and edit your media presentations from any device with a responsive interface.</p>
+        </div>
       </div>
     </div>
-  </div>
-
-  <!-- Card 2 -->
-  <div class="testimonial-card">
-    <p class="testimonial-text">"The Poster Showcase tool helped me create amazing collection displays that I've shared with my streaming community. Easy to use but powerful."</p>
-    <div class="testimonial-author">
-      <div class="author-avatar">S</div>
-      <div class="author-info">
-        <h4>Sarah J.</h4>
-        <p>Content Creator</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- Card 3 -->
-  <div class="testimonial-card">
-    <p class="testimonial-text">"As someone who takes pride in their media collection, these tools are essential. The attention to detail and design quality is unmatched."</p>
-    <div class="testimonial-author">
-      <div class="author-avatar">R</div>
-      <div class="author-info">
-        <h4>Ryan K.</h4>
-        <p>Collector</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- Card 4 (separate card, not nested) -->
-  <div class="testimonial-card">
-    <p class="testimonial-text">"The ability to create consistent branded looks for my entire media collection has been game-changing. These tools deliver professional results with minimal effort."</p>
-    <div class="testimonial-author">
-      <div class="author-avatar">J</div>
-      <div class="author-info">
-        <h4>Jessica L.</h4>
-        <p>Digital Curator</p>
-      </div>
-    </div>
-  </div>
-</div>
+  </section>
 
   <!-- CTA Section -->
   <section class="cta-section">
@@ -645,5 +895,63 @@
   <footer>
     Built for creators • <a href="https://mediux.pro" target="_blank">Powered by Mediux.pro</a>
   </footer>
+
+  <script>
+    // Mobile menu functionality
+    const burgerMenu = document.querySelector('.burger-menu');
+    const navLinks = document.querySelector('.nav-links');
+    
+    burgerMenu.addEventListener('click', () => {
+      // Toggle mobile menu
+      if (navLinks.style.display === 'flex') {
+        navLinks.style.display = 'none';
+        // Reset burger menu icon
+        document.querySelectorAll('.burger-line').forEach(line => {
+          line.style.transform = 'none';
+        });
+      } else {
+        navLinks.style.display = 'flex';
+        navLinks.style.flexDirection = 'column';
+        navLinks.style.position = 'absolute';
+        navLinks.style.top = '70px';
+        navLinks.style.right = '0';
+        navLinks.style.backgroundColor = 'rgba(0, 0, 0, 0.95)';
+        navLinks.style.padding = '1rem';
+        navLinks.style.borderRadius = '0 0 0 10px';
+        navLinks.style.boxShadow = '0 5px 15px rgba(0, 0, 0, 0.3)';
+        navLinks.style.backdropFilter = 'blur(10px)';
+        
+        // Animate burger to X
+        document.querySelectorAll('.burger-line')[0].style.transform = 'rotate(45deg) translate(5px, 5px)';
+        document.querySelectorAll('.burger-line')[1].style.opacity = '0';
+        document.querySelectorAll('.burger-line')[2].style.transform = 'rotate(-45deg) translate(5px, -5px)';
+      }
+    });
+    
+    // Close mobile menu when a link is clicked
+    document.querySelectorAll('.nav-links a').forEach(link => {
+      link.addEventListener('click', () => {
+        if (window.innerWidth <= 768) {
+          navLinks.style.display = 'none';
+          // Reset burger menu icon
+          document.querySelectorAll('.burger-line').forEach(line => {
+            line.style.transform = 'none';
+            line.style.opacity = '1';
+          });
+        }
+      });
+    });
+    
+    // Close mobile menu when window is resized above mobile breakpoint
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 768) {
+        navLinks.style = '';
+        document.querySelectorAll('.burger-line').forEach(line => {
+          line.style.transform = 'none';
+          line.style.opacity = '1';
+        });
+      }
+    });
+  </script>
 </body>
 </html>
