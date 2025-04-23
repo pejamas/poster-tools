@@ -1359,20 +1359,55 @@ const availableLogos = logoNames.map(name => ({
 
                     posters.forEach(poster => {
                         const img = document.createElement('img');
-                        img.src = `https://image.tmdb.org/t/p/w500${poster.file_path}`;
+                        const posterUrl = `https://image.tmdb.org/t/p/w500${poster.file_path}`;
+                        img.src = posterUrl;
                         img.alt = title;
                         img.title = title;
 
                         img.addEventListener('click', () => {
-                            const image = new Image();
-                            image.crossOrigin = 'anonymous';
-                            image.onload = () => {
-                                baseImage = image;
-                                drawCanvas();
-                                fetchMetadataById(id, type);
-                                document.getElementById('poster-modal').style.display = 'none';
+                            // Create a temporary canvas to handle CORS issues in Chrome
+                            const tempCanvas = document.createElement('canvas');
+                            const tempCtx = tempCanvas.getContext('2d');
+                            const tempImage = new Image();
+                            tempImage.crossOrigin = 'anonymous';
+                            
+                            tempImage.onload = () => {
+                                // Set canvas dimensions to match image
+                                tempCanvas.width = tempImage.width;
+                                tempCanvas.height = tempImage.height;
+                                
+                                // Draw image to canvas
+                                tempCtx.drawImage(tempImage, 0, 0);
+                                
+                                try {
+                                    // Convert canvas to data URL
+                                    const dataUrl = tempCanvas.toDataURL('image/png');
+                                    
+                                    // Now create the final image from the data URL (which has no CORS issues)
+                                    baseImage = new Image();
+                                    baseImage.onload = () => {
+                                        drawCanvas();
+                                        fetchMetadataById(id, type);
+                                        document.getElementById('poster-modal').style.display = 'none';
+                                    };
+                                    baseImage.src = dataUrl;
+                                } catch (e) {
+                                    console.error("CORS error with TMDB image:", e);
+                                    
+                                    // Fallback method if CORS still causes issues
+                                    baseImage = tempImage;
+                                    drawCanvas();
+                                    fetchMetadataById(id, type);
+                                    document.getElementById('poster-modal').style.display = 'none';
+                                }
                             };
-                            image.src = img.src;
+                            
+                            tempImage.onerror = (err) => {
+                                console.error("Error loading TMDB image:", err);
+                                alert("Failed to load the image. This may be due to cross-origin restrictions in your browser.");
+                            };
+                            
+                            tempImage.src = posterUrl;
                         });
 
                         container.appendChild(img);
