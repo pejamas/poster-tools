@@ -898,3 +898,34 @@ input:checked+.toggle-slider:before {
     transition: width 0.3s ease;
     border-radius: 3px;
 }
+.pcr-app[data-theme='monolith'] {
+    background: #111 !important;
+    border-radius: 10px !important;
+    border: 1px solid rgba(0, 255, 255, 0.2) !important;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.1) !important;
+    color: white !important;
+    z-index: 1000 !important;
+}
+.pcr-app[data-theme='monolith'] .pcr-result {
+    background: #222 !important;
+    color: #fff !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+}
+.pcr-app[data-theme='monolith'] input {
+    background: #222 !important;
+    color: white !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+.pcr-app[data-theme='monolith'] .pcr-save {
+    background: linear-gradient(135deg, #00bfa5, #8e24aa) !important;
+    color: white !important;
+    font-weight: bold;
+    border: none !important;
+    border-radius: 6px !important;
+    padding: 0.4rem 0.8rem !important;
+    box-shadow: 0 0 6px rgba(0, 255, 255, 0.2) !important;
+}
+.pcr-app[data-theme='monolith'] .pcr-slider {
+    border-radius: 6px !important;
+    height: 10px !important;
+}
