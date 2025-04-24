@@ -262,7 +262,7 @@ header {
     display: flex;
     justify-content: center;
     align-items: flex-start;
-    padding: 2rem;
+    padding: 5rem;
 }
 #export-wrapper {
     --bg-start: #2c3e50;

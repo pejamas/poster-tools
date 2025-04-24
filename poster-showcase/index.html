@@ -962,27 +962,41 @@
         function toggleBackgroundType(useBackdrop) {
             const exportWrapper = document.getElementById("export-wrapper");
             const bgImage = document.getElementById("export-background-image");
+            const bgContainer = document.getElementById("export-bg-container");
 
             console.log("Toggle background:", useBackdrop ? "Using backdrop" : "Using gradient");
             console.log("Has backdrop URL:", !!window._currentBackdropURL);
 
             if (bgImage) {
-                bgImage.style.display = useBackdrop ? "block" : "none";
+                bgImage.style.display = (useBackdrop && window._currentBackdropURL) ? "block" : "none";
             }
 
+            // Reset all background properties first
             exportWrapper.style.removeProperty('background');
             exportWrapper.style.backgroundColor = 'transparent';
             exportWrapper.style.backgroundImage = 'none';
 
+            // Force a reflow to prevent rendering issues
             void exportWrapper.offsetWidth;
 
+            // Only apply backdrop if toggle is on AND we actually have a backdrop URL
             if (useBackdrop && window._currentBackdropURL) {
                 console.log("Applying backdrop URL:", window._currentBackdropURL.substring(0, 50) + "...");
                 exportWrapper.style.backgroundImage = `url(${window._currentBackdropURL})`;
                 exportWrapper.style.backgroundSize = "cover";
                 exportWrapper.style.backgroundPosition = "center";
+                exportWrapper.style.borderRadius = "12px";
+                exportWrapper.style.overflow = "hidden";
+                
+                if (bgContainer) {
+                    bgContainer.style.background = 'none';
+                }
             } else {
+                // If no backdrop or toggle is off, fall back to gradient
                 updateGradientBackground();
+                
+                // Make sure the toggle reflects the actual state
+                document.getElementById("use-backdrop-toggle").checked = (useBackdrop && window._currentBackdropURL);
             }
         }
 
