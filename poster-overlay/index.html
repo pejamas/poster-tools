@@ -1210,20 +1210,26 @@ const availableLogos = logoNames.map(name => ({
 
                 img.addEventListener('mouseenter', (e) => {
                     const tooltip = document.getElementById('tooltip');
-                    tooltip.textContent = `by ${poster.creator}`;
-                    tooltip.style.opacity = 1;
-                    tooltip.style.transform = 'translateY(-8px)';
+                    if (tooltip) {
+                        tooltip.textContent = `by ${poster.creator}`;
+                        tooltip.style.opacity = 1;
+                        tooltip.style.transform = 'translateY(-8px)';
+                    }
                 });
 
                 img.addEventListener('mousemove', (e) => {
                     const tooltip = document.getElementById('tooltip');
-                    tooltip.style.left = `${e.pageX + 12}px`;
-                    tooltip.style.top = `${e.pageY - 28}px`;
+                    if (tooltip) {
+                        tooltip.style.left = `${e.pageX + 12}px`;
+                        tooltip.style.top = `${e.pageY - 28}px`;
+                    }
                 });
 
                 img.addEventListener('mouseleave', () => {
                     const tooltip = document.getElementById('tooltip');
-                    tooltip.style.opacity = 0;
+                    if (tooltip) {
+                        tooltip.style.opacity = 0;
+                    }
                 });
 
                 img.addEventListener('click', () => {
@@ -1259,6 +1265,7 @@ const availableLogos = logoNames.map(name => ({
             modal.style.display = 'flex';
 
             enableHorizontalScrolling();
+            enableTouchScrolling(); // Add touch support for mobile
         }
 
         function fetchTMDBMetadataForTitle(title) {
@@ -1304,6 +1311,23 @@ const availableLogos = logoNames.map(name => ({
             modal.style.display = 'flex';
 
             enableHorizontalScrolling();
+            
+            // Ensure close button works on mobile
+            const closeButton = modal.querySelector('.close-modal');
+            if (closeButton) {
+                closeButton.onclick = () => {
+                    modal.style.display = 'none';
+                };
+            }
+            
+            // Allow closing by clicking outside on mobile
+            if (window.innerWidth <= 900) {
+                modal.onclick = (e) => {
+                    if (e.target === modal) {
+                        modal.style.display = 'none';
+                    }
+                };
+            }
         }
 
         document.addEventListener('click', (e) => {
@@ -1739,6 +1763,30 @@ const availableLogos = logoNames.map(name => ({
             }
         }
 
+        function enableTouchScrolling() {
+            const posterGrid = document.querySelector('.poster-grid');
+            
+            if (posterGrid && 'ontouchstart' in window) {
+                let startX, scrollLeft;
+                
+                posterGrid.addEventListener('touchstart', (e) => {
+                    startX = e.touches[0].clientX;
+                    scrollLeft = posterGrid.scrollLeft;
+                });
+                
+                posterGrid.addEventListener('touchmove', (e) => {
+                    if (!startX) return;
+                    const x = e.touches[0].clientX;
+                    const walk = (x - startX) * 2; // Scroll speed multiplier
+                    posterGrid.scrollLeft = scrollLeft - walk;
+                });
+                
+                posterGrid.addEventListener('touchend', () => {
+                    startX = null;
+                });
+            }
+        }
+
         function displayMovieMetadata(details) {
             document.getElementById('meta-title').textContent = details.title;
             document.getElementById('meta-rating').textContent = details.vote_average?.toFixed(1) || '—';
@@ -1883,14 +1931,16 @@ const availableLogos = logoNames.map(name => ({
 
         // Mobile menu dropdown toggle
         if (mobileMenuToggle) {
-            mobileMenuToggle.addEventListener('click', () => {
+            mobileMenuToggle.addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevent document click from firing immediately
                 mobileMenuDropdown.classList.toggle('active');
             });
         }
 
-        // Mobile sidebar toggle
+        // Mobile sidebar toggle - improved implementation
         if (sidebarToggle) {
-            sidebarToggle.addEventListener('click', () => {
+            sidebarToggle.addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevent event from bubbling up to document
                 sidebar.classList.toggle('expanded');
             });
         }
@@ -1904,19 +1954,77 @@ const availableLogos = logoNames.map(name => ({
                 mobileMenuDropdown.classList.remove('active');
             }
             
-            // Don't auto-close the sidebar when clicking inside it
-            if (!e.target.closest('#sidebar') && 
-                !e.target.closest('#sidebar-toggle') &&
-                window.innerWidth <= 900 && 
-                sidebar.classList.contains('expanded')) {
+            // Don't close the sidebar when clicking inside it
+            if (window.innerWidth <= 900 && 
+                sidebar.classList.contains('expanded') &&
+                !e.target.closest('#sidebar') && 
+                !e.target.closest('#sidebar-toggle')) {
                 sidebar.classList.remove('expanded');
             }
         });
+
+        // Better touch handling for posters on mobile
+        function enableTouchScrolling() {
+            const posterGrid = document.querySelector('.poster-grid');
+            
+            if (posterGrid && 'ontouchstart' in window) {
+                let startX, scrollLeft;
+                
+                posterGrid.addEventListener('touchstart', (e) => {
+                    startX = e.touches[0].clientX;
+                    scrollLeft = posterGrid.scrollLeft;
+                });
+                
+                posterGrid.addEventListener('touchmove', (e) => {
+                    if (!startX) return;
+                    const x = e.touches[0].clientX;
+                    const walk = (x - startX) * 2; // Scroll speed multiplier
+                    posterGrid.scrollLeft = scrollLeft - walk;
+                });
+                
+                posterGrid.addEventListener('touchend', () => {
+                    startX = null;
+                });
+            }
+        }
+
+        // Fix poster modal on mobile
+        function showPosterModal(message) {
+            const modal = document.getElementById('poster-modal');
+            const container = document.getElementById('poster-results');
+            container.innerHTML = `<p style="color:white; padding: 1rem; text-align:center; width:100%;">${message}</p>`;
+            modal.style.display = 'flex';
+
+            enableHorizontalScrolling();
+            
+            // Ensure close button works on mobile
+            const closeButton = modal.querySelector('.close-modal');
+            if (closeButton) {
+                closeButton.onclick = () => {
+                    modal.style.display = 'none';
+                };
+            }
+            
+            // Allow closing by clicking outside on mobile
+            if (window.innerWidth <= 900) {
+                modal.onclick = (e) => {
+                    if (e.target === modal) {
+                        modal.style.display = 'none';
+                    }
+                };
+            }
+        }
 
         // Handle orientation changes and resize events
         window.addEventListener('resize', () => {
             if (window.innerWidth > 900) {
                 sidebar.classList.remove('expanded');
+            }
+            
+            // Fix poster grid layout on orientation change
+            const posterGrid = document.querySelector('.poster-grid');
+            if (posterGrid && window.innerWidth <= 900) {
+                posterGrid.style.maxWidth = '100%';
             }
         });
     </script>
