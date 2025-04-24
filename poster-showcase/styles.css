@@ -27,7 +27,7 @@ header {
     position: relative;
 }
 .header-left img {
-    margin-top: 4px; /* Same vertical adjustment as in poster-overlay */
+    margin-top: 4px !important; /* Same vertical adjustment as in poster-overlay */
 }
 .header-left h1 {
     font-size: 1.5rem;
@@ -125,7 +125,8 @@ header {
 .poster-tools-brand {
     height: 60px;
     filter: drop-shadow(0 0 6px rgba(0, 255, 255, 0.5));
-    transform: translateX(140px);
+    /* Removing the transform that was causing the overlap */
+    transform: none;
 }
 .layout {
     display: flex;
@@ -1016,4 +1017,19 @@ input:checked+.toggle-slider:before {
     width: 16px;
     height: 16px;
     filter: invert(100%);
+}
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%); /* Center the logo container */
+}
+
+@media (max-width: 768px) {
+    .logo-container {
+        position: static;
+        transform: none;
+    }
 }
