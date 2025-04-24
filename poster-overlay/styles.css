@@ -141,7 +141,6 @@ header {
     font-weight: 200;
     color: #ffffff;
     letter-spacing: 0.4px;
-    filter: brightness(1.2);
     margin-bottom: 0.6rem;
     display: block;
     width: 100%;
@@ -277,7 +276,7 @@ header {
 }
 .sidebar-section {
     width: 100%;
-    margin-bottom: 0.1rem;
+    margin-bottom: 1rem;
 }
 .sidebar-section-title {
     font-size: 1rem;
@@ -287,7 +286,7 @@ header {
 .tmdb-search {
     position: relative;
     width: 100%;
-    margin-bottom: 0.75rem;
+    margin-bottom: 1rem;
 }
 #tmdb-search-input {
     width: 100%;
@@ -1048,6 +1047,7 @@ input:checked+.toggle-slider:before {
     display: flex;
     gap: 0.8rem;
     align-items: center;
+    margin-left: auto;
 }
 
 .action-button {
@@ -1082,6 +1082,19 @@ input:checked+.toggle-slider:before {
 @media screen and (min-width: 901px) {
     .sidebar-toggle {
         display: none;
+    }
+
+    .header-mobile-menu {
+        display: none;
+    }
+
+    .header-mobile-dropdown {
+        display: none !important;
+    }
+
+    .header-actions {
+        justify-content: flex-end;
+        flex: 0 0 auto;
     }
 }
 
@@ -1325,4 +1338,109 @@ input:checked+.toggle-slider:before {
     #tooltip {
         display: none !important;
     }
+}
+
+/* Fixing sidebar form field spacing and alignment */
+.sidebar-section {
+    width: 100%;
+    margin-bottom: 0.7rem;
+}
+
+.sidebar-section label {
+    font-size: 0.95rem;
+    font-weight: 400;
+    color: #ffffff;
+    letter-spacing: 0.4px;
+    margin-bottom: 0.3rem;
+    display: block;
+    width: 100%;
+    text-align: left;
+}
+
+.sidebar select, 
+.sidebar input[type="text"], 
+#tmdb-search-input, 
+#mediux-search-input, 
+.drop-zone-label {
+    width: 100%;
+    padding: 0.65rem;
+    font-size: 0.9rem;
+    background: #333;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    box-sizing: border-box;
+    margin-bottom: 0.5rem;
+}
+
+.sidebar-section:nth-of-type(3),
+.sidebar-section:nth-of-type(4) {
+    margin-top: 0;
+}
+
+.tmdb-search {
+    position: relative;
+    width: 100%;
+    margin-bottom: 0.5rem;
+}
+
+/* Improve drop zone styling */
+.drop-zone-label {
+    border: 1.5px dashed rgba(255, 255, 255, 0.3);
+    background: rgba(0, 0, 0, 0.2);
+    padding: 0.8rem;
+    height: auto;
+    min-height: 45px;
+    font-size: 0.9rem;
+    text-align: center;
+    font-weight: 500;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 0.7rem;
+    margin-top: 0;
+}
+
+.section-separator {
+    width: 100%;
+    border-top: 1px solid rgba(0, 255, 255, 0.1);
+    margin: 0.7rem 0;
+    padding: 0;
+    position: relative;
+}
+
+/* Remove negative margins that were causing misalignment */
+.sidebar-section:nth-of-type(3),
+.sidebar-section:nth-of-type(4) {
+    margin-top: 0;
+}
+
+/* Tighten up the search containers */
+.tmdb-search {
+    position: relative;
+    width: 100%;
+    margin-bottom: 0.5rem;
+}
+
+.network-logo-search-container {
+    margin-bottom: 0.6rem;
+}
+
+/* Adjust the color picker container */
+.pickr-bar-container {
+    width: 100%;
+    margin-top: 0 !important;
+    margin-bottom: 0.7rem !important;
+    height: 12px;
+}
+
+/* Fix the action button row spacing */
+.sidebar-action-row {
+    gap: 0.5rem;
+    margin-top: 0.7rem;
 }
