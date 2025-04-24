@@ -31,12 +31,40 @@
       color: var(--text-primary);
       min-height: 100vh;
       overflow-x: hidden;
+      position: relative;
+    }
+    
+    /* Create an overall background gradient for the entire page */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      z-index: -2;
+    }
+    
+    /* Add ambient glow effects that float across the page */
+    body::after {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(circle at 20% 30%, rgba(0, 255, 255, 0.15), transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(166, 0, 255, 0.15), transparent 50%);
+      z-index: -1;
+      pointer-events: none;
     }
     
     header {
       padding: 1rem 2rem;
       display: flex;
-      justify-content: space-between;
+      justify-content: space-between; /* Changed from center to space-between */
       align-items: center;
       background: rgba(0, 0, 0, 0.6);
       box-shadow: 0 0 30px rgba(0, 255, 255, 0.15);
@@ -51,6 +79,16 @@
       display: flex;
       align-items: center;
       gap: 1rem;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%); /* Center the logo container */
+    }
+    
+    @media (max-width: 768px) {
+      .logo-container {
+        position: static;
+        transform: none;
+      }
     }
     
     header img {
@@ -78,6 +116,7 @@
       display: flex;
       gap: 1.5rem;
       align-items: center;
+      margin-left: auto; /* Keep links on the right */
     }
     
     .nav-link {
@@ -159,14 +198,16 @@
     
     .hero-section {
       position: relative;
-      height: 35vh;
+      min-height: 50vh; /* Further reduced height */
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      text-align: center;
+      padding: 3rem 2rem 1rem; /* Reduced bottom padding */
       overflow: hidden;
-      padding: 2rem 0 1rem;
+      text-align: center;
+      max-width: 1200px;
+      margin: 0 auto;
     }
     
     .hero-bg {
@@ -175,21 +216,93 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: radial-gradient(circle at center, rgba(255,0,255,0.1), transparent 70%);
-      filter: blur(100px);
       z-index: -1;
     }
     
+    /* Create animated background elements */
+    .hero-animated-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      z-index: -1;
+    }
+    
+    .floating-element {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 50%;
+      filter: blur(8px);
+      z-index: -1;
+      opacity: 0.6;
+      animation: float 15s infinite ease-in-out;
+    }
+    
+    .floating-element:nth-child(1) {
+      width: 300px;
+      height: 300px;
+      top: 10%;
+      left: 10%;
+      background: radial-gradient(circle at center, rgba(0,255,255,0.15), transparent 70%);
+      animation-delay: 0s;
+    }
+    
+    .floating-element:nth-child(2) {
+      width: 250px;
+      height: 250px;
+      top: 60%;
+      right: 10%;
+      background: radial-gradient(circle at center, rgba(166,0,255,0.15), transparent 70%);
+      animation-delay: -5s;
+    }
+    
+    .floating-element:nth-child(3) {
+      width: 200px;
+      height: 200px;
+      bottom: 10%;
+      left: 30%;
+      background: radial-gradient(circle at center, rgba(0,255,255,0.1), transparent 70%);
+      animation-delay: -10s;
+    }
+    
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(0) translateX(0) rotate(0deg);
+      }
+      25% {
+        transform: translateY(-30px) translateX(20px) rotate(5deg);
+      }
+      50% {
+        transform: translateY(20px) translateX(-20px) rotate(-5deg);
+      }
+      75% {
+        transform: translateY(-10px) translateX(30px) rotate(3deg);
+      }
+    }
+    
+    /* Redesigned hero content */
     .hero-content {
-      max-width: 800px;
+      max-width: 1000px; /* Adjusted width for better spacing */
+      width: 100%;
       padding: 0 2rem;
       z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3rem; /* Increased gap for better spacing */
+    }
+    
+    .hero-text-content {
+      max-width: 800px;
     }
     
     .hero-title {
-      font-size: 4rem;
+      font-size: 5rem; /* Increased font size for better visibility */
       font-weight: 700;
-      margin-bottom: 1.5rem;
+      line-height: 1.2;
+      margin-bottom: 2rem;
       background: linear-gradient(to right, #00fff0, #a600ff);
       -webkit-background-clip: text;
       background-clip: text;
@@ -200,60 +313,199 @@
     }
     
     .hero-subtitle {
-      font-size: 1.5rem;
+      font-size: 1.8rem; /* Adjusted font size for better readability */
       color: var(--text-secondary);
+      line-height: 1.6;
       position: relative;
       z-index: 1;
       animation: fadeIn 1s ease-out 0.3s forwards;
       opacity: 0;
+      margin: 0 auto;
     }
     
     .hero-buttons {
       display: flex;
-      gap: 1rem;
-      margin-top: 2rem;
+      gap: 1.5rem; /* Adjusted gap for better spacing */
+      margin-top: 2.5rem;
       animation: fadeIn 1s ease-out 0.6s forwards;
       opacity: 0;
-      justify-content: center;
     }
     
     .hero-button {
-      padding: 0.8rem 2rem;
-      border-radius: 30px;
-      font-size: 1rem;
+      padding: 1rem 2rem;
+      font-size: 1.1rem;
       font-weight: 600;
+      border-radius: 50px;
       text-decoration: none;
       transition: all 0.3s ease;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(5px);
-      color: var(--text-primary);
+      position: relative;
+      overflow: hidden;
     }
     
     .hero-button.primary {
       background: linear-gradient(135deg, rgba(0, 255, 240, 0.2), rgba(166, 0, 255, 0.2));
-      box-shadow: 0 0 20px rgba(0, 255, 255, 0.15);
+      color: var(--text-primary);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
     }
     
-    .hero-button:not(.primary) {
+    .hero-button.secondary {
       background: rgba(0, 0, 0, 0.3);
+      color: var(--text-primary);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
     }
     
     .hero-button:hover {
       transform: translateY(-3px);
-      box-shadow: 0 5px 15px rgba(0, 255, 255, 0.25);
-      border-color: rgba(255, 255, 255, 0.15);
+      box-shadow: 0 8px 25px rgba(0, 255, 255, 0.2);
+    }
+    
+    .hero-button.primary:hover {
+      background: linear-gradient(135deg, rgba(0, 255, 240, 0.3), rgba(166, 0, 255, 0.3));
+    }
+    
+    .hero-button.secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+    
+    /* Preview cards that showcase the tools */
+    .hero-preview {
+      display: flex;
+      justify-content: center;
+      gap: 2.5rem; /* Adjusted gap for better spacing */
+      width: 100%;
+      max-width: 1000px;
+      animation: fadeIn 1s ease-out 0.9s forwards;
+      opacity: 0;
+    }
+    
+    .preview-card {
+      flex: 1;
+      max-width: 400px;
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      transform: perspective(1000px) rotateY(0deg);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(10px);
+    }
+    
+    .preview-card:hover {
+      transform: perspective(1000px) rotateY(5deg) translateY(-10px);
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+      border-color: rgba(0, 255, 240, 0.2);
+    }
+    
+    .preview-card:nth-child(2):hover {
+      transform: perspective(1000px) rotateY(-5deg) translateY(-10px);
+      border-color: rgba(166, 0, 255, 0.2);
+    }
+    
+    .preview-image {
+      width: 100%;
+      height: auto; /* Changed to auto to maintain aspect ratio */
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      object-fit: contain; /* Ensures the image maintains its aspect ratio */
+    }
+    
+    .preview-content {
+      padding: 1.5rem;
+    }
+    
+    .preview-title {
+      font-size: 1.3rem;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    
+    .preview-subtitle {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      margin-bottom: 1rem;
+    }
+    
+    .preview-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #00fff0;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+    
+    .preview-link:hover {
+      transform: translateX(5px);
+      color: #a600ff;
+    }
+    
+    .preview-link svg {
+      transition: transform 0.3s ease;
+    }
+    
+    .preview-link:hover svg {
+      transform: translateX(3px);
+    }
+    
+    @media (max-width: 992px) {
+      .hero-title {
+        font-size: 3.5rem;
+      }
+      
+      .hero-section {
+        min-height: auto;
+        padding: 4rem 1rem;
+      }
+      
+      .hero-preview {
+        flex-direction: column;
+        align-items: center;
+        gap: 2rem;
+      }
+      
+      .preview-card {
+        width: 100%;
+        max-width: 450px;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .hero-title {
+        font-size: 2.8rem;
+      }
+      
+      .hero-subtitle {
+        font-size: 1.2rem;
+      }
+      
+      .hero-buttons {
+        flex-direction: column;
+        width: 100%;
+        max-width: 300px;
+      }
+      
+      .preview-image {
+        height: 180px;
+      }
     }
     
     .tool-features {
-      padding: 3rem 2rem 4rem;
+      padding: 1rem 2rem; /* Reduced padding */
       position: relative;
-      margin-top: -1rem;
+      margin-top: 0; /* Removed negative margin */
+      background: transparent;
     }
     
     .tools-container {
       display: flex;
       flex-direction: column;
-      gap: 8rem;
+      gap: 4rem; /* Reduced gap between tools */
       max-width: 1400px;
       margin: 0 auto;
     }
@@ -278,7 +530,7 @@
       background: radial-gradient(circle, var(--accent-glow), transparent 70%);
       z-index: -1;
       filter: blur(80px);
-      opacity: 0.8;
+      opacity: 0.6;
     }
     
     .tool-feature:nth-child(1)::before {
@@ -375,12 +627,6 @@
       position: relative;
     }
     
-    .preview-image {
-      width: 100%;
-      border-radius: 12px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    }
-    
     .poster-preview-group {
       display: flex;
       gap: 16px;
@@ -399,7 +645,7 @@
     .testimonials {
       padding: 6rem 2rem;
       position: relative;
-      background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.2));
+      background: transparent;
     }
     
     .testimonial-container {
@@ -464,10 +710,11 @@
     }
     
     .cta-section {
-      padding: 6rem 2rem;
+      padding: 3rem 2rem; /* Reduced padding */
       text-align: center;
       position: relative;
       overflow: hidden;
+      background: transparent;
     }
     
     .cta-bg {
@@ -479,6 +726,7 @@
       background: radial-gradient(circle at center, rgba(0,255,255,0.1), transparent 70%);
       filter: blur(80px);
       z-index: -1;
+      opacity: 0.7;
     }
     
     .cta-content {
@@ -561,6 +809,28 @@
     
     @media (max-width: 992px) {
       .hero-title {
+        font-size: 3.5rem;
+      }
+      
+      .hero-section {
+        min-height: auto;
+        padding: 4rem 1rem;
+      }
+      
+      .hero-preview {
+        flex-direction: column;
+        align-items: center;
+        gap: 2rem;
+      }
+      
+      .preview-card {
+        width: 100%;
+        max-width: 450px;
+      }
+    }
+    
+    @media (max-width: 992px) {
+      .hero-title {
         font-size: 3rem;
       }
       
@@ -584,11 +854,21 @@
     
     @media (max-width: 768px) {
       .hero-title {
-        font-size: 2.5rem;
+        font-size: 2.8rem;
       }
       
       .hero-subtitle {
         font-size: 1.2rem;
+      }
+      
+      .hero-buttons {
+        flex-direction: column;
+        width: 100%;
+        max-width: 300px;
+      }
+      
+      .preview-image {
+        height: 180px;
       }
       
       .tool-details {
@@ -692,9 +972,9 @@
     }
     
     .features-section {
-      padding: 6rem 2rem;
+      padding: 2rem 2rem; /* Reduced padding */
       position: relative;
-      background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1), transparent);
+      background: transparent;
     }
     
     .features-container {
@@ -711,7 +991,7 @@
       background: radial-gradient(circle, rgba(166, 0, 255, 0.1), transparent 70%);
       z-index: -1;
       filter: blur(100px);
-      opacity: 0.8;
+      opacity: 0.6;
       top: -100px;
       left: -100px;
     }
@@ -824,6 +1104,21 @@
         margin-right: 10px;
       }
     }
+    
+    .hero-section::before,
+    .hero-section::after,
+    .tool-features::before,
+    .features-section::before,
+    .cta-section::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      z-index: -2;
+    }
   </style>
 </head>
 <body>
@@ -845,15 +1140,17 @@
     </div>
   </header>
 
-  <!-- Streamlined Hero Section with more dynamic design -->
+  <!-- Redesigned Hero Section with animated background but without buttons and preview cards -->
   <section class="hero-section">
-    <div class="hero-bg"></div>
+    <div class="hero-animated-bg">
+      <div class="floating-element"></div>
+      <div class="floating-element"></div>
+      <div class="floating-element"></div>
+    </div>
     <div class="hero-content">
-      <h1 class="hero-title">Build & Showcase Your Visuals</h1>
-      <p class="hero-subtitle">Curate your media with sleek, powerful tools designed for creators who demand perfection.</p>
-      <div class="hero-buttons">
-        <a href="poster-showcase/" class="hero-button primary">Poster Showcase</a>
-        <a href="poster-overlay/" class="hero-button">Poster Overlay</a>
+      <div class="hero-text-content">
+        <h1 class="hero-title">Build & Showcase Your Visuals</h1>
+        <p class="hero-subtitle">Curate your media with sleek, powerful tools designed for creators who demand perfection.</p>
       </div>
     </div>
   </section>
