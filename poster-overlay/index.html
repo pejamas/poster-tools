@@ -18,10 +18,15 @@
         </div>
         <div class="header-actions">
             <a href="../poster-showcase/" class="nav-link">Poster Showcase</a>
+            <span class="header-mobile-menu" id="mobile-menu-toggle">☰</span>
+        </div>
+        <div class="header-mobile-dropdown" id="mobile-menu-dropdown">
+            <a href="../poster-showcase/">Poster Showcase</a>
         </div>
     </header>
     <div class="layout">
-        <div class="sidebar">
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-toggle" id="sidebar-toggle">Options & Tools</div>
             <div class="sidebar-section">
                 <label>Content Type</label>
                 <div class="media-type-selector">
@@ -1869,6 +1874,50 @@ const availableLogos = logoNames.map(name => ({
             selectedLogoColor = '#ffffff';
             networkLogoImage = null;
             overlaySelect.value = 'none';
+        });
+
+        const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+        const mobileMenuDropdown = document.getElementById('mobile-menu-dropdown');
+        const sidebarToggle = document.getElementById('sidebar-toggle');
+        const sidebar = document.getElementById('sidebar');
+
+        // Mobile menu dropdown toggle
+        if (mobileMenuToggle) {
+            mobileMenuToggle.addEventListener('click', () => {
+                mobileMenuDropdown.classList.toggle('active');
+            });
+        }
+
+        // Mobile sidebar toggle
+        if (sidebarToggle) {
+            sidebarToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('expanded');
+            });
+        }
+
+        // Close mobile menus when clicking outside
+        document.addEventListener('click', (e) => {
+            // Close mobile dropdown menu if clicking outside
+            if (mobileMenuDropdown && mobileMenuDropdown.classList.contains('active') && 
+                !e.target.closest('#mobile-menu-toggle') && 
+                !e.target.closest('#mobile-menu-dropdown')) {
+                mobileMenuDropdown.classList.remove('active');
+            }
+            
+            // Don't auto-close the sidebar when clicking inside it
+            if (!e.target.closest('#sidebar') && 
+                !e.target.closest('#sidebar-toggle') &&
+                window.innerWidth <= 900 && 
+                sidebar.classList.contains('expanded')) {
+                sidebar.classList.remove('expanded');
+            }
+        });
+
+        // Handle orientation changes and resize events
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 900) {
+                sidebar.classList.remove('expanded');
+            }
         });
     </script>
     <div id="tooltip" class="custom-tooltip"></div>
