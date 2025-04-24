@@ -640,18 +640,20 @@ input:checked+.toggle-slider:before {
 }
 .icon-button {
     background: rgba(255, 255, 255, 0.08);
-    border: none;
-    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
     padding: 0.6rem;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     flex: 1;
-    transition: background 0.2s ease;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 .icon-button:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.12);
+    transform: translateY(-2px);
 }
 .icon-button img.icon {
     width: 22px;
@@ -659,29 +661,29 @@ input:checked+.toggle-slider:before {
     filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(1.5);
 }
 .icon-button.teal {
-    background-color: #00bfa5;
+    background: linear-gradient(135deg, #00bfa5, #00838f);
     color: white;
+    border: none;
+    box-shadow: 0 4px 12px rgba(0, 191, 165, 0.3);
 }
 .icon-button.teal:hover {
-    background-color: #1de9b6;
+    background: linear-gradient(135deg, #1de9b6, #00acc1);
+    box-shadow: 0 6px 16px rgba(0, 191, 165, 0.4);
 }
 .icon-button.red {
-    background-color: #f44336;
+    background: linear-gradient(135deg, #f44336, #d32f2f);
     color: white;
+    border: none;
+    box-shadow: 0 4px 12px rgba(244, 67, 54, 0.3);
 }
 .icon-button.red:hover {
-    background-color: #e53935;
+    background: linear-gradient(135deg, #ff5252, #e53935);
+    box-shadow: 0 6px 16px rgba(244, 67, 54, 0.4);
 }
 .icon-button.teal:hover,
 .icon-button.red:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transform: translateY(-3px);
     transition: all 0.2s ease;
-}
-.icon {
-    width: 20px;
-    height: 20px;
-    filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(1.5);
 }
 .creator-row {
     display: flex;
