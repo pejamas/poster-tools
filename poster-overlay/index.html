@@ -97,6 +97,14 @@
                 <div class="canvas-container">
                     <canvas id="overlay-canvas" width="1000" height="1500"></canvas>
                 </div>
+                <div class="mobile-canvas-actions">
+                    <button id="mobile-canvas-download-btn" class="icon-button teal">
+                        <img src="../assets/poster-overlay-icons/download.svg" class="icon"> Download
+                    </button>
+                    <button id="mobile-canvas-reset-btn" class="icon-button red">
+                        <img src="../assets/poster-overlay-icons/refresh-cw.svg" class="icon"> Reset
+                    </button>
+                </div>
                 <div class="metadata-panel" id="metadata-panel" style="display: none;">
                     <div class="title-row">
                         <h2 id="meta-title">Title</h2>
@@ -147,7 +155,6 @@
                 <button class="mobile-menu-tab" data-tab="upload">Upload</button>
                 <button class="mobile-menu-tab" data-tab="overlays">Overlays</button>
                 <button class="mobile-menu-tab" data-tab="network">Network Logo</button>
-                <button class="mobile-menu-tab" data-tab="actions">Actions</button>
             </div>
             
             <!-- Search Tab -->
@@ -2635,6 +2642,15 @@ function updateMobileNetworkSuggestions() {
                 if (desktopItems[index]) {
                     desktopItems[index].click();
                 }
+                
+                // Clear the search input
+                document.getElementById('mobile-network-search').value = '';
+                document.getElementById('network-logo-search').value = '';
+                mobileSuggestions.style.display = 'none';
+                
+                // Close the mobile menu
+                document.getElementById('mobile-menu-overlay').style.display = 'none';
+                document.body.style.overflow = '';
             });
         });
         
@@ -2647,8 +2663,38 @@ function updateMobileNetworkSuggestions() {
 }
 
 // Initialize mobile menu when the DOM is loaded
-document.addEventListener('DOMContentLoaded', setupMobileMenu);
-
+document.addEventListener('DOMContentLoaded', function() {
+    setupMobileMenu();
+    
+    // Initialize the canvas action buttons
+    const mobileCanvasDownloadBtn = document.getElementById('mobile-canvas-download-btn');
+    const mobileCanvasResetBtn = document.getElementById('mobile-canvas-reset-btn');
+    
+    if (mobileCanvasDownloadBtn) {
+        mobileCanvasDownloadBtn.addEventListener('click', () => {
+            // Disable the button to prevent multiple clicks
+            mobileCanvasDownloadBtn.disabled = true;
+            mobileCanvasDownloadBtn.style.opacity = '0.7';
+            mobileCanvasDownloadBtn.textContent = 'Downloading...';
+           
+            // Trigger a single download
+            document.getElementById('download-btn').click();
+           
+            // Reset the button after a short delay
+            setTimeout(() => {
+                mobileCanvasDownloadBtn.disabled = false;
+                mobileCanvasDownloadBtn.style.opacity = '1';
+                mobileCanvasDownloadBtn.innerHTML = '<img src="../assets/poster-overlay-icons/download.svg" class="icon"> Download';
+            }, 1500);
+        });
+    }
+    
+    if (mobileCanvasResetBtn) {
+        mobileCanvasResetBtn.addEventListener('click', () => {
+            document.getElementById('reset-btn').click();
+        });
+    }
+});
 // Re-initialize on resize (for devices that can switch between mobile/desktop)
 window.addEventListener('resize', () => {
     if (window.innerWidth <= 900) {
