@@ -2498,37 +2498,33 @@ function syncMobileToDesktopUI() {
 function updateMobileTMDBSuggestions() {
     const mobileSuggestions = document.getElementById('mobile-tmdb-suggestions');
     const desktopSuggestions = document.getElementById('tmdb-suggestions');
-    
+
     if (mobileSuggestions && desktopSuggestions) {
-        // Clone the desktop suggestions to mobile
-        mobileSuggestions.innerHTML = desktopSuggestions.innerHTML;
-        
-        // Add click handlers to the mobile suggestion items
-        const suggestionItems = mobileSuggestions.querySelectorAll('.search-result-item');
-        suggestionItems.forEach((item, index) => {
-            item.addEventListener('click', () => {
-                // Trigger click on corresponding desktop suggestion
-                const desktopItems = desktopSuggestions.querySelectorAll('.search-result-item');
-                if (desktopItems[index]) {
-                    desktopItems[index].click();
-                }
-                
-                // Clear the search input
+        mobileSuggestions.innerHTML = ''; // Clear mobile suggestions
+
+        const desktopItems = desktopSuggestions.querySelectorAll('.search-result-item');
+
+        desktopItems.forEach((desktopItem) => {
+            const clone = desktopItem.cloneNode(true);
+
+            clone.addEventListener('click', () => {
+                // Simulate selecting the original desktop item functionality
+                desktopItem.click();
+
+                // Clear search inputs
                 document.getElementById('mobile-tmdb-search').value = '';
                 document.getElementById('tmdb-search-input').value = '';
+
+                // Hide suggestions and mobile overlay
                 mobileSuggestions.style.display = 'none';
-                
-                // Close the mobile menu
                 document.getElementById('mobile-menu-overlay').style.display = 'none';
                 document.body.style.overflow = '';
             });
+
+            mobileSuggestions.appendChild(clone);
         });
-        
-        if (desktopSuggestions.innerHTML.trim()) {
-            mobileSuggestions.style.display = 'block';
-        } else {
-            mobileSuggestions.style.display = 'none';
-        }
+
+        mobileSuggestions.style.display = desktopItems.length ? 'block' : 'none';
     }
 }
 
@@ -2536,39 +2532,36 @@ function updateMobileTMDBSuggestions() {
 function updateMobileMediuxSuggestions() {
     const mobileSuggestions = document.getElementById('mobile-mediux-suggestions');
     const desktopSuggestions = document.getElementById('mediux-suggestions');
-    
+
     if (mobileSuggestions && desktopSuggestions) {
-        // Clone the desktop suggestions to mobile
-        mobileSuggestions.innerHTML = desktopSuggestions.innerHTML;
-        
-        // Add click handlers to the mobile suggestion items
-        const suggestionItems = mobileSuggestions.querySelectorAll('.search-result-item');
-        suggestionItems.forEach((item, index) => {
-            item.addEventListener('click', () => {
-                // Trigger click on corresponding desktop suggestion
-                const desktopItems = desktopSuggestions.querySelectorAll('.search-result-item');
-                if (desktopItems[index]) {
-                    desktopItems[index].click();
-                }
-                
-                // Clear the search input
+        mobileSuggestions.innerHTML = ''; // Clear mobile suggestions
+
+        const desktopItems = desktopSuggestions.querySelectorAll('.search-result-item');
+
+        desktopItems.forEach((desktopItem) => {
+            const clone = desktopItem.cloneNode(true);
+
+            clone.addEventListener('click', () => {
+                // Simulate selecting the original desktop item functionality
+                desktopItem.click();
+
+                // Clear search inputs
                 document.getElementById('mobile-mediux-search').value = '';
                 document.getElementById('mediux-search-input').value = '';
+
+                // Hide suggestions and mobile overlay
                 mobileSuggestions.style.display = 'none';
-                
-                // Close the mobile menu
                 document.getElementById('mobile-menu-overlay').style.display = 'none';
                 document.body.style.overflow = '';
             });
+
+            mobileSuggestions.appendChild(clone);
         });
-        
-        if (desktopSuggestions.innerHTML.trim()) {
-            mobileSuggestions.style.display = 'block';
-        } else {
-            mobileSuggestions.style.display = 'none';
-        }
+
+        mobileSuggestions.style.display = desktopItems.length ? 'block' : 'none';
     }
 }
+
 
 // Helper function to display logo suggestions in mobile UI
 function displayMobileLogoSuggestions(logos) {
