@@ -181,8 +181,10 @@
             <!-- Upload Tab -->
             <div id="mobile-tab-upload" class="mobile-tab-content">
                 <div class="mobile-input-group">
-                    <label for="mobile-poster-upload" class="drop-zone-label"><span>Upload Poster</span></label>
-                    <input type="file" id="mobile-poster-upload" accept="image/*">
+                    <label for="mobile-poster-upload" class="mobile-drop-zone-label">Select an image file to upload</label>
+                    <input type="file" id="mobile-poster-upload" accept="image/*" class="mobile-file-input">
+                    <button id="mobile-upload-btn" class="mobile-upload-button">Choose File</button>
+                    <span id="mobile-file-name">No file chosen</span>
                 </div>
             </div>
             
@@ -2185,13 +2187,31 @@ const availableLogos = logoNames.map(name => ({
         
         // Mobile action buttons
         const mobileDownloadBtn = document.getElementById('mobile-download-btn');
-        if (mobileDownloadBtn) {
-            mobileDownloadBtn.addEventListener('click', () => {
-                document.getElementById('download-btn').click();
-                mobileMenuOverlay.style.display = 'none';
-                document.body.style.overflow = '';
-            });
-        }
+if (mobileDownloadBtn) {
+    // Replace the existing event listener with this improved version
+    mobileDownloadBtn.addEventListener('click', () => {
+        // Disable the button to prevent multiple clicks
+        mobileDownloadBtn.disabled = true;
+        mobileDownloadBtn.style.opacity = '0.7';
+        mobileDownloadBtn.textContent = 'Downloading...';
+        
+        // Trigger a single download
+        document.getElementById('download-btn').click();
+        
+        // Hide the menu and restore the button after a short delay
+        setTimeout(() => {
+            mobileMenuOverlay.style.display = 'none';
+            document.body.style.overflow = '';
+            
+            // Reset the button
+            setTimeout(() => {
+                mobileDownloadBtn.disabled = false;
+                mobileDownloadBtn.style.opacity = '1';
+                mobileDownloadBtn.innerHTML = '<img src="../assets/poster-overlay-icons/download.svg" class="icon" style="margin-right: 8px;"> Download';
+            }, 500);
+        }, 1000);
+    });
+}
         
         const mobileResetBtn = document.getElementById('mobile-reset-btn');
         if (mobileResetBtn) {
@@ -2202,35 +2222,71 @@ const availableLogos = logoNames.map(name => ({
             });
         }
         
-        // Mobile search functionality - TMDB
-        const mobileTMDBSearch = document.getElementById('mobile-tmdb-search');
-        const mobileTMDBSuggestions = document.getElementById('mobile-tmdb-suggestions');
-        
-        if (mobileTMDBSearch) {
-            mobileTMDBSearch.addEventListener('input', () => {
-                // Mirror input to desktop search
-                document.getElementById('tmdb-search-input').value = mobileTMDBSearch.value;
-                document.getElementById('tmdb-search-input').dispatchEvent(new Event('input'));
-                
-                // Show suggestions in mobile UI
-                updateMobileTMDBSuggestions();
-            });
+// Mobile search functionality - TMDB
+const mobileTMDBSearch = document.getElementById('mobile-tmdb-search');
+const mobileTMDBSuggestions = document.getElementById('mobile-tmdb-suggestions');
+
+if (mobileTMDBSearch) {
+    // Clear the input value when the mobile menu is opened
+    document.getElementById('sidebar-toggle').addEventListener('click', () => {
+        mobileTMDBSearch.value = '';
+        if (mobileTMDBSuggestions) {
+            mobileTMDBSuggestions.style.display = 'none';
         }
+    });
+    
+    mobileTMDBSearch.addEventListener('input', () => {
+        // Mirror input to desktop search
+        document.getElementById('tmdb-search-input').value = mobileTMDBSearch.value;
+        document.getElementById('tmdb-search-input').dispatchEvent(new Event('input'));
         
-        // Mobile search functionality - Mediux
-        const mobileMediuxSearch = document.getElementById('mobile-mediux-search');
-        const mobileMediuxSuggestions = document.getElementById('mobile-mediux-suggestions');
-        
-        if (mobileMediuxSearch) {
-            mobileMediuxSearch.addEventListener('input', () => {
-                // Mirror input to desktop search
-                document.getElementById('mediux-search-input').value = mobileMediuxSearch.value;
-                document.getElementById('mediux-search-input').dispatchEvent(new Event('input'));
-                
-                // Show suggestions in mobile UI
-                updateMobileMediuxSuggestions();
-            });
+        // Show suggestions in mobile UI
+        updateMobileTMDBSuggestions();
+    });
+    
+    // Close suggestions when input loses focus
+    mobileTMDBSearch.addEventListener('blur', () => {
+        // Small delay to allow for clicking on suggestions
+        setTimeout(() => {
+            if (mobileTMDBSuggestions) {
+                mobileTMDBSuggestions.style.display = 'none';
+            }
+        }, 200);
+    });
+}
+
+// Similar updates for Mediux search
+const mobileMediuxSearch = document.getElementById('mobile-mediux-search');
+const mobileMediuxSuggestions = document.getElementById('mobile-mediux-suggestions');
+
+if (mobileMediuxSearch) {
+    // Clear the input value when the mobile menu is opened
+    document.getElementById('sidebar-toggle').addEventListener('click', () => {
+        mobileMediuxSearch.value = '';
+        if (mobileMediuxSuggestions) {
+            mobileMediuxSuggestions.style.display = 'none';
         }
+    });
+    
+    mobileMediuxSearch.addEventListener('input', () => {
+        // Mirror input to desktop search
+        document.getElementById('mediux-search-input').value = mobileMediuxSearch.value;
+        document.getElementById('mediux-search-input').dispatchEvent(new Event('input'));
+        
+        // Show suggestions in mobile UI
+        updateMobileMediuxSuggestions();
+    });
+    
+    // Close suggestions when input loses focus
+    mobileMediuxSearch.addEventListener('blur', () => {
+        // Small delay to allow for clicking on suggestions
+        setTimeout(() => {
+            if (mobileMediuxSuggestions) {
+                mobileMediuxSuggestions.style.display = 'none';
+            }
+        }, 200);
+    });
+}
         
         // Mobile network logo search
         const mobileNetworkSearch = document.getElementById('mobile-network-search');
@@ -2302,19 +2358,28 @@ const availableLogos = logoNames.map(name => ({
         
         // Mobile media type buttons
         const mobileMediaTypeButtons = document.querySelectorAll('.mobile-tab-content .media-type-btn');
-        if (mobileMediaTypeButtons) {
-            mobileMediaTypeButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    // Update mobile UI
-                    mobileMediaTypeButtons.forEach(btn => btn.classList.remove('active'));
-                    button.classList.add('active');
-                    
-                    // Sync to desktop
-                    const type = button.dataset.type;
-                    document.querySelector(`.sidebar .media-type-btn[data-type="${type}"]`).click();
-                });
-            });
-        }
+if (mobileMediaTypeButtons) {
+    mobileMediaTypeButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            // Update mobile UI
+            mobileMediaTypeButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            
+            // Apply gradient styling
+            if (button.dataset.type === 'movie') {
+                button.style.background = 'linear-gradient(to right, #00bfa5, #8e24aa)';
+                mobileMediaTypeButtons[1].style.background = 'transparent';
+            } else {
+                button.style.background = 'linear-gradient(to right, #00bfa5, #8e24aa)';
+                mobileMediaTypeButtons[0].style.background = 'transparent';
+            }
+            
+            // Sync to desktop
+            const type = button.dataset.type;
+            document.querySelector(`.sidebar .media-type-btn[data-type="${type}"]`).click();
+        });
+    });
+}
         
         // Initialize Pickr for mobile
         if (typeof Pickr !== 'undefined' && document.getElementById('mobile-pickr')) {
@@ -2386,6 +2451,36 @@ function syncDesktopToMobileUI() {
     }
 }
 
+// Fix the file upload button
+const mobileUploadBtn = document.getElementById('mobile-upload-btn');
+const mobileFileInput = document.getElementById('mobile-poster-upload');
+const mobileFileName = document.getElementById('mobile-file-name');
+
+if (mobileUploadBtn && mobileFileInput && mobileFileName) {
+    mobileUploadBtn.addEventListener('click', () => {
+        mobileFileInput.click();
+    });
+    
+    mobileFileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            mobileFileName.textContent = e.target.files[0].name;
+            
+            // Create a new FileList and transfer to main input
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(e.target.files[0]);
+            document.getElementById('poster-upload').files = dataTransfer.files;
+            document.getElementById('poster-upload').dispatchEvent(new Event('change'));
+            
+            // Close mobile menu after short delay
+            setTimeout(() => {
+                document.getElementById('mobile-menu-overlay').style.display = 'none';
+                document.body.style.overflow = '';
+            }, 500);
+        } else {
+            mobileFileName.textContent = 'No file chosen';
+        }
+    });
+}
 // Synchronize mobile UI state to desktop UI
 function syncMobileToDesktopUI() {
     // Not needed for most items as they're synchronized in real-time
@@ -2411,6 +2506,11 @@ function updateMobileTMDBSuggestions() {
                     desktopItems[index].click();
                 }
                 
+                // Clear the search input
+                document.getElementById('mobile-tmdb-search').value = '';
+                document.getElementById('tmdb-search-input').value = '';
+                mobileSuggestions.style.display = 'none';
+                
                 // Close the mobile menu
                 document.getElementById('mobile-menu-overlay').style.display = 'none';
                 document.body.style.overflow = '';
@@ -2419,12 +2519,6 @@ function updateMobileTMDBSuggestions() {
         
         if (desktopSuggestions.innerHTML.trim()) {
             mobileSuggestions.style.display = 'block';
-            
-            // Scroll to ensure the input field and suggestions are visible
-            const inputField = document.getElementById('mobile-tmdb-search');
-            if (inputField) {
-                inputField.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
         } else {
             mobileSuggestions.style.display = 'none';
         }
@@ -2450,6 +2544,11 @@ function updateMobileMediuxSuggestions() {
                     desktopItems[index].click();
                 }
                 
+                // Clear the search input
+                document.getElementById('mobile-mediux-search').value = '';
+                document.getElementById('mediux-search-input').value = '';
+                mobileSuggestions.style.display = 'none';
+                
                 // Close the mobile menu
                 document.getElementById('mobile-menu-overlay').style.display = 'none';
                 document.body.style.overflow = '';
@@ -2458,12 +2557,6 @@ function updateMobileMediuxSuggestions() {
         
         if (desktopSuggestions.innerHTML.trim()) {
             mobileSuggestions.style.display = 'block';
-            
-            // Scroll to ensure the input field and suggestions are visible
-            const inputField = document.getElementById('mobile-mediux-search');
-            if (inputField) {
-                inputField.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
         } else {
             mobileSuggestions.style.display = 'none';
         }

@@ -1667,6 +1667,43 @@ input:checked+.toggle-slider:before {
     background: #444;
 }
 
+.mobile-tab-content .media-type-btn.active {
+    background: linear-gradient(to right, #00bfa5, #8e24aa) !important;
+    color: white;
+    box-shadow: 0 2px 8px rgba(0, 255, 255, 0.2);
+}
+
+.mobile-tab-content .media-type-btn:not(.active) {
+    background: transparent;
+}
+
+.mobile-file-input {
+    display: none;
+}
+
+.mobile-upload-button {
+    background: #333;
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 0.6rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: inline-block;
+    margin-right: 10px;
+}
+
+#mobile-file-name {
+    color: #aaa;
+    font-size: 0.9rem;
+}
+
+.mobile-drop-zone-label {
+    margin-bottom: 12px;
+    display: block;
+    color: white;
+    font-size: 0.95rem;
+}
 /* Only show on mobile */
 @media (min-width: 901px) {
     .mobile-menu-overlay {
