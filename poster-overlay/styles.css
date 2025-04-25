@@ -1096,7 +1096,11 @@ input:checked+.toggle-slider:before {
     .sidebar-toggle {
         display: none;
     }
-
+    
+    .mobile-canvas-actions {
+        display: none !important;
+    }
+    
     .header-mobile-menu {
         display: none;
     }
@@ -1117,9 +1121,9 @@ input:checked+.toggle-slider:before {
         flex-direction: column;
         overflow-y: auto;
     }
-    
+
     .mobile-canvas-actions {
-        display: flex !important;
+        display: flex;
         justify-content: space-between;
         gap: 1rem;
         width: 100%;
@@ -1127,7 +1131,7 @@ input:checked+.toggle-slider:before {
         margin: 1rem auto;
         padding: 0 1rem;
     }
-    
+
     .sidebar {
         width: 100%;
         max-width: 100%;
@@ -1140,14 +1144,14 @@ input:checked+.toggle-slider:before {
         overflow: hidden;
         transition: max-height 0.3s ease-in-out;
     }
-   
+    
     /* When sidebar is expanded */
     .sidebar.expanded {
         max-height: 80vh;
         overflow-y: auto;
         padding-bottom: 2rem;
     }
-   
+    
     /* Toggle button for sidebar */
     .sidebar-toggle {
         width: 100%;
@@ -1163,57 +1167,57 @@ input:checked+.toggle-slider:before {
         align-items: center;
         gap: 0.5rem;
     }
-   
+    
     .sidebar-toggle::after {
         content: "▼";
         transition: transform 0.3s;
     }
-   
+    
     .sidebar.expanded .sidebar-toggle::after {
         content: "▲";
     }
-    
+
     .main {
         padding: 1rem;
     }
-   
+    
     .canvas-container {
         width: 100%;
         height: auto;
         max-width: 550px;
         aspect-ratio: 2/3;
     }
-   
+    
     canvas {
         width: 100%;
         height: 100%;
     }
-   
+    
     .metadata-panel {
         width: 100%;
         max-width: 550px;
         padding: 1.5rem;
         margin-top: 1rem;
     }
-   
+    
     .main-content {
         width: 100%;
         flex-direction: column;
         align-items: center;
     }
-   
+    
     header {
         padding: 0.8rem 1rem;
     }
-   
+    
     .header-left h1 {
         font-size: 1.2rem;
     }
-   
+    
     .sidebar-section {
         margin-bottom: 0.8rem;
     }
-   
+    
     #poster-modal {
         margin-top: 0.5rem;
         position: fixed;
@@ -1227,13 +1231,13 @@ input:checked+.toggle-slider:before {
         align-items: center;
         padding: 1rem;
     }
-   
+    
     .poster-grid-wrapper {
         width: 100%;
         max-height: 80vh;
         overflow-y: auto;
     }
-   
+    
     .poster-grid {
         width: 100%;
         padding: 0.5rem;
@@ -1241,7 +1245,7 @@ input:checked+.toggle-slider:before {
         justify-content: center;
         gap: 1rem;
     }
-   
+    
     .poster-grid img {
         flex: 0 0 auto;
         width: calc(33% - 0.7rem);
@@ -1250,19 +1254,19 @@ input:checked+.toggle-slider:before {
         max-width: 130px;
         min-width: 100px;
     }
-   
+    
     .modal-content {
         width: 95%;
         padding: 1.5rem;
     }
-   
+    
     .close-modal {
         top: 1rem;
         right: 1rem;
         padding: 0.5rem 1rem;
         z-index: 210;
     }
-   
+    
     /* Improved touch feedback */
     .suggestion-item,
     .search-result-item,
@@ -1715,13 +1719,13 @@ input:checked+.toggle-slider:before {
     font-size: 0.95rem;
 }
 .mobile-canvas-actions {
-    display: flex !important;
+    display: flex;
     justify-content: space-between;
-    gap: 0.5rem; /* reduced gap */
-    width: 90%; /* reduced from 100% */
-    max-width: 400px; /* reduced from 550px */
-    margin: 0.5rem auto; /* reduced margin */
-    padding: 0 0.5rem; /* reduced padding */
+    gap: 1rem;
+    width: 90%;
+    max-width: 550px;
+    margin: 1rem auto;
+    padding: 0 1rem;
 }
 
 .mobile-canvas-actions .icon-button {
@@ -1729,10 +1733,9 @@ input:checked+.toggle-slider:before {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.25rem; /* reduced gap between icon and text */
-    padding: 0.5rem; /* reduced padding */
-    border-radius: 6px; /* smaller radius */
-    font-size: 0.85rem; /* smaller font */
+    gap: 0.5rem;
+    padding: 0.75rem;
+    border-radius: 8px;
     font-weight: 600;
     color: white;
     border: none;
@@ -1740,16 +1743,16 @@ input:checked+.toggle-slider:before {
 }
 
 .mobile-canvas-actions .icon-button.teal {
-    background-color: #00bfa5;
+    background: #00bfa5;
 }
 
 .mobile-canvas-actions .icon-button.red {
-    background-color: #f44336;
+    background: #f44336;
 }
 
 .mobile-canvas-actions .icon {
-    width: 16px; /* smaller icon */
-    height: 16px; /* smaller icon */
+    width: 20px;
+    height: 20px;
     filter: brightness(0) invert(1);
 }
 /* Only show on mobile */

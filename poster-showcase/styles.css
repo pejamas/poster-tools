@@ -1035,3 +1035,40 @@ input:checked+.toggle-slider:before {
         transform: none;
     }
 }
+
+/* Fix sidebar toggle display for desktop */
+@media screen and (min-width: 901px) {
+    .sidebar-toggle {
+        display: none;
+    }
+    
+    .mobile-canvas-actions {
+        display: none !important;
+    }
+    
+    .header-mobile-menu {
+        display: none;
+    }
+
+    .header-mobile-dropdown {
+        display: none !important;
+    }
+
+    .header-actions {
+        justify-content: flex-end;
+        flex: 0 0 auto;
+    }
+}
+
+/* Mobile Responsiveness */
+@media screen and (max-width: 900px) {
+    .mobile-canvas-actions {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        width: 100%;
+        max-width: 550px;
+        margin: 1rem auto;
+        padding: 0 1rem;
+    }
+}
