@@ -1057,6 +1057,8 @@ const availableLogos = logoNames.map(name => ({
 
                 mediuxSuggestions.appendChild(div);
             });
+
+            updateMobileMediuxSuggestions();
         }
 
         function fetchMoviePosters(movieId, movieTitle) {
@@ -2654,6 +2656,45 @@ function updateMobileNetworkSuggestions() {
         }
     }
 }
+
+const mobilePickrElement = document.getElementById('mobile-pickr');
+const mobilePickr = Pickr.create({
+    el: mobilePickrElement,
+    theme: 'monolith',
+    position: 'right-middle',
+    padding: 40,
+    default: '#ffffff',
+    components: {
+        preview: true,
+        opacity: false,
+        hue: true,
+        interaction: {
+            hex: true,
+            input: true,
+            save: true
+        }
+    }
+});
+
+// Optional: handle color changes if you want
+mobilePickr.on('change', (color) => {
+    const hex = color.toHEXA().toString();
+    mobilePickrElement.style.background = hex;
+    selectedLogoColor = hex; // update your selected color
+    if (networkLogoImage && baseImage) {
+        drawCanvas();
+    }
+});
+
+mobilePickr.on('save', (color) => {
+    const hex = color.toHEXA().toString();
+    mobilePickrElement.style.background = hex;
+    selectedLogoColor = hex;
+    if (networkLogoImage && baseImage) {
+        drawCanvas();
+    }
+    mobilePickr.hide();
+});
 
 // Initialize mobile menu when the DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
