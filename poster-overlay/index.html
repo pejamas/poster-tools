@@ -135,6 +135,105 @@
             </div>
         </div>
     </div>
+    <div id="mobile-menu-overlay" class="mobile-menu-overlay">
+        <div class="mobile-menu-container">
+            <div class="mobile-menu-header">
+                <h2 class="mobile-menu-title">Poster Options & Tools</h2>
+                <button id="mobile-menu-close" class="mobile-menu-close">Close</button>
+            </div>
+            
+            <div class="mobile-menu-tabs">
+                <button class="mobile-menu-tab active" data-tab="search">Search</button>
+                <button class="mobile-menu-tab" data-tab="upload">Upload</button>
+                <button class="mobile-menu-tab" data-tab="overlays">Overlays</button>
+                <button class="mobile-menu-tab" data-tab="network">Network Logo</button>
+                <button class="mobile-menu-tab" data-tab="actions">Actions</button>
+            </div>
+            
+            <!-- Search Tab -->
+            <div id="mobile-tab-search" class="mobile-tab-content active">
+                <div class="mobile-input-group">
+                    <label>Content Type</label>
+                    <div class="media-type-selector">
+                        <button class="media-type-btn active" data-type="movie">Movies</button>
+                        <button class="media-type-btn" data-type="tv">TV Shows</button>
+                    </div>
+                </div>
+                
+                <div class="mobile-input-group">
+                    <label for="mobile-tmdb-search">Search TMDB</label>
+                    <input type="text" id="mobile-tmdb-search" placeholder="Search for a title...">
+                    <div id="mobile-tmdb-suggestions" class="autocomplete-suggestions"></div>
+                </div>
+                
+                <div class="mobile-input-group">
+                    <label for="mobile-mediux-search">Search Mediux</label>
+                    <input type="text" id="mobile-mediux-search" placeholder="Search for a title...">
+                    <div id="mobile-mediux-suggestions" class="autocomplete-suggestions"></div>
+                </div>
+                
+                <div class="mobile-input-group">
+                    <label for="mobile-mediux-filter">Filter by Mediux User</label>
+                    <input type="text" id="mobile-mediux-filter" placeholder="Leave empty to show all posters...">
+                </div>
+            </div>
+            
+            <!-- Upload Tab -->
+            <div id="mobile-tab-upload" class="mobile-tab-content">
+                <div class="mobile-input-group">
+                    <label for="mobile-poster-upload" class="drop-zone-label"><span>Upload Poster</span></label>
+                    <input type="file" id="mobile-poster-upload" accept="image/*">
+                </div>
+            </div>
+            
+            <!-- Overlays Tab -->
+            <div id="mobile-tab-overlays" class="mobile-tab-content">
+                <div class="mobile-input-group">
+                    <label for="mobile-overlay-select">Movie Banner</label>
+                    <select id="mobile-overlay-select">
+                        <option value="none">None</option>
+                        <option value="../assets/movie-overlays/4K with DV.png">Dolby Vision</option>
+                        <option value="../assets/movie-overlays/4K with HDR.png">HDR</option>
+                        <option value="../assets/movie-overlays/4K no HDR.png">Ultra HD</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Network Logo Tab -->
+            <div id="mobile-tab-network" class="mobile-tab-content">
+                <div class="mobile-toggle-group">
+                    <span class="mobile-toggle-label">Enable Network Logo</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="mobile-network-checkbox">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="mobile-input-group">
+                    <label for="mobile-network-search">Search for Network Logo</label>
+                    <input type="text" id="mobile-network-search" placeholder="Search for logo...">
+                    <div id="mobile-network-suggestions" class="network-logo-suggestions"></div>
+                </div>
+                
+                <div class="mobile-input-group">
+                    <label for="mobile-logo-color">Logo Color</label>
+                    <div id="mobile-pickr" style="height: 32px; background: #ffffff; border-radius: 8px; cursor: pointer;"></div>
+                </div>
+            </div>
+            
+            <!-- Actions Tab -->
+            <div id="mobile-tab-actions" class="mobile-tab-content">
+                <div class="mobile-action-row">
+                    <button id="mobile-download-btn" class="icon-button teal" style="flex: 1; background: #00bfa5; padding: 1rem;">
+                        <img src="../assets/poster-overlay-icons/download.svg" class="icon" style="margin-right: 8px;"> Download
+                    </button>
+                    <button id="mobile-reset-btn" class="icon-button red" style="flex: 1; background: #f44336; padding: 1rem;">
+                        <img src="../assets/poster-overlay-icons/refresh-cw.svg" class="icon" style="margin-right: 8px;"> Reset
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script>
         const posterUpload = document.getElementById('poster-upload');
@@ -2027,6 +2126,449 @@ const availableLogos = logoNames.map(name => ({
                 posterGrid.style.maxWidth = '100%';
             }
         });
+        function setupMobileMenu() {
+    // Only add these listeners on mobile screens
+    if (window.innerWidth <= 900) {
+        // Get references to mobile elements
+        const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
+        const mobileMenuClose = document.getElementById('mobile-menu-close');
+        const mobileTabs = document.querySelectorAll('.mobile-menu-tab');
+        const sidebarToggle = document.getElementById('sidebar-toggle');
+        const sidebar = document.getElementById('sidebar');
+        
+        // Override the sidebar toggle functionality on mobile
+        if (sidebarToggle) {
+            sidebarToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                // Instead of expanding the sidebar, show our custom mobile menu
+                mobileMenuOverlay.style.display = 'block';
+                document.body.style.overflow = 'hidden'; // Prevent background scrolling
+                
+                // Sync the current state of the UI with our mobile UI
+                syncDesktopToMobileUI();
+            });
+        }
+        
+        // Close button functionality
+        if (mobileMenuClose) {
+            mobileMenuClose.addEventListener('click', () => {
+                mobileMenuOverlay.style.display = 'none';
+                document.body.style.overflow = ''; // Restore scrolling
+                
+                // Apply any changes from mobile UI to the actual sidebar
+                syncMobileToDesktopUI();
+            });
+        }
+        
+        // Tab switching
+        mobileTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Remove active class from all tabs and content
+                mobileTabs.forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.mobile-tab-content').forEach(c => c.classList.remove('active'));
+                
+                // Add active class to clicked tab and corresponding content
+                tab.classList.add('active');
+                const tabId = tab.getAttribute('data-tab');
+                document.getElementById(`mobile-tab-${tabId}`).classList.add('active');
+            });
+        });
+        
+        // Click outside to close
+        mobileMenuOverlay.addEventListener('click', (e) => {
+            if (e.target === mobileMenuOverlay) {
+                mobileMenuOverlay.style.display = 'none';
+                document.body.style.overflow = '';
+                syncMobileToDesktopUI();
+            }
+        });
+        
+        // Mobile action buttons
+        const mobileDownloadBtn = document.getElementById('mobile-download-btn');
+        if (mobileDownloadBtn) {
+            mobileDownloadBtn.addEventListener('click', () => {
+                document.getElementById('download-btn').click();
+                mobileMenuOverlay.style.display = 'none';
+                document.body.style.overflow = '';
+            });
+        }
+        
+        const mobileResetBtn = document.getElementById('mobile-reset-btn');
+        if (mobileResetBtn) {
+            mobileResetBtn.addEventListener('click', () => {
+                document.getElementById('reset-btn').click();
+                mobileMenuOverlay.style.display = 'none';
+                document.body.style.overflow = '';
+            });
+        }
+        
+        // Mobile search functionality - TMDB
+        const mobileTMDBSearch = document.getElementById('mobile-tmdb-search');
+        const mobileTMDBSuggestions = document.getElementById('mobile-tmdb-suggestions');
+        
+        if (mobileTMDBSearch) {
+            mobileTMDBSearch.addEventListener('input', () => {
+                // Mirror input to desktop search
+                document.getElementById('tmdb-search-input').value = mobileTMDBSearch.value;
+                document.getElementById('tmdb-search-input').dispatchEvent(new Event('input'));
+                
+                // Show suggestions in mobile UI
+                updateMobileTMDBSuggestions();
+            });
+        }
+        
+        // Mobile search functionality - Mediux
+        const mobileMediuxSearch = document.getElementById('mobile-mediux-search');
+        const mobileMediuxSuggestions = document.getElementById('mobile-mediux-suggestions');
+        
+        if (mobileMediuxSearch) {
+            mobileMediuxSearch.addEventListener('input', () => {
+                // Mirror input to desktop search
+                document.getElementById('mediux-search-input').value = mobileMediuxSearch.value;
+                document.getElementById('mediux-search-input').dispatchEvent(new Event('input'));
+                
+                // Show suggestions in mobile UI
+                updateMobileMediuxSuggestions();
+            });
+        }
+        
+        // Mobile network logo search
+        const mobileNetworkSearch = document.getElementById('mobile-network-search');
+        const mobileNetworkSuggestions = document.getElementById('mobile-network-suggestions');
+        
+        if (mobileNetworkSearch) {
+            mobileNetworkSearch.addEventListener('input', () => {
+                // Mirror input to desktop search
+                document.getElementById('network-logo-search').value = mobileNetworkSearch.value;
+                document.getElementById('network-logo-search').dispatchEvent(new Event('input'));
+                
+                // Show suggestions in mobile UI
+                updateMobileNetworkSuggestions();
+            });
+            
+            mobileNetworkSearch.addEventListener('focus', () => {
+                if (mobileNetworkSearch.value.trim() === '') {
+                    const availableLogos = window.availableLogos || [];
+                    displayMobileLogoSuggestions(availableLogos);
+                }
+            });
+        }
+        
+        // Mobile filter by username
+        const mobileMediuxFilter = document.getElementById('mobile-mediux-filter');
+        if (mobileMediuxFilter) {
+            mobileMediuxFilter.addEventListener('input', () => {
+                document.getElementById('mediux-username-filter').value = mobileMediuxFilter.value;
+            });
+        }
+        
+        // Mobile network logo checkbox
+        const mobileNetworkCheckbox = document.getElementById('mobile-network-checkbox');
+        if (mobileNetworkCheckbox) {
+            mobileNetworkCheckbox.addEventListener('change', () => {
+                document.getElementById('network-logo-checkbox').checked = mobileNetworkCheckbox.checked;
+                document.getElementById('network-logo-checkbox').dispatchEvent(new Event('change'));
+            });
+        }
+        
+        // Mobile overlay select
+        const mobileOverlaySelect = document.getElementById('mobile-overlay-select');
+        if (mobileOverlaySelect) {
+            mobileOverlaySelect.addEventListener('change', () => {
+                document.getElementById('overlay-select').value = mobileOverlaySelect.value;
+                document.getElementById('overlay-select').dispatchEvent(new Event('change'));
+            });
+        }
+        
+        // Mobile poster upload
+        const mobilePosterUpload = document.getElementById('mobile-poster-upload');
+        if (mobilePosterUpload) {
+            mobilePosterUpload.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    // Create a new FileList with the same file
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(e.target.files[0]);
+                    
+                    // Set the file input value
+                    document.getElementById('poster-upload').files = dataTransfer.files;
+                    document.getElementById('poster-upload').dispatchEvent(new Event('change'));
+                    
+                    // Close the mobile menu
+                    mobileMenuOverlay.style.display = 'none';
+                    document.body.style.overflow = '';
+                }
+            });
+        }
+        
+        // Mobile media type buttons
+        const mobileMediaTypeButtons = document.querySelectorAll('.mobile-tab-content .media-type-btn');
+        if (mobileMediaTypeButtons) {
+            mobileMediaTypeButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // Update mobile UI
+                    mobileMediaTypeButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    
+                    // Sync to desktop
+                    const type = button.dataset.type;
+                    document.querySelector(`.sidebar .media-type-btn[data-type="${type}"]`).click();
+                });
+            });
+        }
+        
+        // Initialize Pickr for mobile
+        if (typeof Pickr !== 'undefined' && document.getElementById('mobile-pickr')) {
+            const mobilePicker = Pickr.create({
+                el: document.getElementById('mobile-pickr'),
+                theme: 'monolith',
+                default: '#ffffff',
+                components: {
+                    preview: true,
+                    opacity: false,
+                    hue: true,
+                    interaction: {
+                        hex: true,
+                        input: true,
+                        save: true
+                    }
+                }
+            });
+            
+            mobilePicker.on('change', (color) => {
+                const hex = color.toHEXA().toString();
+                document.getElementById('mobile-pickr').style.background = hex;
+                
+                // Sync to main pickr
+                window.pickr.setColor(hex);
+            });
+            
+            mobilePicker.on('save', (color) => {
+                const hex = color.toHEXA().toString();
+                document.getElementById('mobile-pickr').style.background = hex;
+                
+                window.pickr.setColor(hex);
+                mobilePicker.hide();
+            });
+        }
+    }
+}
+
+// Synchronize desktop UI state to mobile UI
+function syncDesktopToMobileUI() {
+    // Content Type
+    const activeMediaType = document.querySelector('.sidebar .media-type-btn.active');
+    if (activeMediaType) {
+        const type = activeMediaType.dataset.type;
+        document.querySelectorAll('.mobile-tab-content .media-type-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.type === type);
+        });
+    }
+    
+    // TMDB Search
+    document.getElementById('mobile-tmdb-search').value = document.getElementById('tmdb-search-input').value;
+    
+    // Mediux Search
+    document.getElementById('mobile-mediux-search').value = document.getElementById('mediux-search-input').value;
+    
+    // Username filter
+    document.getElementById('mobile-mediux-filter').value = document.getElementById('mediux-username-filter').value;
+    
+    // Overlay selection
+    document.getElementById('mobile-overlay-select').value = document.getElementById('overlay-select').value;
+    
+    // Network logo
+    document.getElementById('mobile-network-search').value = document.getElementById('network-logo-search').value;
+    document.getElementById('mobile-network-checkbox').checked = document.getElementById('network-logo-checkbox').checked;
+    
+    // Logo color
+    if (window.selectedLogoColor && document.getElementById('mobile-pickr')) {
+        document.getElementById('mobile-pickr').style.background = window.selectedLogoColor;
+    }
+}
+
+// Synchronize mobile UI state to desktop UI
+function syncMobileToDesktopUI() {
+    // Not needed for most items as they're synchronized in real-time
+    // This function is mainly a placeholder for any cleanup or special cases
+}
+
+// Helper function to update TMDB suggestions in mobile UI
+function updateMobileTMDBSuggestions() {
+    const mobileSuggestions = document.getElementById('mobile-tmdb-suggestions');
+    const desktopSuggestions = document.getElementById('tmdb-suggestions');
+    
+    if (mobileSuggestions && desktopSuggestions) {
+        // Clone the desktop suggestions to mobile
+        mobileSuggestions.innerHTML = desktopSuggestions.innerHTML;
+        
+        // Add click handlers to the mobile suggestion items
+        const suggestionItems = mobileSuggestions.querySelectorAll('.search-result-item');
+        suggestionItems.forEach((item, index) => {
+            item.addEventListener('click', () => {
+                // Trigger click on corresponding desktop suggestion
+                const desktopItems = desktopSuggestions.querySelectorAll('.search-result-item');
+                if (desktopItems[index]) {
+                    desktopItems[index].click();
+                }
+                
+                // Close the mobile menu
+                document.getElementById('mobile-menu-overlay').style.display = 'none';
+                document.body.style.overflow = '';
+            });
+        });
+        
+        if (desktopSuggestions.innerHTML.trim()) {
+            mobileSuggestions.style.display = 'block';
+            
+            // Scroll to ensure the input field and suggestions are visible
+            const inputField = document.getElementById('mobile-tmdb-search');
+            if (inputField) {
+                inputField.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        } else {
+            mobileSuggestions.style.display = 'none';
+        }
+    }
+}
+
+// Helper function to update Mediux suggestions in mobile UI
+function updateMobileMediuxSuggestions() {
+    const mobileSuggestions = document.getElementById('mobile-mediux-suggestions');
+    const desktopSuggestions = document.getElementById('mediux-suggestions');
+    
+    if (mobileSuggestions && desktopSuggestions) {
+        // Clone the desktop suggestions to mobile
+        mobileSuggestions.innerHTML = desktopSuggestions.innerHTML;
+        
+        // Add click handlers to the mobile suggestion items
+        const suggestionItems = mobileSuggestions.querySelectorAll('.search-result-item');
+        suggestionItems.forEach((item, index) => {
+            item.addEventListener('click', () => {
+                // Trigger click on corresponding desktop suggestion
+                const desktopItems = desktopSuggestions.querySelectorAll('.search-result-item');
+                if (desktopItems[index]) {
+                    desktopItems[index].click();
+                }
+                
+                // Close the mobile menu
+                document.getElementById('mobile-menu-overlay').style.display = 'none';
+                document.body.style.overflow = '';
+            });
+        });
+        
+        if (desktopSuggestions.innerHTML.trim()) {
+            mobileSuggestions.style.display = 'block';
+            
+            // Scroll to ensure the input field and suggestions are visible
+            const inputField = document.getElementById('mobile-mediux-search');
+            if (inputField) {
+                inputField.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        } else {
+            mobileSuggestions.style.display = 'none';
+        }
+    }
+}
+
+// Helper function to display logo suggestions in mobile UI
+function displayMobileLogoSuggestions(logos) {
+    const mobileNetworkSuggestions = document.getElementById('mobile-network-suggestions');
+    if (!mobileNetworkSuggestions) return;
+    
+    mobileNetworkSuggestions.innerHTML = '';
+    
+    if (logos.length === 0) {
+        mobileNetworkSuggestions.innerHTML = '<div class="suggestion-item">No logos found</div>';
+        return;
+    }
+    
+    logos.forEach(logo => {
+        const div = document.createElement('div');
+        div.className = 'suggestion-item';
+        const logoImg = document.createElement('img');
+        logoImg.src = logo.path;
+        logoImg.alt = logo.name;
+        logoImg.className = 'logo-preview-img';
+        logoImg.style.maxWidth = '120px';
+        logoImg.style.maxHeight = '30px';
+        logoImg.style.width = 'auto';
+        logoImg.style.height = 'auto';
+        logoImg.style.display = 'block';
+        
+        logoImg.onerror = () => {
+            logoImg.style.display = 'none';
+            const fallbackText = document.createElement('div');
+            fallbackText.textContent = logo.name;
+            fallbackText.style.textAlign = 'center';
+            fallbackText.style.color = 'white';
+            fallbackText.style.fontSize = '0.9rem';
+            div.appendChild(fallbackText);
+        };
+        
+        div.appendChild(logoImg);
+        
+        div.addEventListener('click', () => {
+            document.getElementById('network-logo-search').value = logo.name;
+            document.getElementById('network-logo-search').dispatchEvent(new Event('input'));
+            document.getElementById('mobile-network-search').value = logo.name;
+            mobileNetworkSuggestions.style.display = 'none';
+            
+            document.getElementById('network-logo-checkbox').checked = true;
+            document.getElementById('mobile-network-checkbox').checked = true;
+            document.getElementById('network-logo-checkbox').dispatchEvent(new Event('change'));
+        });
+        
+        mobileNetworkSuggestions.appendChild(div);
+    });
+    
+    mobileNetworkSuggestions.style.display = 'block';
+}
+
+// Helper function to update Network logo suggestions in mobile UI
+function updateMobileNetworkSuggestions() {
+    const mobileSuggestions = document.getElementById('mobile-network-suggestions');
+    const desktopSuggestions = document.getElementById('network-logo-suggestions');
+    
+    if (mobileSuggestions && desktopSuggestions) {
+        // Clone the desktop suggestions to mobile
+        mobileSuggestions.innerHTML = desktopSuggestions.innerHTML;
+        
+        // Add click handlers to the mobile suggestion items
+        const suggestionItems = mobileSuggestions.querySelectorAll('.suggestion-item');
+        suggestionItems.forEach((item, index) => {
+            item.addEventListener('click', () => {
+                // Trigger click on corresponding desktop suggestion
+                const desktopItems = desktopSuggestions.querySelectorAll('.suggestion-item');
+                if (desktopItems[index]) {
+                    desktopItems[index].click();
+                }
+            });
+        });
+        
+        if (desktopSuggestions.innerHTML.trim()) {
+            mobileSuggestions.style.display = 'block';
+        } else {
+            mobileSuggestions.style.display = 'none';
+        }
+    }
+}
+
+// Initialize mobile menu when the DOM is loaded
+document.addEventListener('DOMContentLoaded', setupMobileMenu);
+
+// Re-initialize on resize (for devices that can switch between mobile/desktop)
+window.addEventListener('resize', () => {
+    if (window.innerWidth <= 900) {
+        setupMobileMenu();
+    } else {
+        // If we're on desktop, make sure the mobile menu is hidden
+        const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
+        if (mobileMenuOverlay) {
+            mobileMenuOverlay.style.display = 'none';
+        }
+        document.body.style.overflow = '';
+    }
+});
     </script>
     <div id="tooltip" class="custom-tooltip"></div>
 </body>

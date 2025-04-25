@@ -1470,3 +1470,206 @@ input:checked+.toggle-slider:before {
         display: none !important;
     }
 }
+
+.mobile-menu-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.85);
+    z-index: 1000;
+    overflow-y: auto;
+    backdrop-filter: blur(10px);
+}
+
+.mobile-menu-container {
+    max-width: 90%;
+    margin: 1rem auto;
+    padding: 1rem;
+    background: rgba(20, 20, 30, 0.8);
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.mobile-menu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 0.8rem;
+    margin-bottom: 0.8rem;
+    border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+}
+
+.mobile-menu-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: white;
+    margin: 0;
+    background: linear-gradient(to right, #00fff0, #a600ff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.mobile-menu-close {
+    background: rgba(255, 77, 77, 0.8);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.5rem 0.8rem;
+    font-size: 0.9rem;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.mobile-menu-tabs {
+    display: flex;
+    overflow-x: auto;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    padding: 0.3rem;
+}
+
+.mobile-menu-tabs::-webkit-scrollbar {
+    height: 4px;
+}
+
+.mobile-menu-tabs::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.mobile-menu-tabs::-webkit-scrollbar-thumb {
+    background: rgba(0, 255, 255, 0.3);
+    border-radius: 4px;
+}
+
+.mobile-menu-tab {
+    flex: 0 0 auto;
+    padding: 0.7rem 1rem;
+    background: transparent;
+    color: #ccc;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+}
+
+.mobile-menu-tab.active {
+    background: linear-gradient(to right, #00bfa5, #8e24aa);
+    color: white;
+    box-shadow: 0 2px 8px rgba(0, 255, 255, 0.2);
+}
+
+.mobile-tab-content {
+    display: none;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    max-height: 70vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.mobile-tab-content.active {
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.mobile-action-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.mobile-input-group {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+.mobile-input-group label {
+    display: block;
+    color: white;
+    font-size: 0.95rem;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.mobile-input-group input,
+.mobile-input-group select {
+    width: 100%;
+    padding: 0.8rem;
+    background: #333;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+}
+
+.mobile-toggle-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.8rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    margin-bottom: 0.8rem;
+}
+
+.mobile-toggle-label {
+    font-size: 0.95rem;
+    color: white;
+    font-weight: 500;
+}
+#mobile-tmdb-suggestions,
+#mobile-mediux-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    background: #222;
+    color: white;
+    border-radius: 0 0 6px 6px;
+    overflow: hidden;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    max-height: 220px;
+    overflow-y: auto;
+    width: 100%;
+    margin-top: -5px;
+}
+#mobile-tmdb-suggestions .search-result-item,
+#mobile-mediux-suggestions .search-result-item {
+    padding: 0.75rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+#mobile-tmdb-suggestions .search-result-item:hover,
+#mobile-mediux-suggestions .search-result-item:hover {
+    background: #444;
+}
+
+/* Only show on mobile */
+@media (min-width: 901px) {
+    .mobile-menu-overlay {
+        display: none !important;
+    }
+}
