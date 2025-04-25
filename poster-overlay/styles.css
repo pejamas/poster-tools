@@ -492,12 +492,25 @@ canvas {
     line-height: 1.6;
     color: #ddd;
 }
-#poster-modal {
-    width: 100%;
-    display: none;
-    flex-direction: column;
-    align-items: center;
-    margin-top: 1rem;
+/* Ensure the modular window is centered and fits properly on mobile */
+@media (max-width: 768px) {
+    #poster-modal.mobile-centered {
+        max-width: 90%;
+        max-height: 90%;
+        overflow: auto;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 1rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        border-radius: 12px;
+        background: rgba(0, 0, 0, 0.9);
+    }
 }
 .poster-grid {
     display: flex;
@@ -1443,4 +1456,17 @@ input:checked+.toggle-slider:before {
 .sidebar-action-row {
     gap: 0.5rem;
     margin-top: 0.7rem;
+}
+
+/* Adjust canvas size and hide metadata panel for mobile screens */
+@media (max-width: 768px) {
+    #overlay-canvas {
+        width: 90%;
+        height: auto;
+        margin: 0 auto;
+    }
+
+    #metadata-panel {
+        display: none !important;
+    }
 }
