@@ -7,6 +7,8 @@
     <link rel="icon" type="image/svg+xml" href="../assets/mediux.svg" />
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Gabarito:wght@400;600;700&family=Bebas+Neue&family=Montserrat:wght@400;700&family=Oswald:wght@400;700&family=Playfair+Display:wght@400;700&family=Raleway:wght@400;700&family=Roboto:wght@400;700&family=Staatliches&family=Lato:wght@400;700&family=Exo+2:wght@400;700&family=Poppins:wght@400;700&family=Quicksand:wght@400;700&family=Nunito:wght@400;700&family=Open+Sans:wght@400;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/monolith.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr"></script>
 </head>
 <body>
     <header>
@@ -32,13 +34,13 @@
             <!-- TMDB Search Section -->
             <div class="collapsible active">
                 <div class="collapsible-header">
-                    <h3>TV Show Search</h3>
+                    <h3>TMDB Search</h3>
                     <span class="toggle-icon"></span>
                 </div>
                 <div class="collapsible-content">
                     <form id="show-search-form">
                         <div class="search-container">
-                            <input type="text" id="show-search-input" placeholder="Search for a TV show..." />
+                            <input type="text" id="show-search-input" placeholder="Search TV shows..." />
                             <button type="submit" class="search-button">Search</button>
                         </div>
                     </form>
@@ -62,7 +64,7 @@
             <!-- Manual Creation (merged Basic Options and Show Thumbnail) -->
             <div class="collapsible">
                 <div class="collapsible-header">
-                    <h3>Manual Creation</h3>
+                    <h3>Manual Tools</h3>
                     <span class="toggle-icon"></span>
                 </div>
                 <div class="collapsible-content">
@@ -78,8 +80,8 @@
                     
                     <label for="separator-type">Season/Episode Separator</label>
                     <select id="separator-type">
-                        <option value="dash">Dash (-)</option>
                         <option value="dot">Dot (•)</option>
+                        <option value="dash">Dash (-)</option>
                         <option value="pipe">Pipe (|)</option>
                         <option value="space">Space</option>
                         <option value="none">None</option>
@@ -88,8 +90,10 @@
                     <!-- Thumbnail options -->
                     <div class="section-separator"></div>
                     
-                    <label for="thumbnail-upload" class="drop-zone">Upload Show Thumbnail</label>
-                    <input type="file" id="thumbnail-upload" accept="image/*" />
+                    <div class="thumbnail-upload-container drop-zone" id="thumbnail-container">
+                        <span>Upload Show Thumbnail</span>
+                        <input type="file" id="thumbnail-upload" accept="image/*" style="display: none;" />
+                    </div>
                     
                     <div class="toggle-container">
                         <span class="toggle-label">Full Size Background</span>
@@ -104,11 +108,11 @@
             <!-- Style Options (renamed from Title Card Style, merged with Visual Effects) -->
             <div class="collapsible">
                 <div class="collapsible-header">
-                    <h3>Style Options</h3>
+                    <h3>Theme Options</h3>
                     <span class="toggle-icon"></span>
                 </div>
                 <div class="collapsible-content">
-                    <label for="preset-select">Text Placement Style</label>
+                    <label for="preset-select">Text Poisition</label>
                     <select id="preset-select">
                         <option value="centerMiddle">Center Middle</option>
                         <option value="manhunt">Left Bottom</option>
@@ -119,7 +123,7 @@
                     </select>
                     
                     <!-- Visual Effects merged here -->
-                    <label for="effect-type">Effect Type</label>
+                    <label for="effect-type">Gradient Type</label>
                     <select id="effect-type">
                         <option value="none">None</option>
                         <option value="leftToRight">Gradient (Left to Right)</option>
@@ -129,107 +133,178 @@
                         <option value="radial">Radial Gradient</option>
                     </select>
                     
+                    <label for="blend-mode">Gradient Blend Mode</label>
+                    <select id="blend-mode">
+                        <option value="normal">Normal</option>
+                        <option value="multiply">Multiply</option>
+                        <option value="screen">Screen</option>
+                        <option value="overlay" selected>Overlay</option>
+                        <option value="darken">Darken</option>
+                        <option value="lighten">Lighten</option>
+                        <option value="color-dodge">Color Dodge</option>
+                        <option value="color-burn">Color Burn</option>
+                        <option value="hard-light">Hard Light</option>
+                        <option value="soft-light">Soft Light</option>
+                        <option value="difference">Difference</option>
+                        <option value="exclusion">Exclusion</option>
+                        <option value="hue">Hue</option>
+                        <option value="saturation">Saturation</option>
+                        <option value="color">Color</option>
+                        <option value="luminosity">Luminosity</option>
+                    </select>
+                    
                     <div id="gradient-controls">
-                        <label for="gradient-color">Effect Color</label>
-                        <input type="color" id="gradient-color" value="#000000" />
+                        <label for="gradient-color">Gradient Color</label>
+                        <div id="gradient-color-pickr" class="pickr-container"></div>
                         
-                        <label for="gradient-opacity">Effect Intensity</label>
+                        <label for="gradient-opacity">Gradient Intensity</label>
                         <input type="range" id="gradient-opacity" min="0.1" max="1" step="0.05" value="0.7" />
-                        
-                        <label for="blend-mode">Blend Mode</label>
-                        <select id="blend-mode">
-                            <option value="normal">Normal</option>
-                            <option value="multiply">Multiply</option>
-                            <option value="screen">Screen</option>
-                            <option value="overlay" selected>Overlay</option>
-                            <option value="darken">Darken</option>
-                            <option value="lighten">Lighten</option>
-                            <option value="color-dodge">Color Dodge</option>
-                            <option value="color-burn">Color Burn</option>
-                            <option value="hard-light">Hard Light</option>
-                            <option value="soft-light">Soft Light</option>
-                            <option value="difference">Difference</option>
-                            <option value="exclusion">Exclusion</option>
-                            <option value="hue">Hue</option>
-                            <option value="saturation">Saturation</option>
-                            <option value="color">Color</option>
-                            <option value="luminosity">Luminosity</option>
-                        </select>
                     </div>
                 </div>
             </div>
 
-            <!-- Text Options (renamed from Advanced Text Options) -->
+            <!-- Text Options Section -->
             <div class="collapsible">
                 <div class="collapsible-header">
                     <h3>Text Options</h3>
                     <span class="toggle-icon"></span>
                 </div>
-                <div class="collapsible-content">
-                    <!-- Moved from Title Card Style -->
-                    <label for="font-family">Font Style</label>
-                    <select id="font-family">
-                        <option value="Gabarito">Gabarito (Default)</option>
-                        <option value="Exo 2">Exo 2</option>
-                        <option value="Poppins">Poppins</option>
-                        <option value="Bebas Neue">Bebas Neue</option>
-                        <option value="Montserrat">Montserrat</option>
-                        <option value="Oswald">Oswald</option>
-                        <option value="Quicksand">Quicksand</option>
-                        <option value="Nunito">Nunito</option>
-                        <option value="Open Sans">Open Sans</option>
-                        <option value="Playfair Display">Playfair Display</option>
-                        <option value="Raleway">Raleway</option>
-                        <option value="Roboto">Roboto</option>
-                        <option value="Staatliches">Staatliches</option>
-                        <option value="Lato">Lato</option>
-                        <option value="custom-font" id="custom-font-option" style="display: none">Custom Font</option>
-                    </select>
-                    
-                    <label for="custom-font-upload" class="drop-zone">Upload Custom Font (TTF, WOFF, OTF)</label>
-                    <input type="file" id="custom-font-upload" accept=".ttf,.woff,.woff2,.otf" />
-                    <div id="custom-font-info" class="info-text" style="display: none">
-                        Custom font loaded: <span id="custom-font-name">None</span>
+                <div class="collapsible-content text-options">
+                    <!-- Title Text Options -->
+                    <h4>Title Text</h4>
+                    <div class="text-options-grid">
+                        <div>
+                            <span class="option-label">Font Style</span>
+                            <select id="font-family">
+                                <option value="Gabarito">Gabarito</option>
+                                <option value="Exo 2">Exo 2</option>
+                                <option value="Poppins">Poppins</option>
+                                <option value="Bebas Neue">Bebas Neue</option>
+                                <option value="Montserrat">Montserrat</option>
+                                <option value="Oswald">Oswald</option>
+                                <option value="Quicksand">Quicksand</option>
+                                <option value="Nunito">Nunito</option>
+                                <option value="Open Sans">Open Sans</option>
+                                <option value="Playfair Display">Playfair Display</option>
+                                <option value="Raleway">Raleway</option>
+                                <option value="Roboto">Roboto</option>
+                                <option value="Staatliches">Staatliches</option>
+                                <option value="Lato">Lato</option>
+                                <option value="custom-font" id="custom-font-option" style="display: none">Custom Font</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <span class="option-label">Text Size</span>
+                            <select id="text-size">
+                                <option value="normal">Normal</option>
+                                <option value="large">Large</option>
+                                <option value="small">Small</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Custom font upload -->
+                    <div class="custom-font-upload-container">
+                        <span>Upload Custom Font</span>
+                        <input type="file" id="custom-font-upload" accept=".ttf,.woff,.woff2,.otf" style="display: none;" />
                     </div>
                     
-                    <label for="text-color">Title Color</label>
-                    <input type="color" id="text-color" value="#ffffff" />
-                    
-                    <label for="info-color">Info Text Color</label>
-                    <input type="color" id="info-color" value="#cccccc" />
-                    
-                    <label for="text-size">Text Size</label>
-                    <select id="text-size">
-                        <option value="normal">Normal</option>
-                        <option value="large">Large</option>
-                        <option value="small">Small</option>
-                    </select>
-                    
-                    <div class="toggle-container">
-                        <span class="toggle-label">Bold Text</span>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="text-bold">
-                            <span class="toggle-slider"></span>
-                        </label>
+                    <!-- Title Color -->
+                    <div>
+                        <span class="option-label">Title Color</span>
+                        <div id="text-color-pickr" class="color-box"></div>
                     </div>
                     
+                    <!-- Shadow controls for Title -->
+                    <div class="effect-section">
+                        <div class="effect-title">Shadow Effect</div>
+                        <div class="effect-controls">
+                            <div id="text-shadow-color-pickr" class="effect-color"></div>
+                            <div class="slider-bar"></div>
+                            <input type="range" id="text-shadow-blur" min="0" max="30" value="8" />
+                        </div>
+                    </div>
+                    
+                    <!-- Outline controls for Title -->
+                    <div class="effect-section">
+                        <div class="effect-title">Outline Effect</div>
+                        <div class="effect-controls">
+                            <div id="text-outline-color-pickr" class="effect-color"></div>
+                            <div class="slider-bar"></div>
+                            <input type="range" id="text-outline-width" min="0" max="10" value="0" />
+                        </div>
+                    </div>
+                    
+                    <!-- Info Text Options -->
                     <div class="section-separator"></div>
-                    
-                    <!-- Original Advanced Text Options -->
-                    <label for="text-shadow-blur">Shadow</label>
-                    <div class="control-row">
-                        <input type="color" id="text-shadow-color" value="#000000" />
-                        <input type="range" id="text-shadow-blur" min="0" max="30" value="8" />
+                    <h4>Info Text</h4>
+                    <div class="text-options-grid">
+                        <div>
+                            <span class="option-label">Font Style</span>
+                            <select id="info-font-family">
+                                <option value="Gabarito">Gabarito</option>
+                                <option value="Exo 2">Exo 2</option>
+                                <option value="Poppins">Poppins</option>
+                                <option value="Bebas Neue">Bebas Neue</option>
+                                <option value="Montserrat">Montserrat</option>
+                                <option value="Oswald">Oswald</option>
+                                <option value="Quicksand">Quicksand</option>
+                                <option value="Nunito">Nunito</option>
+                                <option value="Open Sans">Open Sans</option>
+                                <option value="Playfair Display">Playfair Display</option>
+                                <option value="Raleway">Raleway</option>
+                                <option value="Roboto">Roboto</option>
+                                <option value="Staatliches">Staatliches</option>
+                                <option value="Lato">Lato</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <span class="option-label">Text Size</span>
+                            <select id="info-text-size">
+                                <option value="normal" selected>Normal</option>
+                                <option value="large">Large</option>
+                                <option value="small">Small</option>
+                            </select>
+                        </div>
                     </div>
                     
-                    <label for="text-outline-width">Outline</label>
-                    <div class="control-row">
-                        <input type="color" id="text-outline-color" value="#000000" />
-                        <input type="range" id="text-outline-width" min="0" max="10" value="0" />
+                    <!-- Info Color -->
+                    <div>
+                        <span class="option-label">Info Text Color</span>
+                        <div id="info-color-pickr" class="color-box"></div>
                     </div>
                     
-                    <label for="title-info-spacing">Title-Info Spacing</label>
-                    <input type="range" id="title-info-spacing" min="5" max="40" value="15" />
+                    <!-- Shadow controls for Info -->
+                    <div class="effect-section">
+                        <div class="effect-title">Shadow Effect</div>
+                        <div class="effect-controls">
+                            <div id="info-shadow-color-pickr" class="effect-color"></div>
+                            <div class="slider-bar"></div>
+                            <input type="range" id="info-shadow-blur" min="0" max="30" value="8" />
+                        </div>
+                    </div>
+                    
+                    <!-- Outline controls for Info -->
+                    <div class="effect-section">
+                        <div class="effect-title">Outline Effect</div>
+                        <div class="effect-controls">
+                            <div id="info-outline-color-pickr" class="effect-color"></div>
+                            <div class="slider-bar"></div>
+                            <input type="range" id="info-outline-width" min="0" max="10" value="0" />
+                        </div>
+                    </div>
+                    
+                    <!-- Title-Info Spacing -->
+                    <div class="section-separator"></div>
+                    <div class="title-info-gap">
+                        <div class="gap-label">
+                            <span class="label-text">Title-Info Gap:</span>
+                            <span class="gap-value" id="spacing-value">15px</span>
+                        </div>
+                        <input type="range" id="title-info-spacing" min="5" max="40" value="15" />
+                    </div>
                 </div>
             </div>
 

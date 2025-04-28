@@ -3,42 +3,384 @@ document.addEventListener('DOMContentLoaded', () => {
     const TMDB_API_KEY = '96c821c9e98fab6a43bff8021d508d1d'; 
     const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
     const TMDB_IMG_BASE_URL = 'https://image.tmdb.org/t/p/';
+    // Initialize default color values immediately to ensure they're available
+    window['text-color'] = '#ffffff';
+    window['info-color'] = '#ffffff';
+    window['text-shadow-color'] = '#000000';
+    window['text-outline-color'] = '#000000';
+    window['info-shadow-color'] = '#000000';
+    window['info-outline-color'] = '#000000';
+    window['gradient-color'] = '#000000';
+    // Initialize Text Options UI
+    function initializeTextOptionsUI() {
+        // Set up custom font upload UI
+        const customFontUploadContainer = document.querySelector('.custom-font-upload-container');
+        const customFontUpload = document.getElementById('custom-font-upload');
+        const fontFamily = document.getElementById('font-family');
+        const infoFontFamily = document.getElementById('info-font-family');
+        
+        const thumbnailContainer = document.getElementById('thumbnail-container');
+const thumbnailUpload = document.getElementById('thumbnail-upload');
 
-    // Font preloading to ensure they're available before canvas rendering
-    function preloadFonts() {
-        // Get all font options from the dropdown
-        const fontOptions = Array.from(document.getElementById('font-family').options);
+if (thumbnailContainer && thumbnailUpload) {
+    // Make the whole container clickable
+    thumbnailContainer.addEventListener('click', () => {
+        thumbnailUpload.click();
+    });
+
+    // Handle file selection
+    thumbnailUpload.addEventListener('change', function() {
+        if (this.files && this.files[0]) {
+            const file = this.files[0];
+            const img = new Image();
+            img.onload = () => {
+                thumbnailImg = img; // Replace the current thumbnail image
+                updateBothViews();
+                thumbnailContainer.querySelector('span').textContent = 'Thumbnail Selected';
+            };
+            img.onerror = () => {
+                console.error('Failed to load selected thumbnail image.');
+                thumbnailContainer.querySelector('span').textContent = 'Error loading thumbnail';
+            };
+            img.src = URL.createObjectURL(file);
+        } else {
+            thumbnailContainer.querySelector('span').textContent = 'Upload Show Thumbnail';
+        }
+    });
+}        
+        // Make the whole container clickable to trigger file input
+        if (customFontUploadContainer && customFontUpload) {
+            customFontUploadContainer.addEventListener('click', () => {
+                customFontUpload.click();
+            });
+            
+            // Update the displayed file name when a file is selected
+            customFontUpload.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    const file = this.files[0];
+                    const fontName = file.name.split('.')[0]; // Use filename as font name
+                    customFontUploadContainer.textContent = file.name;
+                    
+                    // Add the font to the document
+                    const fontUrl = URL.createObjectURL(file);
+                    const fontFace = new FontFace('CustomFont', `url(${fontUrl})`);
+                    
+                    fontFace.load().then(function(loadedFace) {
+                        document.fonts.add(loadedFace);
+                        
+                        // Store custom font name for later use
+                        window.customFontFamily = 'CustomFont';
+                        
+                        // Make the custom font option visible and selected in both dropdowns
+                        const customFontOption = document.getElementById('custom-font-option');
+                        if (customFontOption) {
+                            customFontOption.style.display = 'block';
+                            customFontOption.textContent = `Custom: ${fontName}`;
+                            fontFamily.value = 'custom-font';
+                        }
+                        // Add custom font option to info font dropdown if it doesn't exist
+                        let infoCustomOption = document.getElementById('info-custom-font-option');
+                        if (!infoCustomOption && infoFontFamily) {
+                            infoCustomOption = document.createElement('option');
+                            infoCustomOption.id = 'info-custom-font-option';
+                            infoCustomOption.value = 'custom-font';
+                            infoCustomOption.textContent = `Custom: ${fontName}`;
+                            infoFontFamily.appendChild(infoCustomOption);
+                        } else if (infoCustomOption) {
+                            infoCustomOption.style.display = 'block';
+                            infoCustomOption.textContent = `Custom: ${fontName}`;
+                        }
+                        
+                        // Update the card with new font - use updateBothViews for consistency
+                        updateBothViews();
+                    }).catch(function(error) {
+                        console.error('Error loading font:', error);
+                        customFontUploadContainer.textContent = 'Error loading font';
+                    });
+                } else {
+                    customFontUploadContainer.textContent = 'Upload Custom Font';
+                }
+            });
+        }
         
-        // Create a div to preload fonts (will be invisible)
-        const preloadDiv = document.createElement('div');
-        preloadDiv.style.opacity = '0';
-        preloadDiv.style.position = 'absolute';
-        preloadDiv.style.pointerEvents = 'none';
-        document.body.appendChild(preloadDiv);
+        // Set up slider value displays
+        updateSliderValueDisplay('text-shadow-blur', 'shadow-value', 'px');
+        updateSliderValueDisplay('text-outline-width', 'outline-value', 'px');
+        updateSliderValueDisplay('info-shadow-blur', 'info-shadow-value', 'px');
+        updateSliderValueDisplay('info-outline-width', 'info-outline-value', 'px');
+        updateSliderValueDisplay('title-info-spacing', 'spacing-value', 'px');
         
-        // Create elements with each font to force loading
-        fontOptions.forEach(option => {
-            const fontName = option.value;
-            const el = document.createElement('span');
-            el.style.fontFamily = `"${fontName}", sans-serif`;
-            el.textContent = 'preload'; 
-            preloadDiv.appendChild(el);
-        });
+        // Initialize shadow/outline sliders to minimum values
+        document.getElementById('text-shadow-blur').value = 0;
+        document.getElementById('text-outline-width').value = 0;
+        document.getElementById('info-shadow-blur').value = 0;
+        document.getElementById('info-outline-width').value = 0;
         
-        // Clean up after a delay (fonts should be loaded by then)
-        setTimeout(() => document.body.removeChild(preloadDiv), 2000);
+        // Update the value displays for sliders
+        updateSliderValueDisplay('text-shadow-blur', 'shadow-value', 'px');
+        updateSliderValueDisplay('text-outline-width', 'outline-value', 'px');
+        updateSliderValueDisplay('info-shadow-blur', 'info-shadow-value', 'px');
+        updateSliderValueDisplay('info-outline-width', 'info-outline-value', 'px');
     }
     
-    // Call preload function
-    preloadFonts();
+    // Update slider value displays
+    function updateSliderValueDisplay(sliderId, valueId, unit) {
+        const slider = document.getElementById(sliderId);
+        const valueDisplay = document.getElementById(valueId);
+        
+        if (slider && valueDisplay) {
+            // Set initial value
+            valueDisplay.textContent = `${slider.value}${unit}`;
+            
+            // Update when slider changes
+            slider.addEventListener('input', () => {
+                valueDisplay.textContent = `${slider.value}${unit}`;
+            });
+        }
+    }
+
+// Initialize all Pickr color pickers
+function initializePickrs() {
+    // IMPORTANT: Set default color values explicitly at the very beginning
+    window['text-color'] = '#ffffff';
+    window['info-color'] = '#ffffff';
+    window['text-shadow-color'] = '#000000';
+    window['text-outline-color'] = '#000000';
+    window['info-shadow-color'] = '#000000';
+    window['info-outline-color'] = '#000000';
+    window['gradient-color'] = '#000000';
+
+    // Common Pickr options
+    const mainPickrOptions = {
+        theme: 'monolith',
+        position: 'right-middle',
+        padding: 40,
+        components: {
+            preview: true,
+            opacity: false,
+            hue: true,
+            interaction: {
+                hex: true,
+                input: true,
+                save: true
+            }
+        }
+    };
+
+    // Options for smaller effect pickrs
+    const effectPickrOptions = {
+        ...mainPickrOptions,
+        position: 'top-start',
+        padding: 10
+    };
+
+    // Create Pickr instances
+    const textColorPickr = Pickr.create({
+        el: document.getElementById('text-color-pickr'),
+        default: window['text-color'],
+        ...mainPickrOptions
+    });
+    const infoColorPickr = Pickr.create({
+        el: document.getElementById('info-color-pickr'),
+        default: window['info-color'],
+        ...mainPickrOptions
+    });
+    const shadowColorPickr = Pickr.create({
+        el: document.getElementById('text-shadow-color-pickr'),
+        default: window['text-shadow-color'],
+        ...effectPickrOptions
+    });
+    const outlineColorPickr = Pickr.create({
+        el: document.getElementById('text-outline-color-pickr'),
+        default: window['text-outline-color'],
+        ...effectPickrOptions
+    });
+    const infoShadowColorPickr = Pickr.create({
+        el: document.getElementById('info-shadow-color-pickr'),
+        default: window['info-shadow-color'],
+        ...effectPickrOptions
+    });
+    const infoOutlineColorPickr = Pickr.create({
+        el: document.getElementById('info-outline-color-pickr'),
+        default: window['info-outline-color'],
+        ...effectPickrOptions
+    });
+    const gradientColorPickr = Pickr.create({
+        el: document.getElementById('gradient-color-pickr'),
+        default: window['gradient-color'],
+        ...mainPickrOptions
+    });
+
+    // Immediately sync Pickr instances to initialized color values
+    textColorPickr.setColor(window['text-color']);
+    infoColorPickr.setColor(window['info-color']);
+    shadowColorPickr.setColor(window['text-shadow-color']);
+    outlineColorPickr.setColor(window['text-outline-color']);
+    infoShadowColorPickr.setColor(window['info-shadow-color']);
+    infoOutlineColorPickr.setColor(window['info-outline-color']);
+    gradientColorPickr.setColor(window['gradient-color']);
+
+    // Setup Pickr event tracking
+    setupPickrEvents(textColorPickr, 'text-color');
+    setupPickrEvents(infoColorPickr, 'info-color');
+    setupPickrEvents(shadowColorPickr, 'text-shadow-color');
+    setupPickrEvents(outlineColorPickr, 'text-outline-color');
+    setupPickrEvents(infoShadowColorPickr, 'info-shadow-color');
+    setupPickrEvents(infoOutlineColorPickr, 'info-outline-color');
+    setupPickrEvents(gradientColorPickr, 'gradient-color');
+}
+
+// Helper function to set up Pickr event listeners
+function setupPickrEvents(pickr, colorName) {
+    // Track color values immediately
+    window[colorName] = pickr.getColor().toHEXA().toString();
+
+    pickr.on('change', (color) => {
+        const hexColor = color.toHEXA().toString();
+        window[colorName] = hexColor;
+        updateBothViews();
+    });
+
+    pickr.on('save', (color) => {
+        const hexColor = color.toHEXA().toString();
+        window[colorName] = hexColor;
+        pickr.hide();
+        updateBothViews();
+    });
+}
+
+// New function to reinforce color initialization (if needed later)
+function initializeColorValuesFromPickr() {
+    if (Pickr && Pickr.all && Pickr.all.length > 0) {
+        console.log("Initializing color values from Pickr instances...");
+
+        Pickr.all.forEach(pickr => {
+            if (!pickr._root || !pickr._root.button || !pickr._root.button.id) return;
+
+            const id = pickr._root.button.id;
+            const colorValue = pickr.getColor()?.toHEXA()?.toString();
+
+            if (!colorValue) return;
+
+            if (id === 'text-color-pickr') window['text-color'] = colorValue;
+            else if (id === 'info-color-pickr') window['info-color'] = colorValue;
+            else if (id === 'text-shadow-color-pickr') window['text-shadow-color'] = colorValue;
+            else if (id === 'text-outline-color-pickr') window['text-outline-color'] = colorValue;
+            else if (id === 'info-shadow-color-pickr') window['info-shadow-color'] = colorValue;
+            else if (id === 'info-outline-color-pickr') window['info-outline-color'] = colorValue;
+            else if (id === 'gradient-color-pickr') window['gradient-color'] = colorValue;
+        });
+
+        drawCard();
+    } else {
+        console.log("Pickr instances not ready yet, retrying in 100ms...");
+        setTimeout(initializeColorValuesFromPickr, 100);
+    }
+}
+
+// Function to update the card
+function updateCard() {
+    drawCard();
+}
+
+// Function to update both single card and grid view
+function updateBothViews() {
+    drawCard();
+    if (isTMDBMode && episodeTitleCards.length > 0) {
+        updateEpisodeCardSettings();
+        renderEpisodeGrid();
+    }
+}
     
+// 1. First, enhance the updateEpisodeCardSettings function to ensure color values
+// are correctly captured from Pickr instances:
+function updateEpisodeCardSettings() {
+    // Don't do anything if we're not in TMDB mode or no cards
+    if (!isTMDBMode || episodeTitleCards.length === 0) return;
+    
+    // Get current color values directly from Pickr instances
+    const currentColors = {};
+    if (Pickr.all) {
+        Pickr.all.forEach(pickr => {
+            if (!pickr._root || !pickr._root.button || !pickr._root.button.id) return;
+            
+            const id = pickr._root.button.id;
+            // Make sure the Pickr instance has a valid color
+            if (pickr.getColor && typeof pickr.getColor === 'function') {
+                const colorValue = pickr.getColor().toHEXA().toString();
+                
+                if (id === 'text-color-pickr') {
+                    currentColors.textColor = colorValue;
+                    // Also update the window variable for immediate use
+                    window['text-color'] = colorValue;
+                } else if (id === 'info-color-pickr') {
+                    currentColors.infoColor = colorValue;
+                    window['info-color'] = colorValue;
+                } else if (id === 'text-shadow-color-pickr') {
+                    currentColors.textShadowColor = colorValue;
+                    window['text-shadow-color'] = colorValue;
+                } else if (id === 'text-outline-color-pickr') {
+                    currentColors.textOutlineColor = colorValue;
+                    window['text-outline-color'] = colorValue;
+                } else if (id === 'info-shadow-color-pickr') {
+                    currentColors.infoShadowColor = colorValue;
+                    window['info-shadow-color'] = colorValue;
+                } else if (id === 'info-outline-color-pickr') {
+                    currentColors.infoOutlineColor = colorValue;
+                    window['info-outline-color'] = colorValue;
+                } else if (id === 'gradient-color-pickr') {
+                    currentColors.gradientColor = colorValue;
+                    window['gradient-color'] = colorValue;
+                }
+            }
+        });
+    }
+    
+    // Use window values as fallback
+    const fallbackColors = {
+        textColor: window['text-color'] || '#ffffff',
+        infoColor: window['info-color'] || '#ffffff',
+        textShadowColor: window['text-shadow-color'] || '#000000',
+        textOutlineColor: window['text-outline-color'] || '#000000',
+        infoShadowColor: window['info-shadow-color'] || '#000000',
+        infoOutlineColor: window['info-outline-color'] || '#000000',
+        gradientColor: window['gradient-color'] || '#000000'
+    };
+    
+    // Copy the current settings to all episode cards
+    for (const card of episodeTitleCards) {
+        // Keep the card's original data (title, episode number, etc.)
+        // but apply current style settings to ensure consistency
+        card.currentSettings = {
+            fontFamily: fontFamily.value,
+            infoFontFamily: document.getElementById('info-font-family').value,
+            textSize: textSize.value,
+            infoTextSize: document.getElementById('info-text-size').value,
+            textShadowBlur: textShadowBlur.value,
+            textOutlineWidth: textOutlineWidth.value,
+            infoShadowBlur: document.getElementById('info-shadow-blur').value,
+            infoOutlineWidth: document.getElementById('info-outline-width').value,
+            titleInfoSpacing: titleInfoSpacing.value,
+            textColor: currentColors.textColor || fallbackColors.textColor,
+            infoColor: currentColors.infoColor || fallbackColors.infoColor,
+            textShadowColor: currentColors.textShadowColor || fallbackColors.textShadowColor,
+            textOutlineColor: currentColors.textOutlineColor || fallbackColors.textOutlineColor,
+            infoShadowColor: currentColors.infoShadowColor || fallbackColors.infoShadowColor,
+            infoOutlineColor: currentColors.infoOutlineColor || fallbackColors.infoOutlineColor,
+            effectType: effectType.value,
+            gradientColor: currentColors.gradientColor || fallbackColors.gradientColor,
+            gradientOpacity: gradientOpacity.value,
+            blendMode: blendMode.value
+        };
+    }
+}
     // --- TITLE CARD MAKER LOGIC ---
     const canvas = document.getElementById('titlecard-canvas');
     const gridCanvas = document.getElementById('grid-canvas');
     const ctx = canvas.getContext('2d');
     const gridCtx = gridCanvas.getContext('2d');
     
-    // Input element references - moved to the top to avoid reference errors
+    // Input element references
     const titleInput = document.getElementById('title-text');
     const seasonNumberInput = document.getElementById('season-number');
     const episodeNumberInput = document.getElementById('episode-number');
@@ -47,26 +389,18 @@ document.addEventListener('DOMContentLoaded', () => {
     // Style controls
     const presetSelect = document.getElementById('preset-select');
     const fontFamily = document.getElementById('font-family');
-    const textColor = document.getElementById('text-color');
-    const infoColor = document.getElementById('info-color');
     const textSize = document.getElementById('text-size');
-    const textBold = document.getElementById('text-bold');
-    const textShadowColor = document.getElementById('text-shadow-color');
     const textShadowBlur = document.getElementById('text-shadow-blur');
-    const textOutlineColor = document.getElementById('text-outline-color');
     const textOutlineWidth = document.getElementById('text-outline-width');
     const titleInfoSpacing = document.getElementById('title-info-spacing');
     
     // Show thumbnail
     const thumbnailInput = document.getElementById('thumbnail-upload');
-    const thumbnailOpacity = document.getElementById('thumbnail-opacity');
-    const thumbnailScale = document.getElementById('thumbnail-scale');
     const thumbnailFullsize = document.getElementById('thumbnail-fullsize');
     
     // Visual effects
     const effectType = document.getElementById('effect-type');
     const gradientOpacity = document.getElementById('gradient-opacity');
-    const gradientColor = document.getElementById('gradient-color');
     const blendMode = document.getElementById('blend-mode');
     
     // UI Controls
@@ -81,16 +415,16 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentSeasonNumber = 1;
     let episodeTitleCards = [];
     let selectedCardIndex = -1;
-    let isTMDBMode = false; // Flag to track if we're using TMDB search or manual mode
+    let isTMDBMode = false;
     let thumbnailImg = null;
-    let hasSearchResults = false; // New flag to track if search results are available
+    let hasSearchResults = false;
     
     // Variables for grid layout
     let gridCardWidth = 240;
     let gridCardHeight = 135;
     let gridGap = 10;
     let gridColumns = 4;
-
+    
     // --- TMDB Search Functions ---
     async function searchShow(query) {
         try {
@@ -102,7 +436,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return [];
         }
     }
-
     async function getShowDetails(showId) {
         try {
             const response = await fetch(`${TMDB_BASE_URL}/tv/${showId}?api_key=${TMDB_API_KEY}`);
@@ -112,7 +445,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return null;
         }
     }
-
     async function getSeasonDetails(showId, seasonNumber) {
         try {
             const response = await fetch(`${TMDB_BASE_URL}/tv/${showId}/season/${seasonNumber}?api_key=${TMDB_API_KEY}`);
@@ -122,7 +454,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return null;
         }
     }
-
     // Function to get all images for a specific episode
     async function getEpisodeImages(showId, seasonNumber, episodeNumber) {
         try {
@@ -136,7 +467,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return [];
         }
     }
-
     async function getEpisodeThumbnail(path) {
         if (!path) return null;
         
@@ -154,11 +484,9 @@ document.addEventListener('DOMContentLoaded', () => {
             return null;
         }
     }
-
     // Get the search form element and add event listener
     const searchForm = document.getElementById('show-search-form');
     const searchInput = document.getElementById('show-search-input');
-
     // Check if elements exist before adding event listeners
     if (searchForm) {
         searchForm.addEventListener('submit', async (e) => {
@@ -188,7 +516,6 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         console.error('Search form element not found! Check the HTML structure.');
     }
-
     // Function to display search results
     function displaySearchResults(results) {
         const resultsContainer = document.getElementById('search-results');
@@ -320,6 +647,42 @@ document.addEventListener('DOMContentLoaded', () => {
     async function createEpisodeTitleCards(episodes) {
         episodeTitleCards = [];
         
+        // Get current color values directly from Pickr instances to avoid timing issues
+        const currentColors = {};
+        if (Pickr.all) {
+            Pickr.all.forEach(pickr => {
+                const id = pickr._root.button.id;
+                const colorValue = pickr.getColor().toHEXA().toString();
+                
+                if (id === 'text-color-pickr') {
+                    currentColors.textColor = colorValue;
+                } else if (id === 'info-color-pickr') {
+                    currentColors.infoColor = colorValue;
+                } else if (id === 'text-shadow-color-pickr') {
+                    currentColors.textShadowColor = colorValue;
+                } else if (id === 'text-outline-color-pickr') {
+                    currentColors.textOutlineColor = colorValue;
+                } else if (id === 'info-shadow-color-pickr') {
+                    currentColors.infoShadowColor = colorValue;
+                } else if (id === 'info-outline-color-pickr') {
+                    currentColors.infoOutlineColor = colorValue;
+                } else if (id === 'gradient-color-pickr') {
+                    currentColors.gradientColor = colorValue;
+                }
+            });
+        }
+        
+        // Fallback values if Pickr instances aren't available
+        const fallbackColors = {
+            textColor: '#ffffff',
+            infoColor: '#ffffff',
+            textShadowColor: '#000000',
+            textOutlineColor: '#000000',
+            infoShadowColor: '#000000',
+            infoOutlineColor: '#000000',
+            gradientColor: '#000000'
+        };
+        
         for (const episode of episodes) {
             // Create a title card configuration object
             const card = {
@@ -329,7 +692,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 thumbnailImg: null,
                 canvasData: null,  // Will store the image data once rendered
                 allImages: [],     // Will store all available images
-                allImagePaths: []  // Will store all image paths for reference
+                allImagePaths: [],  // Will store all image paths for reference
+                
+                // Add initial color and font settings using direct Pickr values instead of window variables
+                currentSettings: {
+                    fontFamily: fontFamily.value,
+                    infoFontFamily: document.getElementById('info-font-family').value,
+                    textSize: textSize.value,
+                    infoTextSize: document.getElementById('info-text-size').value,
+                    textShadowBlur: textShadowBlur.value,
+                    textOutlineWidth: textOutlineWidth.value,
+                    infoShadowBlur: document.getElementById('info-shadow-blur').value,
+                    infoOutlineWidth: document.getElementById('info-outline-width').value,
+                    titleInfoSpacing: titleInfoSpacing.value,
+                    textColor: currentColors.textColor || fallbackColors.textColor,
+                    infoColor: currentColors.infoColor || fallbackColors.infoColor,
+                    textShadowColor: currentColors.textShadowColor || fallbackColors.textShadowColor,
+                    textOutlineColor: currentColors.textOutlineColor || fallbackColors.textOutlineColor,
+                    infoShadowColor: currentColors.infoShadowColor || fallbackColors.infoShadowColor,
+                    infoOutlineColor: currentColors.infoOutlineColor || fallbackColors.infoOutlineColor,
+                    effectType: effectType.value,
+                    gradientColor: currentColors.gradientColor || fallbackColors.gradientColor,
+                    gradientOpacity: gradientOpacity.value,
+                    blendMode: blendMode.value
+                }
             };
             
             // Try to load thumbnail image
@@ -492,6 +878,123 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
+    function selectEpisode(index) {
+        if (index < 0 || index >= episodeTitleCards.length) return;
+        
+        selectedCardIndex = index;
+        const card = episodeTitleCards[index];
+        
+        // Populate form fields with episode data
+        titleInput.value = card.title;
+        seasonNumberInput.value = card.seasonNumber;
+        episodeNumberInput.value = card.episodeNumber;
+        
+        // Set thumbnail if available
+        if (card.thumbnailImg) {
+            thumbnailImg = card.thumbnailImg;
+        }
+        
+        // IMPORTANT: Apply card's stored settings to window variables
+        if (card.currentSettings) {
+            // Apply color settings from the card to window variables
+            window['text-color'] = card.currentSettings.textColor;
+            window['info-color'] = card.currentSettings.infoColor;
+            window['text-shadow-color'] = card.currentSettings.textShadowColor;
+            window['text-outline-color'] = card.currentSettings.textOutlineColor;
+            window['info-shadow-color'] = card.currentSettings.infoShadowColor;
+            window['info-outline-color'] = card.currentSettings.infoOutlineColor;
+            window['gradient-color'] = card.currentSettings.gradientColor;
+            
+            // Update Pickr instances with these colors if available
+            if (Pickr.all) {
+                Pickr.all.forEach(pickr => {
+                    if (!pickr._root || !pickr._root.button || !pickr._root.button.id) return;
+                    
+                    const id = pickr._root.button.id;
+                    if (id === 'text-color-pickr') {
+                        pickr.setColor(card.currentSettings.textColor);
+                    } else if (id === 'info-color-pickr') {
+                        pickr.setColor(card.currentSettings.infoColor);
+                    } else if (id === 'text-shadow-color-pickr') {
+                        pickr.setColor(card.currentSettings.textShadowColor);
+                    } else if (id === 'text-outline-color-pickr') {
+                        pickr.setColor(card.currentSettings.textOutlineColor);
+                    } else if (id === 'info-shadow-color-pickr') {
+                        pickr.setColor(card.currentSettings.infoShadowColor);
+                    } else if (id === 'info-outline-color-pickr') {
+                        pickr.setColor(card.currentSettings.infoOutlineColor);
+                    } else if (id === 'gradient-color-pickr') {
+                        pickr.setColor(card.currentSettings.gradientColor);
+                    }
+                });
+            }
+        }
+        
+        // Display alternative images if available
+        displayAlternativeImages(card);
+        
+        // Draw the selected card
+        drawCard();
+    }
+    // Function to display alternative images for an episode
+    function displayAlternativeImages(card) {
+        const altImagesContainer = document.getElementById('alt-images-container');
+        const altImagesInfo = document.getElementById('alt-images-info');
+        
+        // Clear the container
+        altImagesContainer.innerHTML = '';
+        
+        if (!card.allImages || card.allImages.length <= 1) {
+            // No alternative images available
+            altImagesInfo.textContent = 'No alternative images available for this episode';
+            return;
+        }
+        
+        // Update info text
+        altImagesInfo.textContent = `${card.allImages.length} images available - click to select`;
+        
+        // Create image thumbnails
+        card.allImages.forEach((img, index) => {
+            const imageItem = document.createElement('div');
+            imageItem.className = 'alt-image-item';
+            if (card.thumbnailImg === img) {
+                imageItem.classList.add('selected');
+            }
+            
+            // Create image element
+            const imgEl = document.createElement('img');
+            imgEl.src = img.src;
+            imgEl.alt = `Alternative image ${index + 1}`;
+            imageItem.appendChild(imgEl);
+            
+            // Add small index badge
+            const badge = document.createElement('span');
+            badge.className = 'image-badge';
+            badge.textContent = index + 1;
+            imageItem.appendChild(badge);
+            
+            // Add click handler to select this image
+            imageItem.addEventListener('click', () => {
+                // Update the selected image
+                thumbnailImg = img;
+                card.thumbnailImg = img;
+                
+                // Update selected state in UI
+                document.querySelectorAll('.alt-image-item').forEach(item => {
+                    item.classList.remove('selected');
+                });
+                imageItem.classList.add('selected');
+                
+                // Redraw the card
+                drawCard();
+            });
+            
+            altImagesContainer.appendChild(imageItem);
+        });
+        
+        // Make the TV Show Search section expanded to show the alternative images
+        document.querySelector('.collapsible:nth-child(1)').classList.add('active');
+    }
     // Handle clicks on the grid canvas
     function handleGridCanvasClick(event) {
         // Get click position relative to canvas
@@ -546,7 +1049,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // Fill with black background as default
         targetCtx.fillStyle = '#000000';
         targetCtx.fillRect(0, 0, width, height);
-
         // --- Draw Thumbnail (if present) ---
         if (thumbnailImg) {
             targetCtx.save();
@@ -592,7 +1094,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const effectCtx = effectCanvas.getContext('2d');
             
             let gradient;
-            const color = gradientColor.value;
+            const color = window['gradient-color'] || gradientColor;
             const opacity = parseFloat(gradientOpacity.value);
             const alphaColor = hexToRGBA(color, opacity);
             const transparentColor = hexToRGBA(color, 0);
@@ -639,7 +1141,6 @@ document.addEventListener('DOMContentLoaded', () => {
             targetCtx.drawImage(effectCanvas, 0, 0);
             targetCtx.restore();
         }
-
         // Get the preset layout
         const preset = presetLayoutConfig[presetSelect.value] || presetLayoutConfig['centerMiddle'];
         
@@ -651,8 +1152,14 @@ document.addEventListener('DOMContentLoaded', () => {
             default: titleSize = Math.round(72 * (width / 1280));
         }
         
-        // Calculate info text size
-        const infoSize = Math.round(titleSize * 0.5); // Info text (season/episode) is 50% of the title size
+        // Calculate info text size based on info-text-size dropdown
+        let infoSize;
+        const infoTextSize = document.getElementById('info-text-size');
+        switch (infoTextSize.value) {
+            case 'small': infoSize = Math.round(32 * (width / 1280)); break;
+            case 'large': infoSize = Math.round(48 * (width / 1280)); break;
+            default: infoSize = Math.round(36 * (width / 1280));
+        }
         
         // Get text position
         let textBoxX, textBoxY, textAlign, maxWidth;
@@ -699,8 +1206,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- Title (Main show title) ---
         targetCtx.save();
         // Set font for title
-        let tFont = '';
-        if (textBold.checked) tFont += 'bold ';
+        let tFont = ''; // Removing hardcoded bold styling
         
         // Fix for Exo 2 and other fonts that might render too small
         let fontSizeAdjustment = 1;
@@ -709,20 +1215,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         // Get the font family to use - either selected font or custom font
-        const fontToUse = (fontFamily.value === 'custom-font' && customFontFamily) 
-            ? customFontFamily 
-            : fontFamily.value;
-            
-        // Apply size adjustment to the font
-        tFont += `${Math.round(titleSize * fontSizeAdjustment)}px "${fontToUse}", sans-serif`;
-        targetCtx.font = tFont;
+        const fontToUse = (fontFamily.value === 'custom-font' && window.customFontFamily) 
+    ? window.customFontFamily 
+    : fontFamily.value;
+    
+// Apply size adjustment to the font
+tFont += `${Math.round(titleSize * fontSizeAdjustment)}px "${fontToUse}", sans-serif`;
+// Add this line to ensure the font is properly set before measuring/rendering
+document.fonts.load(tFont);
+targetCtx.font = tFont;
         
         // Text alignment
         targetCtx.textAlign = textAlign;
         targetCtx.textBaseline = 'top';
         
-        // Apply text effects
-        targetCtx.shadowColor = textShadowColor.value;
+        // Apply text effects - get color from the window object
+        targetCtx.shadowColor = window['text-shadow-color'] || '#000000';
         targetCtx.shadowBlur = parseInt(textShadowBlur.value) * (width / 1280);
         targetCtx.shadowOffsetX = 2 * (width / 1280);
         targetCtx.shadowOffsetY = 2 * (height / 720);
@@ -730,15 +1238,14 @@ document.addEventListener('DOMContentLoaded', () => {
         // Apply outline if specified
         if (parseInt(textOutlineWidth.value) > 0) {
             targetCtx.lineWidth = parseInt(textOutlineWidth.value) * (width / 1280);
-            targetCtx.strokeStyle = textOutlineColor.value;
+            targetCtx.strokeStyle = window['text-outline-color'] || '#000000';
             targetCtx.strokeText(titleInput.value || '', textBoxX, textBoxY, maxWidth);
         }
         
-        // Draw title text
-        targetCtx.fillStyle = textColor.value;
+        // Draw title text - get color from the window object
+        targetCtx.fillStyle = window['text-color'] || '#ffffff'; 
         targetCtx.fillText(titleInput.value || '', textBoxX, textBoxY, maxWidth);
         targetCtx.restore();
-
         // --- Season/Episode Info ---
         if (seasonNumberInput.value || episodeNumberInput.value) {
             const spacing = parseInt(titleInfoSpacing.value) * (height / 720);
@@ -772,49 +1279,59 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (infoText) {
                 targetCtx.save();
-                // Set font for info text
-                let iFont = '';
-                if (textBold.checked) iFont += 'bold ';
                 
-                // Apply the same size adjustment to info text for consistency
-                let fontSizeAdjustment = 1;
-                if (fontFamily.value === 'Exo 2') {
-                    fontSizeAdjustment = 1.2; // Make Exo 2 20% larger
+                // Get the info font family
+                const infoFontFamily = document.getElementById('info-font-family');
+                let infoFontToUse;
+                
+                if (infoFontFamily.value === 'same-as-title') {
+                    infoFontToUse = fontToUse;
+                } else if (infoFontFamily.value === 'custom-font' && window.customFontFamily) {
+                    infoFontToUse = window.customFontFamily;
+                } else {
+                    infoFontToUse = infoFontFamily.value;
                 }
                 
-                // Get the font family to use for info text - either selected font or custom font
-                const infoFontToUse = (fontFamily.value === 'custom-font' && customFontFamily) 
-                    ? customFontFamily 
-                    : fontFamily.value;
+                // Set font for info text
+                let iFont = '';
                 
-                iFont += `${Math.round(infoSize * fontSizeAdjustment)}px "${infoFontToUse}", sans-serif`;
+                // Apply the same size adjustment to info text for consistency
+                let infoFontSizeAdjustment = 1;
+                if (infoFontToUse === 'Exo 2') {
+                    infoFontSizeAdjustment = 1.2; // Make Exo 2 20% larger
+                }
+                
+                iFont += `${Math.round(infoSize * infoFontSizeAdjustment)}px "${infoFontToUse}", sans-serif`;
                 targetCtx.font = iFont;
                 
                 // Use same alignment as title
                 targetCtx.textAlign = textAlign;
                 targetCtx.textBaseline = 'top';
                 
-                // Apply text effects
-                targetCtx.shadowColor = textShadowColor.value;
-                targetCtx.shadowBlur = parseInt(textShadowBlur.value) * (width / 1280);
+                // Get shadow and outline settings for info text
+                const infoShadowBlur = document.getElementById('info-shadow-blur');
+                const infoOutlineWidth = document.getElementById('info-outline-width');
+                
+                // Apply text effects for info text
+                targetCtx.shadowColor = window['info-shadow-color'] || '#000000';
+                targetCtx.shadowBlur = parseInt(infoShadowBlur.value) * (width / 1280);
                 targetCtx.shadowOffsetX = 1 * (width / 1280);
                 targetCtx.shadowOffsetY = 1 * (height / 720);
                 
                 // Apply outline if specified
-                if (parseInt(textOutlineWidth.value) > 0) {
-                    targetCtx.lineWidth = parseInt(textOutlineWidth.value) * 0.75 * (width / 1280); // Slightly thinner for info text
-                    targetCtx.strokeStyle = textOutlineColor.value;
+                if (parseInt(infoOutlineWidth.value) > 0) {
+                    targetCtx.lineWidth = parseInt(infoOutlineWidth.value) * (width / 1280);
+                    targetCtx.strokeStyle = window['info-outline-color'] || '#000000';
                     targetCtx.strokeText(infoText, textBoxX, infoY, maxWidth);
                 }
                 
                 // Draw info text
-                targetCtx.fillStyle = infoColor.value;
+                targetCtx.fillStyle = window['info-color'] || '#ffffff';
                 targetCtx.fillText(infoText, textBoxX, infoY, maxWidth);
                 targetCtx.restore();
             }
         }
     }
-
     // Helper function to convert hex color to rgba
     function hexToRGBA(hex, alpha) {
         const r = parseInt(hex.slice(1, 3), 16);
@@ -822,7 +1339,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const b = parseInt(hex.slice(5, 7), 16);
         return `rgba(${r}, ${g}, ${b}, ${alpha})`;
     }
-
     // Preset layouts with positions and style configurations
     const presetLayoutConfig = {
         // The Rookie style - from example image
@@ -892,114 +1408,96 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
     
-    // Function to draw a card to a temporary context for the grid
-    function drawCardToTempContext(tempCtx, card, width, height) {
-        // Store original values
-        const originalTitle = titleInput.value;
-        const originalSeason = seasonNumberInput.value;
-        const originalEpisode = episodeNumberInput.value;
-        const originalThumbnail = thumbnailImg;
-        
-        // Set the card data temporarily
-        titleInput.value = card.title;
-        seasonNumberInput.value = card.seasonNumber;
-        episodeNumberInput.value = card.episodeNumber;
-        thumbnailImg = card.thumbnailImg;
-        
-        // Draw the card
-        drawCardToContext(tempCtx, width, height);
-        
-        // Restore original values
-        titleInput.value = originalTitle;
-        seasonNumberInput.value = originalSeason;
-        episodeNumberInput.value = originalEpisode;
-        thumbnailImg = originalThumbnail;
-    }
-
-    // Function to select a specific episode for editing
-    function selectEpisode(index) {
-        if (index < 0 || index >= episodeTitleCards.length) return;
-        
-        selectedCardIndex = index;
-        const card = episodeTitleCards[index];
-        
-        // Populate form fields with episode data
-        titleInput.value = card.title;
-        seasonNumberInput.value = card.seasonNumber;
-        episodeNumberInput.value = card.episodeNumber;
-        
-        // Set thumbnail if available
-        if (card.thumbnailImg) {
-            thumbnailImg = card.thumbnailImg;
-        }
-        
-        // Display alternative images if available
-        displayAlternativeImages(card);
-        
-        // Draw the selected card
-        drawCard();
+// Function to draw a card to a temporary context for the grid
+function drawCardToTempContext(tempCtx, card, width, height) {
+    // Store original values
+    const originalTitle = titleInput.value;
+    const originalSeason = seasonNumberInput.value;
+    const originalEpisode = episodeNumberInput.value;
+    const originalThumbnail = thumbnailImg;
+    
+    // Store original UI settings to restore later
+    const originalFontFamily = fontFamily.value;
+    const originalTextSize = textSize.value;
+    const originalInfoFontFamily = document.getElementById('info-font-family').value;
+    const originalInfoTextSize = document.getElementById('info-text-size').value;
+    const originalTextShadowBlur = textShadowBlur.value;
+    const originalTextOutlineWidth = textOutlineWidth.value;
+    const originalInfoShadowBlur = document.getElementById('info-shadow-blur').value;
+    const originalInfoOutlineWidth = document.getElementById('info-outline-width').value;
+    const originalBlendMode = blendMode.value;
+    const originalEffectType = effectType.value;
+    
+    // Save ALL original color values - important for preserving colors
+    const originalColors = {};
+    for (const colorName of ['text-color', 'info-color', 'text-shadow-color', 
+                           'text-outline-color', 'info-shadow-color',
+                           'info-outline-color', 'gradient-color']) {
+        originalColors[colorName] = window[colorName];
     }
     
-    // Function to display alternative images for an episode
-    function displayAlternativeImages(card) {
-        const altImagesContainer = document.getElementById('alt-images-container');
-        const altImagesInfo = document.getElementById('alt-images-info');
+    // Set the card data temporarily
+    titleInput.value = card.title;
+    seasonNumberInput.value = card.seasonNumber;
+    episodeNumberInput.value = card.episodeNumber;
+    thumbnailImg = card.thumbnailImg;
+    
+    // Use card-specific settings if available
+    if (card.currentSettings) {
+        fontFamily.value = card.currentSettings.fontFamily;
+        document.getElementById('info-font-family').value = card.currentSettings.infoFontFamily;
+        textSize.value = card.currentSettings.textSize;
+        document.getElementById('info-text-size').value = card.currentSettings.infoTextSize;
+        textShadowBlur.value = card.currentSettings.textShadowBlur;
+        textOutlineWidth.value = card.currentSettings.textOutlineWidth;
+        document.getElementById('info-shadow-blur').value = card.currentSettings.infoShadowBlur;
+        document.getElementById('info-outline-width').value = card.currentSettings.infoOutlineWidth;
+        effectType.value = card.currentSettings.effectType;
+        blendMode.value = card.currentSettings.blendMode;
         
-        // Clear the container
-        altImagesContainer.innerHTML = '';
-        
-        if (!card.allImages || card.allImages.length <= 1) {
-            // No alternative images available
-            altImagesInfo.textContent = 'No alternative images available for this episode';
-            return;
-        }
-        
-        // Update info text
-        altImagesInfo.textContent = `${card.allImages.length} images available - click to select`;
-        
-        // Create image thumbnails
-        card.allImages.forEach((img, index) => {
-            const imageItem = document.createElement('div');
-            imageItem.className = 'alt-image-item';
-            if (card.thumbnailImg === img) {
-                imageItem.classList.add('selected');
-            }
-            
-            // Create image element
-            const imgEl = document.createElement('img');
-            imgEl.src = img.src;
-            imgEl.alt = `Alternative image ${index + 1}`;
-            imageItem.appendChild(imgEl);
-            
-            // Add small index badge
-            const badge = document.createElement('span');
-            badge.className = 'image-badge';
-            badge.textContent = index + 1;
-            imageItem.appendChild(badge);
-            
-            // Add click handler to select this image
-            imageItem.addEventListener('click', () => {
-                // Update the selected image
-                thumbnailImg = img;
-                card.thumbnailImg = img;
-                
-                // Update selected state in UI
-                document.querySelectorAll('.alt-image-item').forEach(item => {
-                    item.classList.remove('selected');
-                });
-                imageItem.classList.add('selected');
-                
-                // Redraw the card
-                drawCard();
-            });
-            
-            altImagesContainer.appendChild(imageItem);
+        // IMPORTANT: Make sure color values are properly set from card settings
+        // Log the colors being applied for debugging
+        console.log("Applying colors to grid card:", {
+            textColor: card.currentSettings.textColor,
+            infoColor: card.currentSettings.infoColor
         });
         
-        // Make the TV Show Search section expanded to show the alternative images
-        document.querySelector('.collapsible:nth-child(1)').classList.add('active');
+        // Set color values directly from card settings
+        window['text-color'] = card.currentSettings.textColor || '#ffffff';
+        window['info-color'] = card.currentSettings.infoColor || '#ffffff';
+        window['text-shadow-color'] = card.currentSettings.textShadowColor || '#000000';
+        window['text-outline-color'] = card.currentSettings.textOutlineColor || '#000000';
+        window['info-shadow-color'] = card.currentSettings.infoShadowColor || '#000000';
+        window['info-outline-color'] = card.currentSettings.infoOutlineColor || '#000000';
+        window['gradient-color'] = card.currentSettings.gradientColor || '#000000';
     }
-
+    
+    // Draw the card
+    drawCardToContext(tempCtx, width, height);
+    
+    // Restore original values
+    titleInput.value = originalTitle;
+    seasonNumberInput.value = originalSeason;
+    episodeNumberInput.value = originalEpisode;
+    thumbnailImg = originalThumbnail;
+    
+    // Restore original UI settings
+    fontFamily.value = originalFontFamily;
+    textSize.value = originalTextSize;
+    document.getElementById('info-font-family').value = originalInfoFontFamily;
+    document.getElementById('info-text-size').value = originalInfoTextSize;
+    textShadowBlur.value = originalTextShadowBlur;
+    textOutlineWidth.value = originalTextOutlineWidth;
+    document.getElementById('info-shadow-blur').value = originalInfoShadowBlur;
+    document.getElementById('info-outline-width').value = originalInfoOutlineWidth;
+    blendMode.value = originalBlendMode;
+    effectType.value = originalEffectType;
+    
+    // Restore original color values
+    for (const [colorName, value] of Object.entries(originalColors)) {
+        window[colorName] = value;
+    }
+}
     // Function to download all title cards in batch mode
     async function batchDownloadTitleCards() {
         // Create a zip file containing all title cards
@@ -1117,20 +1615,25 @@ document.addEventListener('DOMContentLoaded', () => {
         episodeNumber: "",
         separator: "dash",
         font: "Gabarito",
+        infoFont: "same-as-title",
         textColor: "#ffffff",
-        infoColor: "#cccccc",
+        infoColor: "#ffffff",
         textSize: "normal",
-        textBold: true,
-        shadowColor: "#000000",
-        shadowBlur: 8,
-        outlineColor: "#000000",
-        outlineWidth: 0,
+        infoTextSize: "normal",
+        textShadowBlur: 0,
+        textOutlineWidth: 0,
+        infoShadowBlur: 0,
+        infoOutlineWidth: 0,
         titleInfoSpacing: 15,
         thumbnailFullsize: true,
         effectType: "none",
         gradientOpacity: 0.7,
         gradientColor: "#000000",
-        blendMode: "overlay"
+        blendMode: "overlay",
+        shadowColor: "#000000",
+        outlineColor: "#000000",
+        infoShadowColor: "#000000",
+        infoOutlineColor: "#000000"
     };
     
     // Reset button functionality
@@ -1142,20 +1645,62 @@ document.addEventListener('DOMContentLoaded', () => {
         episodeNumberInput.value = defaultValues.episodeNumber;
         separatorType.value = defaultValues.separator;
         fontFamily.value = defaultValues.font;
-        textColor.value = defaultValues.textColor;
-        infoColor.value = defaultValues.infoColor;
         textSize.value = defaultValues.textSize;
-        textBold.checked = defaultValues.textBold;
-        textShadowColor.value = defaultValues.shadowColor;
-        textShadowBlur.value = defaultValues.shadowBlur;
-        textOutlineColor.value = defaultValues.outlineColor;
-        textOutlineWidth.value = defaultValues.outlineWidth;
+        
+        // Reset info text controls
+        const infoFontFamily = document.getElementById('info-font-family');
+        const infoTextSize = document.getElementById('info-text-size');
+        if (infoFontFamily) infoFontFamily.value = defaultValues.infoFont;
+        if (infoTextSize) infoTextSize.value = defaultValues.infoTextSize;
+        
+        // Reset sliders
+        textShadowBlur.value = defaultValues.textShadowBlur;
+        textOutlineWidth.value = defaultValues.textOutlineWidth;
         titleInfoSpacing.value = defaultValues.titleInfoSpacing;
+        
+        // Reset info text sliders
+        const infoShadowBlur = document.getElementById('info-shadow-blur');
+        const infoOutlineWidth = document.getElementById('info-outline-width');
+        if (infoShadowBlur) infoShadowBlur.value = defaultValues.infoShadowBlur;
+        if (infoOutlineWidth) infoOutlineWidth.value = defaultValues.infoOutlineWidth;
+        
+        // Update slider value displays
+        updateSliderValueDisplay('text-shadow-blur', 'shadow-value', 'px');
+        updateSliderValueDisplay('text-outline-width', 'outline-value', 'px');
+        updateSliderValueDisplay('info-shadow-blur', 'info-shadow-value', 'px');
+        updateSliderValueDisplay('info-outline-width', 'info-outline-value', 'px');
+        updateSliderValueDisplay('title-info-spacing', 'spacing-value', 'px');
+        
+        // Reset other controls
         thumbnailFullsize.checked = defaultValues.thumbnailFullsize;
         effectType.value = defaultValues.effectType;
         gradientOpacity.value = defaultValues.gradientOpacity;
-        gradientColor.value = defaultValues.gradientColor;
         blendMode.value = defaultValues.blendMode;
+        
+        // Reset color values
+        textColor = defaultValues.textColor;
+        infoColor = defaultValues.infoColor;
+        textShadowColor = defaultValues.shadowColor;
+        textOutlineColor = defaultValues.outlineColor;
+        
+        // Reset info text color values
+        window['info-shadow-color'] = defaultValues.infoShadowColor;
+        window['info-outline-color'] = defaultValues.infoOutlineColor;
+        
+        // Reset color pickers
+        resetColorPickers();
+        
+        // Clear custom font options
+        const customFontOption = document.getElementById('custom-font-option');
+        const infoCustomOption = document.getElementById('info-custom-font-option');
+        if (customFontOption) customFontOption.style.display = 'none';
+        if (infoCustomOption) infoCustomOption.style.display = 'none';
+        
+        // Clear custom font data
+        window.customFontFamily = null;
+        
+        // Reset custom font upload container text
+        document.querySelector('.custom-font-upload-container').textContent = 'Upload Custom Font';
         
         // Clear thumbnail
         thumbnailImg = null;
@@ -1191,27 +1736,31 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast("Title card has been reset to defaults");
     });
     
-    // Function to show toast notifications
-    function showToast(message) {
-        const toast = document.createElement('div');
-        toast.className = 'toast';
-        toast.textContent = message;
-        document.body.appendChild(toast);
-        
-        // Animate in
-        setTimeout(() => {
-            toast.style.opacity = '1';
-            toast.style.transform = 'translateY(-20px)';
-        }, 10);
-        
-        // Animate out
-        setTimeout(() => {
-            toast.style.opacity = '0';
-            toast.style.transform = 'translateY(0)';
-            setTimeout(() => document.body.removeChild(toast), 500);
-        }, 2000);
+    // Reset all color pickers to default values
+    function resetColorPickers() {
+        // Find all pickr instances and reset them
+        const allPickrs = Pickr.all;
+        if (allPickrs) {
+            for (const pickr of allPickrs) {
+                const id = pickr._root.button.id;
+                if (id === 'text-color-pickr') {
+                    pickr.setColor(defaultValues.textColor);
+                } else if (id === 'info-color-pickr') {
+                    pickr.setColor(defaultValues.infoColor);
+                } else if (id === 'text-shadow-color-pickr') {
+                    pickr.setColor(defaultValues.shadowColor);
+                } else if (id === 'text-outline-color-pickr') {
+                    pickr.setColor(defaultValues.outlineColor);
+                } else if (id === 'gradient-color-pickr') {
+                    pickr.setColor(defaultValues.gradientColor);
+                } else if (id === 'info-shadow-color-pickr') {
+                    pickr.setColor(defaultValues.infoShadowColor);
+                } else if (id === 'info-outline-color-pickr') {
+                    pickr.setColor(defaultValues.infoOutlineColor);
+                }
+            }
+        }
     }
-    
     // Download button functionality (works for both single card and batch)
     downloadBtn.addEventListener('click', () => {
         // Check if we're in grid view or single view
@@ -1265,7 +1814,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Initial render
     drawCard();
-
     // Function to calculate grid dimensions based on episode count
     function calculateGridDimensions(episodeCount) {
         // Adjust columns based on episode count and trying to fit more on screen
@@ -1301,7 +1849,6 @@ document.addEventListener('DOMContentLoaded', () => {
             rows: rows
         };
     }
-
     // Set up collapsible sections in the sidebar
     document.querySelectorAll('.collapsible-header').forEach(header => {
         header.addEventListener('click', () => {
@@ -1317,242 +1864,165 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
     
-    // Show/hide effect-specific controls based on effect type selection
-    effectType.addEventListener('change', () => {
-        const gradientControls = document.getElementById('gradient-controls');
-        
-        if (effectType.value === 'none') {
-            gradientControls.style.display = 'none';
-        } else {
-            gradientControls.style.display = 'block';
-        }
-        
-        // Redraw the card with the
-        drawCard();
-    });
+// Apply input event listeners to update the UI
+titleInput.addEventListener('input', updateBothViews);
+seasonNumberInput.addEventListener('input', updateBothViews);
+episodeNumberInput.addEventListener('input', updateBothViews);
+separatorType.addEventListener('change', updateBothViews);
+presetSelect.addEventListener('change', updateBothViews);
+// Remove the basic fontFamily listener since we'll replace it with an enhanced one
+// fontFamily.addEventListener('change', updateBothViews); 
+textSize.addEventListener('change', updateBothViews);
+textShadowBlur.addEventListener('input', updateBothViews);
+textOutlineWidth.addEventListener('input', updateBothViews);
+titleInfoSpacing.addEventListener('input', updateBothViews);
+thumbnailFullsize.addEventListener('change', updateBothViews);
+effectType.addEventListener('change', function() {
+    const gradientControls = document.getElementById('gradient-controls');
     
-    // Initialize UI state
     if (effectType.value === 'none') {
-        document.getElementById('gradient-controls').style.display = 'none';
+        gradientControls.style.display = 'none';
     } else {
-        document.getElementById('gradient-controls').style.display = 'block';
+        gradientControls.style.display = 'block';
     }
     
-    // Add event listeners to update both views when making style changes
-    function updateBothViews() {
-        drawCard(); // Update single card view
-        
-        // If we have a selected card, update its data in the episodeTitleCards array
-        if (selectedCardIndex >= 0 && episodeTitleCards[selectedCardIndex]) {
-            // Store the current card's updated data
-            episodeTitleCards[selectedCardIndex].title = titleInput.value;
-            episodeTitleCards[selectedCardIndex].seasonNumber = seasonNumberInput.value;
-            episodeTitleCards[selectedCardIndex].episodeNumber = episodeNumberInput.value;
-            episodeTitleCards[selectedCardIndex].thumbnailImg = thumbnailImg;
-        }
-        
-        // Always update grid view to reflect changes immediately, regardless of current view
-        renderEpisodeGrid();
-    }
+    // Update both views after changing effect
+    updateBothViews();
+});
+gradientOpacity.addEventListener('input', updateBothViews);
+blendMode.addEventListener('change', updateBothViews);
+// Define these elements once
+const infoFontFamily = document.getElementById('info-font-family');
+const infoTextSize = document.getElementById('info-text-size');
+const infoShadowBlur = document.getElementById('info-shadow-blur');
+const infoOutlineWidth = document.getElementById('info-outline-width');
+// 1. First, modify the fontFamily event listener to ensure fonts are loaded before rendering
+// Update the fontFamily event listener to properly maintain colors
+fontFamily.addEventListener('change', function() {
+    const selectedFont = fontFamily.value;
     
-    // Add update listeners to all input controls
-    function addUpdateListeners(element) {
-        if (element.type === 'checkbox' || element.type === 'radio') {
-            element.addEventListener('change', updateBothViews);
-        } else if (element.type === 'range' || element.type === 'color') {
-            // For sliders and color pickers, update in real time as they change
-            element.addEventListener('input', updateBothViews);
-        } else if (element.type === 'text' || element.tagName === 'SELECT') {
-            // For text inputs and dropdowns, update both on input and change
-            element.addEventListener('input', updateBothViews);
-            element.addEventListener('change', updateBothViews);
-        }
-    }
+    // Capture current color values before changing anything
+    const currentTextColor = window['text-color'];
+    const currentInfoColor = window['info-color'];
     
-    // Add update listeners to all input controls
-    [titleInput, seasonNumberInput, episodeNumberInput, separatorType, 
-     presetSelect, textColor, infoColor, textSize, textBold, 
-     textShadowColor, textShadowBlur, textOutlineColor, textOutlineWidth, 
-     titleInfoSpacing, thumbnailFullsize, 
-     effectType, gradientOpacity, gradientColor, blendMode].forEach(element => {
-        if (element) {
-            addUpdateListeners(element);
-        }
-    });
-    
-    // Special handling for font family changes to ensure they update immediately
-    fontFamily.addEventListener('change', function(e) {
-        // Force font loading if needed
-        const fontName = this.value;
-        const testSpan = document.createElement('span');
-        testSpan.style.fontFamily = `"${fontName}", sans-serif`;
-        testSpan.style.visibility = 'hidden';
-        testSpan.textContent = 'Font load test';
-        document.body.appendChild(testSpan);
+    // Force font loading before drawing
+    if (selectedFont !== 'custom-font') {
+        // Create a temporary span to load the font
+        const tempSpan = document.createElement('span');
+        tempSpan.style.fontFamily = `"${selectedFont}", sans-serif`;
+        tempSpan.style.visibility = 'hidden';
+        tempSpan.textContent = 'Font Loading Test';
+        document.body.appendChild(tempSpan);
         
-        // Use a small delay to ensure the font is loaded and applied
+        // Give the font a moment to load, then update
         setTimeout(() => {
-            document.body.removeChild(testSpan);
-            updateBothViews();
+            document.body.removeChild(tempSpan);
             
-            // Force a second redraw after a slight delay to ensure the font renders
-            setTimeout(() => updateBothViews(), 50);
-        }, 10);
-    });
-    
-    // Also handle thumbnail upload
-    thumbnailInput.addEventListener('change', function(e) {
-        if (e.target.files && e.target.files[0]) {
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                const img = new Image();
-                img.crossOrigin = 'Anonymous';
-                img.onload = function() {
-                    thumbnailImg = img;
-                    // Store the thumbnail with the current card
-                    if (selectedCardIndex >= 0 && episodeTitleCards[selectedCardIndex]) {
-                        episodeTitleCards[selectedCardIndex].thumbnailImg = img;
-                    }
-                    updateBothViews();
-                };
-                img.src = event.target.result;
-            };
-            reader.readAsDataURL(e.target.files[0]);
-        }
-    });
-    
-    // Custom font handling
-    let customFontFamily = null;
-    const customFontUpload = document.getElementById('custom-font-upload');
-    const customFontInfo = document.getElementById('custom-font-info');
-    const customFontName = document.getElementById('custom-font-name');
-    const customFontOption = document.getElementById('custom-font-option');
-
-    // Handle custom font upload
-    customFontUpload.addEventListener('change', function(e) {
-        if (e.target.files && e.target.files[0]) {
-            const fontFile = e.target.files[0];
+            // Ensure colors are preserved
+            window['text-color'] = currentTextColor;
+            window['info-color'] = currentInfoColor;
             
-            // Create a unique font family name for this session
-            const uniqueFontName = 'customFont_' + Date.now();
+            // First update the single card view
+            drawCard();
             
-            // Create a FileReader to read the font file
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                // Create a style element to define the font face
-                const fontFace = new FontFace(uniqueFontName, event.target.result);
-                
-                // Add the font to the document fonts
-                fontFace.load().then(function(loadedFontFace) {
-                    document.fonts.add(loadedFontFace);
-                    
-                    // Store the font family name for use in the canvas
-                    customFontFamily = uniqueFontName;
-                    
-                    // Update the UI
-                    customFontName.textContent = fontFile.name;
-                    customFontInfo.style.display = 'block';
-                    customFontOption.style.display = 'block';
-                    customFontOption.textContent = fontFile.name;
-                    
-                    // Select the custom font in the dropdown
-                    fontFamily.value = 'custom-font';
-                    
-                    // Redraw the canvas with the new font
-                    updateBothViews();
-                    
-                    showToast("Custom font loaded successfully");
-                }).catch(function(error) {
-                    console.error('Error loading font:', error);
-                    showToast("Error loading font. Please try another font file.");
-                });
-            };
-            reader.readAsArrayBuffer(fontFile);
-        }
-    });
-    
-    // Save Config Button functionality
-    saveConfigBtn.addEventListener('click', () => {
-        // Create configuration object with all the requested settings
-        const config = {
-            // Style options
-            textPlacementStyle: presetSelect.value,
-            effectType: effectType.value,
-            gradientOpacity: gradientOpacity.value,
-            gradientColor: gradientColor.value,
-            blendMode: blendMode.value,
-            
-            // Text options
-            textColor: textColor.value,
-            infoColor: infoColor.value,
-            textSize: textSize.value,
-            textBold: textBold.checked,
-            
-            // Spacing and separator
-            titleInfoSpacing: titleInfoSpacing.value,
-            separatorType: separatorType.value
-        };
-
-        // Save to localStorage
-        localStorage.setItem('titleCardConfig', JSON.stringify(config));
-        
-        // Show confirmation dialog
-        const overlay = document.getElementById('save-confirm-overlay');
-        overlay.style.display = 'flex';
-        
-        document.getElementById('saveConfirmOk').onclick = () => {
-            overlay.style.display = 'none';
-        };
-    });
-    
-    // Load Config Button functionality
-    loadConfigBtn.addEventListener('click', () => {
-        // Get saved config from localStorage
-        const savedConfig = localStorage.getItem('titleCardConfig');
-        
-        if (!savedConfig) {
-            showToast('No saved configuration found');
-            return;
-        }
-        
-        try {
-            const config = JSON.parse(savedConfig);
-            
-            // Apply all saved settings
-            if (config.textPlacementStyle) presetSelect.value = config.textPlacementStyle;
-            if (config.effectType) effectType.value = config.effectType;
-            if (config.gradientOpacity) gradientOpacity.value = config.gradientOpacity;
-            if (config.gradientColor) gradientColor.value = config.gradientColor;
-            if (config.blendMode) blendMode.value = config.blendMode;
-            
-            if (config.textColor) textColor.value = config.textColor;
-            if (config.infoColor) infoColor.value = config.infoColor;
-            if (config.textSize) textSize.value = config.textSize;
-            if (config.textBold !== undefined) textBold.checked = config.textBold;
-            
-            if (config.titleInfoSpacing) titleInfoSpacing.value = config.titleInfoSpacing;
-            if (config.separatorType) separatorType.value = config.separatorType;
-            
-            // Update gradient controls visibility based on loaded effect type
-            if (effectType.value === 'none') {
-                document.getElementById('gradient-controls').style.display = 'none';
-            } else {
-                document.getElementById('gradient-controls').style.display = 'block';
+            // Then make sure ALL cards in the grid get updated with the new font
+            if (isTMDBMode && episodeTitleCards.length > 0) {
+                updateEpisodeCardSettings();
+                renderEpisodeGrid();
             }
+        }, 50);
+    } else {
+        // Ensure colors are preserved
+        window['text-color'] = currentTextColor;
+        window['info-color'] = currentInfoColor;
+        
+        // For custom fonts, just update normally
+        drawCard();
+        if (isTMDBMode && episodeTitleCards.length > 0) {
+            updateEpisodeCardSettings();
+            renderEpisodeGrid();
+        }
+    }
+});
+// 2. Do the same for info font
+if (infoFontFamily) {
+    infoFontFamily.addEventListener('change', function() {
+        const selectedFont = infoFontFamily.value;
+        
+        // Special case: "same-as-title" doesn't need pre-loading
+        if (selectedFont !== 'custom-font' && selectedFont !== 'same-as-title') {
+            // Create a temporary span to load the font
+            const tempSpan = document.createElement('span');
+            tempSpan.style.fontFamily = `"${selectedFont}", sans-serif`;
+            tempSpan.style.visibility = 'hidden';
+            tempSpan.textContent = 'Font Loading Test';
+            document.body.appendChild(tempSpan);
             
-            // Redraw the card with new settings
-            updateBothViews();
-            
-            // Show confirmation dialog
-            const overlay = document.getElementById('load-confirm-overlay');
-            overlay.style.display = 'flex';
-            
-            document.getElementById('loadConfirmOk').onclick = () => {
-                overlay.style.display = 'none';
-            };
-        } catch (error) {
-            console.error('Error loading configuration:', error);
-            showToast('Error loading configuration');
+            // Give the font a moment to load, then update
+            setTimeout(() => {
+                document.body.removeChild(tempSpan);
+                drawCard();
+                if (isTMDBMode && episodeTitleCards.length > 0) {
+                    updateEpisodeCardSettings();
+                    renderEpisodeGrid();
+                }
+            }, 50);
+        } else {
+            // For custom fonts or same-as-title, just update normally
+            drawCard();
+            if (isTMDBMode && episodeTitleCards.length > 0) {
+                updateEpisodeCardSettings();
+                renderEpisodeGrid();
+            }
         }
     });
+}
+// Add the rest of the input listeners
+if (infoTextSize) infoTextSize.addEventListener('change', updateBothViews);
+if (infoShadowBlur) infoShadowBlur.addEventListener('input', updateBothViews);
+if (infoOutlineWidth) infoOutlineWidth.addEventListener('input', updateBothViews);
+    
+    // Initialize UI components
+    initializeTextOptionsUI();
+    initializePickrs();
+    
+    // Set canvas size
+    canvas.width = 1280;
+    canvas.height = 720;
+    
+    // Initial render
+    drawCard();
+    // Function to show toast notification
+    function showToast(message, duration = 3000) {
+        // Remove any existing toasts
+        const existingToast = document.querySelector('.toast');
+        if (existingToast) {
+            existingToast.remove();
+        }
+        
+        // Create and show new toast
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        
+        // Set animation to show
+        setTimeout(() => {
+            toast.style.opacity = '1';
+            toast.style.transform = 'translateX(-50%) translateY(0)';
+        }, 10);
+        
+        // Set automatic removal
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(-50%) translateY(20px)';
+            
+            // Remove from DOM after fade out
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+            }, 300);
+        }, duration);
+    }
 });

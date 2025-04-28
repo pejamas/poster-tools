@@ -158,67 +158,248 @@ header {
     margin-bottom: 0.7rem; /* Increased bottom margin */
 }
 
-.sidebar input[type="checkbox"],
-.sidebar input[type="radio"] {
-    margin-right: 0.4rem;
-    accent-color: #00bfa5;
+/* Text Options Section - Exact Match to Reference */
+.text-options {
+    background: rgba(10, 10, 18, 0.7);
+    color: #fff;
+    padding: 0;
+    font-family: 'Gabarito', sans-serif;
 }
 
-.sidebar input[type="color"] {
-    -webkit-appearance: none;
-    width: 100%;
-    height: 35px; /* Made slightly taller */
-    border: none;
-    border-radius: 6px;
-    background: #333;
-    cursor: pointer;
-    margin-bottom: 0.7rem; /* Increased bottom margin */
+/* Text Options Section Headers */
+.text-options h4 {
+    margin: 10px 0;
+    color: #00bfa5;
+    font-size: 16px;
+    font-weight: 600;
 }
 
-.sidebar input[type="range"] {
-    -webkit-appearance: none;
-    width: 100%;
-    height: 6px;
-    background: linear-gradient(to right, #00bfa5, #6a11cb);
-    border-radius: 4px;
-    margin: 0.7rem 0; /* Increased top and bottom margin */
-    cursor: pointer;
+/* Section Separator */
+.section-separator {
+    height: 1px;
+    background-color: rgba(255, 255, 255, 0.1);
+    margin: 20px 0;
 }
 
-.sidebar input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    background: white;
-    cursor: pointer;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+/* Value Display for Sliders */
+.value-display {
+    color: #00bfa5;
+    font-size: 12px;
+    margin-left: 10px;
 }
 
-.drop-zone {
-    border: 1.5px dashed rgba(255, 255, 255, 0.3);
-    background: rgba(255, 255, 255, 0.025);
-    padding: 0.6rem;
-    font-size: 0.9rem;
-    text-align: center;
-    font-weight: 500;
-    color: white;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    margin-bottom: 0.5rem;
+/* Improved layout for text options */
+.text-options > div:not(.text-options-grid):not(.effect-section):not(.title-info-gap):not(.section-separator) {
+    margin-bottom: 15px;
+}
+
+/* Add spacing between text option elements */
+.text-options .option-label {
+    margin-bottom: 5px;
     display: block;
 }
 
-.drop-zone:hover {
-    background: rgba(255, 255, 255, 0.07);
-    border-color: rgba(0, 255, 255, 0.4);
+/* Two-column grid layout */
+.text-options-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin: 12px 0 8px;
 }
 
-input[type="file"] {
-    display: none;
+/* Select input styling */
+.text-options select {
+    background: rgba(25, 25, 35, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 5px;
+    color: white;
+    padding: 8px;
+    width: 100%;
+    height: 36px;
+    font-size: 0.9rem;
+    margin: 4px 0 8px;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FFFFFF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.7rem top 50%;
+    background-size: 0.65rem auto;
 }
 
+/* Custom font upload button - simplified and thinner */
+.custom-font-upload-container {
+    border: 1px dashed rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    background: rgba(25, 25, 35, 0.7);
+    text-align: center;
+    padding: 8px;
+    margin: 8px 0 12px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.9);
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.custom-font-upload-container:hover {
+    background: rgba(35, 35, 45, 0.7);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+/* Browse button styling */
+.browse-button {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    padding: 4px 10px;
+    margin-right: 6px;
+    font-size: 0.85rem;
+}
+
+/* Color picker containers */
+.color-picker-container {
+    margin: 4px 0;
+}
+
+/* Color picker boxes */
+.color-box {
+    width: 100%;
+    height: 24px;
+    background: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    box-sizing: border-box;
+    margin-bottom: 8px;
+}
+
+.color-picker-input {
+    width: 100%;
+    height: 24px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+}
+
+/* Effect sections (Shadow and Outline) */
+.effect-section {
+    margin: 16px 0;
+}
+
+.effect-section .effect-title {
+    font-size: 0.95rem;
+    font-weight: 500;
+    margin-bottom: 10px;
+}
+
+/* Modified effect controls to give more space to the color picker */
+.effect-controls {
+    display: grid;
+    grid-template-columns: 40px 5px 1fr;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Color square for effects */
+.effect-color {
+    width: 40px;
+    height: 40px;
+    background: black;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    flex-shrink: 0;
+    grid-column: 1;
+}
+
+/* Vertical bar next to slider */
+.slider-bar {
+    width: 5px;
+    height: 40px;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    border-radius: 2px;
+    grid-column: 2;
+}
+
+/* Slider styling for the exact match - constrained to its grid cell */
+.effect-controls input[type="range"] {
+    -webkit-appearance: none;
+    height: 5px;
+    border-radius: 3px;
+    background: linear-gradient(to right, #00bfa5, #8e24aa);
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    grid-column: 3;
+}
+
+.effect-controls input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: white;
+    cursor: pointer;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+.effect-controls input[type="range"]::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: white;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Title-Info Gap section */
+.title-info-gap {
+    margin: 20px 0 10px;
+}
+
+.title-info-gap .gap-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+
+.title-info-gap .gap-label .label-text {
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+.title-info-gap .gap-value {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.title-info-gap input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    margin-top: 6px;
+    height: 5px;
+    border-radius: 3px;
+    background: linear-gradient(to right, #00bfa5, #8e24aa);
+}
+
+.title-info-gap input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: white;
+    cursor: pointer;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+.title-info-gap input[type="range"]::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: white;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
 /* Buttons */
 .sidebar-action-row {
     display: flex;
@@ -825,4 +1006,129 @@ input:checked+.toggle-slider:before {
 .custom-btn-blue:hover {
     background: linear-gradient(135deg, #1de9b6, #a600ff);
     transform: translateY(-2px);
+}
+
+/* Pickr color picker styling */
+.pickr .pcr-button {
+    width: 100% !important;
+    height: 24px !important; /* Thinner height as requested */
+    border-radius: 4px !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12),
+        0 0 6px rgba(0, 255, 255, 0.15);
+    margin-bottom: 8px;
+    box-sizing: border-box;
+}
+
+/* Different styling for effect color pickers (maintain square shape) */
+.effect-color .pcr-button {
+    width: 40px !important;
+    height: 40px !important;
+    flex-shrink: 0;
+}
+
+/* Pickr dialog styling to match other tools */
+.pcr-app[data-theme='monolith'] {
+    background: #111 !important;
+    border-radius: 10px !important;
+    border: 1px solid rgba(0, 255, 255, 0.2) !important;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.1) !important;
+    color: white !important;
+    z-index: 1000 !important;
+}
+
+.pcr-app[data-theme='monolith'] .pcr-result {
+    background: #222 !important;
+    color: #fff !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+}
+
+.pcr-app[data-theme='monolith'] input {
+    background: #222 !important;
+    color: white !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.pcr-app[data-theme='monolith'] .pcr-save {
+    background: linear-gradient(135deg, #00bfa5, #8e24aa) !important;
+    color: white !important;
+    font-weight: bold;
+    border: none !important;
+    border-radius: 6px !important;
+    padding: 0.4rem 0.8rem !important;
+    box-shadow: 0 0 6px rgba(0, 255, 255, 0.2) !important;
+}
+
+.pcr-app[data-theme='monolith'] .pcr-slider {
+    border-radius: 6px !important;
+    height: 10px !important;
+}
+
+/* Show Thumbnail Drop Zone Style */
+.drop-zone {
+    border: 1.5px dashed rgba(255, 255, 255, 0.3);
+    background: rgba(25, 25, 35, 0.7);
+    text-align: center;
+    padding: 1rem 0;
+    margin: 8px 0 12px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.9);
+    transition: all 0.2s ease;
+    border-radius: 6px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 5px;
+
+}
+
+.drop-zone:hover {
+    background: rgba(35, 35, 45, 0.7);
+    border-color: rgba(0, 255, 255, 0.4);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(0, 255, 255, 0.15);
+}
+
+#gradient-opacity {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 5px;
+    border-radius: 3px;
+    background: linear-gradient(to right, #00bfa5, #8e24aa);
+    margin-bottom: 15px;
+}
+
+#gradient-opacity::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: white;
+    cursor: pointer;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+#gradient-opacity::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: white;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Add value indicator for gradient opacity */
+#gradient-controls {
+    position: relative;
+}
+
+#gradient-controls::after {
+    content: attr(data-value);
+    position: absolute;
+    right: 8px;
+    top: 38px;
+    font-size: 0.9rem;
+    color: #00bfa5;
 }
