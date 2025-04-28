@@ -467,6 +467,150 @@ function updateEpisodeCardSettings() {
             return [];
         }
     }
+    
+    // Function to show loading progress overlay
+    function showProgressOverlay(message, showProgressBar = false) {
+        // Create or get overlay
+        let overlay = document.getElementById('progress-overlay');
+        
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'progress-overlay';
+            overlay.style.position = 'fixed';
+            overlay.style.top = '0';
+            overlay.style.left = '0';
+            overlay.style.width = '100%';
+            overlay.style.height = '100%';
+            overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+            overlay.style.display = 'flex';
+            overlay.style.flexDirection = 'column';
+            overlay.style.alignItems = 'center';
+            overlay.style.justifyContent = 'center';
+            overlay.style.zIndex = '9999';
+            overlay.style.backdropFilter = 'blur(4px)';
+            document.body.appendChild(overlay);
+            
+            // Create spinner
+            const spinner = document.createElement('div');
+            spinner.className = 'loading-spinner';
+            spinner.style.border = '3px solid rgba(255, 255, 255, 0.1)';
+            spinner.style.borderTop = '3px solid #00bfa5';
+            spinner.style.borderRadius = '50%';
+            spinner.style.width = '40px';
+            spinner.style.height = '40px';
+            spinner.style.animation = 'spin 1s linear infinite';
+            spinner.style.marginBottom = '20px';
+            overlay.appendChild(spinner);
+            
+            // Add CSS for the spinner if it doesn't exist yet
+            if (!document.getElementById('spinner-style')) {
+                const style = document.createElement('style');
+                style.id = 'spinner-style';
+                style.textContent = '@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }';
+                document.head.appendChild(style);
+            }
+            
+            // Create message element
+            const messageEl = document.createElement('div');
+            messageEl.id = 'progress-message';
+            messageEl.style.color = 'white';
+            messageEl.style.fontSize = '16px';
+            messageEl.style.fontFamily = 'Gabarito, sans-serif';
+            messageEl.style.textAlign = 'center';
+            messageEl.style.maxWidth = '80%';
+            messageEl.style.margin = '0 0 20px 0';
+            overlay.appendChild(messageEl);
+            
+            // Create progress container and bar
+            const progressContainer = document.createElement('div');
+            progressContainer.id = 'progress-container';
+            progressContainer.style.width = '300px';
+            progressContainer.style.height = '6px';
+            progressContainer.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+            progressContainer.style.borderRadius = '3px';
+            progressContainer.style.overflow = 'hidden';
+            progressContainer.style.display = showProgressBar ? 'block' : 'none';
+            
+            const progressBar = document.createElement('div');
+            progressBar.id = 'progress-bar';
+            progressBar.style.width = '0%';
+            progressBar.style.height = '100%';
+            progressBar.style.backgroundColor = '#00bfa5';
+            progressBar.style.transition = 'width 0.3s ease';
+            
+            progressContainer.appendChild(progressBar);
+            overlay.appendChild(progressContainer);
+            
+            // Create details element for additional info
+            const detailsEl = document.createElement('div');
+            detailsEl.id = 'progress-details';
+            detailsEl.style.color = 'rgba(255, 255, 255, 0.7)';
+            detailsEl.style.fontSize = '14px';
+            detailsEl.style.fontFamily = 'Gabarito, sans-serif';
+            detailsEl.style.textAlign = 'center';
+            detailsEl.style.maxWidth = '80%';
+            detailsEl.style.marginTop = '10px';
+            overlay.appendChild(detailsEl);
+        }
+        
+        // Update message
+        const messageEl = document.getElementById('progress-message');
+        if (messageEl) {
+            messageEl.textContent = message;
+        }
+        
+        // Show/hide progress bar
+        const progressContainer = document.getElementById('progress-container');
+        if (progressContainer) {
+            progressContainer.style.display = showProgressBar ? 'block' : 'none';
+        }
+        
+        // Reset progress bar if showing
+        if (showProgressBar) {
+            const progressBar = document.getElementById('progress-bar');
+            if (progressBar) {
+                progressBar.style.width = '0%';
+            }
+        }
+        
+        // Reset details
+        const detailsEl = document.getElementById('progress-details');
+        if (detailsEl) {
+            detailsEl.textContent = '';
+        }
+        
+        return overlay;
+    }
+    
+    function updateProgressOverlay(progress, detailMessage = '') {
+        const progressBar = document.getElementById('progress-bar');
+        const detailsEl = document.getElementById('progress-details');
+        
+        if (progressBar) {
+            // Ensure progress is between 0-100
+            const safeProgress = Math.max(0, Math.min(100, progress));
+            progressBar.style.width = `${safeProgress}%`;
+        }
+        
+        if (detailsEl && detailMessage) {
+            detailsEl.textContent = detailMessage;
+        }
+    }
+    
+    function hideProgressOverlay() {
+        const overlay = document.getElementById('progress-overlay');
+        if (overlay) {
+            // Fade out
+            overlay.style.transition = 'opacity 0.3s ease';
+            overlay.style.opacity = '0';
+            setTimeout(() => {
+                if (overlay.parentNode) {
+                    overlay.parentNode.removeChild(overlay);
+                }
+            }, 300);
+        }
+    }
+    
     async function getEpisodeThumbnail(path) {
         if (!path) return null;
         
@@ -495,12 +639,26 @@ function updateEpisodeCardSettings() {
             
             if (query.length < 2) return;
             
-            // Display loading state
-            document.getElementById('search-results').innerHTML = '<div class="loading">Searching...</div>';
+            // Show loading progress overlay instead of inline loading message
+            showProgressOverlay(`Searching for "${query}"...`);
             
             try {
                 const results = await searchShow(query);
-                displaySearchResults(results);
+                
+                // Briefly show results count
+                if (results && results.length > 0) {
+                    updateProgressOverlay(100, `Found ${results.length} shows`);
+                    setTimeout(() => {
+                        hideProgressOverlay();
+                        displaySearchResults(results);
+                    }, 500);
+                } else {
+                    updateProgressOverlay(100, `No shows found for "${query}"`);
+                    setTimeout(() => {
+                        hideProgressOverlay();
+                        displaySearchResults(results);
+                    }, 1000);
+                }
                 
                 // Set flag for search results
                 hasSearchResults = (results && results.length > 0);
@@ -509,6 +667,7 @@ function updateEpisodeCardSettings() {
                 returnToGridBtn.style.display = 'none';
             } catch (err) {
                 console.error('Search error:', err);
+                hideProgressOverlay();
                 document.getElementById('search-results').innerHTML = '<div class="error">Search failed. Please try again.</div>';
                 hasSearchResults = false;
             }
@@ -614,30 +773,35 @@ function updateEpisodeCardSettings() {
     async function selectSeason(seasonNumber) {
         currentSeasonNumber = seasonNumber;
         
-        // Display loading message on grid canvas
-        gridCtx.clearRect(0, 0, gridCanvas.width, gridCanvas.height);
-        gridCtx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-        gridCtx.fillRect(0, 0, gridCanvas.width, gridCanvas.height);
-        gridCtx.font = '24px Gabarito, sans-serif';
-        gridCtx.fillStyle = '#ffffff';
-        gridCtx.textAlign = 'center';
-        gridCtx.fillText('Loading season details...', gridCanvas.width / 2, gridCanvas.height / 2);
+        // Show loading progress overlay with progress bar
+        showProgressOverlay(`Loading Season ${seasonNumber}...`, true);
+        updateProgressOverlay(5, 'Fetching season details');
         
         // Fetch season details
         const seasonData = await getSeasonDetails(currentShowData.id, seasonNumber);
-        if (!seasonData) return;
+        if (!seasonData) {
+            hideProgressOverlay();
+            return;
+        }
         
         currentSeasonData = seasonData.episodes;
+        updateProgressOverlay(15, `Found ${seasonData.episodes.length} episodes`);
         
         // Process episodes and create title cards
         await createEpisodeTitleCards(seasonData.episodes);
         
         // In TMDB mode, always show grid view
         if (isTMDBMode) {
+            updateProgressOverlay(95, 'Rendering episode grid');
             renderEpisodeGrid();
-            showGridView();
+            updateProgressOverlay(100, 'Complete!');
+            setTimeout(() => {
+                hideProgressOverlay();
+                showGridView();
+            }, 500); // Show 100% for a moment before hiding
         } else {
             // In manual mode (if TMDB wasn't used), show single card
+            hideProgressOverlay();
             selectEpisode(0);
             showSingleCardView();
         }
@@ -646,6 +810,9 @@ function updateEpisodeCardSettings() {
     // Function to create title cards for all episodes
     async function createEpisodeTitleCards(episodes) {
         episodeTitleCards = [];
+        
+        // Show progress overlay with current progress
+        updateProgressOverlay(20, `Processing ${episodes.length} episodes...`);
         
         // Get current color values directly from Pickr instances to avoid timing issues
         const currentColors = {};
@@ -683,7 +850,15 @@ function updateEpisodeCardSettings() {
             gradientColor: '#000000'
         };
         
+        // Calculate total operations for progress tracking
+        const totalOperations = episodes.length;
+        let completedOperations = 0;
+        
         for (const episode of episodes) {
+            // Calculate and show current progress
+            const progress = 20 + Math.floor((completedOperations / totalOperations) * 75); // Scale between 20-95%
+            updateProgressOverlay(progress, `Loading episode ${episode.episode_number}: ${episode.name}`);
+            
             // Create a title card configuration object
             const card = {
                 title: episode.name,
@@ -721,11 +896,13 @@ function updateEpisodeCardSettings() {
             // Try to load thumbnail image
             if (episode.still_path) {
                 try {
+                    updateProgressOverlay(progress, `Loading thumbnail for episode ${episode.episode_number}...`);
                     card.thumbnailImg = await getEpisodeThumbnail(episode.still_path);
                     card.allImagePaths.push(episode.still_path); // Store the default image path
                     
                     // Get all additional images for this episode
                     if (currentShowData && currentShowData.id) {
+                        updateProgressOverlay(progress, `Checking for alternative images for episode ${episode.episode_number}...`);
                         const additionalImages = await getEpisodeImages(
                             currentShowData.id, 
                             episode.season_number, 
@@ -739,6 +916,11 @@ function updateEpisodeCardSettings() {
                             }
                         }
                         
+                        // Show additional images count in progress
+                        if (card.allImagePaths.length > 1) {
+                            updateProgressOverlay(progress, `Found ${card.allImagePaths.length} images for episode ${episode.episode_number}...`);
+                        }
+                        
                         // Load additional images if there are any (limit to 5 total for performance)
                         const imagesToLoad = card.allImagePaths.slice(0, 5);
                         for (let i = 0; i < imagesToLoad.length; i++) {
@@ -746,6 +928,7 @@ function updateEpisodeCardSettings() {
                                 card.allImages.push(card.thumbnailImg);
                             } else {
                                 try {
+                                    updateProgressOverlay(progress, `Loading alternative image ${i}/${imagesToLoad.length-1} for episode ${episode.episode_number}...`);
                                     const img = await getEpisodeThumbnail(imagesToLoad[i]);
                                     card.allImages.push(img);
                                 } catch (err) {
@@ -756,11 +939,18 @@ function updateEpisodeCardSettings() {
                     }
                 } catch (err) {
                     console.log(`Could not load thumbnail for episode ${episode.episode_number}`);
+                    updateProgressOverlay(progress, `Failed to load thumbnail for episode ${episode.episode_number}...`);
                 }
+            } else {
+                updateProgressOverlay(progress, `No thumbnail available for episode ${episode.episode_number}...`);
             }
             
             episodeTitleCards.push(card);
+            completedOperations++;
         }
+        
+        // Final progress update
+        updateProgressOverlay(95, 'All episodes processed successfully! Preparing grid view...');
     }
     
     // Function to render all episodes to a single grid canvas
@@ -833,8 +1023,8 @@ function updateEpisodeCardSettings() {
             // Calculate position in grid
             const row = Math.floor(index / columns);
             const col = index % columns;
-            const x = 20 + (col * (gridCardWidth + cardGap));
-            const y = 50 + (row * (gridCardHeight + cardGap + 24));
+            const x = 20 + (col * (gridCardWidth + gridGap));
+            const y = 50 + (row * (gridCardHeight + gridGap + 24));
             
             // Create temporary canvas for this card
             const tempCanvas = document.createElement('canvas');
