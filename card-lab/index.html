@@ -198,7 +198,7 @@
                         <span class="option-label">Title Wrapping</span>
                         <select id="title-wrapping">
                             <option value="singleLine">Single Line</option>
-                            <option value="multiLine">Multi-Line</option>
+                            <option value="autoWrap">Multiple Lines</option>
                         </select>
                     </div>
 
@@ -285,16 +285,25 @@
                         </div>
                     </div>
                     
-                    <div class="section-separator"></div>
+                    <div class="section-separator"></div>                    
                     <div class="title-info-gap">
                         <div class="gap-label">
-                            <span class="label-text">Title-Info Gap:</span>
+                            <span class="label-text">Info Text Spacing</span>
                             <span class="gap-value" id="spacing-value">15px</span>
                         </div>
                         <input type="range" id="title-info-spacing" min="5" max="40" value="15" />
                     </div>
+                    <div class="horizontal-position">
+                        <div class="position-label">
+                            <span class="label-text">Info Text X Offset</span>
+                            <span class="position-value" id="position-value">0px</span>
+                        </div>
+                        <input type="range" id="horizontal-position" min="-300" max="300" value="0" />
+                    </div>
                 </div>
             </div>
+
+            
 
             <div class="sidebar-action-row">
                 <button id="downloadBtn" class="icon-button teal" title="Download">

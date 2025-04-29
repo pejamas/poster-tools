@@ -33,6 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const seasonNumberInput = document.getElementById('season-number');
     const episodeNumberInput = document.getElementById('episode-number');
     const separatorType = document.getElementById('separator-type');
+    const horizontalPosition = document.getElementById('horizontal-position');
     
     const presetSelect = document.getElementById('preset-select');
     const fontFamily = document.getElementById('font-family');
@@ -90,6 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
         titleWrapping: "singleLine",
         textShadowBlur: 0,
         textOutlineWidth: 0,
+        horizontalPosition: 0,
         infoShadowBlur: 0,
         infoOutlineWidth: 0,
         titleInfoSpacing: 15,
@@ -171,6 +173,38 @@ document.addEventListener('DOMContentLoaded', () => {
             textShadowBlur: 12
         }
     };
+
+    // =====================================================
+    // HELPER FUNCTIONS
+    // =====================================================
+    
+    // Add the wrapText function here, before any other functions that might use it
+    
+    // Function to wrap text with proper line breaks
+    function wrapText(ctx, text, maxWidth, textAlign) {
+        // Split text into words
+        const words = text.split(' ');
+        const lines = [];
+        let currentLine = words[0];
+        
+        // Process each word
+        for (let i = 1; i < words.length; i++) {
+            const word = words[i];
+            const width = ctx.measureText(currentLine + ' ' + word).width;
+            
+            if (width < maxWidth) {
+                currentLine += ' ' + word;
+            } else {
+                lines.push(currentLine);
+                currentLine = word;
+            }
+        }
+        
+        // Add the last line
+        lines.push(currentLine);
+        
+        return lines;
+    }
     
     // =====================================================
     // INITIALIZATION FUNCTIONS
@@ -265,6 +299,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updateSliderValueDisplay('info-shadow-blur', 'info-shadow-value', 'px');
         updateSliderValueDisplay('info-outline-width', 'info-outline-value', 'px');
         updateSliderValueDisplay('title-info-spacing', 'spacing-value', 'px');
+        updateSliderValueDisplay('horizontal-position', 'position-value', 'px');
         
         // Set default values for sliders
         document.getElementById('text-shadow-blur').value = 0;
@@ -510,6 +545,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 infoShadowBlur: document.getElementById('info-shadow-blur').value,
                 infoOutlineWidth: document.getElementById('info-outline-width').value,
                 titleInfoSpacing: titleInfoSpacing.value,
+                horizontalPosition: horizontalPosition.value, // Include horizontal position for info text
                 titleWrapping: document.getElementById('title-wrapping').value,
                 textColor: currentColors.textColor || fallbackColors.textColor,
                 infoColor: currentColors.infoColor || fallbackColors.infoColor,
@@ -764,7 +800,8 @@ document.addEventListener('DOMContentLoaded', () => {
             default: infoSize = Math.round(36 * (width / 1280));
         }
         
-        // Calculate position based on preset
+        // Calculate position based on preset for TITLE TEXT only
+        // The info text position will be calculated separately after drawing the title
         let textBoxX, textBoxY, textAlign, maxWidth;
         
         switch (preset.position) {
@@ -838,83 +875,119 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Check if title should be wrapped
         const titleWrappingMode = document.getElementById('title-wrapping') ? 
-            document.getElementById('title-wrapping').value : 'singleLine';
-        const shouldWrap = titleWrappingMode === 'multiLine';
+        document.getElementById('title-wrapping').value : 'singleLine';
+
+        // Calculate a predefined max width based on text alignment and canvas size
+        let titleMaxWidth;
+        switch (textAlign) {
+            case 'left':
+        titleMaxWidth = Math.min(width * 0.5, 700 * (width / 1280));
+        break;
+            case 'right':
+        titleMaxWidth = Math.min(width * 0.5, 700 * (width / 1280));
+        break;
+            case 'center':
+            default:
+        titleMaxWidth = Math.min(width * 0.5, 700 * (width / 1280));
+     }
+
+        // Use narrower width for longer titles to create better wrapping
+        if (titleText.length > 35) {
+            titleMaxWidth = Math.min(titleMaxWidth, 750 * (width / 1280));
+        } else if (titleText.length > 25) {
+            titleMaxWidth = Math.min(titleMaxWidth, 800 * (width / 1280));
+        } else if (titleText.length > 20) {
+            titleMaxWidth = Math.min(titleMaxWidth, 850 * (width / 1280));
+    }
+
+        // Determine if we should wrap
+        let shouldWrap = false;
+        if (titleWrappingMode === 'multiLine') {
+            shouldWrap = true;
+        } else if (titleWrappingMode === 'autoWrap') {
+        // Auto wrap if the title is long or exceeds the max width
+        const titleWidth = targetCtx.measureText(titleText).width;
+        shouldWrap = titleText.length > 25 || titleWidth > (titleMaxWidth * 0.9);
+        } else {
+        shouldWrap = false;
+    }
 
         let actualInfoY;
 
-        if (shouldWrap && titleText.length > 20) {
-            // Handle multi-line text
-            const lineHeight = Math.round(titleSize * 1.2);
+        if (shouldWrap && titleText.length > 15) {
+        // Handle multi-line text
+        const lineHeight = Math.round(titleSize * 1.2);
+    
+        // Function to wrap text (using existing implementation)
+        const wrapText = (text, maxWidth) => {
+        const words = text.split(' ');
+        const lines = [];
+        let currentLine = words[0];
+        
+        for (let i = 1; i < words.length; i++) {
+            const word = words[i];
+            const width = targetCtx.measureText(currentLine + ' ' + word).width;
             
-            // Function to wrap text
-            const wrapText = (text, maxWidth) => {
-                const words = text.split(' ');
-                const lines = [];
-                let currentLine = words[0];
-                
-                for (let i = 1; i < words.length; i++) {
-                    const word = words[i];
-                    const width = targetCtx.measureText(currentLine + ' ' + word).width;
-                    
-                    if (width < maxWidth) {
-                        currentLine += ' ' + word;
-                    } else {
-                        lines.push(currentLine);
-                        currentLine = word;
-                    }
-                }
-                
-                lines.push(currentLine);
-                return lines;
-            };
-            
-            const lines = wrapText(titleText, maxWidth);
-            
-            // Calculate total height of text and starting Y position
-            const totalTextHeight = lines.length * lineHeight;
-            let startY;
-            
-            if (preset.position.includes('Top')) {
-                startY = textBoxY;
-            } else if (preset.position.includes('Bottom')) {
-                startY = textBoxY - totalTextHeight + lineHeight;
+            if (width < maxWidth) {
+                currentLine += ' ' + word;
             } else {
-                startY = textBoxY - (totalTextHeight / 2) + (titleSize / 2);
+                lines.push(currentLine);
+                currentLine = word;
             }
-            
-            // Draw each line of text
-            lines.forEach((line, index) => {
-                const y = startY + (index * lineHeight);
-                
-                // Draw text outline if enabled
-                if (parseInt(textOutlineWidth.value) > 0) {
-                    targetCtx.lineWidth = parseInt(textOutlineWidth.value) * (width / 1280);
-                    targetCtx.strokeStyle = window['text-outline-color'] || '#000000';
-                    targetCtx.strokeText(line, textBoxX, y, maxWidth);
-                }
-                
-                // Draw text fill
-                targetCtx.fillText(line, textBoxX, y, maxWidth);
-            });
-            
-            // Calculate position for info text
-            const spacing = parseInt(titleInfoSpacing.value) * (height / 720);
-            actualInfoY = startY + totalTextHeight + spacing;
-        } else {
-            // Handle single-line text
-            if (parseInt(textOutlineWidth.value) > 0) {
-                targetCtx.lineWidth = parseInt(textOutlineWidth.value) * (width / 1280);
-                targetCtx.strokeStyle = window['text-outline-color'] || '#000000';
-                targetCtx.strokeText(titleText, textBoxX, textBoxY, maxWidth);
-            }
-            
-            targetCtx.fillText(titleText, textBoxX, textBoxY, maxWidth);
-            
-            // Calculate position for info text
-            const spacing = parseInt(titleInfoSpacing.value) * (height / 720);
-            actualInfoY = textBoxY + titleSize + spacing;
         }
+        
+        lines.push(currentLine);
+        return lines;
+    };
+    
+        // Wrap text with the new predefined width
+        const lines = wrapText(titleText, titleMaxWidth);
+    
+        // Calculate total height of text and starting Y position
+        const totalTextHeight = lines.length * lineHeight;
+        let startY;
+    
+        if (preset.position.includes('Top')) {
+            startY = textBoxY;
+        } else if (preset.position.includes('Bottom')) {
+            startY = textBoxY - totalTextHeight + lineHeight;
+        } else {
+        // Improved vertical centering for multi-line text
+        startY = textBoxY - (totalTextHeight / 2) + (lineHeight / 2);
+    }
+    
+        // Draw each line of text
+        lines.forEach((line, index) => {
+        const y = startY + (index * lineHeight);
+        
+        // Draw text outline if enabled
+        if (parseInt(textOutlineWidth.value) > 0) {
+            targetCtx.lineWidth = parseInt(textOutlineWidth.value) * (width / 1280);
+            targetCtx.strokeStyle = window['text-outline-color'] || '#000000';
+            targetCtx.strokeText(line, textBoxX, y, titleMaxWidth);
+        }
+        
+        // Draw text fill
+        targetCtx.fillText(line, textBoxX, y, titleMaxWidth);
+    });
+    
+        // Calculate position for info text
+        const spacing = parseInt(titleInfoSpacing.value) * (height / 720);
+        actualInfoY = startY + totalTextHeight + spacing;
+        } else {
+        // Handle single-line text
+        if (parseInt(textOutlineWidth.value) > 0) {
+        targetCtx.lineWidth = parseInt(textOutlineWidth.value) * (width / 1280);
+        targetCtx.strokeStyle = window['text-outline-color'] || '#000000';
+        targetCtx.strokeText(titleText, textBoxX, textBoxY, maxWidth);
+    }
+    
+        targetCtx.fillText(titleText, textBoxX, textBoxY, maxWidth);
+    
+        // Calculate position for info text
+        const spacing = parseInt(titleInfoSpacing.value) * (height / 720);
+        actualInfoY = textBoxY + titleSize + spacing;
+    }
 
         targetCtx.restore();
         
@@ -922,6 +995,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (seasonNumberInput.value || episodeNumberInput.value) {
             const spacing = parseInt(titleInfoSpacing.value) * (height / 720);
             let infoY = actualInfoY;
+            
+            // Get the horizontal offset from the slider and apply scaling
+            const horizontalOffset = parseInt(horizontalPosition.value) * (width / 1280);
+            
+            // Create info-specific position by offsetting the title position
+            let infoX = textBoxX + horizontalOffset;
             
             // Build info text with appropriate separator
             let infoText = '';
@@ -989,12 +1068,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (parseInt(infoOutlineWidth.value) > 0) {
                     targetCtx.lineWidth = parseInt(infoOutlineWidth.value) * (width / 1280);
                     targetCtx.strokeStyle = window['info-outline-color'] || '#000000';
-                    targetCtx.strokeText(infoText, textBoxX, infoY, maxWidth);
+                    targetCtx.strokeText(infoText, infoX, infoY, maxWidth);
                 }
                 
                 // Draw info text fill
                 targetCtx.fillStyle = window['info-color'] || '#ffffff';
-                targetCtx.fillText(infoText, textBoxX, infoY, maxWidth);
+                targetCtx.fillText(infoText, infoX, infoY, maxWidth);
                 targetCtx.restore();
             }
         }
@@ -2011,6 +2090,7 @@ document.addEventListener('DOMContentLoaded', () => {
         seasonNumberInput.value = defaultValues.seasonNumber;
         episodeNumberInput.value = defaultValues.episodeNumber;
         separatorType.value = defaultValues.separator;
+        horizontalPosition.value = defaultValues.horizontalPosition;
         fontFamily.value = defaultValues.font;
         textSize.value = defaultValues.textSize;
         
@@ -2038,6 +2118,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updateSliderValueDisplay('info-shadow-blur', 'info-shadow-value', 'px');
         updateSliderValueDisplay('info-outline-width', 'info-outline-value', 'px');
         updateSliderValueDisplay('title-info-spacing', 'spacing-value', 'px');
+        updateSliderValueDisplay('horizontal-position', 'position-value', 'px');
         
         // Reset other options
         thumbnailFullsize.checked = defaultValues.thumbnailFullsize;
@@ -2133,7 +2214,7 @@ document.addEventListener('DOMContentLoaded', () => {
     episodeNumberInput.addEventListener('input', updateBothViews);
     separatorType.addEventListener('change', updateBothViews);
     presetSelect.addEventListener('change', updateBothViews);
-    
+    horizontalPosition.addEventListener('input', updateBothViews);    
     textSize.addEventListener('change', updateBothViews);
     titleWrapping.addEventListener('change', updateBothViews);
     textShadowBlur.addEventListener('input', updateBothViews);
