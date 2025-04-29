@@ -905,45 +905,51 @@ function drawCardToContext(targetCtx, width, height) {
     const titleWrappingMode = document.getElementById('title-wrapping') ? 
         document.getElementById('title-wrapping').value : 'singleLine';
     
-    // Calculate a predefined max width based on text alignment and canvas size
-    let titleMaxWidth;
-    switch (textAlign) {
-        case 'left':
-            titleMaxWidth = Math.min(width * 0.5, 700 * (width / 1280));
-            break;
-        case 'right':
-            titleMaxWidth = Math.min(width * 0.5, 700 * (width / 1280));
-            break;
-        case 'center':
-        default:
-            titleMaxWidth = Math.min(width * 0.5, 700 * (width / 1280));
-    }
+// Calculate a predefined max width based on text alignment and canvas size
+let titleMaxWidth;
+switch (textAlign) {
+    case 'left':
+        // Make left-aligned text have more width to work with
+        titleMaxWidth = Math.min(width * 0.45, 650 * (width / 1280));
+        break;
+    case 'right':
+        // Make right-aligned text have more width to work with
+        titleMaxWidth = Math.min(width * 0.45, 650 * (width / 1280));
+        break;
+    case 'center':
+    default:
+        // For center text, we want a narrower width to encourage breaks at natural points
+        titleMaxWidth = Math.min(width * 0.45, 650 * (width / 1280));
+}
 
-    // Use narrower width for longer titles to create better wrapping
-    if (titleText.length > 35) {
-        titleMaxWidth = Math.min(titleMaxWidth, 750 * (width / 1280));
-    } else if (titleText.length > 25) {
-        titleMaxWidth = Math.min(titleMaxWidth, 800 * (width / 1280));
-    } else if (titleText.length > 20) {
-        titleMaxWidth = Math.min(titleMaxWidth, 850 * (width / 1280));
-    }
+// Adjust width based on title length - modified to create more natural breaks
+if (titleText.length > 35) {
+    // For very long titles, keep them narrow for better readability
+    titleMaxWidth = Math.min(titleMaxWidth, 600 * (width / 1280));
+} else if (titleText.length > 25) {
+    // For medium-long titles, slightly narrower than default
+    titleMaxWidth = Math.min(titleMaxWidth, 625 * (width / 1280));
+} else if (titleText.length > 15) {
+    // For shorter titles that might still need wrapping
+    titleMaxWidth = Math.min(titleMaxWidth, 650 * (width / 1280));
+}
 
-    // Determine if we should wrap
-    let shouldWrap = false;
-    if (titleWrappingMode === 'multiLine') {
-        shouldWrap = true;
-    } else if (titleWrappingMode === 'autoWrap') {
-        // Configure temp context to measure text
-        targetCtx.save();
-        const tFont = `${Math.round(titleSize * fontSizeAdjustment)}px "${fontToUse}", sans-serif`;
-        targetCtx.font = tFont;
-        // Auto wrap if the title is long or exceeds the max width
-        const titleWidth = targetCtx.measureText(titleText).width;
-        shouldWrap = titleText.length > 25 || titleWidth > (titleMaxWidth * 0.9);
-        targetCtx.restore();
-    } else {
-        shouldWrap = false;
-    }
+// Determine if we should wrap
+let shouldWrap = false;
+if (titleWrappingMode === 'multiLine') {
+    shouldWrap = true;
+} else if (titleWrappingMode === 'autoWrap') {
+    // Configure temp context to measure text
+    targetCtx.save();
+    const tFont = `${Math.round(titleSize * fontSizeAdjustment)}px "${fontToUse}", sans-serif`;
+    targetCtx.font = tFont;
+    // Auto wrap if the title exceeds the max width or is longer than threshold
+    const titleWidth = targetCtx.measureText(titleText).width;
+    shouldWrap = titleText.length > 20 || titleWidth > (titleMaxWidth * 0.9);
+    targetCtx.restore();
+} else {
+    shouldWrap = false;
+}
     
     // Function to wrap text
     const wrapTextFunc = (text, maxWidth) => {
