@@ -31,7 +31,6 @@
     </header>
     <div class="layout">
         <div class="sidebar">
-            <!-- TMDB Search Section -->
             <div class="collapsible active">
                 <div class="collapsible-header">
                     <h3>TMDB Search</h3>
@@ -47,12 +46,10 @@
                     <div id="search-results" class="search-results"></div>
                     <div id="season-selector" class="season-selector"></div>
                     
-                    <!-- Alternative Episode Images (moved here) -->
                     <div id="alt-images-info" class="info-text">
                         Select an episode to see available images
                     </div>
                     <div id="alt-images-container" class="alt-images-grid">
-                        <!-- Alternative images will be displayed here -->
                     </div>
                     
                     <button id="returnToGridBtn" class="icon-button">
@@ -61,14 +58,12 @@
                 </div>
             </div>
             
-            <!-- Manual Creation (merged Basic Options and Show Thumbnail) -->
             <div class="collapsible">
                 <div class="collapsible-header">
                     <h3>Manual Tools</h3>
                     <span class="toggle-icon"></span>
                 </div>
                 <div class="collapsible-content">
-                    <!-- Episode info fields -->
                     <label for="title-text">Episode Name</label>
                     <input type="text" id="title-text" placeholder="Enter Episode Name" />
                     
@@ -87,7 +82,6 @@
                         <option value="none">None</option>
                     </select>
                     
-                    <!-- Thumbnail options -->
                     <div class="section-separator"></div>
                     
                     <div class="thumbnail-upload-container drop-zone" id="thumbnail-container">
@@ -105,7 +99,6 @@
                 </div>
             </div>
 
-            <!-- Style Options (renamed from Title Card Style, merged with Visual Effects) -->
             <div class="collapsible">
                 <div class="collapsible-header">
                     <h3>Theme Options</h3>
@@ -122,7 +115,6 @@
                         <option value="centerTop">Center Top</option>
                     </select>
                     
-                    <!-- Visual Effects merged here -->
                     <label for="effect-type">Gradient Type</label>
                     <select id="effect-type">
                         <option value="none">None</option>
@@ -163,14 +155,12 @@
                 </div>
             </div>
 
-            <!-- Text Options Section -->
             <div class="collapsible">
                 <div class="collapsible-header">
                     <h3>Text Options</h3>
                     <span class="toggle-icon"></span>
                 </div>
                 <div class="collapsible-content text-options">
-                    <!-- Title Text Options -->
                     <h4>Title Text</h4>
                     <div class="text-options-grid">
                         <div>
@@ -212,19 +202,16 @@
                         </select>
                     </div>
 
-                    <!-- Custom font upload -->
                     <div class="custom-font-upload-container">
                         <span>Upload Custom Font</span>
                         <input type="file" id="custom-font-upload" accept=".ttf,.woff,.woff2,.otf" style="display: none;" />
                     </div>
                     
-                    <!-- Title Color -->
                     <div>
                         <span class="option-label">Title Color</span>
                         <div id="text-color-pickr" class="color-box"></div>
                     </div>
                     
-                    <!-- Shadow controls for Title -->
                     <div class="effect-section">
                         <div class="effect-title">Shadow Effect</div>
                         <div class="effect-controls">
@@ -234,7 +221,6 @@
                         </div>
                     </div>
                     
-                    <!-- Outline controls for Title -->
                     <div class="effect-section">
                         <div class="effect-title">Outline Effect</div>
                         <div class="effect-controls">
@@ -244,7 +230,6 @@
                         </div>
                     </div>
                     
-                    <!-- Info Text Options -->
                     <div class="section-separator"></div>
                     <h4>Info Text</h4>
                     <div class="text-options-grid">
@@ -277,13 +262,11 @@
                             </select>
                         </div>
                     </div>
-                    <!-- Info Color -->
                     <div>
                         <span class="option-label">Info Text Color</span>
                         <div id="info-color-pickr" class="color-box"></div>
                     </div>
                     
-                    <!-- Shadow controls for Info -->
                     <div class="effect-section">
                         <div class="effect-title">Shadow Effect</div>
                         <div class="effect-controls">
@@ -293,7 +276,6 @@
                         </div>
                     </div>
                     
-                    <!-- Outline controls for Info -->
                     <div class="effect-section">
                         <div class="effect-title">Outline Effect</div>
                         <div class="effect-controls">
@@ -303,7 +285,6 @@
                         </div>
                     </div>
                     
-                    <!-- Title-Info Spacing -->
                     <div class="section-separator"></div>
                     <div class="title-info-gap">
                         <div class="gap-label">
@@ -315,7 +296,6 @@
                 </div>
             </div>
 
-            <!-- Actions -->
             <div class="sidebar-action-row">
                 <button id="downloadBtn" class="icon-button teal" title="Download">
                     <img src="../assets/poster-overlay-icons/download.svg" class="icon" />

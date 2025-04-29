@@ -1,4 +1,4 @@
-/* Base styles from poster-showcase */
+
 body {
     margin: 0;
     font-family: 'Gabarito', sans-serif;
@@ -89,7 +89,6 @@ header {
     overflow: hidden;
 }
 
-/* Sidebar Styles */
 .sidebar {
     width: 280px;
     min-width: 280px;
@@ -103,7 +102,7 @@ header {
     gap: 0.5rem;
     box-sizing: border-box;
     overflow-y: auto;
-    height: calc(100vh - 70px); /* Adjust for header */
+    height: calc(100vh - 70px);
     scrollbar-width: thin;
     scrollbar-color: rgba(255, 255, 255, 0.3) rgba(0, 0, 0, 0.1);
 }
@@ -126,7 +125,6 @@ header {
     background-color: rgba(255, 255, 255, 0.5);
 }
 
-/* Form Controls */
 .sidebar h3 {
     font-size: 1.1rem;
     margin: 0.8rem 0 0.5rem;
@@ -139,7 +137,7 @@ header {
     font-weight: 300;
     color: #ffffff;
     margin-top: 0.7rem;
-    margin-bottom: 0.5rem; /* Added space between label and control */
+    margin-bottom: 0.5rem;
     display: block;
     letter-spacing: 0.3px;
 }
@@ -148,17 +146,16 @@ header {
 .sidebar input[type="number"],
 .sidebar select {
     width: 100%;
-    padding: 0.6rem; /* Increased padding */
+    padding: 0.6rem;
     font-size: 0.9rem;
     background: #333;
     color: white;
     border: none;
     border-radius: 6px;
     box-sizing: border-box;
-    margin-bottom: 0.7rem; /* Increased bottom margin */
+    margin-bottom: 0.7rem;
 }
 
-/* Text Options Section - Exact Match to Reference */
 .text-options {
     background: rgba(10, 10, 18, 0.7);
     color: #fff;
@@ -166,7 +163,6 @@ header {
     font-family: 'Gabarito', sans-serif;
 }
 
-/* Text Options Section Headers */
 .text-options h4 {
     margin: 10px 0;
     color: #00bfa5;
@@ -174,32 +170,27 @@ header {
     font-weight: 600;
 }
 
-/* Section Separator */
 .section-separator {
     height: 1px;
     background-color: rgba(255, 255, 255, 0.1);
     margin: 20px 0;
 }
 
-/* Value Display for Sliders */
 .value-display {
     color: #00bfa5;
     font-size: 12px;
     margin-left: 10px;
 }
 
-/* Improved layout for text options */
 .text-options > div:not(.text-options-grid):not(.effect-section):not(.title-info-gap):not(.section-separator) {
     margin-bottom: 15px;
 }
 
-/* Add spacing between text option elements */
 .text-options .option-label {
     margin-bottom: 5px;
     display: block;
 }
 
-/* Two-column grid layout */
 .text-options-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -207,7 +198,6 @@ header {
     margin: 12px 0 8px;
 }
 
-/* Select input styling */
 .text-options select {
     background: rgba(25, 25, 35, 0.9);
     border: 1px solid rgba(255, 255, 255, 0.2);
@@ -225,7 +215,6 @@ header {
     background-size: 0.65rem auto;
 }
 
-/* Custom font upload button - simplified and thinner */
 .custom-font-upload-container {
     border: 1px dashed rgba(255, 255, 255, 0.3);
     border-radius: 4px;
@@ -244,7 +233,6 @@ header {
     border-color: rgba(255, 255, 255, 0.5);
 }
 
-/* Browse button styling */
 .browse-button {
     display: inline-block;
     background: rgba(255, 255, 255, 0.2);
@@ -255,12 +243,10 @@ header {
     font-size: 0.85rem;
 }
 
-/* Color picker containers */
 .color-picker-container {
     margin: 4px 0;
 }
 
-/* Color picker boxes */
 .color-box {
     width: 100%;
     height: 24px;
@@ -279,7 +265,6 @@ header {
     border-radius: 4px;
 }
 
-/* Effect sections (Shadow and Outline) */
 .effect-section {
     margin: 16px 0;
 }
@@ -290,7 +275,6 @@ header {
     margin-bottom: 10px;
 }
 
-/* Modified effect controls to give more space to the color picker */
 .effect-controls {
     display: grid;
     grid-template-columns: 40px 5px 1fr;
@@ -298,7 +282,6 @@ header {
     gap: 8px;
 }
 
-/* Color square for effects */
 .effect-color {
     width: 40px;
     height: 40px;
@@ -309,7 +292,6 @@ header {
     grid-column: 1;
 }
 
-/* Vertical bar next to slider */
 .slider-bar {
     width: 5px;
     height: 40px;
@@ -318,7 +300,6 @@ header {
     grid-column: 2;
 }
 
-/* Slider styling for the exact match - constrained to its grid cell */
 .effect-controls input[type="range"] {
     -webkit-appearance: none;
     height: 5px;
@@ -350,7 +331,6 @@ header {
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
 }
 
-/* Title-Info Gap section */
 .title-info-gap {
     margin: 20px 0 10px;
 }
@@ -400,7 +380,7 @@ header {
     cursor: pointer;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
 }
-/* Buttons */
+
 .sidebar-action-row {
     display: flex;
     gap: 0.5rem;
@@ -464,7 +444,6 @@ header {
     margin-top: 0;
 }
 
-/* Section Dividers */
 .section-separator {
     width: 100%;
     border-top: 1px solid rgba(0, 255, 255, 0.1);
@@ -484,7 +463,6 @@ header {
     opacity: 0.5;
 }
 
-/* Main Content Area - optimize for maximum screen usage */
 .main {
     flex: 1;
     overflow: hidden;
@@ -499,7 +477,7 @@ header {
     border-radius: 8px;
     box-shadow: 0 0 30px rgba(0, 0, 0, 0.4);
     max-width: 100%;
-    max-height: calc(100vh - 80px); /* Adjust to fit screen */
+    max-height: calc(100vh - 80px);
     height: auto;
 }
 
@@ -509,17 +487,15 @@ header {
     border-radius: 8px;
     box-shadow: 0 0 30px rgba(0, 0, 0, 0.4);
     max-width: 100%;
-    max-height: calc(100vh - 80px); /* Adjust to fit screen */
+    max-height: calc(100vh - 80px);
     height: auto;
     cursor: pointer;
 }
 
-/* Remove the old episode cards container styles that created the grid */
 .episode-cards-container {
     display: none;
 }
 
-/* Collapsible Sections */
 .collapsible {
     margin-bottom: 0.5rem;
 }
@@ -589,7 +565,6 @@ header {
     background: linear-gradient(90deg, rgba(0, 0, 0, 0.3), rgba(0, 191, 165, 0.1));
 }
 
-/* Control Row */
 .control-row {
     display: flex;
     gap: 0.5rem;
@@ -613,7 +588,6 @@ header {
     flex: 1;
 }
 
-/* Responsive Design */
 @media screen and (max-width: 900px) {
     .layout {
         flex-direction: column;
@@ -634,7 +608,6 @@ header {
     }
 }
 
-/* Custom Toggle Switch */
 .toggle-switch {
     position: relative;
     display: inline-block;
@@ -693,7 +666,6 @@ input:checked+.toggle-slider:before {
     color: white;
 }
 
-/* TMDB Search Styles */
 .search-container {
     display: flex;
     gap: 0.5rem;
@@ -851,7 +823,6 @@ input:checked+.toggle-slider:before {
     box-shadow: 0 4px 12px rgba(0, 191, 165, 0.3);
 }
 
-/* Alternative Images Grid */
 .alt-images-grid {
     display: flex;
     flex-wrap: wrap;
@@ -862,7 +833,7 @@ input:checked+.toggle-slider:before {
 
 .alt-image-item {
     width: 75px;
-    height: 42px; /* 16:9 aspect ratio */
+    height: 42px;
     border-radius: 4px;
     overflow: hidden;
     border: 2px solid transparent;
@@ -897,7 +868,6 @@ input:checked+.toggle-slider:before {
     margin: 10px 0;
 }
 
-/* Toast notification */
 .toast {
     position: fixed;
     bottom: 20px;
@@ -920,7 +890,6 @@ input:checked+.toggle-slider:before {
     margin-bottom: 0.5rem;
 }
 
-/* Header Action Buttons */
 .action-button {
     background: linear-gradient(135deg, rgba(0, 255, 240, 0.1), rgba(166, 0, 255, 0.1));
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -951,7 +920,6 @@ input:checked+.toggle-slider:before {
     filter: invert(1);
 }
 
-/* Confirmation Overlays */
 .custom-overlay {
     display: none;
     position: fixed;
@@ -1008,10 +976,9 @@ input:checked+.toggle-slider:before {
     transform: translateY(-2px);
 }
 
-/* Pickr color picker styling */
 .pickr .pcr-button {
     width: 100% !important;
-    height: 24px !important; /* Thinner height as requested */
+    height: 24px !important;
     border-radius: 4px !important;
     border: 1px solid rgba(255, 255, 255, 0.2) !important;
     box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12),
@@ -1020,14 +987,12 @@ input:checked+.toggle-slider:before {
     box-sizing: border-box;
 }
 
-/* Different styling for effect color pickers (maintain square shape) */
 .effect-color .pcr-button {
     width: 40px !important;
     height: 40px !important;
     flex-shrink: 0;
 }
 
-/* Pickr dialog styling to match other tools */
 .pcr-app[data-theme='monolith'] {
     background: #111 !important;
     border-radius: 10px !important;
@@ -1064,7 +1029,6 @@ input:checked+.toggle-slider:before {
     height: 10px !important;
 }
 
-/* Show Thumbnail Drop Zone Style */
 .drop-zone {
     border: 1.5px dashed rgba(255, 255, 255, 0.3);
     background: rgba(25, 25, 35, 0.7);
@@ -1119,7 +1083,6 @@ input:checked+.toggle-slider:before {
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
 }
 
-/* Add value indicator for gradient opacity */
 #gradient-controls {
     position: relative;
 }
