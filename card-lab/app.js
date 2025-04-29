@@ -1004,7 +1004,7 @@ function drawCardToContext(targetCtx, width, height) {
         const tFont = `${Math.round(titleSize * fontSizeAdjustment)}px "${fontToUse}", sans-serif`;
         targetCtx.font = tFont;
         
-        if (shouldWrap && titleText.length > 15) {
+        if (shouldWrap) {
             titleLines = wrapTextFunc(titleText, titleMaxWidth);
             const lineHeight = Math.round(titleSize * 1.2);
             titleHeight = titleLines.length * lineHeight;
@@ -1076,7 +1076,7 @@ function drawCardToContext(targetCtx, width, height) {
         
         targetCtx.fillStyle = window['text-color'] || '#ffffff';
         
-        if (shouldWrap && titleText.length > 15) {
+        if (shouldWrap) {
             // Handle multi-line title
             const lineHeight = Math.round(titleSize * 1.2);
             
