@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const gridCanvas = document.getElementById('grid-canvas');
     const ctx = canvas.getContext('2d');
     const gridCtx = gridCanvas.getContext('2d');
+    const infoPosition = document.getElementById('info-position');
     
     const titleInput = document.getElementById('title-text');
     const seasonNumberInput = document.getElementById('season-number');
@@ -89,6 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
         textSize: "normal",
         infoTextSize: "normal",
         titleWrapping: "singleLine",
+        infoPosition: "below",
         textShadowBlur: 0,
         textOutlineWidth: 0,
         horizontalPosition: 0,
@@ -541,6 +543,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 textSize: textSize.value,
                 infoTextSize: document.getElementById('info-text-size').value,
                 textShadowBlur: textShadowBlur.value,
+                infoPosition: infoPosition.value,
                 textOutlineWidth: textOutlineWidth.value,
                 infoShadowBlur: document.getElementById('info-shadow-blur').value,
                 infoOutlineWidth: document.getElementById('info-outline-width').value,
@@ -682,244 +685,268 @@ document.addEventListener('DOMContentLoaded', () => {
             window[colorName] = value;
         }
     }
+
+function drawCardToContext(targetCtx, width, height) {
+    // Clear the canvas
+    targetCtx.clearRect(0, 0, width, height);
     
-    // Draw a card to the specified context
-    function drawCardToContext(targetCtx, width, height) {
-        // Clear the canvas
-        targetCtx.clearRect(0, 0, width, height);
-        
-        // Set black background
-        targetCtx.fillStyle = '#000000';
-        targetCtx.fillRect(0, 0, width, height);
-        
-        // Draw the thumbnail image if available
-        if (thumbnailImg) {
-            targetCtx.save();
-            targetCtx.globalAlpha = 1.0;
-            
-            if (thumbnailFullsize && thumbnailFullsize.checked) {
-                // Draw at full size
-                targetCtx.drawImage(thumbnailImg, 0, 0, width, height);
-            } else {
-                // Draw maintaining aspect ratio
-                const scale = 1.0;
-                let w, h;
-                
-                if (thumbnailImg.width / thumbnailImg.height > width / height) {
-                    // Image is wider than the canvas
-                    h = height * scale;
-                    w = thumbnailImg.width * (h / thumbnailImg.height);
-                } else {
-                    // Image is taller than the canvas
-                    w = width * scale;
-                    h = thumbnailImg.height * (w / thumbnailImg.width);
-                }
-                
-                const x = (width - w) / 2;
-                const y = (height - h) / 2;
-                
-                targetCtx.drawImage(thumbnailImg, x, y, w, h);
-            }
-            
-            targetCtx.restore();
-        }
-        
-        // Apply gradient effects if selected
-        if (effectType.value !== 'none') {
-            // Create a separate canvas for the effect
-            const effectCanvas = document.createElement('canvas');
-            effectCanvas.width = width;
-            effectCanvas.height = height;
-            const effectCtx = effectCanvas.getContext('2d');
-            
-            let gradient;
-            const color = window['gradient-color'] || '#000000';
-            const opacity = parseFloat(gradientOpacity.value);
-            const alphaColor = hexToRGBA(color, opacity);
-            const transparentColor = hexToRGBA(color, 0);
-            
-            // Create the appropriate gradient based on effect type
-            switch (effectType.value) {
-                case 'leftToRight':
-                    gradient = effectCtx.createLinearGradient(0, 0, width, 0);
-                    gradient.addColorStop(0, alphaColor);
-                    gradient.addColorStop(1, transparentColor);
-                    break;
-                case 'rightToLeft':
-                    gradient = effectCtx.createLinearGradient(0, 0, width, 0);
-                    gradient.addColorStop(0, transparentColor);
-                    gradient.addColorStop(1, alphaColor);
-                    break;
-                case 'topToBottom':
-                    gradient = effectCtx.createLinearGradient(0, 0, 0, height);
-                    gradient.addColorStop(0, alphaColor);
-                    gradient.addColorStop(1, transparentColor);
-                    break;
-                case 'bottomToTop':
-                    gradient = effectCtx.createLinearGradient(0, 0, 0, height);
-                    gradient.addColorStop(0, transparentColor);
-                    gradient.addColorStop(1, alphaColor);
-                    break;
-                case 'radial':
-                    gradient = effectCtx.createRadialGradient(
-                        width / 2, height / 2, 0,
-                        width / 2, height / 2, Math.max(width, height) / 1.5
-                    );
-                    gradient.addColorStop(0, transparentColor);
-                    gradient.addColorStop(1, alphaColor);
-                    break;
-            }
-            
-            // Apply the gradient
-            effectCtx.fillStyle = gradient;
-            effectCtx.fillRect(0, 0, width, height);
-            
-            // Apply the gradient effect with the selected blend mode
-            targetCtx.save();
-            targetCtx.globalCompositeOperation = blendMode.value;
-            targetCtx.drawImage(effectCanvas, 0, 0);
-            targetCtx.restore();
-        }
-        
-        // Get layout preset
-        const preset = presetLayoutConfig[presetSelect.value] || presetLayoutConfig['centerMiddle'];
-        
-        // Calculate text sizes based on canvas dimensions
-        let titleSize;
-        switch (textSize.value) {
-            case 'small': titleSize = Math.round(56 * (width / 1280)); break;
-            case 'large': titleSize = Math.round(86 * (width / 1280)); break;
-            default: titleSize = Math.round(72 * (width / 1280));
-        }
-        
-        let infoSize;
-        const infoTextSize = document.getElementById('info-text-size');
-        switch (infoTextSize.value) {
-            case 'small': infoSize = Math.round(32 * (width / 1280)); break;
-            case 'large': infoSize = Math.round(48 * (width / 1280)); break;
-            default: infoSize = Math.round(36 * (width / 1280));
-        }
-        
-        // Calculate position based on preset for TITLE TEXT only
-        // The info text position will be calculated separately after drawing the title
-        let textBoxX, textBoxY, textAlign, maxWidth;
-        
-        switch (preset.position) {
-            case 'leftBottom':
-                textBoxX = Math.round(50 * (width / 1280));
-                textBoxY = height - Math.round(180 * (height / 720));
-                textAlign = 'left';
-                maxWidth = width * 0.8;
-                break;
-            case 'centerBottom':
-                textBoxX = width / 2;
-                textBoxY = height - Math.round(180 * (height / 720));
-                textAlign = 'center';
-                maxWidth = width * 0.9;
-                break;
-            case 'leftMiddle':
-                textBoxX = Math.round(50 * (width / 1280));
-                textBoxY = height / 2 - Math.round(50 * (height / 720));
-                textAlign = 'left';
-                maxWidth = width * 0.7;
-                break;
-            case 'rightMiddle':
-                textBoxX = width - Math.round(50 * (width / 1280));
-                textBoxY = height / 2 - Math.round(50 * (height / 720));
-                textAlign = 'right';
-                maxWidth = width * 0.7;
-                break;
-            case 'centerTop':
-                textBoxX = width / 2;
-                textBoxY = Math.round(120 * (height / 720));
-                textAlign = 'center';
-                maxWidth = width * 0.9;
-                break;
-            case 'centerMiddle':
-            default:
-                textBoxX = width / 2;
-                textBoxY = height / 2 - Math.round(50 * (height / 720));
-                textAlign = 'center';
-                maxWidth = width * 0.8;
-        }
-        
-        // Draw the title text
+    // Set black background
+    targetCtx.fillStyle = '#000000';
+    targetCtx.fillRect(0, 0, width, height);
+    
+    // Draw the thumbnail image if available
+    if (thumbnailImg) {
         targetCtx.save();
+        targetCtx.globalAlpha = 1.0;
         
-        // Setup font
-        let fontSizeAdjustment = 1;
-        if (fontFamily.value === 'Exo 2') {
-            fontSizeAdjustment = 1.2; 
+        if (thumbnailFullsize && thumbnailFullsize.checked) {
+            // Draw at full size
+            targetCtx.drawImage(thumbnailImg, 0, 0, width, height);
+        } else {
+            // Draw maintaining aspect ratio
+            const scale = 1.0;
+            let w, h;
+            
+            if (thumbnailImg.width / thumbnailImg.height > width / height) {
+                // Image is wider than the canvas
+                h = height * scale;
+                w = thumbnailImg.width * (h / thumbnailImg.height);
+            } else {
+                // Image is taller than the canvas
+                w = width * scale;
+                h = thumbnailImg.height * (w / thumbnailImg.width);
+            }
+            
+            const x = (width - w) / 2;
+            const y = (height - h) / 2;
+            
+            targetCtx.drawImage(thumbnailImg, x, y, w, h);
         }
         
-        const fontToUse = (fontFamily.value === 'custom-font' && window.customFontFamily) 
-            ? window.customFontFamily 
-            : fontFamily.value;
+        targetCtx.restore();
+    }
+    
+    // Apply gradient effects if selected
+    if (effectType.value !== 'none') {
+        // Create a separate canvas for the effect
+        const effectCanvas = document.createElement('canvas');
+        effectCanvas.width = width;
+        effectCanvas.height = height;
+        const effectCtx = effectCanvas.getContext('2d');
         
-        const tFont = `${Math.round(titleSize * fontSizeAdjustment)}px "${fontToUse}", sans-serif`;
-        document.fonts.load(tFont);
-        targetCtx.font = tFont;
+        let gradient;
+        const color = window['gradient-color'] || '#000000';
+        const opacity = parseFloat(gradientOpacity.value);
+        const alphaColor = hexToRGBA(color, opacity);
+        const transparentColor = hexToRGBA(color, 0);
         
-        targetCtx.textAlign = textAlign;
-        targetCtx.textBaseline = 'top';
+        // Create the appropriate gradient based on effect type
+        switch (effectType.value) {
+            case 'leftToRight':
+                gradient = effectCtx.createLinearGradient(0, 0, width, 0);
+                gradient.addColorStop(0, alphaColor);
+                gradient.addColorStop(1, transparentColor);
+                break;
+            case 'rightToLeft':
+                gradient = effectCtx.createLinearGradient(0, 0, width, 0);
+                gradient.addColorStop(0, transparentColor);
+                gradient.addColorStop(1, alphaColor);
+                break;
+            case 'topToBottom':
+                gradient = effectCtx.createLinearGradient(0, 0, 0, height);
+                gradient.addColorStop(0, alphaColor);
+                gradient.addColorStop(1, transparentColor);
+                break;
+            case 'bottomToTop':
+                gradient = effectCtx.createLinearGradient(0, 0, 0, height);
+                gradient.addColorStop(0, transparentColor);
+                gradient.addColorStop(1, alphaColor);
+                break;
+            case 'radial':
+                gradient = effectCtx.createRadialGradient(
+                    width / 2, height / 2, 0,
+                    width / 2, height / 2, Math.max(width, height) / 1.5
+                );
+                gradient.addColorStop(0, transparentColor);
+                gradient.addColorStop(1, alphaColor);
+                break;
+        }
         
-        // Setup text shadow
-        targetCtx.shadowColor = window['text-shadow-color'] || '#000000';
-        targetCtx.shadowBlur = parseInt(textShadowBlur.value) * (width / 1280);
-        targetCtx.shadowOffsetX = 2 * (width / 1280);
-        targetCtx.shadowOffsetY = 2 * (height / 720);
+        // Apply the gradient
+        effectCtx.fillStyle = gradient;
+        effectCtx.fillRect(0, 0, width, height);
         
-        // Get title text and set fill style
-        const titleText = titleInput.value || '';
-        targetCtx.fillStyle = window['text-color'] || '#ffffff';
-
-        // Check if title should be wrapped
-        const titleWrappingMode = document.getElementById('title-wrapping') ? 
+        // Apply the gradient effect with the selected blend mode
+        targetCtx.save();
+        targetCtx.globalCompositeOperation = blendMode.value;
+        targetCtx.drawImage(effectCanvas, 0, 0);
+        targetCtx.restore();
+    }
+    
+    // Get layout preset
+    const preset = presetLayoutConfig[presetSelect.value] || presetLayoutConfig['centerMiddle'];
+    
+    // Calculate text sizes based on canvas dimensions
+    let titleSize;
+    switch (textSize.value) {
+        case 'small': titleSize = Math.round(56 * (width / 1280)); break;
+        case 'large': titleSize = Math.round(86 * (width / 1280)); break;
+        default: titleSize = Math.round(72 * (width / 1280));
+    }
+    
+    let infoSize;
+    const infoTextSize = document.getElementById('info-text-size');
+    switch (infoTextSize.value) {
+        case 'small': infoSize = Math.round(32 * (width / 1280)); break;
+        case 'large': infoSize = Math.round(48 * (width / 1280)); break;
+        default: infoSize = Math.round(36 * (width / 1280));
+    }
+    
+    // Calculate initial position based on preset
+    let textBoxX, textBoxY, textAlign, maxWidth;
+    
+    switch (preset.position) {
+        case 'leftBottom':
+            textBoxX = Math.round(50 * (width / 1280));
+            textBoxY = height - Math.round(180 * (height / 720));
+            textAlign = 'left';
+            maxWidth = width * 0.8;
+            break;
+        case 'centerBottom':
+            textBoxX = width / 2;
+            textBoxY = height - Math.round(180 * (height / 720));
+            textAlign = 'center';
+            maxWidth = width * 0.9;
+            break;
+        case 'leftMiddle':
+            textBoxX = Math.round(50 * (width / 1280));
+            textBoxY = height / 2 - Math.round(50 * (height / 720));
+            textAlign = 'left';
+            maxWidth = width * 0.7;
+            break;
+        case 'rightMiddle':
+            textBoxX = width - Math.round(50 * (width / 1280));
+            textBoxY = height / 2 - Math.round(50 * (height / 720));
+            textAlign = 'right';
+            maxWidth = width * 0.7;
+            break;
+        case 'centerTop':
+            textBoxX = width / 2;
+            textBoxY = Math.round(120 * (height / 720));
+            textAlign = 'center';
+            maxWidth = width * 0.9;
+            break;
+        case 'centerMiddle':
+        default:
+            textBoxX = width / 2;
+            textBoxY = height / 2 - Math.round(50 * (height / 720));
+            textAlign = 'center';
+            maxWidth = width * 0.8;
+    }
+    
+    // Get title text
+    const titleText = titleInput.value || '';
+    
+    // Get info text with appropriate separator
+    let infoText = '';
+    let separator = '';
+    
+    if (seasonNumberInput.value || episodeNumberInput.value) {
+        switch (separatorType.value) {
+            case 'dash': separator = ' - '; break;
+            case 'dot': separator = ' • '; break;
+            case 'pipe': separator = ' | '; break;
+            case 'space': separator = ' '; break;
+            case 'none': separator = ''; break;
+            default: separator = ' - ';
+        }
+        
+        if (seasonNumberInput.value) {
+            infoText += 'Season ' + seasonNumberInput.value;
+        }
+        
+        if (seasonNumberInput.value && episodeNumberInput.value) {
+            infoText += separator;
+        }
+        
+        if (episodeNumberInput.value) {
+            infoText += 'Episode ' + episodeNumberInput.value;
+        }
+    }
+    
+    // Setup font settings
+    let fontSizeAdjustment = 1;
+    if (fontFamily.value === 'Exo 2') {
+        fontSizeAdjustment = 1.2; 
+    }
+    
+    const fontToUse = (fontFamily.value === 'custom-font' && window.customFontFamily) 
+        ? window.customFontFamily 
+        : fontFamily.value;
+    
+    // Configure info font
+    const infoFontFamily = document.getElementById('info-font-family');
+    let infoFontToUse;
+    
+    if (infoFontFamily.value === 'same-as-title') {
+        infoFontToUse = fontToUse;
+    } else if (infoFontFamily.value === 'custom-font' && window.customFontFamily) {
+        infoFontToUse = window.customFontFamily;
+    } else {
+        infoFontToUse = infoFontFamily.value;
+    }
+    
+    let infoFontSizeAdjustment = 1;
+    if (infoFontToUse === 'Exo 2') {
+        infoFontSizeAdjustment = 1.2; 
+    }
+    
+    // Calculate title wrapping parameters
+    const titleWrappingMode = document.getElementById('title-wrapping') ? 
         document.getElementById('title-wrapping').value : 'singleLine';
-
-        // Calculate a predefined max width based on text alignment and canvas size
-        let titleMaxWidth;
-        switch (textAlign) {
-            case 'left':
-        titleMaxWidth = Math.min(width * 0.5, 700 * (width / 1280));
-        break;
-            case 'right':
-        titleMaxWidth = Math.min(width * 0.5, 700 * (width / 1280));
-        break;
-            case 'center':
-            default:
-        titleMaxWidth = Math.min(width * 0.5, 700 * (width / 1280));
-     }
-
-        // Use narrower width for longer titles to create better wrapping
-        if (titleText.length > 35) {
-            titleMaxWidth = Math.min(titleMaxWidth, 750 * (width / 1280));
-        } else if (titleText.length > 25) {
-            titleMaxWidth = Math.min(titleMaxWidth, 800 * (width / 1280));
-        } else if (titleText.length > 20) {
-            titleMaxWidth = Math.min(titleMaxWidth, 850 * (width / 1280));
+    
+    // Calculate a predefined max width based on text alignment and canvas size
+    let titleMaxWidth;
+    switch (textAlign) {
+        case 'left':
+            titleMaxWidth = Math.min(width * 0.5, 700 * (width / 1280));
+            break;
+        case 'right':
+            titleMaxWidth = Math.min(width * 0.5, 700 * (width / 1280));
+            break;
+        case 'center':
+        default:
+            titleMaxWidth = Math.min(width * 0.5, 700 * (width / 1280));
     }
 
-        // Determine if we should wrap
-        let shouldWrap = false;
-        if (titleWrappingMode === 'multiLine') {
-            shouldWrap = true;
-        } else if (titleWrappingMode === 'autoWrap') {
+    // Use narrower width for longer titles to create better wrapping
+    if (titleText.length > 35) {
+        titleMaxWidth = Math.min(titleMaxWidth, 750 * (width / 1280));
+    } else if (titleText.length > 25) {
+        titleMaxWidth = Math.min(titleMaxWidth, 800 * (width / 1280));
+    } else if (titleText.length > 20) {
+        titleMaxWidth = Math.min(titleMaxWidth, 850 * (width / 1280));
+    }
+
+    // Determine if we should wrap
+    let shouldWrap = false;
+    if (titleWrappingMode === 'multiLine') {
+        shouldWrap = true;
+    } else if (titleWrappingMode === 'autoWrap') {
+        // Configure temp context to measure text
+        targetCtx.save();
+        const tFont = `${Math.round(titleSize * fontSizeAdjustment)}px "${fontToUse}", sans-serif`;
+        targetCtx.font = tFont;
         // Auto wrap if the title is long or exceeds the max width
         const titleWidth = targetCtx.measureText(titleText).width;
         shouldWrap = titleText.length > 25 || titleWidth > (titleMaxWidth * 0.9);
-        } else {
+        targetCtx.restore();
+    } else {
         shouldWrap = false;
     }
-
-        let actualInfoY;
-
-        if (shouldWrap && titleText.length > 15) {
-        // Handle multi-line text
-        const lineHeight = Math.round(titleSize * 1.2);
     
-        // Function to wrap text (using existing implementation)
-        const wrapText = (text, maxWidth) => {
+    // Function to wrap text
+    const wrapTextFunc = (text, maxWidth) => {
         const words = text.split(' ');
         const lines = [];
         let currentLine = words[0];
@@ -940,144 +967,254 @@ document.addEventListener('DOMContentLoaded', () => {
         return lines;
     };
     
-        // Wrap text with the new predefined width
-        const lines = wrapText(titleText, titleMaxWidth);
+    // Get info position setting
+    const infoPositionSetting = infoPosition ? infoPosition.value : 'below';
     
-        // Calculate total height of text and starting Y position
-        const totalTextHeight = lines.length * lineHeight;
+    // IMPORTANT FIX: Calculate horizontal offset properly for all text alignments
+    const rawHorizontalOffset = parseInt(horizontalPosition.value);
+    // Scale the offset based on screen width
+    const scaledOffset = rawHorizontalOffset * (width / 1280);
+    
+    // Calculate the actual offset based on text alignment
+    let horizontalOffset;
+    if (textAlign === 'center') {
+        // For center alignment, apply offset directly
+        horizontalOffset = scaledOffset;
+    } else if (textAlign === 'right') {
+        // For right alignment, invert the direction
+        horizontalOffset = -scaledOffset;
+    } else {
+        // For left alignment, apply offset directly
+        horizontalOffset = scaledOffset;
+    }
+    
+    // Calculate and draw based on the info position setting
+    if (infoPositionSetting === 'above' && infoText) {
+        // CASE: INFO ABOVE TITLE
+        
+        // First calculate total text block height to position properly
+        const spacing = parseInt(titleInfoSpacing.value) * (height / 720);
+        
+        // Calculate title height based on wrapping
+        let titleHeight;
+        let titleLines = [];
+        
+        // Setup font for measuring
+        targetCtx.save();
+        const tFont = `${Math.round(titleSize * fontSizeAdjustment)}px "${fontToUse}", sans-serif`;
+        targetCtx.font = tFont;
+        
+        if (shouldWrap && titleText.length > 15) {
+            titleLines = wrapTextFunc(titleText, titleMaxWidth);
+            const lineHeight = Math.round(titleSize * 1.2);
+            titleHeight = titleLines.length * lineHeight;
+        } else {
+            titleHeight = titleSize;
+        }
+        targetCtx.restore();
+        
+        // Calculate total block height (info text + spacing + title text)
+        const totalBlockHeight = infoSize + spacing + titleHeight;
+        
+        // Calculate vertical starting position to center the entire block
         let startY;
+        if (preset.position.includes('Top')) {
+            // If preset is top-aligned, keep it at the top
+            startY = textBoxY;
+        } else if (preset.position.includes('Bottom')) {
+            // If preset is bottom-aligned, position from bottom
+            startY = (height - Math.round(180 * (height / 720))) - totalBlockHeight;
+        } else {
+            // For middle alignment, center the entire text block
+            startY = (height / 2) - (totalBlockHeight / 2);
+        }
+        
+        // Draw info text
+        const infoY = startY;
+        const infoX = textBoxX + horizontalOffset;
+        
+        targetCtx.save();
+        const iFont = `${Math.round(infoSize * infoFontSizeAdjustment)}px "${infoFontToUse}", sans-serif`;
+        targetCtx.font = iFont;
+        targetCtx.textAlign = textAlign;
+        targetCtx.textBaseline = 'top';
+        
+        // Setup info shadow
+        const infoShadowBlur = document.getElementById('info-shadow-blur');
+        const infoOutlineWidth = document.getElementById('info-outline-width');
+        
+        targetCtx.shadowColor = window['info-shadow-color'] || '#000000';
+        targetCtx.shadowBlur = parseInt(infoShadowBlur.value) * (width / 1280);
+        targetCtx.shadowOffsetX = 1 * (width / 1280);
+        targetCtx.shadowOffsetY = 1 * (height / 720);
+        
+        // Draw info text outline if enabled
+        if (parseInt(infoOutlineWidth.value) > 0) {
+            targetCtx.lineWidth = parseInt(infoOutlineWidth.value) * (width / 1280);
+            targetCtx.strokeStyle = window['info-outline-color'] || '#000000';
+            targetCtx.strokeText(infoText, infoX, infoY, maxWidth);
+        }
+        
+        // Draw info text fill
+        targetCtx.fillStyle = window['info-color'] || '#ffffff';
+        targetCtx.fillText(infoText, infoX, infoY, maxWidth);
+        targetCtx.restore();
+        
+        // Calculate where title should go (below info)
+        const titleY = infoY + infoSize + spacing;
+        
+        // Draw title text with adjusted position
+        targetCtx.save();
+        targetCtx.font = tFont;
+        targetCtx.textAlign = textAlign;
+        targetCtx.textBaseline = 'top';
+        
+        targetCtx.shadowColor = window['text-shadow-color'] || '#000000';
+        targetCtx.shadowBlur = parseInt(textShadowBlur.value) * (width / 1280);
+        targetCtx.shadowOffsetX = 2 * (width / 1280);
+        targetCtx.shadowOffsetY = 2 * (height / 720);
+        
+        targetCtx.fillStyle = window['text-color'] || '#ffffff';
+        
+        if (shouldWrap && titleText.length > 15) {
+            // Handle multi-line title
+            const lineHeight = Math.round(titleSize * 1.2);
+            
+            // Draw each line
+            titleLines.forEach((line, index) => {
+                const y = titleY + (index * lineHeight);
+                const x = textBoxX + horizontalOffset;
+                
+                if (parseInt(textOutlineWidth.value) > 0) {
+                    targetCtx.lineWidth = parseInt(textOutlineWidth.value) * (width / 1280);
+                    targetCtx.strokeStyle = window['text-outline-color'] || '#000000';
+                    targetCtx.strokeText(line, x, y, titleMaxWidth);
+                }
+                
+                targetCtx.fillText(line, x, y, titleMaxWidth);
+            });
+        } else {
+            // Single line title
+            const x = textBoxX + horizontalOffset;
+            
+            if (parseInt(textOutlineWidth.value) > 0) {
+                targetCtx.lineWidth = parseInt(textOutlineWidth.value) * (width / 1280);
+                targetCtx.strokeStyle = window['text-outline-color'] || '#000000';
+                targetCtx.strokeText(titleText, x, titleY, maxWidth);
+            }
+            
+            targetCtx.fillText(titleText, x, titleY, maxWidth);
+        }
+        
+        targetCtx.restore();
+    } else {
+    // CASE: INFO BELOW TITLE (or no info text)
     
+    // This part of the code needs similar fixes for consistent positioning
+    // Draw title text
+    targetCtx.save();
+    const tFont = `${Math.round(titleSize * fontSizeAdjustment)}px "${fontToUse}", sans-serif`;
+    targetCtx.font = tFont;
+    targetCtx.textAlign = textAlign;
+    targetCtx.textBaseline = 'top';
+    
+    targetCtx.shadowColor = window['text-shadow-color'] || '#000000';
+    targetCtx.shadowBlur = parseInt(textShadowBlur.value) * (width / 1280);
+    targetCtx.shadowOffsetX = 2 * (width / 1280);
+    targetCtx.shadowOffsetY = 2 * (height / 720);
+    
+    targetCtx.fillStyle = window['text-color'] || '#ffffff';
+    
+    let infoY;  // Will be calculated based on title position
+    
+    if (shouldWrap && titleText.length > 15) {
+        // Handle multi-line text
+        const lineHeight = Math.round(titleSize * 1.2);
+        const lines = wrapTextFunc(titleText, titleMaxWidth);
+        const totalTextHeight = lines.length * lineHeight;
+        
+        // Determine starting Y position
+        let startY;
         if (preset.position.includes('Top')) {
             startY = textBoxY;
         } else if (preset.position.includes('Bottom')) {
             startY = textBoxY - totalTextHeight + lineHeight;
         } else {
-        // Improved vertical centering for multi-line text
-        startY = textBoxY - (totalTextHeight / 2) + (lineHeight / 2);
-    }
-    
-        // Draw each line of text
-        lines.forEach((line, index) => {
-        const y = startY + (index * lineHeight);
+            // Center vertically
+            startY = textBoxY - (totalTextHeight / 2) + (lineHeight / 2);
+        }
         
-        // Draw text outline if enabled
+        // Draw each line
+        lines.forEach((line, index) => {
+            const y = startY + (index * lineHeight);
+            const x = textBoxX + horizontalOffset; // Apply horizontal offset consistently
+            
+            if (parseInt(textOutlineWidth.value) > 0) {
+                targetCtx.lineWidth = parseInt(textOutlineWidth.value) * (width / 1280);
+                targetCtx.strokeStyle = window['text-outline-color'] || '#000000';
+                targetCtx.strokeText(line, x, y, titleMaxWidth);
+            }
+            
+            targetCtx.fillText(line, x, y, titleMaxWidth);
+        });
+        
+        // Calculate position for info text
+        const spacing = parseInt(titleInfoSpacing.value) * (height / 720);
+        infoY = startY + totalTextHeight + spacing;
+    } else {
+        // Single line title
+        const x = textBoxX + horizontalOffset; // Apply horizontal offset consistently
+        
         if (parseInt(textOutlineWidth.value) > 0) {
             targetCtx.lineWidth = parseInt(textOutlineWidth.value) * (width / 1280);
             targetCtx.strokeStyle = window['text-outline-color'] || '#000000';
-            targetCtx.strokeText(line, textBoxX, y, titleMaxWidth);
+            targetCtx.strokeText(titleText, x, textBoxY, maxWidth);
         }
         
-        // Draw text fill
-        targetCtx.fillText(line, textBoxX, y, titleMaxWidth);
-    });
-    
+        targetCtx.fillText(titleText, x, textBoxY, maxWidth);
+        
         // Calculate position for info text
         const spacing = parseInt(titleInfoSpacing.value) * (height / 720);
-        actualInfoY = startY + totalTextHeight + spacing;
-        } else {
-        // Handle single-line text
-        if (parseInt(textOutlineWidth.value) > 0) {
-        targetCtx.lineWidth = parseInt(textOutlineWidth.value) * (width / 1280);
-        targetCtx.strokeStyle = window['text-outline-color'] || '#000000';
-        targetCtx.strokeText(titleText, textBoxX, textBoxY, maxWidth);
+        infoY = textBoxY + titleSize + spacing;
     }
     
-        targetCtx.fillText(titleText, textBoxX, textBoxY, maxWidth);
+    targetCtx.restore();
     
-        // Calculate position for info text
-        const spacing = parseInt(titleInfoSpacing.value) * (height / 720);
-        actualInfoY = textBoxY + titleSize + spacing;
-    }
-
+    // Draw info text if needed
+    if (infoPositionSetting === 'below' && infoText) {
+        targetCtx.save();
+        
+        const iFont = `${Math.round(infoSize * infoFontSizeAdjustment)}px "${infoFontToUse}", sans-serif`;
+        targetCtx.font = iFont;
+        targetCtx.textAlign = textAlign;
+        targetCtx.textBaseline = 'top';
+        
+        const infoX = textBoxX + horizontalOffset;
+        
+        // Setup info shadow
+        const infoShadowBlur = document.getElementById('info-shadow-blur');
+        const infoOutlineWidth = document.getElementById('info-outline-width');
+        
+        targetCtx.shadowColor = window['info-shadow-color'] || '#000000';
+        targetCtx.shadowBlur = parseInt(infoShadowBlur.value) * (width / 1280);
+        targetCtx.shadowOffsetX = 1 * (width / 1280);
+        targetCtx.shadowOffsetY = 1 * (height / 720);
+        
+        // Draw info text outline if enabled
+        if (parseInt(infoOutlineWidth.value) > 0) {
+            targetCtx.lineWidth = parseInt(infoOutlineWidth.value) * (width / 1280);
+            targetCtx.strokeStyle = window['info-outline-color'] || '#000000';
+            targetCtx.strokeText(infoText, infoX, infoY, maxWidth);
+        }
+        
+        // Draw info text fill
+        targetCtx.fillStyle = window['info-color'] || '#ffffff';
+        targetCtx.fillText(infoText, infoX, infoY, maxWidth);
+        
         targetCtx.restore();
-        
-        // Draw season/episode info if available
-        if (seasonNumberInput.value || episodeNumberInput.value) {
-            const spacing = parseInt(titleInfoSpacing.value) * (height / 720);
-            let infoY = actualInfoY;
-            
-            // Get the horizontal offset from the slider and apply scaling
-            const horizontalOffset = parseInt(horizontalPosition.value) * (width / 1280);
-            
-            // Create info-specific position by offsetting the title position
-            let infoX = textBoxX + horizontalOffset;
-            
-            // Build info text with appropriate separator
-            let infoText = '';
-            let separator = '';
-            
-            switch (separatorType.value) {
-                case 'dash': separator = ' - '; break;
-                case 'dot': separator = ' • '; break;
-                case 'pipe': separator = ' | '; break;
-                case 'space': separator = ' '; break;
-                case 'none': separator = ''; break;
-                default: separator = ' - ';
-            }
-            
-            if (seasonNumberInput.value) {
-                infoText += 'Season ' + seasonNumberInput.value;
-            }
-            
-            if (seasonNumberInput.value && episodeNumberInput.value) {
-                infoText += separator;
-            }
-            
-            if (episodeNumberInput.value) {
-                infoText += 'Episode ' + episodeNumberInput.value;
-            }
-            
-            // Draw info text if we have any
-            if (infoText) {
-                targetCtx.save();
-                
-                // Determine font to use for info text
-                const infoFontFamily = document.getElementById('info-font-family');
-                let infoFontToUse;
-                
-                if (infoFontFamily.value === 'same-as-title') {
-                    infoFontToUse = fontToUse;
-                } else if (infoFontFamily.value === 'custom-font' && window.customFontFamily) {
-                    infoFontToUse = window.customFontFamily;
-                } else {
-                    infoFontToUse = infoFontFamily.value;
-                }
-                
-                // Setup info font
-                let infoFontSizeAdjustment = 1;
-                if (infoFontToUse === 'Exo 2') {
-                    infoFontSizeAdjustment = 1.2; 
-                }
-                
-                const iFont = `${Math.round(infoSize * infoFontSizeAdjustment)}px "${infoFontToUse}", sans-serif`;
-                targetCtx.font = iFont;
-                
-                targetCtx.textAlign = textAlign;
-                targetCtx.textBaseline = 'top';
-                
-                // Setup info shadow
-                const infoShadowBlur = document.getElementById('info-shadow-blur');
-                const infoOutlineWidth = document.getElementById('info-outline-width');
-                
-                targetCtx.shadowColor = window['info-shadow-color'] || '#000000';
-                targetCtx.shadowBlur = parseInt(infoShadowBlur.value) * (width / 1280);
-                targetCtx.shadowOffsetX = 1 * (width / 1280);
-                targetCtx.shadowOffsetY = 1 * (height / 720);
-                
-                // Draw info text outline if enabled
-                if (parseInt(infoOutlineWidth.value) > 0) {
-                    targetCtx.lineWidth = parseInt(infoOutlineWidth.value) * (width / 1280);
-                    targetCtx.strokeStyle = window['info-outline-color'] || '#000000';
-                    targetCtx.strokeText(infoText, infoX, infoY, maxWidth);
-                }
-                
-                // Draw info text fill
-                targetCtx.fillStyle = window['info-color'] || '#ffffff';
-                targetCtx.fillText(infoText, infoX, infoY, maxWidth);
-                targetCtx.restore();
-            }
-        }
     }
+    }
+}
 	
     // =====================================================
     // TMDB API INTEGRATION FUNCTIONS
@@ -2102,6 +2239,7 @@ document.addEventListener('DOMContentLoaded', () => {
         textShadowBlur.value = defaultValues.textShadowBlur;
         textOutlineWidth.value = defaultValues.textOutlineWidth;
         titleInfoSpacing.value = defaultValues.titleInfoSpacing;
+        infoPosition.value = defaultValues.infoPosition;
         
         const infoShadowBlur = document.getElementById('info-shadow-blur');
         const infoOutlineWidth = document.getElementById('info-outline-width');
@@ -2217,6 +2355,7 @@ document.addEventListener('DOMContentLoaded', () => {
     horizontalPosition.addEventListener('input', updateBothViews);    
     textSize.addEventListener('change', updateBothViews);
     titleWrapping.addEventListener('change', updateBothViews);
+    infoPosition.addEventListener('change', updateBothViews);
     textShadowBlur.addEventListener('input', updateBothViews);
     textOutlineWidth.addEventListener('input', updateBothViews);
     titleInfoSpacing.addEventListener('input', updateBothViews);
