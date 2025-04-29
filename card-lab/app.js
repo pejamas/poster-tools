@@ -361,6 +361,7 @@ function updateEpisodeCardSettings() {
             infoShadowBlur: document.getElementById('info-shadow-blur').value,
             infoOutlineWidth: document.getElementById('info-outline-width').value,
             titleInfoSpacing: titleInfoSpacing.value,
+            titleWrapping: document.getElementById('title-wrapping').value,
             textColor: currentColors.textColor || fallbackColors.textColor,
             infoColor: currentColors.infoColor || fallbackColors.infoColor,
             textShadowColor: currentColors.textShadowColor || fallbackColors.textShadowColor,
@@ -393,6 +394,7 @@ function updateEpisodeCardSettings() {
     const textShadowBlur = document.getElementById('text-shadow-blur');
     const textOutlineWidth = document.getElementById('text-outline-width');
     const titleInfoSpacing = document.getElementById('title-info-spacing');
+    const titleWrapping = document.getElementById('title-wrapping');
     
     // Show thumbnail
     const thumbnailInput = document.getElementById('thumbnail-upload');
@@ -1425,21 +1427,100 @@ targetCtx.font = tFont;
         targetCtx.shadowOffsetX = 2 * (width / 1280);
         targetCtx.shadowOffsetY = 2 * (height / 720);
         
+        // Get title text and prepare for drawing
+const titleText = titleInput.value || '';
+targetCtx.fillStyle = window['text-color'] || '#ffffff';
+
+// Determine if we should wrap text
+const titleWrappingMode = document.getElementById('title-wrapping') ? 
+    document.getElementById('title-wrapping').value : 'singleLine';
+const shouldWrap = titleWrappingMode === 'multiLine';
+
+let actualInfoY;
+
+if (shouldWrap && titleText.length > 20) {
+    // Calculate appropriate line height based on font size
+    const lineHeight = Math.round(titleSize * 1.2);
+    
+    // Function to wrap text into lines
+    const wrapText = (text, maxWidth) => {
+        const words = text.split(' ');
+        const lines = [];
+        let currentLine = words[0];
+        
+        for (let i = 1; i < words.length; i++) {
+            const word = words[i];
+            const width = targetCtx.measureText(currentLine + ' ' + word).width;
+            
+            if (width < maxWidth) {
+                currentLine += ' ' + word;
+            } else {
+                lines.push(currentLine);
+                currentLine = word;
+            }
+        }
+        
+        lines.push(currentLine);
+        return lines;
+    };
+    
+    // Get wrapped lines
+    const lines = wrapText(titleText, maxWidth);
+    
+    // Calculate total text height to center vertically
+    const totalTextHeight = lines.length * lineHeight;
+    let startY;
+    
+    // Adjust position based on preset
+    if (preset.position.includes('Top')) {
+        // If aligned to top, keep the top position
+        startY = textBoxY;
+    } else if (preset.position.includes('Bottom')) {
+        // If aligned to bottom, move up to accommodate multiple lines
+        startY = textBoxY - totalTextHeight + lineHeight;
+    } else {
+        // For center positions, center the text block
+        startY = textBoxY - (totalTextHeight / 2) + (titleSize / 2);
+    }
+    
+    // Draw each line
+    lines.forEach((line, index) => {
+        const y = startY + (index * lineHeight);
+        
         // Apply outline if specified
         if (parseInt(textOutlineWidth.value) > 0) {
             targetCtx.lineWidth = parseInt(textOutlineWidth.value) * (width / 1280);
             targetCtx.strokeStyle = window['text-outline-color'] || '#000000';
-            targetCtx.strokeText(titleInput.value || '', textBoxX, textBoxY, maxWidth);
+            targetCtx.strokeText(line, textBoxX, y, maxWidth);
         }
         
-        // Draw title text - get color from the window object
-        targetCtx.fillStyle = window['text-color'] || '#ffffff'; 
-        targetCtx.fillText(titleInput.value || '', textBoxX, textBoxY, maxWidth);
-        targetCtx.restore();
+        targetCtx.fillText(line, textBoxX, y, maxWidth);
+    });
+    
+    // Store the calculated position for info text
+    const spacing = parseInt(titleInfoSpacing.value) * (height / 720);
+    actualInfoY = startY + totalTextHeight + spacing;
+} else {
+    // Standard single-line text rendering
+    // Apply outline if specified
+    if (parseInt(textOutlineWidth.value) > 0) {
+        targetCtx.lineWidth = parseInt(textOutlineWidth.value) * (width / 1280);
+        targetCtx.strokeStyle = window['text-outline-color'] || '#000000';
+        targetCtx.strokeText(titleText, textBoxX, textBoxY, maxWidth);
+    }
+    
+    targetCtx.fillText(titleText, textBoxX, textBoxY, maxWidth);
+    
+    // Set infoY for standard text
+    const spacing = parseInt(titleInfoSpacing.value) * (height / 720);
+    actualInfoY = textBoxY + titleSize + spacing;
+}
+
+targetCtx.restore();
         // --- Season/Episode Info ---
         if (seasonNumberInput.value || episodeNumberInput.value) {
             const spacing = parseInt(titleInfoSpacing.value) * (height / 720);
-            let infoY = textBoxY + titleSize + spacing;
+            let infoY = actualInfoY;
             
             // Create season/episode text with the selected separator
             let infoText = '';
@@ -1644,6 +1725,10 @@ function drawCardToTempContext(tempCtx, card, width, height) {
         document.getElementById('info-outline-width').value = card.currentSettings.infoOutlineWidth;
         effectType.value = card.currentSettings.effectType;
         blendMode.value = card.currentSettings.blendMode;
+
+    if (document.getElementById('title-wrapping')) {
+        document.getElementById('title-wrapping').value = card.currentSettings.titleWrapping || 'singleLine';
+    }
         
         // IMPORTANT: Make sure color values are properly set from card settings
         // Log the colors being applied for debugging
@@ -1810,6 +1895,7 @@ function drawCardToTempContext(tempCtx, card, width, height) {
         infoColor: "#ffffff",
         textSize: "normal",
         infoTextSize: "normal",
+        titleWrapping: "singleLine",
         textShadowBlur: 0,
         textOutlineWidth: 0,
         infoShadowBlur: 0,
@@ -1853,6 +1939,10 @@ function drawCardToTempContext(tempCtx, card, width, height) {
         const infoOutlineWidth = document.getElementById('info-outline-width');
         if (infoShadowBlur) infoShadowBlur.value = defaultValues.infoShadowBlur;
         if (infoOutlineWidth) infoOutlineWidth.value = defaultValues.infoOutlineWidth;
+
+        if (document.getElementById('title-wrapping')) {
+            document.getElementById('title-wrapping').value = defaultValues.titleWrapping;
+        }
         
         // Update slider value displays
         updateSliderValueDisplay('text-shadow-blur', 'shadow-value', 'px');
@@ -2063,6 +2153,7 @@ presetSelect.addEventListener('change', updateBothViews);
 // Remove the basic fontFamily listener since we'll replace it with an enhanced one
 // fontFamily.addEventListener('change', updateBothViews); 
 textSize.addEventListener('change', updateBothViews);
+titleWrapping.addEventListener('change', updateBothViews);
 textShadowBlur.addEventListener('input', updateBothViews);
 textOutlineWidth.addEventListener('input', updateBothViews);
 titleInfoSpacing.addEventListener('input', updateBothViews);
