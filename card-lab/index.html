@@ -1,345 +1,436 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Card Lab</title>
     <link rel="icon" type="image/svg+xml" href="../assets/mediux.svg" />
-    <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Gabarito:wght@400;600;700&family=Bebas+Neue&family=Montserrat:wght@400;700&family=Oswald:wght@400;700&family=Playfair+Display:wght@400;700&family=Raleway:wght@400;700&family=Roboto:wght@400;700&family=Staatliches&family=Lato:wght@400;700&family=Exo+2:wght@400;700&family=Poppins:wght@400;700&family=Quicksand:wght@400;700&family=Nunito:wght@400;700&family=Open+Sans:wght@400;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/monolith.min.css" />
+    <link rel="stylesheet" href="styles.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Gabarito:wght@400;600;700&family=Bebas+Neue&family=Montserrat:wght@400;700&family=Oswald:wght@400;700&family=Playfair+Display:wght@400;700&family=Raleway:wght@400;700&family=Roboto:wght@400;700&family=Staatliches&family=Lato:wght@400;700&family=Exo+2:wght@400;700&family=Poppins:wght@400;700&family=Quicksand:wght@400;700&family=Nunito:wght@400;700&family=Open+Sans:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/monolith.min.css"
+    />
     <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr"></script>
-</head>
-<body>
+  </head>
+  <body>
     <header>
-        <div class="header-left">
-            <a href="../index.html"><img src="../assets/mediux.svg" alt="Mediux Logo" height="24" /></a>
-            <h1>Card Lab</h1>
-        </div>
-        <div class="header-actions">
-            <a href="../poster-showcase/" class="nav-link">Poster Showcase</a>
-            <a href="../poster-overlay/" class="nav-link">Poster Overlay</a>
-            <button id="saveConfigBtn" class="action-button">
-                <img src="../assets/poster-showcase icons/save.svg" class="action-icon">
-                Save Config
-            </button>
-            <button id="loadConfigBtn" class="action-button">
-                <img src="../assets/poster-showcase icons/upload.svg" class="action-icon">
-                Load Config
-            </button>
-        </div>
+      <div class="header-left">
+        <a href="../index.html"
+          ><img src="../assets/mediux.svg" alt="Mediux Logo" height="24"
+        /></a>
+        <h1>Card Lab</h1>
+      </div>
+      <div class="header-actions">
+        <a href="../poster-showcase/" class="nav-link">Poster Showcase</a>
+        <a href="../poster-overlay/" class="nav-link">Poster Overlay</a>
+        <button id="saveConfigBtn" class="action-button">
+          <img
+            src="../assets/poster-showcase icons/save.svg"
+            class="action-icon"
+          />
+          Save Config
+        </button>
+        <button id="loadConfigBtn" class="action-button">
+          <img
+            src="../assets/poster-showcase icons/upload.svg"
+            class="action-icon"
+          />
+          Load Config
+        </button>
+      </div>
     </header>
     <div class="layout">
-        <div class="sidebar">
-            <div class="collapsible active">
-                <div class="collapsible-header">
-                    <h3>TMDB Search</h3>
-                    <span class="toggle-icon"></span>
-                </div>
-                <div class="collapsible-content">
-                    <form id="show-search-form">
-                        <div class="search-container">
-                            <input type="text" id="show-search-input" placeholder="Search TV shows..." />
-                            <button type="submit" class="search-button">Search</button>
-                        </div>
-                    </form>
-                    <div id="search-results" class="search-results"></div>
-                    <div id="season-selector" class="season-selector"></div>
-                    
-                    <div id="alt-images-info" class="info-text">
-                        Select an episode to see available images
-                    </div>
-                    <div id="alt-images-container" class="alt-images-grid">
-                    </div>
-                    
-                    <button id="returnToGridBtn" class="icon-button">
-                        <span>Return to Grid View</span>
-                    </button>
-                </div>
-            </div>
-            
-            <div class="collapsible">
-                <div class="collapsible-header">
-                    <h3>Manual Tools</h3>
-                    <span class="toggle-icon"></span>
-                </div>
-                <div class="collapsible-content">
-                    <label for="title-text">Episode Name</label>
-                    <input type="text" id="title-text" placeholder="Enter Episode Name" />
-                    
-                    <label for="season-number">Season Number</label>
-                    <input type="text" id="season-number" placeholder="e.g., 07" />
-                    
-                    <label for="episode-number">Episode Number</label>
-                    <input type="text" id="episode-number" placeholder="e.g., 01" />
-                    
-                    <label for="separator-type">Season/Episode Separator</label>
-                    <select id="separator-type">
-                        <option value="dot">Dot (•)</option>
-                        <option value="dash">Dash (-)</option>
-                        <option value="pipe">Pipe (|)</option>
-                        <option value="space">Space</option>
-                        <option value="none">None</option>
-                    </select>
-                    
-                    <div class="section-separator"></div>
-                    
-                    <div class="thumbnail-upload-container drop-zone" id="thumbnail-container">
-                        <span>Upload Show Thumbnail</span>
-                        <input type="file" id="thumbnail-upload" accept="image/*" style="display: none;" />
-                    </div>
-                    
-                    <div class="toggle-container">
-                        <span class="toggle-label">Full Size Background</span>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="thumbnail-fullsize" checked>
-                            <span class="toggle-slider"></span>
-                        </label>
-                    </div>
-                </div>
-            </div>
+      <div class="sidebar">
+        <div class="collapsible active">
+          <div class="collapsible-header">
+            <h3>TMDB Search</h3>
+            <span class="toggle-icon"></span>
+          </div>
+          <div class="collapsible-content">
+            <form id="show-search-form">
+              <div class="search-container">
+                <input
+                  type="text"
+                  id="show-search-input"
+                  placeholder="Search TV shows..."
+                />
+                <button type="submit" class="search-button">Search</button>
+              </div>
+            </form>
+            <div id="search-results" class="search-results"></div>
+            <div id="season-selector" class="season-selector"></div>
 
-            <div class="collapsible">
-                <div class="collapsible-header">
-                    <h3>Theme Options</h3>
-                    <span class="toggle-icon"></span>
-                </div>
-                <div class="collapsible-content">
-                    <label for="preset-select">Text Poisition</label>
-                    <select id="preset-select">
-                        <option value="leftMiddle">Left Middle</option>
-                        <option value="centerMiddle">Center Middle</option>
-                        <option value="rightMiddle">Right Middle</option>
-                        <option value="giggle">Center Bottom</option>
-                        <option value="manhunt">Left Bottom</option>
-                        <option value="centerTop">Center Top</option>                   
-                    </select>
-                    <label for="info-position">Info Text Position</label>
-                    <select id="info-position">
-                       <option value="above">Above Title</option>
-                       <option value="below">Below Title</option>                       
-                    </select>
-                    <label for="option-label">Title Wrapping</label>
-                    <select id="title-wrapping">
-                        <option value="singleLine">Single Line</option>
-                        <option value="autoWrap">Multiple Lines</option>
-                    </select>
-                    <label for="effect-type">Gradient Type</label>
-                    <select id="effect-type">
-                        <option value="none">None</option>
-                        <option value="leftToRight">Gradient (Left to Right)</option>
-                        <option value="rightToLeft">Gradient (Right to Left)</option>
-                        <option value="topToBottom">Gradient (Top to Bottom)</option>
-                        <option value="bottomToTop">Gradient (Bottom to Top)</option>
-                        <option value="radial">Radial Gradient</option>
-                    </select>
-                    
-                    <label for="blend-mode">Gradient Blend Mode</label>
-                    <select id="blend-mode">
-                        <option value="normal">Normal</option>
-                        <option value="multiply">Multiply</option>
-                        <option value="screen">Screen</option>
-                        <option value="overlay">Overlay</option>
-                        <option value="darken">Darken</option>
-                        <option value="lighten">Lighten</option>
-                        <option value="color-dodge">Color Dodge</option>
-                        <option value="color-burn">Color Burn</option>
-                        <option value="hard-light">Hard Light</option>
-                        <option value="soft-light">Soft Light</option>
-                        <option value="difference">Difference</option>
-                        <option value="exclusion">Exclusion</option>
-                        <option value="hue">Hue</option>
-                        <option value="saturation">Saturation</option>
-                        <option value="color">Color</option>
-                        <option value="luminosity">Luminosity</option>
-                    </select>
-                    
-                    <div id="gradient-controls">
-                        <label for="gradient-color">Gradient Color</label>
-                        <div id="gradient-color-pickr" class="pickr-container"></div>
-                        
-                        <label for="gradient-opacity">Gradient Intensity</label>
-                        <input type="range" id="gradient-opacity" min="0.1" max="1" step="0.05" value="0.7" />
-                    </div>
-                </div>
+            <div id="alt-images-info" class="info-text">
+              Select an episode to see available images
             </div>
+            <div id="alt-images-container" class="alt-images-grid"></div>
 
-            <div class="collapsible">
-                <div class="collapsible-header">
-                    <h3>Text Options</h3>
-                    <span class="toggle-icon"></span>
-                </div>
-                <div class="collapsible-content text-options">
-                    <h4>Title Text</h4>
-                    <div class="text-options-grid">
-                        <div>
-                            <span class="option-label">Font Style</span>
-                            <select id="font-family">
-                                <option value="Gabarito">Gabarito</option>
-                                <option value="Exo 2">Exo 2</option>
-                                <option value="Poppins">Poppins</option>
-                                <option value="Bebas Neue">Bebas Neue</option>
-                                <option value="Montserrat">Montserrat</option>
-                                <option value="Oswald">Oswald</option>
-                                <option value="Quicksand">Quicksand</option>
-                                <option value="Nunito">Nunito</option>
-                                <option value="Open Sans">Open Sans</option>
-                                <option value="Playfair Display">Playfair Display</option>
-                                <option value="Raleway">Raleway</option>
-                                <option value="Roboto">Roboto</option>
-                                <option value="Staatliches">Staatliches</option>
-                                <option value="Lato">Lato</option>
-                                <option value="custom-font" id="custom-font-option" style="display: none">Custom Font</option>
-                            </select>
-                        </div>
-                        
-                        <div>
-                            <span class="option-label">Text Size</span>
-                            <select id="text-size">
-                                <option value="small">Small</option>
-                                <option value="normal">Medium</option>
-                                <option value="large">Large</option>                                
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="custom-font-upload-container">
-                        <span>Upload Custom Font</span>
-                        <input type="file" id="custom-font-upload" accept=".ttf,.woff,.woff2,.otf" style="display: none;" />
-                    </div>
-                    
-                    <div>
-                        <span class="option-label">Title Color</span>
-                        <div id="text-color-pickr" class="color-box"></div>
-                    </div>
-                    
-                    <div class="effect-section">
-                        <div class="effect-title">Shadow Effect</div>
-                        <div class="effect-controls">
-                            <div id="text-shadow-color-pickr" class="effect-color"></div>
-                            <div class="slider-bar"></div>
-                            <input type="range" id="text-shadow-blur" min="0" max="30" value="8" />
-                        </div>
-                    </div>
-                    
-                    <div class="effect-section">
-                        <div class="effect-title">Outline Effect</div>
-                        <div class="effect-controls">
-                            <div id="text-outline-color-pickr" class="effect-color"></div>
-                            <div class="slider-bar"></div>
-                            <input type="range" id="text-outline-width" min="0" max="10" value="0" />
-                        </div>
-                    </div>
-                    
-                    <div class="section-separator"></div>
-                    <h4>Info Text</h4>
-                    <div class="text-options-grid">
-                        <div>
-                            <span class="option-label">Font Style</span>
-                            <select id="info-font-family">
-                                <option value="Gabarito">Gabarito</option>
-                                <option value="Exo 2">Exo 2</option>
-                                <option value="Poppins">Poppins</option>
-                                <option value="Bebas Neue">Bebas Neue</option>
-                                <option value="Montserrat">Montserrat</option>
-                                <option value="Oswald">Oswald</option>
-                                <option value="Quicksand">Quicksand</option>
-                                <option value="Nunito">Nunito</option>
-                                <option value="Open Sans">Open Sans</option>
-                                <option value="Playfair Display">Playfair Display</option>
-                                <option value="Raleway">Raleway</option>
-                                <option value="Roboto">Roboto</option>
-                                <option value="Staatliches">Staatliches</option>
-                                <option value="Lato">Lato</option>
-                            </select>
-                        </div>
-                        
-                        <div>
-                            <span class="option-label">Text Size</span>
-                            <select id="info-text-size">
-                                <option value="normal" selected>Normal</option>
-                                <option value="large">Large</option>
-                                <option value="small">Small</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div>
-                        <span class="option-label">Info Text Color</span>
-                        <div id="info-color-pickr" class="color-box"></div>
-                    </div>
-                    
-                    <div class="effect-section">
-                        <div class="effect-title">Shadow Effect</div>
-                        <div class="effect-controls">
-                            <div id="info-shadow-color-pickr" class="effect-color"></div>
-                            <div class="slider-bar"></div>
-                            <input type="range" id="info-shadow-blur" min="0" max="30" value="8" />
-                        </div>
-                    </div>
-                    
-                    <div class="effect-section">
-                        <div class="effect-title">Outline Effect</div>
-                        <div class="effect-controls">
-                            <div id="info-outline-color-pickr" class="effect-color"></div>
-                            <div class="slider-bar"></div>
-                            <input type="range" id="info-outline-width" min="0" max="10" value="0" />
-                        </div>
-                    </div>
-                    
-                    <div class="section-separator"></div>                    
-                    <div class="title-info-gap">
-                        <div class="gap-label">
-                            <span class="label-text">Info Text Spacing</span>
-                            <span class="gap-value" id="spacing-value">15px</span>
-                        </div>
-                        <input type="range" id="title-info-spacing" min="5" max="40" value="15" />
-                    </div>
-                    <div class="horizontal-position">
-                        <div class="position-label">
-                            <span class="label-text">Info Text X Offset</span>
-                            <span class="position-value" id="position-value">0px</span>
-                        </div>
-                        <input type="range" id="horizontal-position" min="-300" max="300" value="0" />
-                    </div>
-                </div>
-            </div>
-
-            
-
-            <div class="sidebar-action-row">
-                <button id="downloadBtn" class="icon-button teal" title="Download">
-                    <img src="../assets/poster-overlay-icons/download.svg" class="icon" />
-                </button>
-                <button id="resetBtn" class="icon-button red" title="Reset">
-                    <img src="../assets/poster-overlay-icons/refresh-cw.svg" class="icon" />
-                </button>
-            </div>
+            <button id="returnToGridBtn" class="icon-button">
+              <span>Return to Grid View</span>
+            </button>
+          </div>
         </div>
-        
-        <div class="main">
-            <canvas id="titlecard-canvas" width="1280" height="720"></canvas>
-            <canvas id="grid-canvas" class="grid-canvas"></canvas>
+
+        <div class="collapsible">
+          <div class="collapsible-header">
+            <h3>Manual Tools</h3>
+            <span class="toggle-icon"></span>
+          </div>
+          <div class="collapsible-content">
+            <label for="title-text">Episode Name</label>
+            <input
+              type="text"
+              id="title-text"
+              placeholder="Enter Episode Name"
+            />
+
+            <label for="season-number">Season Number</label>
+            <input type="text" id="season-number" placeholder="e.g., 07" />
+
+            <label for="episode-number">Episode Number</label>
+            <input type="text" id="episode-number" placeholder="e.g., 01" />
+
+            <label for="separator-type">Season/Episode Separator</label>
+            <select id="separator-type">
+              <option value="dot">Dot (•)</option>
+              <option value="dash">Dash (-)</option>
+              <option value="pipe">Pipe (|)</option>
+              <option value="space">Space</option>
+              <option value="none">None</option>
+            </select>
+
+            <div class="section-separator"></div>
+
+            <div
+              class="thumbnail-upload-container drop-zone"
+              id="thumbnail-container"
+            >
+              <span>Upload Show Thumbnail</span>
+              <input
+                type="file"
+                id="thumbnail-upload"
+                accept="image/*"
+                style="display: none"
+              />
+            </div>
+
+            <div class="toggle-container">
+              <span class="toggle-label">Full Size Background</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="thumbnail-fullsize" checked />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
         </div>
+
+        <div class="collapsible">
+          <div class="collapsible-header">
+            <h3>Theme Options</h3>
+            <span class="toggle-icon"></span>
+          </div>
+          <div class="collapsible-content">
+            <label for="preset-select">Text Poisition</label>
+            <select id="preset-select">
+              <option value="leftMiddle">Left Middle</option>
+              <option value="centerMiddle">Center Middle</option>
+              <option value="rightMiddle">Right Middle</option>
+              <option value="giggle">Center Bottom</option>
+              <option value="manhunt">Left Bottom</option>
+              <option value="centerTop">Center Top</option>
+            </select>
+            <label for="info-position">Info Text Position</label>
+            <select id="info-position">
+              <option value="above">Above Title</option>
+              <option value="below">Below Title</option>
+            </select>
+            <label for="option-label">Title Wrapping</label>
+            <select id="title-wrapping">
+              <option value="singleLine">Single Line</option>
+              <option value="autoWrap">Multiple Lines</option>
+            </select>
+            <label for="effect-type">Gradient Type</label>
+            <select id="effect-type">
+              <option value="none">None</option>
+              <option value="leftToRight">Gradient (Left to Right)</option>
+              <option value="rightToLeft">Gradient (Right to Left)</option>
+              <option value="topToBottom">Gradient (Top to Bottom)</option>
+              <option value="bottomToTop">Gradient (Bottom to Top)</option>
+              <option value="radial">Radial Gradient</option>
+            </select>
+
+            <label for="blend-mode">Gradient Blend Mode</label>
+            <select id="blend-mode">
+              <option value="normal">Normal</option>
+              <option value="multiply">Multiply</option>
+              <option value="screen">Screen</option>
+              <option value="overlay">Overlay</option>
+              <option value="darken">Darken</option>
+              <option value="lighten">Lighten</option>
+              <option value="color-dodge">Color Dodge</option>
+              <option value="color-burn">Color Burn</option>
+              <option value="hard-light">Hard Light</option>
+              <option value="soft-light">Soft Light</option>
+              <option value="difference">Difference</option>
+              <option value="exclusion">Exclusion</option>
+              <option value="hue">Hue</option>
+              <option value="saturation">Saturation</option>
+              <option value="color">Color</option>
+              <option value="luminosity">Luminosity</option>
+            </select>
+
+            <div id="gradient-controls">
+              <label for="gradient-color">Gradient Color</label>
+              <div id="gradient-color-pickr" class="pickr-container"></div>
+
+              <label for="gradient-opacity">Gradient Intensity</label>
+              <input
+                type="range"
+                id="gradient-opacity"
+                min="0.1"
+                max="1"
+                step="0.05"
+                value="0.7"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="collapsible">
+          <div class="collapsible-header">
+            <h3>Text Options</h3>
+            <span class="toggle-icon"></span>
+          </div>
+          <div class="collapsible-content text-options">
+            <h4>Title Text</h4>
+            <div class="text-options-grid">
+              <div>
+                <span class="option-label">Font Style</span>
+                <select id="font-family">
+                  <option value="Gabarito">Gabarito</option>
+                  <option value="Exo 2">Exo 2</option>
+                  <option value="Poppins">Poppins</option>
+                  <option value="Bebas Neue">Bebas Neue</option>
+                  <option value="Montserrat">Montserrat</option>
+                  <option value="Oswald">Oswald</option>
+                  <option value="Quicksand">Quicksand</option>
+                  <option value="Nunito">Nunito</option>
+                  <option value="Open Sans">Open Sans</option>
+                  <option value="Playfair Display">Playfair Display</option>
+                  <option value="Raleway">Raleway</option>
+                  <option value="Roboto">Roboto</option>
+                  <option value="Staatliches">Staatliches</option>
+                  <option value="Lato">Lato</option>
+                  <option
+                    value="custom-font"
+                    id="custom-font-option"
+                    style="display: none"
+                  >
+                    Custom Font
+                  </option>
+                </select>
+              </div>
+
+              <div>
+                <span class="option-label">Text Size</span>
+                <select id="text-size">
+                  <option value="small">Small</option>
+                  <option value="normal">Medium</option>
+                  <option value="large">Large</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="custom-font-upload-container">
+              <span>Upload Custom Font</span>
+              <input
+                type="file"
+                id="custom-font-upload"
+                accept=".ttf,.woff,.woff2,.otf"
+                style="display: none"
+              />
+            </div>
+
+            <div>
+              <span class="option-label">Title Color</span>
+              <div id="text-color-pickr" class="color-box"></div>
+            </div>
+
+            <div class="effect-section">
+              <div class="effect-title">Shadow Effect</div>
+              <div class="effect-controls">
+                <div id="text-shadow-color-pickr" class="effect-color"></div>
+                <div class="slider-bar"></div>
+                <input
+                  type="range"
+                  id="text-shadow-blur"
+                  min="0"
+                  max="30"
+                  value="8"
+                />
+              </div>
+            </div>
+
+            <div class="effect-section">
+              <div class="effect-title">Outline Effect</div>
+              <div class="effect-controls">
+                <div id="text-outline-color-pickr" class="effect-color"></div>
+                <div class="slider-bar"></div>
+                <input
+                  type="range"
+                  id="text-outline-width"
+                  min="0"
+                  max="10"
+                  value="0"
+                />
+              </div>
+            </div>
+
+            <div class="section-separator"></div>
+            <h4>Info Text</h4>
+            <div class="text-options-grid">
+              <div>
+                <span class="option-label">Font Style</span>
+                <select id="info-font-family">
+                  <option value="Gabarito">Gabarito</option>
+                  <option value="Exo 2">Exo 2</option>
+                  <option value="Poppins">Poppins</option>
+                  <option value="Bebas Neue">Bebas Neue</option>
+                  <option value="Montserrat">Montserrat</option>
+                  <option value="Oswald">Oswald</option>
+                  <option value="Quicksand">Quicksand</option>
+                  <option value="Nunito">Nunito</option>
+                  <option value="Open Sans">Open Sans</option>
+                  <option value="Playfair Display">Playfair Display</option>
+                  <option value="Raleway">Raleway</option>
+                  <option value="Roboto">Roboto</option>
+                  <option value="Staatliches">Staatliches</option>
+                  <option value="Lato">Lato</option>
+                </select>
+              </div>
+
+              <div>
+                <span class="option-label">Text Size</span>
+                <select id="info-text-size">
+                  <option value="normal" selected>Normal</option>
+                  <option value="large">Large</option>
+                  <option value="small">Small</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <span class="option-label">Info Text Color</span>
+              <div id="info-color-pickr" class="color-box"></div>
+            </div>
+
+            <div class="effect-section">
+              <div class="effect-title">Shadow Effect</div>
+              <div class="effect-controls">
+                <div id="info-shadow-color-pickr" class="effect-color"></div>
+                <div class="slider-bar"></div>
+                <input
+                  type="range"
+                  id="info-shadow-blur"
+                  min="0"
+                  max="30"
+                  value="8"
+                />
+              </div>
+            </div>
+
+            <div class="effect-section">
+              <div class="effect-title">Outline Effect</div>
+              <div class="effect-controls">
+                <div id="info-outline-color-pickr" class="effect-color"></div>
+                <div class="slider-bar"></div>
+                <input
+                  type="range"
+                  id="info-outline-width"
+                  min="0"
+                  max="10"
+                  value="0"
+                />
+              </div>
+            </div>
+
+            <div class="section-separator"></div>
+            <div class="title-info-gap">
+              <div class="gap-label">
+                <span class="label-text">Info Text Spacing</span>
+                <span class="gap-value" id="spacing-value">15px</span>
+              </div>
+              <input
+                type="range"
+                id="title-info-spacing"
+                min="5"
+                max="40"
+                value="15"
+              />
+            </div>
+            <div class="horizontal-position">
+              <div class="position-label">
+                <span class="label-text">Info Text X Offset</span>
+                <span class="position-value" id="position-value">0px</span>
+              </div>
+              <input
+                type="range"
+                id="horizontal-position"
+                min="-300"
+                max="300"
+                value="0"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="sidebar-action-row">
+          <button id="downloadBtn" class="icon-button teal" title="Download">
+            <img
+              src="../assets/poster-overlay-icons/download.svg"
+              class="icon"
+            />
+          </button>
+          <button id="resetBtn" class="icon-button red" title="Reset">
+            <img
+              src="../assets/poster-overlay-icons/refresh-cw.svg"
+              class="icon"
+            />
+          </button>
+        </div>
+      </div>
+
+      <div class="main">
+        <canvas id="titlecard-canvas" width="1280" height="720"></canvas>
+        <canvas id="grid-canvas" class="grid-canvas"></canvas>
+      </div>
     </div>
-    
+
     <div id="save-confirm-overlay" class="custom-overlay">
-        <div class="custom-modal">
-            <p>Configuration saved successfully!</p>
-            <div class="custom-buttons">
-                <button id="saveConfirmOk" class="custom-btn custom-btn-blue">OK</button>
-            </div>
+      <div class="custom-modal">
+        <p>Configuration saved successfully!</p>
+        <div class="custom-buttons">
+          <button id="saveConfirmOk" class="custom-btn custom-btn-blue">
+            OK
+          </button>
         </div>
+      </div>
     </div>
 
     <div id="load-confirm-overlay" class="custom-overlay">
-        <div class="custom-modal">
-            <p>Configuration loaded successfully!</p>
-            <div class="custom-buttons">
-                <button id="loadConfirmOk" class="custom-btn custom-btn-blue">OK</button>
-            </div>
+      <div class="custom-modal">
+        <p>Configuration loaded successfully!</p>
+        <div class="custom-buttons">
+          <button id="loadConfirmOk" class="custom-btn custom-btn-blue">
+            OK
+          </button>
         </div>
+      </div>
     </div>
-    
+
     <script src="app.js"></script>
-</body>
+  </body>
 </html>
