@@ -1637,6 +1637,8 @@ document.addEventListener("DOMContentLoaded", () => {
             currentColors.gradientColor || fallbackColors.gradientColor,
           gradientOpacity: gradientOpacity.value,
           blendMode: blendMode.value,
+          titleWrapping: document.getElementById("title-wrapping") ? 
+            document.getElementById("title-wrapping").value : 'singleLine',
         },
       };
 
