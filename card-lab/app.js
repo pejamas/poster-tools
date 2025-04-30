@@ -2045,24 +2045,38 @@ document.addEventListener("DOMContentLoaded", () => {
       overlay.style.backdropFilter = "blur(4px)";
       document.body.appendChild(overlay);
 
-      // Create spinner
+      // Create modal container to match poster-showcase style
+      const modalContainer = document.createElement("div");
+      modalContainer.className = "custom-modal loading-modal";
+      modalContainer.style.background = "#1a1a1a";
+      modalContainer.style.borderRadius = "12px";
+      modalContainer.style.boxShadow = "0 0 20px rgba(0, 0, 0, 0.5)";
+      modalContainer.style.padding = "25px 30px";
+      modalContainer.style.display = "flex";
+      modalContainer.style.flexDirection = "column";
+      modalContainer.style.alignItems = "center";
+      modalContainer.style.textAlign = "center";
+      overlay.appendChild(modalContainer);
+
+      // Create spinner using the same style as poster-showcase
+      
       const spinner = document.createElement("div");
-      spinner.className = "loading-spinner";
+      spinner.className = "loading-spinner-large";
       spinner.style.border = "3px solid rgba(255, 255, 255, 0.1)";
       spinner.style.borderTop = "3px solid #00bfa5";
       spinner.style.borderRadius = "50%";
-      spinner.style.width = "40px";
-      spinner.style.height = "40px";
+      spinner.style.width = "50px";
+      spinner.style.height = "50px";
       spinner.style.animation = "spin 1s linear infinite";
-      spinner.style.marginBottom = "20px";
-      overlay.appendChild(spinner);
+      spinner.style.marginBottom = "15px";
+      modalContainer.appendChild(spinner);
 
       // Add spinner animation
       if (!document.getElementById("spinner-style")) {
         const style = document.createElement("style");
         style.id = "spinner-style";
         style.textContent =
-                                     "@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }";
+          "@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }";
         document.head.appendChild(style);
       }
 
@@ -2074,29 +2088,31 @@ document.addEventListener("DOMContentLoaded", () => {
       messageEl.style.fontFamily = "Gabarito, sans-serif";
       messageEl.style.textAlign = "center";
       messageEl.style.maxWidth = "80%";
-      messageEl.style.margin = "0 0 20px 0";
-      overlay.appendChild(messageEl);
+      messageEl.style.margin = "0 0 15px 0";
+      modalContainer.appendChild(messageEl);
 
-      // Create progress bar container
+      // Create progress container matching poster-showcase style
       const progressContainer = document.createElement("div");
       progressContainer.id = "progress-container";
-      progressContainer.style.width = "300px";
+      progressContainer.style.width = "100%";
       progressContainer.style.height = "6px";
       progressContainer.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
       progressContainer.style.borderRadius = "3px";
+      progressContainer.style.margin = "15px 0";
       progressContainer.style.overflow = "hidden";
       progressContainer.style.display = showProgressBar ? "block" : "none";
 
-      // Create progress bar
+      // Create progress bar with gradient like in poster-showcase
       const progressBar = document.createElement("div");
       progressBar.id = "progress-bar";
       progressBar.style.width = "0%";
       progressBar.style.height = "100%";
-      progressBar.style.backgroundColor = "#00bfa5";
+      progressBar.style.background = "linear-gradient(90deg, #00bfa5, #6a11cb)";
       progressBar.style.transition = "width 0.3s ease";
+      progressBar.style.borderRadius = "3px";
 
       progressContainer.appendChild(progressBar);
-      overlay.appendChild(progressContainer);
+      modalContainer.appendChild(progressContainer);
 
       // Create details element
       const detailsEl = document.createElement("div");
@@ -2107,7 +2123,7 @@ document.addEventListener("DOMContentLoaded", () => {
       detailsEl.style.textAlign = "center";
       detailsEl.style.maxWidth = "80%";
       detailsEl.style.marginTop = "10px";
-      overlay.appendChild(detailsEl);
+      modalContainer.appendChild(detailsEl);
     }
 
     // Update message
