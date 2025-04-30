@@ -35,148 +35,166 @@
 
     <div class="layout">
         <div class="sidebar">
-            <div class="creator-row">
-                <input type="text" id="creator-name" placeholder="Creator Name" />
-                <label for="creator-icon-upload" class="icon-upload-btn" title="Upload Creator Icon">
-                    <img src="../assets/poster-showcase icons/upload.svg" class="icon" />
-                </label>
-                <input type="file" id="creator-icon-upload" accept="image/*">
-            </div>
-
-            <input type="text" id="set-id" placeholder="Footer Label: e.g. 12345" />
-
-            <!-- API Connection Section -->
-            <div class="section-separator"></div>
-
-            <div class="toggle-container">
-                <span class="toggle-label">API Search</span>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="toggle-api">
-                    <span class="toggle-slider"></span>
-                </label>
-            </div>
-
-            <div class="api-section" id="api-section">
-                <div class="api-fields">
-
+            <!-- API Section -->
+            <div class="collapsible active">
+                <div class="collapsible-header">
+                    <h3>API Search</h3>
+                    <div class="toggle-icon"></div>
+                </div>
+                <div class="collapsible-content">
                     <input type="text" id="show-id" placeholder="Show ID: e.g. 123456" />
-
                     <button id="connect-api-btn">Connect & Fetch Sets</button>
                     <div id="api-status" class="status-disconnected">Not Connected</div>
                     <div class="loading-spinner" id="api-loading"></div>
-                </div>
-
-                <div class="set-selector" id="set-selector">
-                    <!-- Show sets will be displayed here -->
-                </div>
-            </div>
-
-            <div class="section-separator"></div>
-
-            <label for="file-input" class="drop-zone">Upload Posters</label>
-            <input type="file" id="file-input" multiple accept="image/*" />
-
-            <label for="album-art-upload" class="drop-zone">Upload Album Art</label>
-            <input type="file" id="album-art-upload" multiple accept="image/*" />
-
-            <label for="titlecard-input" class="drop-zone">Upload Titlecards</label>
-            <input type="file" id="titlecard-input" multiple accept="image/*" />
-
-            <label for="logo-upload" class="drop-zone">Upload Clear Logo</label>
-            <input type="file" id="logo-upload" accept="image/*" />
-
-            <div class="slider-inline">
-                <label for="logo-scale">Logo Scale</label>
-                <input type="range" id="logo-scale" min="0.3" max="2" step="0.1" value="1">
-            </div>
-
-            <div class="section-separator"></div>
-
-            <div class="layout-card compact-row-selects">
-                <div class="inline-select">
-                    <label for="columns-select">Posters Per Row</label>
-                    <select id="columns-select">
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4" selected>4</option>
-                        <option value="5">5</option>
-                        <option value="6">6</option>
-                    </select>
-                </div>
-                <div class="inline-select">
-                    <label for="album-art-columns-select">Album Art Per Row</label>
-                    <select id="album-art-columns-select">
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4" selected>4</option>
-                        <option value="5">5</option>
-                        <option value="6">6</option>
-                    </select>
-                </div>
-                <div class="inline-select">
-                    <label for="titlecard-columns-select">Titlecards Per Row</label>
-                    <select id="titlecard-columns-select">
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                        <option value="5" selected>5</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- Section headings toggles -->
-            <div class="toggle-pair-row">
-                <div class="toggle-container">
-                    <span class="toggle-label">Posters Header</span>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="show-posters-header" checked />
-                        <span class="toggle-slider"></span>
-                    </label>
-                </div>
-                <div class="toggle-container">
-                    <span class="toggle-label">Album Art Header</span>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="show-album-art-header" checked />
-                        <span class="toggle-slider"></span>
-                    </label>
-                </div>
-                <div class="toggle-container">
-                    <span class="toggle-label">Titlecards Header</span>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="show-titlecards-header" checked />
-                        <span class="toggle-slider"></span>
-                    </label>
-                </div>
-            </div>
-
-            <div class="section-separator"></div>
-
-            <label for="backdrop-upload" class="drop-zone">Upload Backdrop</label>
-            <input type="file" id="backdrop-upload" accept="image/*">
-
-            <div class="slider-inline">
-                <label for="blur-amount">Blur Amount</label>
-                <input type="range" id="blur-amount" min="0" max="30" step="1" value="5">
-            </div>
-
-            <!-- Background toggle switch -->
-            <div class="toggle-container">
-                <span class="toggle-label">Use Backdrop</span>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="use-backdrop-toggle">
-                    <span class="toggle-slider"></span>
-                </label>
-            </div>
-
-            <div class="gradient-section">
-                <div class="gradient-row">
-                    <div class="gradient-col">
-                        <label class="mini-label" for="bg-start">Gradient Start</label>
-                        <div id="bg-start-pickr" class="pickr-bar-container"></div>
+                    <div class="set-selector" id="set-selector">
+                        <!-- Show sets will be displayed here -->
                     </div>
-                    <div class="gradient-col">
-                        <label class="mini-label" for="bg-end">Gradient End</label>
-                        <div id="bg-end-pickr" class="pickr-bar-container"></div>
+                </div>
+            </div>
+
+            <!-- Creator Info Section -->
+            <div class="collapsible">
+                <div class="collapsible-header">
+                    <h3>Creator Info</h3>
+                    <div class="toggle-icon"></div>
+                </div>
+                <div class="collapsible-content">
+                    <div class="creator-row">
+                        <input type="text" id="creator-name" placeholder="Creator Name" />
+                        <label for="creator-icon-upload" class="icon-upload-btn" title="Upload Creator Icon">
+                            <img src="../assets/poster-showcase icons/upload.svg" class="icon" />
+                        </label>
+                        <input type="file" id="creator-icon-upload" accept="image/*">
+                    </div>
+                    <input type="text" id="set-id" placeholder="Footer Label: e.g. 12345" />
+                </div>
+            </div>
+
+            <!-- Upload Files Section -->
+            <div class="collapsible">
+                <div class="collapsible-header">
+                    <h3>Upload Files</h3>
+                    <div class="toggle-icon"></div>
+                </div>
+                <div class="collapsible-content">
+                    <label for="file-input" class="drop-zone">Upload Posters</label>
+                    <input type="file" id="file-input" multiple accept="image/*" />
+
+                    <label for="album-art-upload" class="drop-zone">Upload Album Art</label>
+                    <input type="file" id="album-art-upload" multiple accept="image/*" />
+
+                    <label for="titlecard-input" class="drop-zone">Upload Titlecards</label>
+                    <input type="file" id="titlecard-input" multiple accept="image/*" />
+
+                    <label for="logo-upload" class="drop-zone">Upload Clear Logo</label>
+                    <input type="file" id="logo-upload" accept="image/*" />
+
+                    <div class="slider-inline">
+                        <span class="toggle-label">Logo Scale</span>
+                        <input type="range" id="logo-scale" min="0.3" max="2" step="0.1" value="1">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Layout Options Section -->
+            <div class="collapsible">
+                <div class="collapsible-header">
+                    <h3>Layout Options</h3>
+                    <div class="toggle-icon"></div>
+                </div>
+                <div class="collapsible-content">
+                    <div class="inline-select">
+                        <span class="toggle-label">Posters Per Row</span>
+                        <select id="columns-select">
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4" selected>4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                        </select>
+                    </div>
+                    
+                    <div class="inline-select">
+                        <span class="toggle-label">Album Art Per Row</span>
+                        <select id="album-art-columns-select">
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4" selected>4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                        </select>
+                    </div>
+                    
+                    <div class="inline-select">
+                        <span class="toggle-label">Titlecards Per Row</span>
+                        <select id="titlecard-columns-select">
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5" selected>5</option>
+                        </select>
+                    </div>
+
+                    <div class="toggle-container">
+                        <span class="toggle-label">Posters Header</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="show-posters-header" checked />
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="toggle-container">
+                        <span class="toggle-label">Album Art Header</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="show-album-art-header" checked />
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="toggle-container">
+                        <span class="toggle-label">Titlecards Header</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="show-titlecards-header" checked />
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Background Options Section -->
+            <div class="collapsible">
+                <div class="collapsible-header">
+                    <h3>Background Options</h3>
+                    <div class="toggle-icon"></div>
+                </div>
+                <div class="collapsible-content">
+                    <label for="backdrop-upload" class="drop-zone">Upload Backdrop</label>
+                    <input type="file" id="backdrop-upload" accept="image/*">
+
+                    <div class="slider-inline">
+                        <span class="toggle-label">Blur Amount</span>
+                        <input type="range" id="blur-amount" min="0" max="30" step="1" value="5">
+                    </div>
+
+                    <div class="toggle-container">
+                        <span class="toggle-label">Use Backdrop</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="use-backdrop-toggle">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="gradient-section">
+                        <div class="gradient-row">
+                            <div class="gradient-col">
+                                <span class="mini-label">Gradient Start</span>
+                                <div id="bg-start-pickr" class="pickr-bar-container"></div>
+                            </div>
+                            <div class="gradient-col">
+                                <span class="mini-label">Gradient End</span>
+                                <div id="bg-end-pickr" class="pickr-bar-container"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -340,6 +358,7 @@
                 const formattedDate = createdDate.toLocaleDateString();
 
                 setItem.innerHTML = `
+
       <div class="set-title">${set.set_title || 'Untitled Set'}</div>
       <div class="set-details">
         Created by: ${set.user_created?.username || 'Unknown'}<br>
@@ -549,8 +568,9 @@
 
                         // Add sorted titlecards to the season
                         for (const tc of seasonTitlecards) {
-                            addTitlecardToGrid(tc.dataUrl, tc.season, tc.episode);
-                        }
+addTitlecardToGrid(tc.dataUrl, tc.season, tc.episode);
+                        }                           
+
                     }
                 }
 
@@ -662,11 +682,12 @@
             try {
                 // The GraphQL query remains the same
                 const query = `
+
   query {
     shows_by_id(id: "${showId}") {
       id
       title
-      
+
       # Get all sets without any filtering
       show_sets {
         id
@@ -727,6 +748,7 @@
     }
   }
 `;
+
 
                 console.log('Connecting to API via worker...');
 
@@ -1890,6 +1912,18 @@
             document.documentElement.style.setProperty('--bg-end', hex);
             updateGradientBackground();
             bgEndPickr.hide();
+        });
+        
+        // Initialize collapsible sections
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize collapsible sections
+            const collapsibles = document.querySelectorAll('.collapsible-header');
+            collapsibles.forEach(header => {
+                header.addEventListener('click', function() {
+                    const parent = this.parentElement;
+                    parent.classList.toggle('active');
+                });
+            });
         });
     </script>
 </body>
