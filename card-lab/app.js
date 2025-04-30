@@ -33,6 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const seasonNumberInput = document.getElementById("season-number");
   const episodeNumberInput = document.getElementById("episode-number");
   const separatorType = document.getElementById("separator-type");
+  const seriesType = document.getElementById("series-type");
   const horizontalPosition = document.getElementById("horizontal-position");
 
   const presetSelect = document.getElementById("preset-select");
@@ -932,7 +933,31 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       if (seasonNumberInput.value) {
-        infoText += "Season " + seasonNumberInput.value;
+        // Check if we're using a special series type or regular season
+        const seriesTypeValue = seriesType.value;
+        
+        if (seriesTypeValue === 'regular' || !seriesTypeValue) {
+          // Regular season display
+          infoText += "Season " + seasonNumberInput.value;
+        } else {
+          // Special series type display (Limited Series, Mini Series, etc.)
+          switch (seriesTypeValue) {
+            case 'limited':
+              infoText += "Limited Series";
+              break;
+            case 'mini':
+              infoText += "Mini Series";
+              break;
+            case 'anthology':
+              infoText += "Anthology Series";
+              break;
+            case 'special':
+              infoText += "Special";
+              break;
+            default:
+              infoText += "Season " + seasonNumberInput.value;
+          }
+        }
       }
 
       if (seasonNumberInput.value && episodeNumberInput.value) {
@@ -2037,7 +2062,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const style = document.createElement("style");
         style.id = "spinner-style";
         style.textContent =
-          "@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }";
+                                     "@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }";
         document.head.appendChild(style);
       }
 
@@ -2532,6 +2557,7 @@ document.addEventListener("DOMContentLoaded", () => {
   seasonNumberInput.addEventListener("input", updateBothViews);
   episodeNumberInput.addEventListener("input", updateBothViews);
   separatorType.addEventListener("change", updateBothViews);
+  seriesType.addEventListener("change", updateBothViews); // Add event listener for series type
   presetSelect.addEventListener("change", updateBothViews);
   horizontalPosition.addEventListener("input", updateBothViews);
   textSize.addEventListener("change", updateBothViews);
