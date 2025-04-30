@@ -946,7 +946,7 @@ document.addEventListener("DOMContentLoaded", () => {
               infoText += "Limited Series";
               break;
             case 'mini':
-              infoText += "Mini Series";
+              infoText += "Mini-Series";
               break;
             case 'anthology':
               infoText += "Anthology Series";
