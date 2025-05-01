@@ -30,17 +30,12 @@
       <div class="sidebar" id="sidebar">
         <div class="sidebar-toggle" id="sidebar-toggle">Options & Tools</div>
         <div class="sidebar-section">
-          <label>Content Type</label>
+          <h3 class="section-title">Content Type</h3>
           <div class="media-type-selector">
             <button class="media-type-btn active" data-type="movie">Movies</button>
             <button class="media-type-btn" data-type="tv">TV Shows</button>
           </div>
         </div>
-        <div class="sidebar-section">
-          <label for="poster-upload" class="drop-zone-label"><span>Upload Poster</span></label>
-          <input type="file" id="poster-upload" accept="image/*" />
-        </div>
-        <div class="section-separator"></div>
         <div class="sidebar-section">
           <h3 class="section-title">Search Functions</h3>
           <div class="sidebar-section">
@@ -90,12 +85,17 @@
               </div>
               <div class="network-logo-suggestions" id="network-logo-suggestions"></div>
             </div>
+            <label for="pickr-bar-container">Logo Color</label>
             <div class="pickr-bar-container">
               <div id="pickr"></div>
             </div>
           </div>
         </div>
         <div class="section-separator"></div>
+        <div class="sidebar-section">
+          <label for="poster-upload" class="drop-zone-label"><span>Upload Poster</span></label>
+          <input type="file" id="poster-upload" accept="image/*" />
+        </div>
         <div class="sidebar-action-row">
           <button id="download-btn" class="icon-button teal" title="Download">
             <img src="../assets/poster-overlay-icons/download.svg" class="icon" />
