@@ -622,7 +622,10 @@ mediuxInput.addEventListener(
 );
 
 function searchMediux(query) {
-  const gqlQuery = `
+  const currentMediaType = document.querySelector(".media-type-btn.active").dataset.type;
+  
+  const gqlQuery = currentMediaType === "movie" ? 
+    `
     query {
       movies(
         limit: 15, 
@@ -650,7 +653,32 @@ function searchMediux(query) {
         }
       }
     }
-  `;
+    ` : 
+    `
+    query {
+      shows(
+        limit: 15, 
+        filter: {title: {_icontains: "${query}"}}
+      ) {
+        id
+        title
+        first_air_date
+        posters: files(
+          filter: {
+            _and: [
+              { file_type: { _eq: "poster" } }
+              { show: { id: { _neq: null } } }
+            ]
+          }
+        ) {
+          id
+          uploaded_by {
+            username
+          }
+        }
+      }
+    }
+    `;
 
   mediuxSuggestions.innerHTML = '<div class="search-result-item">Searching...</div>';
 
@@ -673,24 +701,33 @@ function searchMediux(query) {
       return res.json();
     })
     .then((data) => {
-      const movies = data.data?.movies || [];
-
-      if (movies.length > 0) {
-        displayMediuxResults(movies);
+      if (currentMediaType === "movie") {
+        const movies = data.data?.movies || [];
+        if (movies.length > 0) {
+          displayMediuxResults(movies, "movie");
+        } else {
+          mediuxSuggestions.innerHTML = '<div class="search-result-item">Searching TMDB...</div>';
+          searchTMDBForMediux(query);
+        }
       } else {
-        mediuxSuggestions.innerHTML = '<div class="search-result-item">Searching TMDB...</div>';
-        searchTMDBForMediux(query);
+        const shows = data.data?.shows || [];
+        if (shows.length > 0) {
+          displayMediuxResults(shows, "tv");
+        } else {
+          mediuxSuggestions.innerHTML = '<div class="search-result-item">Searching TMDB...</div>';
+          searchTMDBForMediux(query, "tv");
+        }
       }
     })
     .catch((err) => {
       console.error("Error fetching Mediux data:", err);
       mediuxSuggestions.innerHTML = '<div class="search-result-item">Searching TMDB...</div>';
-      searchTMDBForMediux(query);
+      searchTMDBForMediux(query, currentMediaType);
     });
 }
 
-function searchTMDBForMediux(query) {
-  fetch(`https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(query)}&api_key=${TMDB_API_KEY}`)
+function searchTMDBForMediux(query, type = "movie") {
+  fetch(`https://api.themoviedb.org/3/search/${type}?query=${encodeURIComponent(query)}&api_key=${TMDB_API_KEY}`)
     .then((res) => res.json())
     .then((data) => {
       if (!data.results || data.results.length === 0) {
@@ -699,17 +736,18 @@ function searchTMDBForMediux(query) {
       }
 
       const tmdbResults = data.results
-        .filter((movie) => movie.poster_path)
+        .filter((item) => item.poster_path)
         .slice(0, 10)
-        .map((movie) => ({
-          id: movie.id.toString(),
-          title: movie.title,
-          release_date: movie.release_date,
-          tmdb_id: movie.id,
+        .map((item) => ({
+          id: item.id.toString(),
+          title: type === "movie" ? item.title : item.name,
+          release_date: type === "movie" ? item.release_date : item.first_air_date,
+          tmdb_id: item.id,
           is_tmdb_result: true,
+          type: type
         }));
 
-      displayTMDBResultsForMediux(tmdbResults);
+      displayTMDBResultsForMediux(tmdbResults, type);
     })
     .catch((err) => {
       console.error("Error in TMDB fallback search:", err);
@@ -717,7 +755,7 @@ function searchTMDBForMediux(query) {
     });
 }
 
-function displayTMDBResultsForMediux(movies) {
+function displayTMDBResultsForMediux(movies, type = "movie") {
   mediuxSuggestions.innerHTML = "";
 
   if (movies.length === 0) {
@@ -735,8 +773,11 @@ function displayTMDBResultsForMediux(movies) {
     const div = document.createElement("div");
     div.className = "search-result-item";
     const badge = document.createElement("span");
-    badge.className = "type-badge movie";
-    badge.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="white" viewBox="0 0 24 24"><path d="M2 6h20v12H2z" fill="none" stroke="white" stroke-width="2"/><path d="M7 6v12M17 6v12" stroke="white" stroke-width="2"/></svg>`;
+    badge.className = `type-badge ${type}`;
+    badge.innerHTML = type === "movie" ? 
+      `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="white" viewBox="0 0 24 24"><path d="M2 6h20v12H2z" fill="none" stroke="white" stroke-width="2"/><path d="M7 6v12M17 6v12" stroke="white" stroke-width="2"/></svg>` : 
+      `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="white" viewBox="0 0 24 24"><path d="M4 4h16v12H4z" fill="none" stroke="white" stroke-width="2"/><path d="M2 20h20M12 16v4" stroke="white" stroke-width="2"/></svg>`;
+    
     const year = movie.release_date ? movie.release_date.substring(0, 4) : "—";
     const tmdbBadge = document.createElement("span");
     tmdbBadge.style.marginLeft = "8px";
@@ -752,17 +793,21 @@ function displayTMDBResultsForMediux(movies) {
       mediuxInput.value = movie.title;
       mediuxSuggestions.innerHTML = "";
 
-      lookupMediuxByTMDBId(movie.tmdb_id, movie.title);
+      if (type === "movie") {
+        lookupMediuxByTMDBId(movie.tmdb_id, movie.title, type);
+      } else {
+        lookupMediuxShowByTMDBId(movie.tmdb_id, movie.title);
+      }
     });
 
     mediuxSuggestions.appendChild(div);
   });
 }
 
-function lookupMediuxByTMDBId(tmdbId, title) {
+function lookupMediuxShowByTMDBId(tmdbId, title) {
   const gqlQuery = `
     query {
-      movies(
+      shows(
         filter: {
           _or: [
             { tmdb_id: { _eq: "${tmdbId}" } },
@@ -772,7 +817,7 @@ function lookupMediuxByTMDBId(tmdbId, title) {
       ) {
         id
         title
-        release_date
+        first_air_date
       }
     }
   `;
@@ -793,78 +838,197 @@ function lookupMediuxByTMDBId(tmdbId, title) {
   })
     .then((res) => res.json())
     .then((data) => {
-      const mediuxMovies = data.data?.movies || [];
+      const mediuxShows = data.data?.shows || [];
 
-      if (mediuxMovies.length > 0) {
-        fetchMoviePosters(mediuxMovies[0].id, mediuxMovies[0].title);
+      if (mediuxShows.length > 0) {
+        fetchShowPosters(mediuxShows[0].id, mediuxShows[0].title);
       } else {
         showPosterModal(`"${title}" was found in TMDB but not in Mediux yet. Try searching for another title.`);
       }
     })
     .catch((err) => {
-      console.error("Error looking up movie in Mediux:", err);
+      console.error("Error looking up show in Mediux:", err);
       showPosterModal(`Error looking up "${title}" in Mediux.`);
     });
 }
 
-function displayMediuxResults(movies) {
+function lookupMediuxByTMDBId(tmdbId, title, type = "movie") {
+  const isMovie = type === "movie";
+  const gqlQuery = isMovie ? 
+    `
+    query {
+      movies(
+        filter: {
+          _or: [
+            { tmdb_id: { _eq: "${tmdbId}" } },
+            { title: { _eq: "${title}" } }
+          ]
+        }
+      ) {
+        id
+        title
+        release_date
+      }
+    }
+    ` : 
+    `
+    query {
+      shows(
+        filter: {
+          _or: [
+            { tmdb_id: { _eq: "${tmdbId}" } },
+            { title: { _eq: "${title}" } }
+          ]
+        }
+      ) {
+        id
+        title
+        first_air_date
+      }
+    }
+    `;
+
+  showPosterModal(`Looking for "${title}" in Mediux...`);
+
+  fetch("https://api-frontend.pejamas.workers.dev", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      endpoint: "/graphql",
+      body: {
+        query: gqlQuery,
+      },
+    }),
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      if (isMovie) {
+        const mediuxMovies = data.data?.movies || [];
+        if (mediuxMovies.length > 0) {
+          fetchMoviePosters(mediuxMovies[0].id, mediuxMovies[0].title);
+        } else {
+          showPosterModal(`"${title}" was found in TMDB but not in Mediux yet. Try searching for another title.`);
+        }
+      } else {
+        const mediuxShows = data.data?.shows || [];
+        if (mediuxShows.length > 0) {
+          fetchShowPosters(mediuxShows[0].id, mediuxShows[0].title);
+        } else {
+          showPosterModal(`"${title}" was found in TMDB but not in Mediux yet. Try searching for another title.`);
+        }
+      }
+    })
+    .catch((err) => {
+      console.error("Error looking up content in Mediux:", err);
+      showPosterModal(`Error looking up "${title}" in Mediux.`);
+    });
+}
+
+function displayMediuxResults(items, type = "movie") {
   mediuxSuggestions.innerHTML = "";
 
-  if (movies.length === 0) {
+  if (items.length === 0) {
     mediuxSuggestions.innerHTML = '<div class="search-result-item">No results found</div>';
     return;
   }
 
-  movies.forEach((movie) => {
+  items.forEach((item) => {
     const div = document.createElement("div");
     div.className = "search-result-item";
     const badge = document.createElement("span");
-    badge.className = "type-badge movie";
-    badge.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="white" viewBox="0 0 24 24"><path d="M2 6h20v12H2z" fill="none" stroke="white" stroke-width="2"/><path d="M7 6v12M17 6v12" stroke="white" stroke-width="2"/></svg>`;
-    const year = movie.release_date ? movie.release_date.substring(0, 4) : "—";
-    const hasDirectPosters = movie.posters && movie.posters.length > 0;
-    const hasSetPosters = movie.movie_sets && movie.movie_sets.some((set) => set.files && set.files.length > 0);
-    const hasCollection = movie.collection_id && movie.collection_id.id;
-    div.textContent = `${movie.title} (${year})`;
-
-    if (hasDirectPosters || hasSetPosters) {
-      const posterBadge = document.createElement("span");
-      posterBadge.style.marginLeft = "8px";
-      posterBadge.style.padding = "2px 5px";
-      posterBadge.style.fontSize = "0.7rem";
-      posterBadge.style.backgroundColor = "rgba(0, 255, 0, 0.3)";
-      posterBadge.style.borderRadius = "4px";
-      posterBadge.textContent = "Has Posters";
-      div.appendChild(posterBadge);
-    } else if (hasCollection) {
-      const collectionBadge = document.createElement("span");
-      collectionBadge.style.marginLeft = "8px";
-      collectionBadge.style.padding = "2px 5px";
-      collectionBadge.style.fontSize = "0.7rem";
-      collectionBadge.style.backgroundColor = "rgba(255, 215, 0, 0.3)";
-      collectionBadge.style.borderRadius = "4px";
-      collectionBadge.textContent = "Collection";
-      div.appendChild(collectionBadge);
+    badge.className = `type-badge ${type}`;
+    
+    if (type === "movie") {
+      badge.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="white" viewBox="0 0 24 24"><path d="M2 6h20v12H2z" fill="none" stroke="white" stroke-width="2"/><path d="M7 6v12M17 6v12" stroke="white" stroke-width="2"/></svg>`;
+      const year = item.release_date ? item.release_date.substring(0, 4) : "—";
+      const hasDirectPosters = item.posters && item.posters.length > 0;
+      const hasSetPosters = item.movie_sets && item.movie_sets.some((set) => set.files && set.files.length > 0);
+      const hasCollection = item.collection_id && item.collection_id.id;
+      div.textContent = `${item.title} (${year})`;
+      
+      if (hasDirectPosters || hasSetPosters) {
+        const posterBadge = document.createElement("span");
+        posterBadge.style.marginLeft = "8px";
+        posterBadge.style.padding = "2px 5px";
+        posterBadge.style.fontSize = "0.7rem";
+        posterBadge.style.backgroundColor = "rgba(0, 255, 0, 0.3)";
+        posterBadge.style.borderRadius = "4px";
+        posterBadge.textContent = "Has Posters";
+        div.appendChild(posterBadge);
+      } else if (hasCollection) {
+        const collectionBadge = document.createElement("span");
+        collectionBadge.style.marginLeft = "8px";
+        collectionBadge.style.padding = "2px 5px";
+        collectionBadge.style.fontSize = "0.7rem";
+        collectionBadge.style.backgroundColor = "rgba(255, 215, 0, 0.3)";
+        collectionBadge.style.borderRadius = "4px";
+        collectionBadge.textContent = "Collection";
+        div.appendChild(collectionBadge);
+      } else {
+        const noPosterBadge = document.createElement("span");
+        noPosterBadge.style.marginLeft = "8px";
+        noPosterBadge.style.padding = "2px 5px";
+        noPosterBadge.style.fontSize = "0.7rem";
+        noPosterBadge.style.backgroundColor = "rgba(255, 0, 0, 0.2)";
+        noPosterBadge.style.borderRadius = "4px";
+        noPosterBadge.textContent = "No Posters";
+        div.appendChild(noPosterBadge);
+      }
     } else {
-      const noPosterBadge = document.createElement("span");
-      noPosterBadge.style.marginLeft = "8px";
-      noPosterBadge.style.padding = "2px 5px";
-      noPosterBadge.style.fontSize = "0.7rem";
-      noPosterBadge.style.backgroundColor = "rgba(255, 0, 0, 0.2)";
-      noPosterBadge.style.borderRadius = "4px";
-      noPosterBadge.textContent = "No Posters";
-      div.appendChild(noPosterBadge);
+      // TV Show
+      badge.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="white" viewBox="0 0 24 24"><path d="M4 4h16v12H4z" fill="none" stroke="white" stroke-width="2"/><path d="M2 20h20M12 16v4" stroke="white" stroke-width="2"/></svg>`;
+      const year = item.first_air_date ? item.first_air_date.substring(0, 4) : "—";
+      const hasDirectPosters = item.posters && item.posters.length > 0;
+      const hasSetPosters = item.show_sets && item.show_sets.some((set) => set.files && set.files.length > 0);
+      div.textContent = `${item.title} (${year})`;
+      
+      if (hasDirectPosters || hasSetPosters) {
+        const posterBadge = document.createElement("span");
+        posterBadge.style.marginLeft = "8px";
+        posterBadge.style.padding = "2px 5px";
+        posterBadge.style.fontSize = "0.7rem";
+        posterBadge.style.backgroundColor = "rgba(0, 255, 0, 0.3)";
+        posterBadge.style.borderRadius = "4px";
+        posterBadge.textContent = "Has Posters";
+        div.appendChild(posterBadge);
+      } else {
+        const noPosterBadge = document.createElement("span");
+        noPosterBadge.style.marginLeft = "8px";
+        noPosterBadge.style.padding = "2px 5px";
+        noPosterBadge.style.fontSize = "0.7rem";
+        noPosterBadge.style.backgroundColor = "rgba(255, 0, 0, 0.2)";
+        noPosterBadge.style.borderRadius = "4px";
+        noPosterBadge.textContent = "No Posters";
+        div.appendChild(noPosterBadge);
+      }
     }
 
     div.appendChild(badge);
     div.addEventListener("click", () => {
-      mediuxInput.value = movie.title;
+      mediuxInput.value = item.title;
       mediuxSuggestions.innerHTML = "";
 
-      if (hasDirectPosters || hasSetPosters || hasCollection) {
-        fetchMoviePosters(movie.id, movie.title, false);
+      if (type === "movie") {
+        const hasDirectPosters = item.posters && item.posters.length > 0;
+        const hasSetPosters = item.movie_sets && item.movie_sets.some((set) => set.files && set.files.length > 0);
+        const hasCollection = item.collection_id && item.collection_id.id;
+        
+        if (hasDirectPosters || hasSetPosters || hasCollection) {
+          fetchMoviePosters(item.id, item.title);
+        } else {
+          showPosterModal(`No custom posters found for "${item.title}"`);
+        }
       } else {
-        showPosterModal(`No custom posters found for "${movie.title}"`);
+        const hasDirectPosters = item.posters && item.posters.length > 0;
+        const hasSetPosters = item.show_sets && item.show_sets.some((set) => set.files && set.files.length > 0);
+        
+        if (hasDirectPosters || hasSetPosters) {
+          fetchShowPosters(item.id, item.title);
+        } else {
+          showPosterModal(`No custom posters found for "${item.title}"`);
+        }
       }
     });
 
@@ -1078,48 +1242,190 @@ function fetchMoviePosters(movieId, movieTitle) {
     });
 }
 
-function fetchAssetAsDataUrl(fileId) {
-  console.log(`Fetching asset: ${fileId}`);
+function fetchShowPosters(showId, showTitle) {
+  showPosterModal(`Loading posters for "${showTitle}"...`);
 
-  return fetch("https://api-frontend.pejamas.workers.dev", {
+  const usernameFilter = document.getElementById("mediux-username-filter").value.trim();
+
+  let usernameFilterQuery = "";
+  if (usernameFilter) {
+    usernameFilterQuery = `, { uploaded_by: { username: { _icontains: "${usernameFilter}" } } }`;
+  }
+
+  const gqlQuery = `
+    query {
+      shows_by_id(id: ${showId}) {
+        id
+        title
+        files(
+          filter: {
+            _and: [
+              { file_type: { _eq: "poster" } }
+              { show: { id: { _neq: null } } }
+              { season: { id: { _eq: null } } }
+              ${usernameFilter ? usernameFilterQuery : ""}
+            ]
+          }
+        ) {
+          id
+          uploaded_by {
+            username
+          }
+        }
+        show_sets {
+          id
+          set_title
+          files(
+            filter: {
+              _and: [
+                { file_type: { _eq: "poster" } }
+                { season: { id: { _eq: null } } }
+                ${usernameFilter ? usernameFilterQuery : ""}
+              ]
+            }
+          ) {
+            id
+            uploaded_by {
+              username
+            }
+          }
+        }
+      }
+    }
+  `;
+
+  console.log(
+    "Fetching Mediux posters for show ID:",
+    showId,
+    usernameFilter ? `filtered by username: ${usernameFilter}` : ""
+  );
+
+  fetch("https://api-frontend.pejamas.workers.dev", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      endpoint: `/assets/${fileId}`,
-      body: {},
+      endpoint: "/graphql",
+      body: {
+        query: gqlQuery,
+      },
     }),
   })
-    .then((response) => {
-      if (!response.ok) {
-        console.error(`Asset fetch failed: ${response.status} ${response.statusText}`);
-        throw new Error(`Failed to fetch asset: ${response.status} ${response.statusText}`);
+    .then((res) => {
+      if (!res.ok) {
+        throw new Error(`API returned status ${res.status}: ${res.statusText}`);
       }
-      return response.blob();
+      return res.json();
     })
-    .then((blob) => {
-      if (!blob || blob.size === 0) {
-        console.error(`Asset ${fileId} is empty (0 bytes)`);
-        throw new Error("Received empty asset");
+    .then((data) => {
+      console.log("API response:", data);
+
+      if (!data.data || !data.data.shows_by_id) {
+        console.error("Show not found or invalid response format:", data);
+        showPosterModal(`Show not found or invalid response`);
+        return;
       }
 
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          console.log(`Successfully converted asset ${fileId} to data URL`);
-          resolve(reader.result);
-        };
-        reader.onerror = (err) => {
-          console.error(`Error reading blob for asset ${fileId}:`, err);
-          reject(err);
-        };
-        reader.readAsDataURL(blob);
+      const show = data.data.shows_by_id;
+      
+      // Track unique file IDs to avoid duplicates
+      const processedFileIds = new Set();
+      const allPosters = [];
+      const posterPromises = [];
+      
+      // Process direct posters
+      const directPosters = show.files || [];
+      console.log(`Found ${directPosters.length} direct posters`);
+
+      directPosters.forEach((file) => {
+        if (processedFileIds.has(file.id)) {
+          return; // Skip duplicate IDs
+        }
+        
+        processedFileIds.add(file.id);
+        posterPromises.push(
+          fetchAssetAsDataUrl(file.id)
+            .then((dataUrl) => {
+              if (dataUrl) {
+                allPosters.push({
+                  id: file.id,
+                  dataUrl,
+                  set: "Direct Poster",
+                  creator: file.uploaded_by?.username || "Unknown",
+                });
+              }
+            })
+            .catch((error) => {
+              console.error(`Error fetching direct poster ${file.id}:`, error);
+            })
+        );
       });
+
+      // Process set posters
+      const showSets = show.show_sets || [];
+      showSets.forEach((set) => {
+        const setPosters = set.files || [];
+        console.log(`Found ${setPosters.length} posters in set "${set.set_title}"`);
+
+        setPosters.forEach((file) => {
+          if (processedFileIds.has(file.id)) {
+            return; // Skip duplicate IDs
+          }
+          
+          processedFileIds.add(file.id);
+          posterPromises.push(
+            fetchAssetAsDataUrl(file.id)
+              .then((dataUrl) => {
+                if (dataUrl) {
+                  allPosters.push({
+                    id: file.id,
+                    dataUrl,
+                    set: set.set_title || "Untitled Set",
+                    creator: file.uploaded_by?.username || "Unknown",
+                  });
+                }
+              })
+              .catch((error) => {
+                console.error(`Error fetching set poster ${file.id}:`, error);
+              })
+          );
+        });
+      });
+
+      if (posterPromises.length === 0) {
+        console.log("No posters found");
+        showPosterModal(`No posters found for "${showTitle}"`);
+        return;
+      }
+
+      Promise.allSettled(posterPromises).then((results) => {
+        console.log(
+          `Finished processing ${results.length} posters. Success: ${
+            results.filter((r) => r.status === "fulfilled").length
+          }, Failed: ${results.filter((r) => r.status === "rejected").length}`
+        );
+        const usernameFilter = document.getElementById("mediux-username-filter").value.trim();
+
+        if (allPosters.length === 0) {
+          if (usernameFilter) {
+            showPosterModal(`No posters found for "${showTitle}" by creator "${usernameFilter}"`);
+          } else {
+            showPosterModal(`Could not load any posters for "${showTitle}"`);
+          }
+        } else {
+          displayPosters(allPosters, showTitle, "tv");
+        }
+      });
+    })
+    .catch((err) => {
+      console.error("Error fetching show details:", err);
+      showPosterModal(`Error: ${err.message}`);
     });
 }
 
-function displayPosters(posters, title) {
+// Update displayPosters to handle content type
+function displayPosters(posters, title, contentType = "movie") {
   const modal = document.getElementById("poster-modal");
   const container = document.getElementById("poster-results");
   container.innerHTML = "";
@@ -1135,7 +1441,7 @@ function displayPosters(posters, title) {
   posters.forEach((poster) => {
     const img = document.createElement("img");
     img.src = poster.dataUrl;
-    img.alt = title || "Movie Poster";
+    img.alt = title || "Poster";
 
     img.addEventListener("mouseenter", (e) => {
       const tooltip = document.getElementById("tooltip");
@@ -1177,7 +1483,7 @@ function displayPosters(posters, title) {
         drawCanvas();
         modal.style.display = "none";
 
-        fetchTMDBMetadataForTitle(title);
+        fetchTMDBMetadataForTitle(title, contentType);
       };
 
       image.src = imageDataUrl;
@@ -1197,71 +1503,101 @@ function displayPosters(posters, title) {
   enableTouchScrolling(); // Add touch support for mobile
 }
 
-function fetchTMDBMetadataForTitle(title) {
+// Update fetchTMDBMetadataForTitle to handle content type
+function fetchTMDBMetadataForTitle(title, contentType = "movie") {
   metaPanel.style.display = "flex";
   document.getElementById("meta-title").textContent = title;
   document.getElementById("meta-overview").textContent = "Loading metadata...";
 
-  fetch(`https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(title)}&api_key=${TMDB_API_KEY}`)
-    .then((res) => res.json())
-    .then((data) => {
-      if (data.results && data.results.length > 0) {
-        const movieId = data.results[0].id;
-        fetchMetadataById(movieId, "movie");
-      } else {
-        return fetch(
-          `https://api.themoviedb.org/3/search/tv?query=${encodeURIComponent(title)}&api_key=${TMDB_API_KEY}`
-        )
-          .then((res) => res.json())
-          .then((tvData) => {
-            if (tvData.results && tvData.results.length > 0) {
-              const showId = tvData.results[0].id;
-              fetchMetadataById(showId, "tv");
-            } else {
-              document.getElementById("meta-overview").textContent =
-                "No detailed metadata found. The poster was loaded successfully.";
-            }
-          });
+  if (contentType === "tv") {
+    fetch(`https://api.themoviedb.org/3/search/tv?query=${encodeURIComponent(title)}&api_key=${TMDB_API_KEY}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.results && data.results.length > 0) {
+          const showId = data.results[0].id;
+          fetchMetadataById(showId, "tv");
+        } else {
+          document.getElementById("meta-overview").textContent =
+            "No detailed metadata found. The poster was loaded successfully.";
+        }
+      })
+      .catch((err) => {
+        console.error("Error fetching TMDB TV data:", err);
+        document.getElementById("meta-overview").textContent =
+          "Error loading metadata. The poster was loaded successfully.";
+      });
+  } else {
+    fetch(`https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(title)}&api_key=${TMDB_API_KEY}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.results && data.results.length > 0) {
+          const movieId = data.results[0].id;
+          fetchMetadataById(movieId, "movie");
+        } else {
+          // Fallback to TV search if no movie results
+          return fetch(
+            `https://api.themoviedb.org/3/search/tv?query=${encodeURIComponent(title)}&api_key=${TMDB_API_KEY}`
+          )
+            .then((res) => res.json())
+            .then((tvData) => {
+              if (tvData.results && tvData.results.length > 0) {
+                const showId = tvData.results[0].id;
+                fetchMetadataById(showId, "tv");
+              } else {
+                document.getElementById("meta-overview").textContent =
+                  "No detailed metadata found. The poster was loaded successfully.";
+              }
+            });
+        }
+      })
+      .catch((err) => {
+        console.error("Error fetching TMDB data:", err);
+        document.getElementById("meta-overview").textContent =
+          "Error loading metadata. The poster was loaded successfully.";
+      });
+  }
+}
+
+function fetchAssetAsDataUrl(fileId) {
+  console.log(`Fetching asset: ${fileId}`);
+
+  return fetch("https://api-frontend.pejamas.workers.dev", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      endpoint: `/assets/${fileId}`,
+      body: {},
+    }),
+  })
+    .then((response) => {
+      if (!response.ok) {
+        console.error(`Asset fetch failed: ${response.status} ${response.statusText}`);
+        throw new Error(`Failed to fetch asset: ${response.status} ${response.statusText}`);
       }
+      return response.blob();
     })
-    .catch((err) => {
-      console.error("Error fetching TMDB data:", err);
-      document.getElementById("meta-overview").textContent =
-        "Error loading metadata. The poster was loaded successfully.";
+    .then((blob) => {
+      if (!blob || blob.size === 0) {
+        console.error(`Asset ${fileId} is empty (0 bytes)`);
+        throw new Error("Received empty asset");
+      }
+
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          console.log(`Successfully converted asset ${fileId} to data URL`);
+          resolve(reader.result);
+        };
+        reader.onerror = (err) => {
+          console.error(`Error reading blob for asset ${fileId}:`, err);
+          reject(err);
+        };
+        reader.readAsDataURL(blob);
+      });
     });
 }
-
-function showPosterModal(message) {
-  const modal = document.getElementById("poster-modal");
-  const container = document.getElementById("poster-results");
-  container.innerHTML = `<p style="color:white; padding: 1rem; text-align:center; width:100%;">${message}</p>`;
-  modal.style.display = "flex";
-
-  enableHorizontalScrolling();
-
-  // Ensure close button works on mobile
-  const closeButton = modal.querySelector(".close-modal");
-  if (closeButton) {
-    closeButton.onclick = () => {
-      modal.style.display = "none";
-    };
-  }
-
-  // Allow closing by clicking outside on mobile
-  if (window.innerWidth <= 900) {
-    modal.onclick = (e) => {
-      if (e.target === modal) {
-        modal.style.display = "none";
-      }
-    };
-  }
-}
-
-document.addEventListener("click", (e) => {
-  if (!e.target.closest("#mediux-search-input")) {
-    mediuxSuggestions.innerHTML = "";
-  }
-});
 
 function displaySearchResults(results) {
   suggestionsBox.innerHTML = "";
