@@ -1865,9 +1865,10 @@ input:checked+.toggle-slider:before {
 
 .collapsible-content {
   padding: 0.8rem;
-  transition: max-height 0.3s ease, padding 0.3s ease;
-  overflow: hidden;
-}
+  transition: max-height 0.3s ease-in-out;
+  overflow: visible !important; /* Allow content to overflow during search */
+position: relative;
+ }
 
 .collapsible-section.collapsed .collapsible-content {
   max-height: 0;

@@ -1271,12 +1271,24 @@ function fetchMoviePosters(movieId, movieTitle) {
       }
 
       const movie = data.data.movies_by_id;
+      
+      // Track unique file IDs to avoid duplicates - ADD THIS
+      const processedFileIds = new Set();
       const allPosters = [];
       const posterPromises = [];
+      
       const directPosters = movie.files || [];
       console.log(`Found ${directPosters.length} direct posters`);
 
       directPosters.forEach((file) => {
+        // Check for duplicates - ADD THIS
+        if (processedFileIds.has(file.id)) {
+          return; // Skip duplicate IDs
+        }
+        
+        // Add to processed set - ADD THIS
+        processedFileIds.add(file.id);
+        
         posterPromises.push(
           fetchAssetAsDataUrl(file.id)
             .then((dataUrl) => {
@@ -1301,6 +1313,14 @@ function fetchMoviePosters(movieId, movieTitle) {
         console.log(`Found ${setPosters.length} posters in set "${set.set_title}"`);
 
         setPosters.forEach((file) => {
+          // Check for duplicates - ADD THIS
+          if (processedFileIds.has(file.id)) {
+            return; // Skip duplicate IDs
+          }
+          
+          // Add to processed set - ADD THIS
+          processedFileIds.add(file.id);
+          
           posterPromises.push(
             fetchAssetAsDataUrl(file.id)
               .then((dataUrl) => {
@@ -1322,11 +1342,7 @@ function fetchMoviePosters(movieId, movieTitle) {
 
       if (movie.collection_id) {
         const collectionPosters = movie.collection_id.files || [];
-        // Add console logging to see the structure of collection posters
         console.log("Collection poster structure sample:", collectionPosters.length > 0 ? collectionPosters[0] : "No posters");
-        
-        // Instead of filtering here, let's get all posters but exclude ones that appear to be collection posters
-        // rather than movie-specific posters based on other attributes
         
         collectionPosters.forEach((file) => {
           // Skip any files that don't have movie_id - these are likely the collection posters
@@ -1334,6 +1350,14 @@ function fetchMoviePosters(movieId, movieTitle) {
             console.log("Skipping likely collection poster:", file.id);
             return;
           }
+          
+          // Check for duplicates - ADD THIS
+          if (processedFileIds.has(file.id)) {
+            return; // Skip duplicate IDs
+          }
+          
+          // Add to processed set - ADD THIS
+          processedFileIds.add(file.id);
           
           posterPromises.push(
             fetchAssetAsDataUrl(file.id)
@@ -3109,7 +3133,6 @@ window.addEventListener("resize", () => {
     document.body.style.overflow = "";
   }
 });
-
 // Initialize collapsible sections
 document.addEventListener('DOMContentLoaded', function() {
   const collapsibleSections = document.querySelectorAll('.collapsible-section');
