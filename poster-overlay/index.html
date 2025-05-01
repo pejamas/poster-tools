@@ -40,73 +40,63 @@
           <label for="poster-upload" class="drop-zone-label"><span>Upload Poster</span></label>
           <input type="file" id="poster-upload" accept="image/*" />
         </div>
-
-        <div class="collapsible-section">
-          <div class="collapsible-header">
-            <h3>Search Functions</h3>
-            <span class="collapsible-arrow">▼</span>
+        <div class="section-separator"></div>
+        <div class="sidebar-section">
+          <h3 class="section-title">Search Functions</h3>
+          <div class="sidebar-section">
+            <label for="tmdb-search-input">Search TMDB</label>
+            <div class="tmdb-search">
+              <input type="text" id="tmdb-search-input" placeholder="Search for a title..." autocomplete="off" />
+              <div class="autocomplete-suggestions" id="tmdb-suggestions"></div>
+            </div>
           </div>
-          <div class="collapsible-content">
-            <div class="sidebar-section">
-              <label for="tmdb-search-input">Search TMDB</label>
-              <div class="tmdb-search">
-                <input type="text" id="tmdb-search-input" placeholder="Search for a title..." autocomplete="off" />
-                <div class="autocomplete-suggestions" id="tmdb-suggestions"></div>
-              </div>
+          <div class="sidebar-section">
+            <label for="mediux-search-input">Search Mediux</label>
+            <div class="tmdb-search">
+              <input type="text" id="mediux-search-input" placeholder="Search for a title..." autocomplete="off" />
+              <div class="autocomplete-suggestions" id="mediux-suggestions"></div>
             </div>
-            <div class="sidebar-section">
-              <label for="mediux-search-input">Search Mediux</label>
-              <div class="tmdb-search">
-                <input type="text" id="mediux-search-input" placeholder="Search for a title..." autocomplete="off" />
-                <div class="autocomplete-suggestions" id="mediux-suggestions"></div>
+          </div>
+          <div class="sidebar-section">
+            <label for="mediux-username-filter">Filter by Mediux User</label>
+            <input
+              type="text"
+              id="mediux-username-filter"
+              placeholder="Leave empty to show all posters..."
+              autocomplete="off"
+            />
+          </div>
+        </div>
+        <div class="section-separator"></div>
+        <div class="sidebar-section">
+          <h3 class="section-title">Overlay Functions</h3>
+          <div class="sidebar-section">
+            <label for="overlay-select">Movie Banner</label>
+            <select id="overlay-select">
+              <option value="none">None</option>
+              <option value="../assets/movie-overlays/4K with DV.png">Dolby Vision</option>
+              <option value="../assets/movie-overlays/4K with HDR.png">HDR</option>
+              <option value="../assets/movie-overlays/4K no HDR.png">Ultra HD</option>
+            </select>
+          </div>
+          <div class="sidebar-section">
+            <label for="network-logo-search">Network Logo</label>
+            <div class="network-logo-search-container">
+              <input type="text" id="network-logo-search" placeholder="Search for logo..." autocomplete="off" />
+              <div class="toggle-switch-container">
+                <label class="toggle-switch">
+                  <input type="checkbox" id="network-logo-checkbox" />
+                  <span class="toggle-slider"></span>
+                </label>
               </div>
+              <div class="network-logo-suggestions" id="network-logo-suggestions"></div>
             </div>
-            <div class="sidebar-section">
-              <label for="mediux-username-filter">Filter by Mediux User</label>
-              <input
-                type="text"
-                id="mediux-username-filter"
-                placeholder="Leave empty to show all posters..."
-                autocomplete="off"
-              />
+            <div class="pickr-bar-container">
+              <div id="pickr"></div>
             </div>
           </div>
         </div>
-
-        <div class="collapsible-section">
-          <div class="collapsible-header">
-            <h3>Overlay Functions</h3>
-            <span class="collapsible-arrow">▼</span>
-          </div>
-          <div class="collapsible-content">
-            <div class="sidebar-section">
-              <label for="overlay-select">Movie Banner</label>
-              <select id="overlay-select">
-                <option value="none">None</option>
-                <option value="../assets/movie-overlays/4K with DV.png">Dolby Vision</option>
-                <option value="../assets/movie-overlays/4K with HDR.png">HDR</option>
-                <option value="../assets/movie-overlays/4K no HDR.png">Ultra HD</option>
-              </select>
-            </div>
-            <div class="sidebar-section">
-              <label for="network-logo-search">Network Logo</label>
-              <div class="network-logo-search-container">
-                <input type="text" id="network-logo-search" placeholder="Search for logo..." autocomplete="off" />
-                <div class="toggle-switch-container">
-                  <label class="toggle-switch">
-                    <input type="checkbox" id="network-logo-checkbox" />
-                    <span class="toggle-slider"></span>
-                  </label>
-                </div>
-                <div class="network-logo-suggestions" id="network-logo-suggestions"></div>
-              </div>
-              <div class="pickr-bar-container">
-                <div id="pickr"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-
+        <div class="section-separator"></div>
         <div class="sidebar-action-row">
           <button id="download-btn" class="icon-button teal" title="Download">
             <img src="../assets/poster-overlay-icons/download.svg" class="icon" />

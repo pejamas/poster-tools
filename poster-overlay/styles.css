@@ -141,7 +141,7 @@ header {
     font-weight: 200;
     color: #ffffff;
     letter-spacing: 0.4px;
-    margin-bottom: 0.6rem;
+    margin-bottom: 0.3rem;
     display: block;
     width: 100%;
     text-align: left;
@@ -155,10 +155,10 @@ header {
     border: none;
     border-radius: 6px;
     box-sizing: border-box;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.4rem;
 }
 .sidebar-section:nth-of-type(3) {
-    margin-top: -0.8rem;
+    margin-top: 0;
 }
 .sidebar select:focus, .sidebar input:focus, #tmdb-search-input:focus {
     outline: 1px solid rgba(0, 255, 255, 0.5);
@@ -188,10 +188,9 @@ header {
 .drop-zone-label {
     border: 1.5px dashed rgba(255, 255, 255, 0.3);
     background: rgba(0, 0, 0, 0.2);
-    padding: 1rem 0;
-    padding-bottom: 1.6rem;
+    padding: 0.6rem;
     font-size: 0.85rem;
-    height: 1px;
+    height: auto;
     text-align: center !Important;
     font-weight: 500;
     color: white;
@@ -203,16 +202,15 @@ header {
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-bottom: 0.75rem;
-    margin-top: -0.5rem;
+    margin-bottom: 0.5rem;
+    margin-top: 0;
 }
 .section-separator {
     width: 100%;
     border-top: 1px solid rgba(0, 255, 255, 0.1);
-    margin: 0.4rem 0;
+    margin: 0.5rem 0;
     padding: 0;
-    position: relative;
-}
+  }
 .section-separator::after {
     content: '';
     position: absolute;
@@ -227,7 +225,7 @@ header {
     display: flex;
     gap: 0.5rem;
     justify-content: space-between;
-    margin-top: 0.5rem;
+    margin-top: 0.7rem;
     width: 100%;
 }
 .icon-button {
@@ -264,8 +262,10 @@ header {
 }
 .drop-zone-label span {
     width: 100%;
-    text-align: center;
+    text-align: center !important;
+    margin-top: 4px !important;
     line-height: 1;
+    display: block;
 }
 .drop-zone-label:hover {
     background: rgba(255, 255, 255, 0.07);
@@ -276,7 +276,7 @@ header {
 }
 .sidebar-section {
     width: 100%;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
 }
 .sidebar-section-title {
     font-size: 1rem;
@@ -286,7 +286,7 @@ header {
 .tmdb-search {
     position: relative;
     width: 100%;
-    margin-bottom: 1rem;
+    margin-bottom: 0.4rem;
 }
 #tmdb-search-input {
     width: 100%;
@@ -825,8 +825,8 @@ canvas {
 }
 .pickr-bar-container {
     width: 100%;
-    margin-top: -5px !Important;
-    margin-bottom: 10px !Important;
+    margin-top: 0 !Important;
+    margin-bottom: 0.7rem !Important;
     height: 12px;
 }
 .pickr-bar-container .pcr-button {
@@ -908,10 +908,10 @@ canvas {
     line-height: 1.4;
 }
 .sidebar-section:nth-of-type(4) {
-    margin-top: -0.8rem;
+    margin-top: 0;
 }
 .sidebar-section:nth-of-type(4) label {
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.3rem;
 }
 .sidebar-section:nth-of-type(4) input {
     margin-bottom: 1rem;
@@ -1370,7 +1370,7 @@ input:checked+.toggle-slider:before {
 /* Fixing sidebar form field spacing and alignment */
 .sidebar-section {
     width: 100%;
-    margin-bottom: 0.7rem;
+    margin-bottom: 1rem;
 }
 
 .sidebar-section label {
@@ -1402,7 +1402,7 @@ input:checked+.toggle-slider:before {
 
 .sidebar-section:nth-of-type(3),
 .sidebar-section:nth-of-type(4) {
-    margin-top: 0;
+    margin-top: 0.3rem;
 }
 
 .tmdb-search {
@@ -1417,26 +1417,26 @@ input:checked+.toggle-slider:before {
     background: rgba(0, 0, 0, 0.2);
     padding: 0.8rem;
     height: auto;
-    min-height: 45px;
+    min-height: 45px !important;
     font-size: 0.9rem;
-    text-align: center;
+    text-align: center !important;
     font-weight: 500;
     color: white;
     border-radius: 6px;
     cursor: pointer;
     transition: all 0.2s ease;
     width: 100%;
-    display: flex;
+    display: block; 
     justify-content: center;
     align-items: center;
-    margin-bottom: 0.7rem;
-    margin-top: 0;
+    margin-bottom: -0.5rem!important;
+    margin-top: 0.5rem!important;
 }
 
 .section-separator {
     width: 100%;
     border-top: 1px solid rgba(0, 255, 255, 0.1);
-    margin: 0.7rem 0;
+    margin: 0.7rem 0 !important;
     padding: 0;
     position: relative;
 }
@@ -1824,58 +1824,80 @@ input:checked+.toggle-slider:before {
   100% { transform: rotate(360deg); }
 }
 
-/* Collapsible section styles */
-.collapsible-section {
-  width: 100%;
-  margin-bottom: 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  overflow: hidden;
-  background: rgba(0, 0, 0, 0.2);
+/* Remove collapsible section styles */
+.collapsible-section,
+.collapsible-header,
+.collapsible-arrow,
+.collapsible-content,
+.collapsible-section.collapsed .collapsible-arrow,
+.collapsible-section.collapsed .collapsible-content {
+  /* These styles will be removed */
+  display: none;
 }
 
-.collapsible-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.8rem 1rem;
-  cursor: pointer;
-  background: rgba(0, 0, 0, 0.3);
-  transition: background 0.2s ease;
-}
-
-.collapsible-header:hover {
-  background: rgba(0, 0, 255, 0.1);
-}
-
-.collapsible-header h3 {
-  margin: 0;
+/* Add section title styling */
+.section-title {
   font-size: 1rem;
   font-weight: 600;
   color: white;
+  margin-bottom: 0.7rem;
+  padding: 0.5rem 0.7rem;
+  width: 100%;
+  text-align: left;
+  background: linear-gradient(90deg, rgba(0, 187, 170, 0.2), rgba(12, 38, 70, 0.4));
+  border-radius: 4px;
+  position: relative;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  border-left: 3px solid #00fff0;
+  box-sizing: border-box;
 }
 
-.collapsible-arrow {
-  transition: transform 0.3s ease;
+/* Remove the after element to simplify the section header styling */
+.section-title::after {
+  display: none;
 }
 
-.collapsible-section.collapsed .collapsible-arrow {
-  transform: rotate(-90deg);
+/* Spacing for sidebar sections */
+.sidebar-section {
+  width: 100%;
+  margin-bottom: 1rem;
 }
 
-.collapsible-content {
-  padding: 0.8rem;
-  transition: max-height 0.3s ease-in-out;
-  overflow: visible !important; /* Allow content to overflow during search */
-position: relative;
- }
-
-.collapsible-section.collapsed .collapsible-content {
-  max-height: 0;
-  padding: 0 0.8rem;
+/* Add tighter spacing between sub-sections */
+.sidebar-section .sidebar-section {
+  margin-bottom: 0.7rem;
+  margin-top: 0;
 }
 
-/* Adjust spacing within collapsible content */
-.collapsible-content .sidebar-section:last-child {
-  margin-bottom: 0;
+/* Adjust spacing for form elements */
+.sidebar label {
+  margin-bottom: 0.3rem;
+}
+
+.sidebar select, 
+.sidebar input[type="text"], 
+#tmdb-search-input, 
+#mediux-search-input {
+  margin-bottom: 0.4rem;
+  padding: 0.5rem;
+}
+
+/* Fix drop zone label */
+.drop-zone-label {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  padding: 0.6rem;
+  height: auto;
+  min-height: 36px;
+}
+
+/* Adjust search container spacing */
+.tmdb-search {
+  margin-bottom: 0.4rem;
+}
+
+/* Remove negative margins that were causing issues */
+.sidebar-section:nth-of-type(3),
+.sidebar-section:nth-of-type(4) {
+  margin-top: 0;
 }

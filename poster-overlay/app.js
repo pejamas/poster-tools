@@ -3133,6 +3133,25 @@ window.addEventListener("resize", () => {
     document.body.style.overflow = "";
   }
 });
+document.addEventListener("click", (e) => {
+  // Already existing code for TMDB suggestions
+  if (!e.target.closest(".tmdb-search")) {
+    suggestionsBox.innerHTML = "";
+  }
+  
+  // New code to handle Mediux suggestions
+  if (!e.target.closest(".tmdb-search")) {
+    mediuxSuggestions.innerHTML = "";
+  }
+});
+
+// Also add this to the mobile version
+document.addEventListener("click", (e) => {
+  const mobileMediuxSuggestions = document.getElementById("mobile-mediux-suggestions");
+  if (mobileMediuxSuggestions && !e.target.closest("#mobile-mediux-search")) {
+    mobileMediuxSuggestions.style.display = "none";
+  }
+});
 // Initialize collapsible sections
 document.addEventListener('DOMContentLoaded', function() {
   const collapsibleSections = document.querySelectorAll('.collapsible-section');
