@@ -1,1931 +1,288 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
+  <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Poster Showcase</title>
     <link rel="icon" type="image/svg+xml" href="../assets/mediux.svg" />
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css" />
     <link href="https://fonts.googleapis.com/css2?family=Gabarito:wght@400;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/monolith.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-</head>
-<body>
-
+  </head>
+  <body>
     <header>
-        <div class="header-left">
-            <a href="../index.html"><img src="../assets/mediux.svg" alt="Mediux Logo" height="24" /></a>
-            <h1>Poster Showcase</h1>
-        </div>
-        <div class="header-actions">
-            <a href="../poster-overlay/" class="nav-link">Poster Overlay</a>
-            <a href="../card-lab/" class="nav-link">Card Lab</a>
-            <button id="saveConfigBtn" class="action-button">
-                <img src="../assets/poster-showcase icons/save.svg" class="action-icon">
-                Save Config
-            </button>
-            <button id="loadConfigBtn" class="action-button">
-                <img src="../assets/poster-showcase icons/upload.svg" class="action-icon">
-                Load Config
-            </button>
-        </div>
+      <div class="header-left">
+        <a href="../index.html"><img src="../assets/mediux.svg" alt="Mediux Logo" height="24" /></a>
+        <h1>Poster Showcase</h1>
+      </div>
+      <div class="header-actions">
+        <a href="../poster-overlay/" class="nav-link">Poster Overlay</a>
+        <a href="../card-lab/" class="nav-link">Card Lab</a>
+        <button id="saveConfigBtn" class="action-button">
+          <img src="../assets/poster-showcase icons/save.svg" class="action-icon" />
+          Save Config
+        </button>
+        <button id="loadConfigBtn" class="action-button">
+          <img src="../assets/poster-showcase icons/upload.svg" class="action-icon" />
+          Load Config
+        </button>
+      </div>
     </header>
 
     <div class="layout">
-        <div class="sidebar">
-            <!-- API Section -->
-            <div class="collapsible active">
-                <div class="collapsible-header">
-                    <h3>API Search</h3>
-                    <div class="toggle-icon"></div>
-                </div>
-                <div class="collapsible-content">
-                    <input type="text" id="show-id" placeholder="Show ID: e.g. 123456" />
-                    <button id="connect-api-btn">Connect & Fetch Sets</button>
-                    <div id="api-status" class="status-disconnected">Not Connected</div>
-                    <div class="loading-spinner" id="api-loading"></div>
-                    <div class="set-selector" id="set-selector">
-                        <!-- Show sets will be displayed here -->
-                    </div>
-                </div>
+      <div class="sidebar">
+        <div class="collapsible active">
+          <div class="collapsible-header">
+            <h3>API Search</h3>
+            <div class="toggle-icon"></div>
+          </div>
+          <div class="collapsible-content">
+            <input type="text" id="show-id" placeholder="Show ID: e.g. 123456" />
+            <button id="connect-api-btn">Connect & Fetch Sets</button>
+            <div id="api-status" class="status-disconnected">Not Connected</div>
+            <div class="loading-spinner" id="api-loading"></div>
+            <div class="set-selector" id="set-selector">
             </div>
-
-            <!-- Creator Info Section -->
-            <div class="collapsible">
-                <div class="collapsible-header">
-                    <h3>Creator Info</h3>
-                    <div class="toggle-icon"></div>
-                </div>
-                <div class="collapsible-content">
-                    <div class="creator-row">
-                        <input type="text" id="creator-name" placeholder="Creator Name" />
-                        <label for="creator-icon-upload" class="icon-upload-btn" title="Upload Creator Icon">
-                            <img src="../assets/poster-showcase icons/upload.svg" class="icon" />
-                        </label>
-                        <input type="file" id="creator-icon-upload" accept="image/*">
-                    </div>
-                    <input type="text" id="set-id" placeholder="Footer Label: e.g. 12345" />
-                </div>
-            </div>
-
-            <!-- Upload Files Section -->
-            <div class="collapsible">
-                <div class="collapsible-header">
-                    <h3>Upload Files</h3>
-                    <div class="toggle-icon"></div>
-                </div>
-                <div class="collapsible-content">
-                    <label for="file-input" class="drop-zone">Upload Posters</label>
-                    <input type="file" id="file-input" multiple accept="image/*" />
-
-                    <label for="album-art-upload" class="drop-zone">Upload Album Art</label>
-                    <input type="file" id="album-art-upload" multiple accept="image/*" />
-
-                    <label for="titlecard-input" class="drop-zone">Upload Titlecards</label>
-                    <input type="file" id="titlecard-input" multiple accept="image/*" />
-
-                    <label for="logo-upload" class="drop-zone">Upload Clear Logo</label>
-                    <input type="file" id="logo-upload" accept="image/*" />
-
-                    <div class="slider-inline">
-                        <span class="toggle-label">Logo Scale</span>
-                        <input type="range" id="logo-scale" min="0.3" max="2" step="0.1" value="1">
-                    </div>
-                </div>
-            </div>
-
-            <!-- Layout Options Section -->
-            <div class="collapsible">
-                <div class="collapsible-header">
-                    <h3>Layout Options</h3>
-                    <div class="toggle-icon"></div>
-                </div>
-                <div class="collapsible-content">
-                    <div class="inline-select">
-                        <span class="toggle-label">Posters Per Row</span>
-                        <select id="columns-select">
-                            <option value="2">2</option>
-                            <option value="3">3</option>
-                            <option value="4" selected>4</option>
-                            <option value="5">5</option>
-                            <option value="6">6</option>
-                        </select>
-                    </div>
-                    
-                    <div class="inline-select">
-                        <span class="toggle-label">Album Art Per Row</span>
-                        <select id="album-art-columns-select">
-                            <option value="2">2</option>
-                            <option value="3">3</option>
-                            <option value="4" selected>4</option>
-                            <option value="5">5</option>
-                            <option value="6">6</option>
-                        </select>
-                    </div>
-                    
-                    <div class="inline-select">
-                        <span class="toggle-label">Titlecards Per Row</span>
-                        <select id="titlecard-columns-select">
-                            <option value="2">2</option>
-                            <option value="3">3</option>
-                            <option value="4">4</option>
-                            <option value="5" selected>5</option>
-                        </select>
-                    </div>
-
-                    <div class="toggle-container">
-                        <span class="toggle-label">Posters Header</span>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="show-posters-header" checked />
-                            <span class="toggle-slider"></span>
-                        </label>
-                    </div>
-                    
-                    <div class="toggle-container">
-                        <span class="toggle-label">Album Art Header</span>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="show-album-art-header" checked />
-                            <span class="toggle-slider"></span>
-                        </label>
-                    </div>
-                    
-                    <div class="toggle-container">
-                        <span class="toggle-label">Titlecards Header</span>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="show-titlecards-header" checked />
-                            <span class="toggle-slider"></span>
-                        </label>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Background Options Section -->
-            <div class="collapsible">
-                <div class="collapsible-header">
-                    <h3>Background Options</h3>
-                    <div class="toggle-icon"></div>
-                </div>
-                <div class="collapsible-content">
-                    <label for="backdrop-upload" class="drop-zone">Upload Backdrop</label>
-                    <input type="file" id="backdrop-upload" accept="image/*">
-
-                    <div class="slider-inline">
-                        <span class="toggle-label">Blur Amount</span>
-                        <input type="range" id="blur-amount" min="0" max="30" step="1" value="5">
-                    </div>
-
-                    <div class="toggle-container">
-                        <span class="toggle-label">Use Backdrop</span>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="use-backdrop-toggle">
-                            <span class="toggle-slider"></span>
-                        </label>
-                    </div>
-
-                    <div class="gradient-section">
-                        <div class="gradient-row">
-                            <div class="gradient-col">
-                                <span class="mini-label">Gradient Start</span>
-                                <div id="bg-start-pickr" class="pickr-bar-container"></div>
-                            </div>
-                            <div class="gradient-col">
-                                <span class="mini-label">Gradient End</span>
-                                <div id="bg-end-pickr" class="pickr-bar-container"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="section-separator"></div>
-
-            <div class="sidebar-action-row">
-                <button id="downloadBtn" class="icon-button teal" title="Download">
-                    <img src="../assets/poster-showcase icons/download.svg" class="icon" />
-                </button>
-                <button id="resetBtn" class="icon-button red" title="Reset">
-                    <img src="../assets/poster-showcase icons/refresh-cw.svg" class="icon" />
-                </button>
-            </div>
-
+          </div>
         </div>
 
-        <div class="main">
-            <div id="export-wrapper">
-                <div id="export-bg-container">
-                    <img id="export-background-image" />
-                </div>
-                <img id="logo-preview" alt="Clear Logo" />
-
-                <h2 class="section-title" id="posters-header">Posters</h2>
-                <div id="poster-grid-wrapper" class="grid-section">
-                    <div id="poster-grid"></div>
-                </div>
-
-                <h2 class="section-title" id="album-art-header">Album Art</h2>
-                <div id="album-art-grid-wrapper" class="grid-section">
-                    <div id="album-art-grid"></div>
-                </div>
-
-                <hr style="width: 100%; border-color: rgba(255,255,255,0.2);">
-
-                <h2 class="section-title" id="titlecards-header">Titlecards</h2>
-                <div id="titlecard-grid-wrapper" class="grid-section">
-                    <div id="titlecard-grid"></div>
-                </div>
-
-                <div class="set-id-line" id="set-id-line"></div>
-                <div class="credit-line">
-                    <div class="created-by">
-                        <div class="creator-icon-container">
-                            <img id="creator-icon" src="" alt="" />
-                        </div>
-                        <div class="creator-text">
-                            Created by&nbsp;<span id="credit-text"></span>
-                        </div>
-                    </div>
-                    <div class="powered-by">
-                        <span>mediux.pro</span>
-                        <img src="../assets/mediux.svg" alt="Mediux Icon" />
-                    </div>
-                </div>
+        <div class="collapsible">
+          <div class="collapsible-header">
+            <h3>Creator Info</h3>
+            <div class="toggle-icon"></div>
+          </div>
+          <div class="collapsible-content">
+            <div class="creator-row">
+              <input type="text" id="creator-name" placeholder="Creator Name" />
+              <label for="creator-icon-upload" class="icon-upload-btn" title="Upload Creator Icon">
+                <img src="../assets/poster-showcase icons/upload.svg" class="icon" />
+              </label>
+              <input type="file" id="creator-icon-upload" accept="image/*" />
             </div>
+            <input type="text" id="set-id" placeholder="Footer Label: e.g. 12345" />
+          </div>
         </div>
+
+        <div class="collapsible">
+          <div class="collapsible-header">
+            <h3>Upload Files</h3>
+            <div class="toggle-icon"></div>
+          </div>
+          <div class="collapsible-content">
+            <label for="file-input" class="drop-zone">Upload Posters</label>
+            <input type="file" id="file-input" multiple accept="image/*" />
+
+            <label for="album-art-upload" class="drop-zone">Upload Album Art</label>
+            <input type="file" id="album-art-upload" multiple accept="image/*" />
+
+            <label for="titlecard-input" class="drop-zone">Upload Titlecards</label>
+            <input type="file" id="titlecard-input" multiple accept="image/*" />
+
+            <label for="logo-upload" class="drop-zone">Upload Clear Logo</label>
+            <input type="file" id="logo-upload" accept="image/*" />
+
+            <div class="slider-inline">
+              <span class="toggle-label">Logo Scale</span>
+              <input type="range" id="logo-scale" min="0.3" max="2" step="0.1" value="1" />
+            </div>
+          </div>
+        </div>
+
+        <div class="collapsible">
+          <div class="collapsible-header">
+            <h3>Layout Options</h3>
+            <div class="toggle-icon"></div>
+          </div>
+          <div class="collapsible-content">
+            <div class="inline-select">
+              <span class="toggle-label">Posters Per Row</span>
+              <select id="columns-select">
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4" selected>4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+              </select>
+            </div>
+
+            <div class="inline-select">
+              <span class="toggle-label">Album Art Per Row</span>
+              <select id="album-art-columns-select">
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4" selected>4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+              </select>
+            </div>
+
+            <div class="inline-select">
+              <span class="toggle-label">Titlecards Per Row</span>
+              <select id="titlecard-columns-select">
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5" selected>5</option>
+              </select>
+            </div>
+
+            <div class="toggle-container">
+              <span class="toggle-label">Posters Header</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="show-posters-header" checked />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <div class="toggle-container">
+              <span class="toggle-label">Album Art Header</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="show-album-art-header" checked />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <div class="toggle-container">
+              <span class="toggle-label">Titlecards Header</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="show-titlecards-header" checked />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="collapsible">
+          <div class="collapsible-header">
+            <h3>Background Options</h3>
+            <div class="toggle-icon"></div>
+          </div>
+          <div class="collapsible-content">
+            <label for="backdrop-upload" class="drop-zone">Upload Backdrop</label>
+            <input type="file" id="backdrop-upload" accept="image/*" />
+
+            <div class="slider-inline">
+              <span class="toggle-label">Blur Amount</span>
+              <input type="range" id="blur-amount" min="0" max="30" step="1" value="5" />
+            </div>
+
+            <div class="toggle-container">
+              <span class="toggle-label">Use Backdrop</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="use-backdrop-toggle" />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <div class="gradient-section">
+              <div class="gradient-row">
+                <div class="gradient-col">
+                  <span class="mini-label">Gradient Start</span>
+                  <div id="bg-start-pickr" class="pickr-bar-container"></div>
+                </div>
+                <div class="gradient-col">
+                  <span class="mini-label">Gradient End</span>
+                  <div id="bg-end-pickr" class="pickr-bar-container"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-separator"></div>
+
+        <div class="sidebar-action-row">
+          <button id="downloadBtn" class="icon-button teal" title="Download">
+            <img src="../assets/poster-showcase icons/download.svg" class="icon" />
+          </button>
+          <button id="resetBtn" class="icon-button red" title="Reset">
+            <img src="../assets/poster-showcase icons/refresh-cw.svg" class="icon" />
+          </button>
+        </div>
+      </div>
+
+      <div class="main">
+        <div id="export-wrapper">
+          <div id="export-bg-container">
+            <img id="export-background-image" />
+          </div>
+          <img id="logo-preview" alt="Clear Logo" />
+
+          <h2 class="section-title" id="posters-header">Posters</h2>
+          <div id="poster-grid-wrapper" class="grid-section">
+            <div id="poster-grid"></div>
+          </div>
+
+          <h2 class="section-title" id="album-art-header">Album Art</h2>
+          <div id="album-art-grid-wrapper" class="grid-section">
+            <div id="album-art-grid"></div>
+          </div>
+
+          <hr style="width: 100%; border-color: rgba(255, 255, 255, 0.2)" />
+
+          <h2 class="section-title" id="titlecards-header">Titlecards</h2>
+          <div id="titlecard-grid-wrapper" class="grid-section">
+            <div id="titlecard-grid"></div>
+          </div>
+
+          <div class="set-id-line" id="set-id-line"></div>
+          <div class="credit-line">
+            <div class="created-by">
+              <div class="creator-icon-container">
+                <img id="creator-icon" src="" alt="" />
+              </div>
+              <div class="creator-text">Created by&nbsp;<span id="credit-text"></span></div>
+            </div>
+            <div class="powered-by">
+              <span>mediux.pro</span>
+              <img src="../assets/mediux.svg" alt="Mediux Icon" />
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div id="custom-confirm-overlay" class="custom-overlay">
-        <div class="custom-modal">
-            <p>Are you sure you want to reset the form? You will lose all current uploads and settings.</p>
-            <div class="custom-buttons">
-                <button id="confirmYes" class="custom-btn custom-btn-red">Yes</button>
-                <button id="confirmNo" class="custom-btn custom-btn-gray">No</button>
-            </div>
+      <div class="custom-modal">
+        <p>Are you sure you want to reset the form? You will lose all current uploads and settings.</p>
+        <div class="custom-buttons">
+          <button id="confirmYes" class="custom-btn custom-btn-red">Yes</button>
+          <button id="confirmNo" class="custom-btn custom-btn-gray">No</button>
         </div>
+      </div>
     </div>
 
     <div id="save-confirm-overlay" class="custom-overlay">
-        <div class="custom-modal">
-            <p>Configuration saved successfully!</p>
-            <div class="custom-buttons">
-                <button id="saveConfirmOk" class="custom-btn custom-btn-blue">OK</button>
-            </div>
+      <div class="custom-modal">
+        <p>Configuration saved successfully!</p>
+        <div class="custom-buttons">
+          <button id="saveConfirmOk" class="custom-btn custom-btn-blue">OK</button>
         </div>
+      </div>
     </div>
 
     <div id="load-confirm-overlay" class="custom-overlay">
-        <div class="custom-modal">
-            <p>Configuration loaded successfully!</p>
-            <div class="custom-buttons">
-                <button id="loadConfirmOk" class="custom-btn custom-btn-blue">OK</button>
-            </div>
+      <div class="custom-modal">
+        <p>Configuration loaded successfully!</p>
+        <div class="custom-buttons">
+          <button id="loadConfirmOk" class="custom-btn custom-btn-blue">OK</button>
         </div>
+      </div>
     </div>
 
     <div id="loading-overlay" class="custom-overlay">
-        <div class="custom-modal loading-modal">
-            <div class="loading-spinner-large"></div>
-            <h3 id="loading-title">Loading Assets</h3>
-            <p id="loading-message">Please wait while assets are being downloaded...</p>
-            <div class="progress-container">
-                <div id="loading-progress-bar" class="progress-bar"></div>
-            </div>
-            <p id="loading-details">Starting download...</p>
+      <div class="custom-modal loading-modal">
+        <div class="loading-spinner-large"></div>
+        <h3 id="loading-title">Loading Assets</h3>
+        <p id="loading-message">Please wait while assets are being downloaded...</p>
+        <div class="progress-container">
+          <div id="loading-progress-bar" class="progress-bar"></div>
         </div>
-    </div>
-
-    <script>
-        (function initializeStyles() {
-            const exportWrapper = document.getElementById("export-wrapper");
-            if (exportWrapper) {
-                // Set default gradient colors
-                const bgStart = "#2c3e50";
-                const bgEnd = "#6a11cb";
-
-                document.documentElement.style.setProperty("--bg-start", bgStart);
-                document.documentElement.style.setProperty("--bg-end", bgEnd);
-                
-                exportWrapper.style.setProperty("--bg-start", bgStart);
-                exportWrapper.style.setProperty("--bg-end", bgEnd);
-                exportWrapper.style.background = `linear-gradient(135deg, ${bgStart}, ${bgEnd})`;
-                exportWrapper.style.backgroundImage = `linear-gradient(135deg, ${bgStart}, ${bgEnd})`;
-            }
-        })();
-
-
-        const apiState = {
-            connected: false,
-            url: '',
-            key: '',
-            showId: '',
-            showSets: null,
-            selectedSetId: null
-        };
-
-
-        function updateApiStatus(message, isConnected) {
-            const statusElement = document.getElementById('api-status');
-            statusElement.textContent = message;
-
-            if (isConnected) {
-                statusElement.className = 'status-connected';
-            } else {
-                statusElement.className = 'status-disconnected';
-            }
-        }
-
-        function populateSetSelector(showSets) {
-            const selectorElement = document.getElementById('set-selector');
-            selectorElement.innerHTML = '';
-
-            console.log(`Found ${showSets.length} total sets`);
-
-            showSets.forEach((set, index) => {
-                // Log each set's content to help diagnose issues
-                const posterCount = (set.showPoster?.length || 0) + (set.seasonPosters?.length || 0);
-                const titlecardCount = set.titlecards?.length || 0;
-
-                console.log(`Set ${index + 1}: "${set.set_title || 'Unnamed'}" (ID: ${set.id})`);
-                console.log(` - Posters: ${posterCount}, Titlecards: ${titlecardCount}`);
-
-                // Create the set item in the UI
-                const setItem = document.createElement('div');
-                setItem.className = 'set-item';
-                setItem.dataset.setId = set.id;
-
-                const createdDate = new Date(set.date_created);
-                const formattedDate = createdDate.toLocaleDateString();
-
-                setItem.innerHTML = `
-
-      <div class="set-title">${set.set_title || 'Untitled Set'}</div>
-      <div class="set-details">
-        Created by: ${set.user_created?.username || 'Unknown'}<br>
-        Created: ${formattedDate}<br>
-        Assets: ${posterCount} posters, ${titlecardCount} titlecards
+        <p id="loading-details">Starting download...</p>
       </div>
-    `;
-
-                // Add click event to load this set
-                setItem.addEventListener('click', () => loadShowSet(set));
-
-                selectorElement.appendChild(setItem);
-            });
-        }
-
-        function sortPostersAndTitlecards() {
-            const posterGrid = document.getElementById("poster-grid");
-            const posters = Array.from(posterGrid.querySelectorAll(".poster-wrapper"));
-            posters.sort((a, b) =>
-                a.querySelector("img").src.localeCompare(b.querySelector("img").src)
-            );
-            posters.forEach(p => posterGrid.appendChild(p));
-
-            const titlecardGrid = document.getElementById("titlecard-grid");
-            const wrappers = Array.from(titlecardGrid.querySelectorAll(".titlecard-wrapper"));
-            wrappers.sort((a, b) => {
-                const seasonA = parseInt(a.dataset.season || "0");
-                const seasonB = parseInt(b.dataset.season || "0");
-                const epA = parseInt(a.dataset.episode || "0");
-                const epB = parseInt(b.dataset.episode || "0");
-                return seasonA - seasonB || epA - epB;
-            });
-
-            const headers = Array.from(titlecardGrid.querySelectorAll('.season-header'));
-            titlecardGrid.innerHTML = '';
-            headers.forEach(header => {
-                titlecardGrid.appendChild(header);
-                const seasonNumber = parseInt(header.textContent.match(/\d+/)?.[0] || "0");
-                const matching = wrappers.filter(w => parseInt(w.dataset.season) === seasonNumber);
-                matching.forEach(el => titlecardGrid.appendChild(el));
-            });
-        }
-
-        async function loadShowSet(set) {
-            // Show loading overlay
-            const loadingOverlay = document.getElementById('loading-overlay');
-            const progressBar = document.getElementById('loading-progress-bar');
-            const loadingDetails = document.getElementById('loading-details');
-            
-            loadingOverlay.style.display = 'flex';
-            progressBar.style.width = '0%';
-            loadingDetails.textContent = 'Starting download...';
-
-            document.getElementById('api-loading').style.display = 'block';
-            updateApiStatus('Loading assets...', true);
-
-            try {
-                apiState.selectedSetId = set.id;
-
-                const posterGrid = document.getElementById('poster-grid');
-                const titlecardGrid = document.getElementById('titlecard-grid');
-                posterGrid.innerHTML = '';
-                titlecardGrid.innerHTML = '';
-
-                // Set title & creator
-                if (set.set_title) {
-                    document.getElementById('set-id').value = set.set_title;
-                    document.getElementById('set-id-line').textContent = set.set_title;
-                }
-
-                if (set.user_created?.username) {
-                    document.getElementById('creator-name').value = set.user_created.username;
-                    document.getElementById('credit-text').textContent = set.user_created.username;
-                }
-
-                // Create arrays to hold all assets before adding to DOM
-                const allPosters = [];
-
-                // Calculate total assets for progress tracking
-                const totalShowPosters = set.showPoster?.length || 0;
-                const totalSeasonPosters = set.seasonPosters?.length || 0;
-                const totalTitlecards = set.titlecards?.length || 0;
-                const totalAssets = totalShowPosters + totalSeasonPosters + totalTitlecards;
-                let assetsLoaded = 0;
-                
-                // Update progress function
-                const updateProgress = (assetType) => {
-                    assetsLoaded++;
-                    const percentage = Math.floor((assetsLoaded / totalAssets) * 100);
-                    progressBar.style.width = `${percentage}%`;
-                    loadingDetails.textContent = `Loading ${assetType}... (${assetsLoaded}/${totalAssets})`;
-                };
-
-                // Load posters (show-level + season-level)
-                if (set.showPoster?.length) {
-                    loadingDetails.textContent = 'Loading show posters...';
-                    for (const poster of set.showPoster) {
-                        try {
-                            const dataUrl = await fetchAssetAsDataUrl(poster.id);
-                            allPosters.push({
-                                dataUrl,
-                                id: poster.id,
-                                type: 'show',
-                                seasonNumber: -1 // Main show posters come first
-                            });
-                            updateProgress('show posters');
-                        } catch (error) {
-                            console.error(`Failed to load show poster ${poster.id}:`, error);
-                            updateProgress('show posters');
-                        }
-                    }
-                }
-
-                if (set.seasonPosters?.length) {
-                    loadingDetails.textContent = 'Loading season posters...';
-                    for (const poster of set.seasonPosters) {
-                        try {
-                            const dataUrl = await fetchAssetAsDataUrl(poster.id);
-                            // Handle special case for "specials" or Season 0
-                            const seasonNum = poster.season?.season_number;
-                            let seasonNumber = -10; // Default for unknown
-
-                            if (seasonNum !== undefined && seasonNum !== null) {
-                                // Convert to number and handle special cases
-                                seasonNumber = Number(seasonNum);
-                                // Special handling for "specials" (Season 0)
-                                if (seasonNumber === 0) {
-                                    seasonNumber = -0.5; // Place specials after main posters but before other seasons
-                                }
-                            }
-
-                            allPosters.push({
-                                dataUrl,
-                                id: poster.id,
-                                type: 'season',
-                                seasonNumber: seasonNumber
-                            });
-                            updateProgress('season posters');
-                        } catch (error) {
-                            console.error(`Failed to load season poster ${poster.id}:`, error);
-                            updateProgress('season posters');
-                        }
-                    }
-                }
-
-                // Sort posters: main show posters first, then specials, then seasons in numerical order
-                allPosters.sort((a, b) => {
-                    // First by type (show posters come before season posters)
-                    if (a.type !== b.type) {
-                        return a.type === 'show' ? -1 : 1;
-                    }
-
-                    // Then by season number
-                    return a.seasonNumber - b.seasonNumber;
-                });
-
-                // Add sorted posters to the grid
-                for (const poster of allPosters) {
-                    addImageToGrid(poster.dataUrl, 'poster');
-                }
-
-                // Handle titlecards
-                loadingDetails.textContent = 'Loading titlecards...';
-                if (set.titlecards?.length) {
-                    // Group by season
-                    const titlecardsBySeason = {};
-
-                    for (const titlecard of set.titlecards) {
-                        const season = titlecard.episode?.season_id?.season_number || 0;
-                        const episode = titlecard.episode?.episode_number || 0;
-
-                        if (!titlecardsBySeason[season]) {
-                            titlecardsBySeason[season] = [];
-                        }
-
-                        try {
-                            const dataUrl = await fetchAssetAsDataUrl(titlecard.id);
-                            titlecardsBySeason[season].push({
-                                dataUrl,
-                                id: titlecard.id,
-                                season: season,
-                                episode: episode
-                            });
-                            updateProgress('titlecards');
-                        } catch (error) {
-                            console.error(`Failed to load titlecard ${titlecard.id}:`, error);
-                            updateProgress('titlecards');
-                        }
-                    }
-
-                    // Sort seasons numerically
-                    const sortedSeasons = Object.keys(titlecardsBySeason)
-                        .map(Number)
-                        .sort((a, b) => a - b);
-
-                    // Process each season
-                    for (const season of sortedSeasons) {
-                        // Add season header
-                        const header = document.createElement('div');
-                        header.className = 'season-header';
-                        header.textContent = `Season ${String(season).padStart(2, '0')}`;
-                        titlecardGrid.appendChild(header);
-
-                        // Sort titlecards by episode number
-                        const seasonTitlecards = titlecardsBySeason[season];
-                        seasonTitlecards.sort((a, b) => a.episode - b.episode);
-
-                        // Add sorted titlecards to the season
-                        for (const tc of seasonTitlecards) {
-addTitlecardToGrid(tc.dataUrl, tc.season, tc.episode);
-                        }                           
-
-                    }
-                }
-
-                // Finalize with a complete status
-                loadingDetails.textContent = 'All assets loaded successfully!';
-                progressBar.style.width = '100%';
-                
-                // Finally rebuild the grid structure
-                rebuildGrids();
-
-                updateApiStatus('Assets loaded successfully', true);
-                
-                // Hide loading overlay after a short delay to show completion
-                setTimeout(() => {
-                    loadingOverlay.style.display = 'none';
-                }, 1000);
-            } catch (error) {
-                console.error('Error loading show set:', error);
-                loadingDetails.textContent = `Error: ${error.message}`;
-                updateApiStatus('Failed to load assets: ' + error.message, false);
-                
-                // Hide loading overlay on error after delay
-                setTimeout(() => {
-                    loadingOverlay.style.display = 'none';
-                }, 2000);
-            } finally {
-                document.getElementById('api-loading').style.display = 'none';
-            }
-        }
-
-        // Helper function to fetch an asset and convert to data URL
-        async function fetchAssetAsDataUrl(fileId) {
-            if (!apiState.connected) {
-                throw new Error('API not connected');
-            }
-
-            try {
-                // Call your worker with the asset ID
-                const workerUrl = 'https://api-frontend.pejamas.workers.dev'; // No trailing slash
-
-                const response = await fetch(workerUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        endpoint: `/assets/${fileId}`,
-                        body: {} // Empty body for asset requests
-                    })
-                });
-
-                if (!response.ok) {
-                    throw new Error(`Failed to fetch file: ${response.statusText} (${response.status})`);
-                }
-
-                // Convert response to blob and then to data URL
-                const blob = await response.blob();
-                return await blobToDataURL(blob);
-            } catch (error) {
-                console.error(`Error loading file ${fileId}:`, error);
-                throw error;
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM fully loaded - attaching API button handler');
-
-            const connectButton = document.getElementById('connect-api-btn');
-            if (connectButton) {
-                connectButton.addEventListener('click', function() {
-                    console.log('Connect button clicked!');
-                    connectAndFetchSets();
-                });
-            } else {
-                console.error('Connect API button not found in DOM');
-            }
-
-            // Set API URL (fixed for now)
-            apiState.url = atob("aHR0cHM6Ly9zdGFnZWQubWVkaXV4Lmlv");
-
-            updateApiStatus('Not Connected', false);
-        });
-
-        async function connectAndFetchSets() {
-            // Reference DOM elements safely
-            const showIdInput = document.getElementById('show-id');
-            const apiLoadingEl = document.getElementById('api-loading');
-            const apiStatusEl = document.getElementById('api-status');
-
-            if (!showIdInput) {
-                console.error('show-id input element not found');
-                return;
-            }
-
-            const showId = showIdInput.value.trim();
-
-            if (apiLoadingEl) {
-                apiLoadingEl.style.display = 'block';
-            }
-
-            updateApiStatus('Connecting...', false);
-
-            if (!showId) {
-                updateApiStatus('Please enter a Show ID', false);
-                if (apiLoadingEl) apiLoadingEl.style.display = 'none';
-                return;
-            }
-
-            try {
-                // The GraphQL query remains the same
-                const query = `
-
-  query {
-    shows_by_id(id: "${showId}") {
-      id
-      title
-
-      # Get all sets without any filtering
-      show_sets {
-        id
-        set_title
-        user_created {
-          username
-        }
-        date_created
-        date_updated
-        description
-        
-        # Get posters and titlecards separately
-        showPoster: files(
-          filter: { 
-            _and: [ 
-              { file_type: { _eq: "poster" } }, 
-              { show: { id: { _neq: null } } } 
-            ] 
-          }
-        ) {
-          id
-          modified_on
-        }
-        
-        seasonPosters: files(
-          filter: { 
-            _and: [ 
-              { file_type: { _eq: "poster" } }, 
-              { season: { id: { _neq: null } } } 
-            ] 
-          }
-        ) {
-          id
-          modified_on
-          season { 
-            season_number 
-          }
-        }
-        
-        titlecards: files(
-          filter: { 
-            _and: [ 
-              { file_type: { _eq: "titlecard" } }, 
-              { episode: { id: { _neq: null } } } 
-            ] 
-          }
-        ) {
-          id
-          modified_on
-          episode {
-            episode_number
-            season_id { 
-              season_number 
-            }
-          }
-        }
-      }
-    }
-  }
-`;
-
-
-                console.log('Connecting to API via worker...');
-
-                // Call your worker with the GraphQL query
-                const workerUrl = 'https://api-frontend.pejamas.workers.dev';
-
-                const response = await fetch(workerUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        endpoint: '/graphql',
-                        body: {
-                            query
-                        }
-                    })
-                });
-
-                console.log('Response status:', response.status);
-
-                if (!response.ok) {
-                    throw new Error(`API error: ${response.status} ${response.statusText}`);
-                }
-
-                // Process the response
-                const data = await response.json();
-
-                if (!data?.data?.shows_by_id) {
-                    throw new Error('Invalid API response or show not found');
-                }
-
-                const showData = data.data.shows_by_id;
-
-                // Store data in apiState
-                apiState.connected = true;
-                apiState.url = atob("aHR0cHM6Ly9zdGFnZWQubWVkaXV4Lmlv");
-                apiState.showId = showId;
-                apiState.showSets = showData.show_sets;
-
-                // Update UI
-                updateApiStatus(`Connected: ${showData.title} (${showData.show_sets.length} sets)`, true);
-
-                const setSelectorEl = document.getElementById('set-selector');
-                if (setSelectorEl) {
-                    populateSetSelector(showData.show_sets);
-                    setSelectorEl.style.display = 'block';
-                }
-            } catch (err) {
-                console.error('API Connection Error:', err);
-                updateApiStatus('Connection failed: ' + err.message, false);
-            } finally {
-                if (apiLoadingEl) {
-                    apiLoadingEl.style.display = 'none';
-                }
-            }
-        }
-
-        // Fixed loadFileFromAPI function with correct URL construction
-        async function loadFileFromAPI(fileId, fileType, metadata = {}) {
-            if (!apiState.connected || !apiState.url || !apiState.key) {
-                throw new Error('API not connected');
-            }
-
-            try {
-                // Construct file URL - this needs the asset ID only
-                const fileUrl = `${apiState.url}/assets/${fileId}`;
-
-                // Use the correct proxy URL format
-                const corsProxyUrl = 'https://poster-proxy.pejamas.workers.dev/?url=';
-                const fullUrl = corsProxyUrl + fileUrl; // Don't append /graphql here
-
-                console.log(`Fetching ${fileType} (ID: ${fileId}) from: ${fullUrl}`);
-
-                const response = await fetch(fullUrl, {
-                    headers: {
-                        'Authorization': `Bearer ${apiState.key}`
-                    }
-                });
-
-                if (!response.ok) {
-                    throw new Error(`Failed to fetch file: ${response.statusText} (${response.status})`);
-                }
-
-                // Convert response to blob and then to data URL
-                const blob = await response.blob();
-                const dataUrl = await blobToDataURL(blob);
-
-                // Add file to the appropriate grid
-                if (fileType === 'poster') {
-                    addImageToGrid(dataUrl, 'poster');
-                } else if (fileType === 'titlecard') {
-                    addTitlecardToGrid(dataUrl, metadata.season, metadata.episode);
-                }
-
-                return true;
-            } catch (error) {
-                console.error(`Error loading file ${fileId}:`, error);
-                throw error;
-            }
-        }
-
-        function blobToDataURL(blob) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = reject;
-                reader.readAsDataURL(blob);
-            });
-        }
-
-        function addImageToGrid(src, className) {
-            const wrapper = createImageElement(src, className);
-            document.getElementById(`${className}-grid`).appendChild(wrapper);
-        }
-
-        function addTitlecardToGrid(src, season, episode) {
-            const wrapper = document.createElement("div");
-            wrapper.className = "titlecard-wrapper";
-            wrapper.dataset.season = season;
-            wrapper.dataset.episode = episode;
-
-            const img = document.createElement("img");
-            img.src = src;
-            img.className = "titlecard";
-            img.draggable = true;
-
-            const btn = document.createElement("button");
-            btn.className = "delete-btn";
-            btn.textContent = "×";
-            btn.onclick = () => {
-                wrapper.remove();
-                rebuildGrids();
-            };
-
-            wrapper.appendChild(img);
-            wrapper.appendChild(btn);
-
-            img.addEventListener("dragstart", () => wrapper.dataset.dragging = true);
-            img.addEventListener("dragend", () => delete wrapper.dataset.dragging);
-            wrapper.addEventListener("dragover", e => e.preventDefault());
-            wrapper.addEventListener("drop", e => {
-                e.preventDefault();
-                const dragging = document.querySelector("[data-dragging]");
-                if (dragging && dragging !== wrapper) {
-                    wrapper.parentNode.insertBefore(dragging.closest('.titlecard-wrapper'), wrapper);
-                    rebuildGrids();
-                }
-            });
-
-            document.getElementById('titlecard-grid').appendChild(wrapper);
-        }
-
-
-        document.getElementById("creator-icon-upload").addEventListener("change", (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (evt) => {
-                    const icon = document.getElementById("creator-icon");
-                    icon.src = evt.target.result;
-                    icon.alt = ""; // No alt text
-                    icon.style.display = "inline-block";
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-
-        document.getElementById("creator-name").addEventListener("input", e => {
-            document.getElementById("credit-text").textContent = e.target.value;
-        });
-
-        document.getElementById("show-posters-header").addEventListener("change", e => {
-            document.getElementById("posters-header").style.display = e.target.checked ? "block" : "none";
-        });
-
-        document.getElementById("show-titlecards-header").addEventListener("change", e => {
-            document.getElementById("titlecards-header").style.display = e.target.checked ? "block" : "none";
-        });
-
-        document.getElementById("logo-upload").addEventListener("change", e => {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = evt => {
-                const img = document.getElementById("logo-preview");
-                img.src = evt.target.result;
-                img.style.display = "block";
-            };
-            reader.readAsDataURL(file);
-        });
-
-        document.getElementById("use-backdrop-toggle").addEventListener("change", e => {
-            toggleBackgroundType(e.target.checked);
-        });
-
-        document.getElementById("file-input").addEventListener("change", async (e) => {
-            await handleFiles(e.target.files, "poster");
-        });
-
-        document.getElementById("titlecard-input").addEventListener("change", async (e) => {
-            await handleFiles(e.target.files, "titlecard");
-        });
-
-        function updateGradientBackground() {
-            const exportWrapper = document.getElementById("export-wrapper");
-            // Get colors from CSS variables instead of non-existent input elements
-            const bgStart = getComputedStyle(document.documentElement).getPropertyValue('--bg-start') || "#2c3e50";
-            const bgEnd = getComputedStyle(document.documentElement).getPropertyValue('--bg-end') || "#6a11cb";
-
-            console.log("Updating gradient with colors:", bgStart, bgEnd);
-
-            exportWrapper.style.setProperty("--bg-start", bgStart);
-            exportWrapper.style.setProperty("--bg-end", bgEnd);
-
-            if (!document.getElementById("use-backdrop-toggle").checked || !window._currentBackdropURL) {
-                exportWrapper.style.removeProperty('background');
-                exportWrapper.style.removeProperty('backgroundImage');
-                exportWrapper.style.backgroundColor = 'transparent';
-
-                void exportWrapper.offsetWidth;
-
-                const gradientStyle = `linear-gradient(135deg, ${bgStart}, ${bgEnd})`;
-                exportWrapper.style.background = gradientStyle;
-                exportWrapper.style.backgroundImage = gradientStyle;
-
-                const bgContainer = document.getElementById("export-bg-container");
-                if (bgContainer) {
-                    bgContainer.style.background = gradientStyle;
-                }
-            }
-        }
-
-        function toggleBackgroundType(useBackdrop) {
-            const exportWrapper = document.getElementById("export-wrapper");
-            const bgImage = document.getElementById("export-background-image");
-            const bgContainer = document.getElementById("export-bg-container");
-
-            console.log("Toggle background:", useBackdrop ? "Using backdrop" : "Using gradient");
-            console.log("Has backdrop URL:", !!window._currentBackdropURL);
-
-            if (bgImage) {
-                bgImage.style.display = (useBackdrop && window._currentBackdropURL) ? "block" : "none";
-            }
-
-            // Reset all background properties first
-            exportWrapper.style.removeProperty('background');
-            exportWrapper.style.backgroundColor = 'transparent';
-            exportWrapper.style.backgroundImage = 'none';
-
-            // Force a reflow to prevent rendering issues
-            void exportWrapper.offsetWidth;
-
-            // Only apply backdrop if toggle is on AND we actually have a backdrop URL
-            if (useBackdrop && window._currentBackdropURL) {
-                console.log("Applying backdrop URL:", window._currentBackdropURL.substring(0, 50) + "...");
-                exportWrapper.style.backgroundImage = `url(${window._currentBackdropURL})`;
-                exportWrapper.style.backgroundSize = "cover";
-                exportWrapper.style.backgroundPosition = "center";
-                exportWrapper.style.borderRadius = "12px";
-                exportWrapper.style.overflow = "hidden";
-                
-                if (bgContainer) {
-                    bgContainer.style.background = 'none';
-                }
-            } else {
-                // If no backdrop or toggle is off, fall back to gradient
-                updateGradientBackground();
-                
-                // Make sure the toggle reflects the actual state
-                document.getElementById("use-backdrop-toggle").checked = (useBackdrop && window._currentBackdropURL);
-            }
-        }
-
-        const posterGrid = document.getElementById("poster-grid");
-        const titlecardGrid = document.getElementById("titlecard-grid");
-        const columnsSelect = document.getElementById("columns-select");
-        const titlecardColumnsSelect = document.getElementById("titlecard-columns-select");
-        const bgImage = document.getElementById("export-background-image");
-        let originalBgDataURL = null;
-        let blurredBackdropDataURL = null;
-        let backdropCanvas = document.createElement('canvas');
-        let backdropCtx = backdropCanvas.getContext('2d');
-
-        function groupIntoRows(items, perRow) {
-            const rows = [];
-            for (let i = 0; i < items.length; i += perRow) {
-                const row = document.createElement("div");
-                row.className = "row";
-                row.append(...items.slice(i, i + perRow));
-                rows.push(row);
-            }
-            return rows;
-        }
-
-        function renderGrid(container, items, perRow) {
-            container.innerHTML = "";
-            groupIntoRows(items, perRow).forEach(row => container.appendChild(row));
-        }
-
-        function collectItems(gridClass) {
-            return [...document.querySelectorAll(`.${gridClass}`)].map(el => el.closest(`.${gridClass}-wrapper`));
-        }
-
-        function groupItemsWithHeaders(container, perRow) {
-            const elements = Array.from(container.querySelectorAll('.season-header, .titlecard-wrapper'));
-            container.innerHTML = '';
-
-            let currentRow = null,
-                count = 0;
-
-            elements.forEach((el, index) => {
-                if (el.classList.contains('season-header')) {
-                    if (currentRow && currentRow.children.length > 0) {
-                        container.appendChild(currentRow);
-                        currentRow = null;
-                        count = 0;
-                    }
-
-                    if (index !== 0) {
-                        const divider = document.createElement('hr');
-                        divider.style.cssText = 'width: 100%; border-color: rgba(255,255,255,0.2); margin: 10px 0;';
-                        container.appendChild(divider);
-                    }
-
-                    container.appendChild(el);
-                } else {
-                    if (!currentRow || count >= perRow) {
-                        if (currentRow) container.appendChild(currentRow);
-                        currentRow = document.createElement('div');
-                        currentRow.className = 'row';
-                        count = 0;
-                    }
-                    currentRow.appendChild(el);
-                    count++;
-                }
-            });
-
-            if (currentRow && currentRow.children.length > 0) {
-                container.appendChild(currentRow);
-            }
-        }
-
-        function rebuildGrids() {
-            const posterItems = collectItems("poster");
-            renderGrid(posterGrid, posterItems, parseInt(columnsSelect.value));
-            
-            const albumArtItems = collectItems("album-art");
-            const albumArtGrid = document.getElementById("album-art-grid");
-            const albumArtColumnsSelect = document.getElementById("album-art-columns-select");
-            renderGrid(albumArtGrid, albumArtItems, parseInt(albumArtColumnsSelect.value));
-
-            groupItemsWithHeaders(titlecardGrid, parseInt(titlecardColumnsSelect.value));
-        }
-
-        function createImageElement(src, className) {
-            const wrapper = document.createElement("div");
-            wrapper.className = `${className}-wrapper`;
-            const img = document.createElement("img");
-            img.src = src;
-            img.className = className;
-            img.draggable = true;
-
-            const btn = document.createElement("button");
-            btn.className = "delete-btn";
-            btn.textContent = "×";
-            btn.onclick = () => {
-                wrapper.remove();
-                rebuildGrids();
-            };
-
-            wrapper.appendChild(img);
-            wrapper.appendChild(btn);
-            img.addEventListener("dragstart", () => wrapper.dataset.dragging = true);
-            img.addEventListener("dragend", () => delete wrapper.dataset.dragging);
-            wrapper.addEventListener("dragover", e => e.preventDefault());
-            wrapper.addEventListener("drop", e => {
-                e.preventDefault();
-                const dragging = document.querySelector("[data-dragging]");
-                if (dragging && dragging !== wrapper) {
-                    wrapper.parentNode.insertBefore(dragging.closest(`.${className}-wrapper`), wrapper);
-                    rebuildGrids();
-                }
-            });
-
-            return wrapper;
-        }
-
-        async function handleFiles(files, className) {
-            const fileArray = [...files];
-
-            if (className === "poster") {
-                fileArray.sort((a, b) => {
-                    const normalize = name => name.toLowerCase().replace(/\.[^/.]+$/, "").trim();
-                    const getSortKey = (filename) => {
-                        const name = normalize(filename.name);
-                        const seasonMatch = name.match(/ - season (\d{1,3})$/i);
-                        const baseName = name.replace(/ - season \d{1,3}$/i, "");
-                        const seasonNumber = seasonMatch ? parseInt(seasonMatch[1], 10) : -1;
-                        return {
-                            baseName,
-                            seasonNumber
-                        };
-                    };
-                    const aKey = getSortKey(a);
-                    const bKey = getSortKey(b);
-                    if (aKey.baseName !== bKey.baseName) {
-                        return aKey.baseName.localeCompare(bKey.baseName);
-                    }
-                    return aKey.seasonNumber - bKey.seasonNumber;
-                });
-
-                const container = document.querySelector(`#${className}-grid`);
-                const existingPosters = Array.from(container.querySelectorAll('.poster-wrapper')).map(wrapper =>
-                    wrapper.querySelector('img').src
-                );
-
-                const newPosterSrcs = await Promise.all(fileArray.map(async file => {
-                    return await new Promise(resolve => {
-                        const reader = new FileReader();
-                        reader.onload = e => resolve(e.target.result);
-                        reader.readAsDataURL(file);
-                    });
-                }));
-
-                const allPosterSrcs = [...existingPosters, ...newPosterSrcs];
-
-                container.innerHTML = "";
-
-                const wrappers = allPosterSrcs.map(src => {
-                    const wrapper = document.createElement("div");
-                    wrapper.className = `${className}-wrapper`;
-
-                    const img = document.createElement("img");
-                    img.src = src;
-                    img.className = className;
-                    img.draggable = true;
-
-                    const btn = document.createElement("button");
-                    btn.className = "delete-btn";
-                    btn.textContent = "×";
-                    btn.onclick = () => {
-                        wrapper.remove();
-                        rebuildGrids();
-                    };
-
-                    wrapper.appendChild(img);
-                    wrapper.appendChild(btn);
-
-                    img.addEventListener("dragstart", () => wrapper.dataset.dragging = true);
-                    img.addEventListener("dragend", () => delete wrapper.dataset.dragging);
-                    wrapper.addEventListener("dragover", e => e.preventDefault());
-                    wrapper.addEventListener("drop", e => {
-                        e.preventDefault();
-                        const dragging = document.querySelector("[data-dragging]");
-                        if (dragging && dragging !== wrapper) {
-                            wrapper.parentNode.insertBefore(dragging.closest(`.${className}-wrapper`), wrapper);
-                            rebuildGrids();
-                        }
-                    });
-
-                    return wrapper;
-                });
-
-                wrappers.forEach(wrapper => container.appendChild(wrapper));
-                rebuildGrids();
-            } else if (className === "titlecard") {
-                const parseInfo = name => {
-                    const cleaned = name.toLowerCase().replace(/\.[^/.]+$/, "").trim();
-                    const match = cleaned.match(/s(\d{1,2})[\s\.]?e(\d{1,2})/i);
-                    const season = match ? parseInt(match[1], 10) : 0;
-                    const episode = match ? parseInt(match[2], 10) : 0;
-                    return {
-                        name,
-                        season,
-                        episode
-                    };
-                };
-
-                const container = document.querySelector(`#${className}-grid`);
-
-                const existingWrappers = Array.from(container.querySelectorAll('.titlecard-wrapper'));
-                const existingCards = existingWrappers.map(wrapper => ({
-                    src: wrapper.querySelector('img').src,
-                    season: parseInt(wrapper.dataset.season || "0"),
-                    episode: parseInt(wrapper.dataset.episode || "0"),
-                }));
-
-                const newCards = await Promise.all(fileArray.map(async file => {
-                    const src = await new Promise(resolve => {
-                        const reader = new FileReader();
-                        reader.onload = e => resolve(e.target.result);
-                        reader.readAsDataURL(file);
-                    });
-                    const {
-                        season,
-                        episode
-                    } = parseInfo(file.name);
-                    return {
-                        src,
-                        season,
-                        episode
-                    };
-                }));
-
-                const allCards = [...existingCards, ...newCards].sort((a, b) =>
-                    a.season - b.season || a.episode - b.episode
-                );
-
-                container.innerHTML = '';
-
-                let currentSeason = null;
-
-                allCards.forEach(card => {
-                    if (card.season !== currentSeason) {
-                        currentSeason = card.season;
-                        const heading = document.createElement("div");
-                        heading.className = "season-header";
-                        heading.textContent = `Season ${String(card.season).padStart(2, '0')}`;
-                        container.appendChild(heading);
-                    }
-
-                    const wrapper = document.createElement("div");
-                    wrapper.className = "titlecard-wrapper";
-                    wrapper.dataset.season = card.season;
-                    wrapper.dataset.episode = card.episode;
-
-                    const img = document.createElement("img");
-                    img.src = card.src;
-                    img.className = "titlecard";
-                    img.draggable = true;
-
-                    const btn = document.createElement("button");
-                    btn.className = "delete-btn";
-                    btn.textContent = "×";
-                    btn.onclick = () => {
-                        wrapper.remove();
-                        rebuildGrids();
-                    };
-
-                    wrapper.appendChild(img);
-                    wrapper.appendChild(btn);
-
-                    img.addEventListener("dragstart", () => wrapper.dataset.dragging = true);
-                    img.addEventListener("dragend", () => delete wrapper.dataset.dragging);
-                    wrapper.addEventListener("dragover", e => e.preventDefault());
-                    wrapper.addEventListener("drop", e => {
-                        e.preventDefault();
-                        const dragging = document.querySelector("[data-dragging]");
-                        if (dragging && dragging !== wrapper) {
-                            wrapper.parentNode.insertBefore(dragging.closest('.titlecard-wrapper'), wrapper);
-                            rebuildGrids();
-                        }
-                    });
-
-                    container.appendChild(wrapper);
-                });
-
-                groupItemsWithHeaders(container, parseInt(titlecardColumnsSelect.value));
-            }
-        }
-
-        document.getElementById("backdrop-upload").addEventListener("change", async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = async (evt) => {
-                const dataURL = evt.target.result;
-
-                try {
-                    const originalImg = new Image();
-                    originalImg.src = dataURL;
-
-                    await new Promise(resolve => {
-                        originalImg.onload = resolve;
-                    });
-
-                    window._originalBackdropImage = originalImg;
-
-                    const blurAmount = parseInt(document.getElementById("blur-amount").value);
-
-                    document.getElementById("use-backdrop-toggle").checked = true;
-
-                    applySmartBlur(originalImg, blurAmount);
-
-                    toggleBackgroundType(true);
-
-                } catch (error) {
-                    console.error("Error in backdrop processing:", error);
-                    alert("There was an error processing your image. Please try another one.");
-                }
-            };
-
-            reader.readAsDataURL(file);
-            e.target.value = "";
-        });
-
-        document.getElementById("blur-amount").addEventListener("input", async (e) => {
-            if (!window._originalBackdropImage) return;
-
-            const blurAmount = parseInt(e.target.value);
-            applySmartBlur(window._originalBackdropImage, blurAmount);
-        });
-
-        document.getElementById("logo-scale").addEventListener("input", e => {
-            document.getElementById("logo-preview").style.transform = `scale(${e.target.value})`;
-        });
-
-        document.getElementById("columns-select").addEventListener("change", rebuildGrids);
-        document.getElementById("album-art-columns-select").addEventListener("change", rebuildGrids);
-        document.getElementById("titlecard-columns-select").addEventListener("change", rebuildGrids);
-
-        document.getElementById("set-id").addEventListener("input", e => {
-            document.getElementById("set-id-line").textContent = e.target.value || "";
-        });
-
-        // Removed old event listeners for bg-start and bg-end inputs as they no longer exist
-
-        function applySmartBlur(originalImg, blurAmount) {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-
-            const scaleFactor = Math.max(0.1, 1 - (blurAmount * 0.03));
-            canvas.width = Math.floor(originalImg.width * scaleFactor);
-            canvas.height = Math.floor(originalImg.height * scaleFactor);
-
-            ctx.drawImage(originalImg, 0, 0, canvas.width, canvas.height);
-
-            if (blurAmount > 5) {
-                const blurPx = Math.min(20, blurAmount - 5);
-                ctx.filter = `blur(${blurPx}px)`;
-                ctx.drawImage(canvas, 0, 0, canvas.width, canvas.height);
-                ctx.filter = 'none';
-            }
-
-            const padding = 50;
-            const finalCanvas = document.createElement('canvas');
-            const finalCtx = finalCanvas.getContext('2d');
-
-            const maxDimension = Math.max(originalImg.width, originalImg.height);
-            const targetSize = Math.min(1920, maxDimension);
-            let finalWidth, finalHeight;
-            if (originalImg.width > originalImg.height) {
-                finalWidth = targetSize + padding * 2;
-                finalHeight = ((originalImg.height / originalImg.width) * targetSize) + padding * 2;
-            } else {
-                finalHeight = targetSize + padding * 2;
-                finalWidth = ((originalImg.width / originalImg.height) * targetSize) + padding * 2;
-            }
-
-            finalCanvas.width = finalWidth;
-            finalCanvas.height = finalHeight;
-
-            finalCtx.imageSmoothingEnabled = true;
-            finalCtx.imageSmoothingQuality = "high";
-
-            finalCtx.drawImage(canvas, -padding, -padding, finalWidth + padding * 2, finalHeight + padding * 2);
-
-            finalCtx.fillStyle = "rgba(0, 0, 0, 0.2)";
-            finalCtx.fillRect(0, 0, finalWidth, finalHeight);
-
-            const blurredDataURL = finalCanvas.toDataURL('image/jpeg', 0.92);
-            blurredBackdropDataURL = blurredDataURL;
-            window._currentBackdropURL = blurredDataURL;
-
-            const bgImage = document.getElementById("export-background-image");
-            if (bgImage) {
-                bgImage.src = blurredDataURL;
-                bgImage.style.display = "block";
-            }
-
-            const useBackdrop = document.getElementById("use-backdrop-toggle").checked;
-            if (useBackdrop) {
-                const exportWrapper = document.getElementById("export-wrapper");
-                exportWrapper.style.removeProperty('background');
-                exportWrapper.style.backgroundColor = 'transparent';
-                exportWrapper.style.backgroundImage = 'none';
-
-                void exportWrapper.offsetWidth;
-
-                exportWrapper.style.backgroundImage = `url('${blurredDataURL}')`;
-                exportWrapper.style.backgroundSize = "cover";
-                exportWrapper.style.backgroundPosition = "center";
-                exportWrapper.style.borderRadius = "12px";
-                exportWrapper.style.overflow = "hidden";
-            }
-        }
-
-        document.getElementById("resetBtn").addEventListener("click", () => {
-            const overlay = document.getElementById('custom-confirm-overlay');
-            const confirmYes = document.getElementById('confirmYes');
-            const confirmNo = document.getElementById('confirmNo');
-
-            overlay.style.display = 'flex';
-
-            confirmYes.onclick = () => {
-                // Don't clear localStorage! We want to keep saved config
-
-                // Clear form fields directly
-                document.getElementById("creator-name").value = "";
-                document.getElementById("credit-text").textContent = "";
-                document.getElementById("set-id").value = "";
-                document.getElementById("set-id-line").textContent = "";
-
-                // Clear creator icon
-                const creatorIcon = document.getElementById("creator-icon");
-                creatorIcon.src = "";
-                creatorIcon.style.display = "none";
-
-                // Clear logo preview
-                const logoPreview = document.getElementById("logo-preview");
-                logoPreview.src = "";
-                logoPreview.style.display = "none";
-
-                // Clear posters and titlecards
-                document.getElementById("poster-grid").innerHTML = "";
-                document.getElementById("album-art-grid").innerHTML = "";
-                document.getElementById("titlecard-grid").innerHTML = "";
-
-                // Reset other form elements
-                document.getElementById("columns-select").value = "4";
-                document.getElementById("titlecard-columns-select").value = "5";
-                document.getElementById("show-posters-header").checked = true;
-                document.getElementById("show-titlecards-header").checked = true;
-                document.getElementById("posters-header").style.display = "block";
-                document.getElementById("titlecards-header").style.display = "block";
-
-                // Reset backdrop
-                document.getElementById("use-backdrop-toggle").checked = false;
-                window._currentBackdropURL = null;
-                document.getElementById("export-background-image").style.display = "none";
-
-                // Reset gradients using Pickr instances - use proper Pickr methods
-                const defaultStartColor = "#2c3e50";
-                const defaultEndColor = "#6a11cb";
-                
-                bgStartPickr.setColor(defaultStartColor);
-                bgEndPickr.setColor(defaultEndColor);
-                
-                document.documentElement.style.setProperty('--bg-start', defaultStartColor);
-                document.documentElement.style.setProperty('--bg-end', defaultEndColor);
-                updateGradientBackground();
-
-                // Close the dialog
-                overlay.style.display = 'none';
-            };
-
-            confirmNo.onclick = () => overlay.style.display = 'none';
-        });
-
-        document.getElementById("downloadBtn").addEventListener("click", async () => {
-            const wrapper = document.getElementById("export-wrapper");
-            const borderRadius = 24;
-            const useBackdrop = document.getElementById("use-backdrop-toggle").checked;
-            const hasBlurredBackdrop = window._currentBackdropURL && useBackdrop ? true : false;
-            const originalBg = originalBgDataURL;
-            const clone = wrapper.cloneNode(true);
-            clone.querySelectorAll(".delete-btn").forEach(btn => btn.remove());
-
-            clone.style.borderRadius = `${borderRadius}px`;
-            clone.style.overflow = "hidden";
-
-            clone.style.background = "none";
-            clone.style.backgroundColor = "transparent";
-            clone.style.backgroundImage = "none";
-
-            const cloneExportWrapper = clone.querySelector("#export-wrapper");
-            if (cloneExportWrapper) {
-                cloneExportWrapper.style.borderRadius = `${borderRadius}px`;
-                cloneExportWrapper.style.overflow = "hidden";
-                cloneExportWrapper.style.background = "none";
-                cloneExportWrapper.style.backgroundColor = "transparent";
-                cloneExportWrapper.style.backgroundImage = "none";
-            }
-
-            const bgContainerClone = clone.querySelector("#export-bg-container");
-            if (bgContainerClone) bgContainerClone.remove();
-
-            const backdropContainerClone = clone.querySelector("#backdrop-container");
-            if (backdropContainerClone) backdropContainerClone.remove();
-
-            const showPostersHeader = document.getElementById("show-posters-header").checked;
-            const showTitlecardsHeader = document.getElementById("show-titlecards-header").checked;
-
-            const postersHeaderClone = clone.querySelector("#posters-header");
-            const titlecardsHeaderClone = clone.querySelector("#titlecards-header");
-
-            if (postersHeaderClone) {
-                postersHeaderClone.style.display = showPostersHeader ? "block" : "none";
-            }
-
-            if (titlecardsHeaderClone) {
-                titlecardsHeaderClone.style.display = showTitlecardsHeader ? "block" : "none";
-            }
-
-            const titlecardGridClone = clone.querySelector("#titlecard-grid");
-            if (!titlecardGridClone || titlecardGridClone.children.length === 0) {
-                if (titlecardsHeaderClone) titlecardsHeaderClone.remove();
-                const wrapper = clone.querySelector("#titlecard-grid-wrapper");
-                if (wrapper) wrapper.remove();
-            }
-
-            clone.style.position = "absolute";
-            clone.style.left = "-9999px";
-            document.body.appendChild(clone);
-
-            await new Promise(requestAnimationFrame);
-            const contentCanvas = await html2canvas(clone, {
-                scale: 2,
-                backgroundColor: null,
-                logging: false,
-                onclone: (document) => {
-                    const exportWrapper = document.getElementById("export-wrapper");
-                    if (exportWrapper) {
-                        exportWrapper.style.background = "none";
-                        exportWrapper.style.backgroundColor = "transparent";
-                        exportWrapper.style.backgroundImage = "none";
-                    }
-                }
-            });
-
-            document.body.removeChild(clone);
-
-            const finalCanvas = document.createElement("canvas");
-            finalCanvas.width = contentCanvas.width;
-            finalCanvas.height = contentCanvas.height;
-            const ctx = finalCanvas.getContext("2d");
-
-            const scaledRadius = borderRadius * 2;
-            ctx.beginPath();
-            ctx.moveTo(scaledRadius, 0);
-            ctx.lineTo(finalCanvas.width - scaledRadius, 0);
-            ctx.quadraticCurveTo(finalCanvas.width, 0, finalCanvas.width, scaledRadius);
-            ctx.lineTo(finalCanvas.width, finalCanvas.height - scaledRadius);
-            ctx.quadraticCurveTo(finalCanvas.width, finalCanvas.height, finalCanvas.width - scaledRadius, finalCanvas.height);
-            ctx.lineTo(scaledRadius, finalCanvas.height);
-            ctx.quadraticCurveTo(0, finalCanvas.height, 0, finalCanvas.height - scaledRadius);
-            ctx.lineTo(0, scaledRadius);
-            ctx.quadraticCurveTo(0, 0, scaledRadius, 0);
-            ctx.closePath();
-            ctx.clip();
-
-            if (hasBlurredBackdrop) {
-                const bgImg = new Image();
-                await new Promise((resolve, reject) => {
-                    bgImg.onload = resolve;
-                    bgImg.onerror = reject;
-                    bgImg.src = window._currentBackdropURL;
-                });
-
-                ctx.drawImage(bgImg, 0, 0, finalCanvas.width, finalCanvas.height);
-
-                ctx.fillStyle = "rgba(0, 0, 0, 0.15)";
-                ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
-            } else if (originalBg) {
-                const bgImg = new Image();
-                await new Promise((resolve, reject) => {
-                    bgImg.onload = resolve;
-                    bgImg.onerror = reject;
-                    bgImg.src = originalBg;
-                });
-
-                ctx.drawImage(bgImg, 0, 0, finalCanvas.width, finalCanvas.height);
-            } else {
-                const gradient = ctx.createLinearGradient(0, 0, finalCanvas.width, finalCanvas.height);
-                // Get colors directly from CSS variables for consistency
-                const startColor = getComputedStyle(document.documentElement).getPropertyValue('--bg-start').trim() || '#2c3e50';
-                const endColor = getComputedStyle(document.documentElement).getPropertyValue('--bg-end').trim() || '#6a11cb';
-                gradient.addColorStop(0, startColor);
-                gradient.addColorStop(1, endColor);
-                ctx.fillStyle = gradient;
-                ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
-            }
-
-            ctx.drawImage(contentCanvas, 0, 0);
-
-            const link = document.createElement("a");
-            link.download = "poster-wall.png";
-            link.href = finalCanvas.toDataURL("image/png");
-            link.click();
-        });
-        document.addEventListener('DOMContentLoaded', () => {
-            const toggleApi = document.getElementById("toggle-api");
-            const apiSection = document.getElementById("api-section");
-            if (toggleApi && apiSection) {
-                toggleApi.addEventListener("change", () => {
-                    apiSection.style.display = toggleApi.checked ? "block" : "none";
-                });
-                apiSection.style.display = toggleApi.checked ? "block" : "none";
-            }
-        });
-        document.getElementById("saveConfigBtn").addEventListener("click", () => {
-            const config = {
-                creatorName: document.getElementById("creator-name").value,
-                setId: document.getElementById("set-id").value,
-                logoScale: document.getElementById("logo-scale").value,
-                showPostersHeader: document.getElementById("show-posters-header").checked,
-                showAlbumArtHeader: document.getElementById("show-album-art-header").checked,
-                showTitlecardsHeader: document.getElementById("show-titlecards-header").checked,
-                useBackdrop: document.getElementById("use-backdrop-toggle").checked,
-                // Get color values from CSS variables instead of input elements
-                bgStart: getComputedStyle(document.documentElement).getPropertyValue('--bg-start').trim() || "#2c3e50",
-                bgEnd: getComputedStyle(document.documentElement).getPropertyValue('--bg-end').trim() || "#6a11cb",
-                columns: document.getElementById("columns-select").value,
-                titlecardColumns: document.getElementById("titlecard-columns-select").value
-            };
-
-            const logoPreview = document.getElementById("logo-preview");
-            if (logoPreview && logoPreview.src && logoPreview.src !== window.location.href) {
-                config.logoData = logoPreview.src;
-            }
-
-            // Fix: Properly save creator icon data
-            const creatorIcon = document.getElementById("creator-icon");
-            if (creatorIcon && creatorIcon.src && creatorIcon.src !== window.location.href && creatorIcon.style.display !== "none") {
-                config.creatorIconData = creatorIcon.src;
-            }
-
-            // Always save creator name when saving config
-            config.creatorName = document.getElementById("creator-name").value;
-
-            localStorage.setItem("posterToolsConfig", JSON.stringify(config));
-
-            // Show custom save confirmation popup instead of alert
-            const overlay = document.getElementById('save-confirm-overlay');
-            overlay.style.display = 'flex';
-
-            document.getElementById('saveConfirmOk').onclick = () => {
-                overlay.style.display = 'none';
-            };
-        });
-
-        function resetCreatorFields() {
-            const savedConfig = JSON.parse(localStorage.getItem("posterToolsConfig") || "{}");
-            const creatorIcon = document.getElementById("creator-icon");
-            const creatorNameInput = document.getElementById("creator-name");
-            const creditText = document.getElementById("credit-text");
-
-            // Only show icon if it exists in saved config
-            if (savedConfig.creatorIconData) {
-                creatorIcon.src = savedConfig.creatorIconData;
-                creatorIcon.style.display = "inline-block";
-            } else {
-                creatorIcon.style.display = "none";
-                creatorIcon.src = "";
-            }
-
-            // Set creator name in both input field and display area
-            if (savedConfig.creatorName) {
-                creatorNameInput.value = savedConfig.creatorName;
-                creditText.textContent = savedConfig.creatorName;
-            } else {
-                creatorNameInput.value = "";
-                creditText.textContent = "";
-            }
-
-            // Set footer label if available
-            if (savedConfig.setId) {
-                document.getElementById("set-id").value = savedConfig.setId;
-                document.getElementById("set-id-line").textContent = savedConfig.setId;
-            }
-        }
-
-        // Call this function when the page loads
-        document.addEventListener('DOMContentLoaded', resetCreatorFields);
-
-        document.getElementById("loadConfigBtn").addEventListener("click", () => {
-            const config = JSON.parse(localStorage.getItem("posterToolsConfig") || "{}");
-
-            // Check if config is empty (no saved configuration)
-            if (Object.keys(config).length === 0) {
-                alert("No saved configuration found.");
-                return;
-            }
-
-            // Update creator name ALWAYS when available in config, ensuring it appears in both places
-            const creatorNameInput = document.getElementById("creator-name");
-            const creditText = document.getElementById("credit-text");
-
-            if (config.creatorName) {
-                creatorNameInput.value = config.creatorName;
-                creditText.textContent = config.creatorName;
-            } else {
-                creatorNameInput.value = "";
-                creditText.textContent = "";
-            }
-
-            // Fix: Update creator icon properly
-            const creatorIcon = document.getElementById("creator-icon");
-            if (config.creatorIconData) {
-                creatorIcon.src = config.creatorIconData;
-                creatorIcon.alt = ""; // No alt text to avoid showing text when image fails
-                creatorIcon.style.display = "inline-block";
-            } else {
-                creatorIcon.src = "";
-                creatorIcon.alt = ""; // No alt text
-                creatorIcon.style.display = "none";
-            }
-
-            // Set ID
-            if (config.setId) {
-                document.getElementById("set-id").value = config.setId;
-                document.getElementById("set-id-line").textContent = config.setId;
-            } else {
-                document.getElementById("set-id").value = "";
-                document.getElementById("set-id-line").textContent = "";
-            }
-
-            // Show/hide Posters header
-            const showPostersHeader = typeof config.showPostersHeader === "boolean" ? config.showPostersHeader : true;
-            document.getElementById("show-posters-header").checked = showPostersHeader;
-            document.getElementById("posters-header").style.display = showPostersHeader ? "block" : "none";
-            
-            // Show/hide Album Art header
-            const showAlbumArtHeader = typeof config.showAlbumArtHeader === "boolean" ? config.showAlbumArtHeader : true;
-            document.getElementById("show-album-art-header").checked = showAlbumArtHeader;
-            document.getElementById("album-art-header").style.display = showAlbumArtHeader ? "block" : "none";
-            document.getElementById("album-art-grid-wrapper").style.display = showAlbumArtHeader ? "flex" : "none";
-
-            // Show/hide Titlecards header
-            const showTitlecardsHeader = typeof config.showTitlecardsHeader === "boolean" ? config.showTitlecardsHeader : true;
-            document.getElementById("show-titlecards-header").checked = showTitlecardsHeader;
-            document.getElementById("titlecards-header").style.display = showTitlecardsHeader ? "block" : "none";
-
-            // Rebuild layout if needed
-            rebuildGrids();
-
-            // Update gradient colors if they exist in config
-            if (config.bgStart) {
-                bgStartPickr.setColor(config.bgStart);
-                document.getElementById('bg-start-pickr').style.background = config.bgStart;
-                document.documentElement.style.setProperty('--bg-start', config.bgStart);
-            }
-            
-            if (config.bgEnd) {
-                bgEndPickr.setColor(config.bgEnd);
-                document.getElementById('bg-end-pickr').style.background = config.bgEnd;
-                document.documentElement.style.setProperty('--bg-end', config.bgEnd);
-            }
-            
-            updateGradientBackground();
-
-            // Show custom load confirmation popup instead of alert
-            const overlay = document.getElementById('load-confirm-overlay');
-            overlay.style.display = 'flex';
-
-            document.getElementById('loadConfirmOk').onclick = () => {
-                overlay.style.display = 'none';
-            };
-        });
-        document.getElementById("show-album-art-header").addEventListener("change", e => {
-            document.getElementById("album-art-header").style.display = e.target.checked ? "block" : "none";
-            document.getElementById("album-art-grid-wrapper").style.display = e.target.checked ? "flex" : "none";
-        });
-
-        document.getElementById("album-art-upload").addEventListener("change", async (e) => {
-            const files = e.target.files;
-            const container = document.getElementById("album-art-grid");
-            
-            for (const file of files) {
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    const wrapper = document.createElement("div");
-                    wrapper.className = "album-art-wrapper";
-                    
-                    const img = document.createElement("img");
-                    img.src = event.target.result;
-                    img.className = "album-art";
-                    img.draggable = true;
-                    
-                    const btn = document.createElement("button");
-                    btn.className = "delete-btn";
-                    btn.textContent = "×";
-                    btn.onclick = () => {
-                        wrapper.remove();
-                        rebuildGrids();
-                    };
-                    
-                    wrapper.appendChild(img);
-                    wrapper.appendChild(btn);
-                    
-                    img.addEventListener("dragstart", () => wrapper.dataset.dragging = true);
-                    img.addEventListener("dragend", () => delete wrapper.dataset.dragging);
-                    wrapper.addEventListener("dragover", e => e.preventDefault());
-                    wrapper.addEventListener("drop", e => {
-                        e.preventDefault();
-                        const dragging = document.querySelector("[data-dragging]");
-                        if (dragging && dragging !== wrapper) {
-                            wrapper.parentNode.insertBefore(dragging, wrapper);
-                            rebuildGrids();
-                        }
-                    });
-                    
-                    container.appendChild(wrapper);
-                    rebuildGrids();
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-
-        // Initialize the Pickr color pickers
-        const bgStartPickr = Pickr.create({
-            el: document.getElementById('bg-start-pickr'),
-            theme: 'monolith',
-            position: 'right-middle',
-            padding: 180,
-            default: '#2c3e50',
-            components: {
-                preview: true,
-                opacity: false,
-                hue: true,
-                interaction: {
-                    hex: true,
-                    input: true,
-                    save: true
-                }
-            }
-        });
-
-        const bgEndPickr = Pickr.create({
-            el: document.getElementById('bg-end-pickr'),
-            theme: 'monolith',
-            position: 'right-middle',
-            padding: 60,
-            default: '#6a11cb',
-            components: {
-                preview: true,
-                opacity: false,
-                hue: true,
-                interaction: {
-                    hex: true,
-                    input: true,
-                    save: true
-                }
-            }
-        });
-
-        // Add event listeners for color changes
-        bgStartPickr.on('change', (color) => {
-            const hex = color.toHEXA().toString();
-            document.documentElement.style.setProperty('--bg-start', hex);
-            updateGradientBackground();
-        });
-
-        bgStartPickr.on('save', (color) => {
-            const hex = color.toHEXA().toString();
-            document.documentElement.style.setProperty('--bg-start', hex);
-            updateGradientBackground();
-            bgStartPickr.hide();
-        });
-
-        bgEndPickr.on('change', (color) => {
-            const hex = color.toHEXA().toString();
-            document.documentElement.style.setProperty('--bg-end', hex);
-            updateGradientBackground();
-        });
-
-        bgEndPickr.on('save', (color) => {
-            const hex = color.toHEXA().toString();
-            document.documentElement.style.setProperty('--bg-end', hex);
-            updateGradientBackground();
-            bgEndPickr.hide();
-        });
-        
-        // Initialize collapsible sections
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialize collapsible sections
-            const collapsibles = document.querySelectorAll('.collapsible-header');
-            collapsibles.forEach(header => {
-                header.addEventListener('click', function() {
-                    const parent = this.parentElement;
-                    parent.classList.toggle('active');
-                });
-            });
-        });
-    </script>
-</body>
-
+    </div>
+    <script src="app.js"></script>
+  </body>
 </html>
