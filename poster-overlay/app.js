@@ -1194,10 +1194,26 @@ function fetchMoviePosters(movieId, movieTitle) {
   }
 
   const gqlQuery = `
-    query {
-      movies_by_id(id: ${movieId}) {
+  query {
+    movies_by_id(id: ${movieId}) {
+      id
+      title
+      files(
+        filter: {
+          _and: [
+            { file_type: { _eq: "poster" } }
+            ${usernameFilter ? usernameFilterQuery : ""}
+          ]
+        }
+      ) {
         id
-        title
+        uploaded_by {
+          username
+        }
+      }
+      movie_sets {
+        id
+        set_title
         files(
           filter: {
             _and: [
@@ -1211,43 +1227,10 @@ function fetchMoviePosters(movieId, movieTitle) {
             username
           }
         }
-        movie_sets {
-          id
-          set_title
-          files(
-            filter: {
-              _and: [
-                { file_type: { _eq: "poster" } }
-                ${usernameFilter ? usernameFilterQuery : ""}
-              ]
-            }
-          ) {
-            id
-            uploaded_by {
-              username
-            }
-          }
-        }
-        collection_id {
-          id
-          collection_name
-          files(
-            filter: {
-              _and: [
-                { file_type: { _eq: "poster" } }
-                ${usernameFilter ? usernameFilterQuery : ""}
-              ]
-            }
-          ) {
-            id
-            uploaded_by {
-              username
-            }
-          }
-        }
       }
     }
-  `;
+  }
+`;
 
   console.log(
     "Fetching Mediux posters for movie ID:",
@@ -1339,9 +1322,19 @@ function fetchMoviePosters(movieId, movieTitle) {
 
       if (movie.collection_id) {
         const collectionPosters = movie.collection_id.files || [];
-        console.log(`Found ${collectionPosters.length} collection posters for ${movie.collection_id.collection_name}`);
-
+        // Add console logging to see the structure of collection posters
+        console.log("Collection poster structure sample:", collectionPosters.length > 0 ? collectionPosters[0] : "No posters");
+        
+        // Instead of filtering here, let's get all posters but exclude ones that appear to be collection posters
+        // rather than movie-specific posters based on other attributes
+        
         collectionPosters.forEach((file) => {
+          // Skip any files that don't have movie_id - these are likely the collection posters
+          if (!file.movie_id) {
+            console.log("Skipping likely collection poster:", file.id);
+            return;
+          }
+          
           posterPromises.push(
             fetchAssetAsDataUrl(file.id)
               .then((dataUrl) => {
