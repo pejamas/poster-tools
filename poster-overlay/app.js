@@ -9,9 +9,152 @@ const metaPanel = document.getElementById("metadata-panel");
 const TMDB_API_KEY = "96c821c9e98fab6a43bff8021d508d1d";
 const networkLogoSelect = document.getElementById("network-logo-select");
 
+// Add loading overlay variables
+let loadingOverlay = null;
+let loadingProgressBar = null;
+let loadingDetailsText = null;
+
 let networkLogoImage = null;
 let currentLogoPath = "none";
 let selectedLogoColor = "#ffffff";
+
+// Create loading overlay function
+function showLoadingOverlay(title, message) {
+  // Remove any existing overlay
+  hideLoadingOverlay();
+  
+  // Create overlay
+  loadingOverlay = document.createElement("div");
+  loadingOverlay.className = "loading-overlay";
+  loadingOverlay.style.position = "fixed";
+  loadingOverlay.style.top = "0";
+  loadingOverlay.style.left = "0";
+  loadingOverlay.style.width = "100%";
+  loadingOverlay.style.height = "100%";
+  loadingOverlay.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
+  loadingOverlay.style.display = "flex";
+  loadingOverlay.style.flexDirection = "column";
+  loadingOverlay.style.alignItems = "center";
+  loadingOverlay.style.justifyContent = "center";
+  loadingOverlay.style.zIndex = "9999";
+  loadingOverlay.style.backdropFilter = "blur(4px)";
+  
+  // Create modal container
+  const modalContainer = document.createElement("div");
+  modalContainer.className = "custom-modal loading-modal";
+  modalContainer.style.background = "#1a1a1a";
+  modalContainer.style.borderRadius = "12px";
+  modalContainer.style.boxShadow = "0 0 20px rgba(0, 0, 0, 0.5)";
+  modalContainer.style.padding = "25px 30px";
+  modalContainer.style.width = "320px";
+  modalContainer.style.display = "flex";
+  modalContainer.style.flexDirection = "column";
+  modalContainer.style.alignItems = "center";
+  modalContainer.style.textAlign = "center";
+  
+  // Create spinner
+  const spinner = document.createElement("div");
+  spinner.className = "loading-spinner-large";
+  spinner.style.border = "3px solid rgba(255, 255, 255, 0.1)";
+  spinner.style.borderTop = "3px solid #00bfa5";
+  spinner.style.borderRadius = "50%";
+  spinner.style.width = "50px";
+  spinner.style.height = "50px";
+  spinner.style.animation = "spin 1s linear infinite";
+  spinner.style.marginBottom = "15px";
+  
+  // Add spinner animation if it doesn't exist
+  if (!document.getElementById("spinner-style")) {
+    const style = document.createElement("style");
+    style.id = "spinner-style";
+    style.textContent = "@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }";
+    document.head.appendChild(style);
+  }
+  
+  // Create title element
+  const titleEl = document.createElement("h3");
+  titleEl.id = "loading-title";
+  titleEl.textContent = title || "Loading";
+  titleEl.style.color = "white";
+  titleEl.style.margin = "0 0 10px 0";
+  titleEl.style.fontFamily = "Gabarito, sans-serif";
+  
+  // Create message element
+  const messageEl = document.createElement("p");
+  messageEl.id = "loading-message";
+  messageEl.textContent = message || "Please wait...";
+  messageEl.style.color = "white";
+  messageEl.style.margin = "0 0 15px 0";
+  messageEl.style.fontFamily = "Gabarito, sans-serif";
+  
+  // Create progress container
+  const progressContainer = document.createElement("div");
+  progressContainer.style.width = "100%";
+  progressContainer.style.height = "6px";
+  progressContainer.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+  progressContainer.style.borderRadius = "3px";
+  progressContainer.style.margin = "15px 0";
+  progressContainer.style.overflow = "hidden";
+  
+  // Create progress bar
+  loadingProgressBar = document.createElement("div");
+  loadingProgressBar.id = "loading-progress-bar";
+  loadingProgressBar.style.width = "0%";
+  loadingProgressBar.style.height = "100%";
+  loadingProgressBar.style.background = "linear-gradient(90deg, #00bfa5, #6a11cb)";
+  loadingProgressBar.style.transition = "width 0.3s ease";
+  loadingProgressBar.style.borderRadius = "3px";
+  
+  // Create details text
+  loadingDetailsText = document.createElement("p");
+  loadingDetailsText.id = "loading-details";
+  loadingDetailsText.textContent = "Starting...";
+  loadingDetailsText.style.color = "rgba(255, 255, 255, 0.7)";
+  loadingDetailsText.style.fontSize = "14px";
+  loadingDetailsText.style.fontFamily = "Gabarito, sans-serif";
+  loadingDetailsText.style.margin = "10px 0 0 0";
+  
+  // Assemble all components
+  progressContainer.appendChild(loadingProgressBar);
+  modalContainer.appendChild(spinner);
+  modalContainer.appendChild(titleEl);
+  modalContainer.appendChild(messageEl);
+  modalContainer.appendChild(progressContainer);
+  modalContainer.appendChild(loadingDetailsText);
+  loadingOverlay.appendChild(modalContainer);
+  
+  document.body.appendChild(loadingOverlay);
+  
+  return loadingOverlay;
+}
+
+// Update loading overlay progress
+function updateLoadingProgress(percent, detailText) {
+  if (loadingProgressBar) {
+    loadingProgressBar.style.width = `${percent}%`;
+  }
+  
+  if (loadingDetailsText && detailText) {
+    loadingDetailsText.textContent = detailText;
+  }
+}
+
+// Hide and remove loading overlay
+function hideLoadingOverlay() {
+  if (loadingOverlay && loadingOverlay.parentNode) {
+    loadingOverlay.style.opacity = "0";
+    loadingOverlay.style.transition = "opacity 0.3s ease";
+    
+    setTimeout(() => {
+      if (loadingOverlay && loadingOverlay.parentNode) {
+        loadingOverlay.parentNode.removeChild(loadingOverlay);
+      }
+      loadingOverlay = null;
+      loadingProgressBar = null;
+      loadingDetailsText = null;
+    }, 300);
+  }
+}
 
 const pickrElement = document.getElementById("pickr");
 const pickr = Pickr.create({
@@ -1039,7 +1182,9 @@ function displayMediuxResults(items, type = "movie") {
 }
 
 function fetchMoviePosters(movieId, movieTitle) {
-  showPosterModal(`Loading posters for "${movieTitle}"...`);
+  // Show loading overlay with initial message
+  showLoadingOverlay("Loading Posters", `Finding posters for "${movieTitle}"`);
+  updateLoadingProgress(10, "Initializing search...");
 
   const usernameFilter = document.getElementById("mediux-username-filter").value.trim();
 
@@ -1110,6 +1255,8 @@ function fetchMoviePosters(movieId, movieTitle) {
     usernameFilter ? `filtered by username: ${usernameFilter}` : ""
   );
 
+  updateLoadingProgress(20, "Connecting to Mediux API...");
+
   fetch("https://api-frontend.pejamas.workers.dev", {
     method: "POST",
     headers: {
@@ -1126,13 +1273,16 @@ function fetchMoviePosters(movieId, movieTitle) {
       if (!res.ok) {
         throw new Error(`API returned status ${res.status}: ${res.statusText}`);
       }
+      updateLoadingProgress(30, "Processing API response...");
       return res.json();
     })
     .then((data) => {
       console.log("API response:", data);
+      updateLoadingProgress(40, "Finding poster assets...");
 
       if (!data.data || !data.data.movies_by_id) {
         console.error("Movie not found or invalid response format:", data);
+        hideLoadingOverlay();
         showPosterModal(`Movie not found or invalid response`);
         return;
       }
@@ -1213,11 +1363,33 @@ function fetchMoviePosters(movieId, movieTitle) {
 
       if (posterPromises.length === 0) {
         console.log("No posters found");
+        hideLoadingOverlay();
         showPosterModal(`No posters found for "${movieTitle}"`);
         return;
       }
 
+      updateLoadingProgress(50, `Found ${posterPromises.length} posters. Downloading...`);
+      
+      // Track progress for loading each poster
+      let loadedCount = 0;
+      const totalCount = posterPromises.length;
+      
+      // Update the progress function to show loading progress
+      const originalFetch = window.fetchAssetAsDataUrl;
+      window.fetchAssetAsDataUrl = async function(fileId) {
+        const result = await originalFetch(fileId);
+        loadedCount++;
+        const percent = 50 + Math.floor((loadedCount / totalCount) * 45); // Progress from 50% to 95%
+        updateLoadingProgress(percent, `Loading poster ${loadedCount}/${totalCount}`);
+        return result;
+      };
+
       Promise.allSettled(posterPromises).then((results) => {
+        // Restore original function
+        window.fetchAssetAsDataUrl = originalFetch;
+        
+        updateLoadingProgress(95, "Processing complete!");
+        
         console.log(
           `Finished processing ${results.length} posters. Success: ${
             results.filter((r) => r.status === "fulfilled").length
@@ -1226,24 +1398,34 @@ function fetchMoviePosters(movieId, movieTitle) {
         const usernameFilter = document.getElementById("mediux-username-filter").value.trim();
 
         if (allPosters.length === 0) {
+          hideLoadingOverlay();
           if (usernameFilter) {
             showPosterModal(`No posters found for "${movieTitle}" by creator "${usernameFilter}"`);
           } else {
             showPosterModal(`Could not load any posters for "${movieTitle}"`);
           }
         } else {
-          displayPosters(allPosters, movieTitle);
+          updateLoadingProgress(100, `Found ${allPosters.length} posters!`);
+          
+          // Hide loading overlay after a small delay to show completion
+          setTimeout(() => {
+            hideLoadingOverlay();
+            displayPosters(allPosters, movieTitle);
+          }, 500);
         }
       });
     })
     .catch((err) => {
       console.error("Error fetching movie details:", err);
+      hideLoadingOverlay();
       showPosterModal(`Error: ${err.message}`);
     });
 }
 
 function fetchShowPosters(showId, showTitle) {
-  showPosterModal(`Loading posters for "${showTitle}"...`);
+  // Show loading overlay with initial message
+  showLoadingOverlay("Loading Posters", `Finding posters for "${showTitle}"`);
+  updateLoadingProgress(10, "Initializing search...");
 
   const usernameFilter = document.getElementById("mediux-username-filter").value.trim();
 
@@ -1300,6 +1482,8 @@ function fetchShowPosters(showId, showTitle) {
     usernameFilter ? `filtered by username: ${usernameFilter}` : ""
   );
 
+  updateLoadingProgress(20, "Connecting to Mediux API...");
+
   fetch("https://api-frontend.pejamas.workers.dev", {
     method: "POST",
     headers: {
@@ -1316,13 +1500,16 @@ function fetchShowPosters(showId, showTitle) {
       if (!res.ok) {
         throw new Error(`API returned status ${res.status}: ${res.statusText}`);
       }
+      updateLoadingProgress(30, "Processing API response...");
       return res.json();
     })
     .then((data) => {
       console.log("API response:", data);
+      updateLoadingProgress(40, "Finding poster assets...");
 
       if (!data.data || !data.data.shows_by_id) {
         console.error("Show not found or invalid response format:", data);
+        hideLoadingOverlay();
         showPosterModal(`Show not found or invalid response`);
         return;
       }
@@ -1395,11 +1582,33 @@ function fetchShowPosters(showId, showTitle) {
 
       if (posterPromises.length === 0) {
         console.log("No posters found");
+        hideLoadingOverlay();
         showPosterModal(`No posters found for "${showTitle}"`);
         return;
       }
 
+      updateLoadingProgress(50, `Found ${posterPromises.length} posters. Downloading...`);
+      
+      // Track progress for loading each poster
+      let loadedCount = 0;
+      const totalCount = posterPromises.length;
+      
+      // Update the progress function to show loading progress
+      const originalFetch = window.fetchAssetAsDataUrl;
+      window.fetchAssetAsDataUrl = async function(fileId) {
+        const result = await originalFetch(fileId);
+        loadedCount++;
+        const percent = 50 + Math.floor((loadedCount / totalCount) * 45); // Progress from 50% to 95%
+        updateLoadingProgress(percent, `Loading poster ${loadedCount}/${totalCount}`);
+        return result;
+      };
+
       Promise.allSettled(posterPromises).then((results) => {
+        // Restore original function
+        window.fetchAssetAsDataUrl = originalFetch;
+        
+        updateLoadingProgress(95, "Processing complete!");
+        
         console.log(
           `Finished processing ${results.length} posters. Success: ${
             results.filter((r) => r.status === "fulfilled").length
@@ -1408,23 +1617,30 @@ function fetchShowPosters(showId, showTitle) {
         const usernameFilter = document.getElementById("mediux-username-filter").value.trim();
 
         if (allPosters.length === 0) {
+          hideLoadingOverlay();
           if (usernameFilter) {
             showPosterModal(`No posters found for "${showTitle}" by creator "${usernameFilter}"`);
           } else {
             showPosterModal(`Could not load any posters for "${showTitle}"`);
           }
         } else {
-          displayPosters(allPosters, showTitle, "tv");
+          updateLoadingProgress(100, `Found ${allPosters.length} posters!`);
+          
+          // Hide loading overlay after a small delay to show completion
+          setTimeout(() => {
+            hideLoadingOverlay();
+            displayPosters(allPosters, showTitle, "tv");
+          }, 500);
         }
       });
     })
     .catch((err) => {
       console.error("Error fetching show details:", err);
+      hideLoadingOverlay();
       showPosterModal(`Error: ${err.message}`);
     });
 }
 
-// Update displayPosters to handle content type
 function displayPosters(posters, title, contentType = "movie") {
   const modal = document.getElementById("poster-modal");
   const container = document.getElementById("poster-results");
@@ -1503,7 +1719,6 @@ function displayPosters(posters, title, contentType = "movie") {
   enableTouchScrolling(); // Add touch support for mobile
 }
 
-// Update fetchTMDBMetadataForTitle to handle content type
 function fetchTMDBMetadataForTitle(title, contentType = "movie") {
   metaPanel.style.display = "flex";
   document.getElementById("meta-title").textContent = title;
