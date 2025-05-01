@@ -1823,3 +1823,58 @@ input:checked+.toggle-slider:before {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+/* Collapsible section styles */
+.collapsible-section {
+  width: 100%;
+  margin-bottom: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.collapsible-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.8rem 1rem;
+  cursor: pointer;
+  background: rgba(0, 0, 0, 0.3);
+  transition: background 0.2s ease;
+}
+
+.collapsible-header:hover {
+  background: rgba(0, 0, 255, 0.1);
+}
+
+.collapsible-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: white;
+}
+
+.collapsible-arrow {
+  transition: transform 0.3s ease;
+}
+
+.collapsible-section.collapsed .collapsible-arrow {
+  transform: rotate(-90deg);
+}
+
+.collapsible-content {
+  padding: 0.8rem;
+  transition: max-height 0.3s ease, padding 0.3s ease;
+  overflow: hidden;
+}
+
+.collapsible-section.collapsed .collapsible-content {
+  max-height: 0;
+  padding: 0 0.8rem;
+}
+
+/* Adjust spacing within collapsible content */
+.collapsible-content .sidebar-section:last-child {
+  margin-bottom: 0;
+}

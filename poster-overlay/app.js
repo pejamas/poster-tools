@@ -3109,3 +3109,27 @@ window.addEventListener("resize", () => {
     document.body.style.overflow = "";
   }
 });
+
+// Initialize collapsible sections
+document.addEventListener('DOMContentLoaded', function() {
+  const collapsibleSections = document.querySelectorAll('.collapsible-section');
+  
+  collapsibleSections.forEach(section => {
+    const header = section.querySelector('.collapsible-header');
+    const content = section.querySelector('.collapsible-content');
+    
+    // Add click event to toggle collapse
+    header.addEventListener('click', () => {
+      const isCollapsed = section.classList.toggle('collapsed');
+      
+      if (isCollapsed) {
+        content.style.maxHeight = '0';
+      } else {
+        content.style.maxHeight = content.scrollHeight + 'px';
+      }
+    });
+    
+    // Set initial state (expanded)
+    content.style.maxHeight = content.scrollHeight + 'px';
+  });
+});
