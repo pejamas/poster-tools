@@ -355,13 +355,14 @@ header {
 
 /* Toggle button for sidebar - Enhanced */
 .sidebar-toggle {
-    width: 100%;
+    width: 90% !important;
     padding: 0.7rem 1rem;
     text-align: center;
     cursor: pointer;
     background: linear-gradient(135deg, rgba(0, 187, 170, 0.2), rgba(138, 43, 226, 0.2));
     border-radius: 8px;
     margin-bottom: 0.7rem;
+    margin: -0.4rem auto 0.7rem auto;
     font-weight: 600;
     display: flex;
     justify-content: center;
@@ -1268,7 +1269,6 @@ input:checked + .toggle-slider:before {
 }
 
 .media-type-btn.active::after {
-    content: "✓";
     font-size: 1rem;
     color: white;
     position: absolute;
@@ -1534,7 +1534,7 @@ input:checked + .toggle-slider:before {
         gap: 1rem;
         width: 90%;
         max-width: 550px;
-        margin: 1.5rem auto;
+        margin: 0.5rem auto 0.5rem auto;
         padding: 0;
     }
 
@@ -1812,6 +1812,23 @@ input:checked + .toggle-slider:before {
     border-color: rgba(0, 255, 255, 0.4);
 }
 
+.mobile-input-group.network-search-group {
+    position: relative;
+    margin-bottom: 1.3rem;
+    max-width: 91%;
+}
+
+.mobile-input-group.network-search-group input {
+    width: 100%;
+    padding: 0.8rem;
+    background: rgba(0, 0, 0, 0.4);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    text-align: center;
+}
+
 /* ==========================================
    SMALL SCREEN DEVICES
    ========================================== */
@@ -1975,8 +1992,22 @@ input:checked + .toggle-slider:before {
     justify-content: space-between;
     align-items: center;
     padding-bottom: 1rem;
+    max-width: 95% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    padding-left: 1rem;
+    padding-right: 1rem;
     margin-bottom: 1rem;
     border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+    border-radius: 8px;
+}
+
+.options-tools-container {
+    width: 90%;
+    max-width: 550px;
+    margin: 0 auto;
+    border-radius: 8px;
+    overflow: hidden;
 }
 
 .mobile-menu-title {
@@ -2054,7 +2085,6 @@ input:checked + .toggle-slider:before {
 }
 
 .mobile-menu-tab.active::after {
-    content: "✓";
     position: absolute;
     right: 10px;
     top: 50%;

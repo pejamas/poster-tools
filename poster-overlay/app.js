@@ -3312,3 +3312,33 @@ document.addEventListener("click", (e) => {
 document.addEventListener("DOMContentLoaded", function() {
   initMobileContentTypeButtons();
 });
+
+// Add event listener to hide suggestions when clicking elsewhere
+document.addEventListener('click', function(e) {
+  // For desktop network logo suggestions
+  if (!e.target.closest('#network-logo-search') && !e.target.closest('#network-logo-suggestions')) {
+    document.getElementById('network-logo-suggestions').style.display = 'none';
+  }
+  
+  // For mobile network logo suggestions
+  if (!e.target.closest('#mobile-network-search') && !e.target.closest('#mobile-network-suggestions')) {
+    document.getElementById('mobile-network-suggestions').style.display = 'none';
+  }
+  
+  // For other suggestion boxes
+  if (!e.target.closest('#tmdb-search-input') && !e.target.closest('#tmdb-suggestions')) {
+    document.getElementById('tmdb-suggestions').style.display = 'none';
+  }
+  
+  if (!e.target.closest('#mediux-search-input') && !e.target.closest('#mediux-suggestions')) {
+    document.getElementById('mediux-suggestions').style.display = 'none';
+  }
+  
+  if (!e.target.closest('#mobile-tmdb-search') && !e.target.closest('#mobile-tmdb-suggestions')) {
+    document.getElementById('mobile-tmdb-suggestions').style.display = 'none';
+  }
+  
+  if (!e.target.closest('#mobile-mediux-search') && !e.target.closest('#mobile-mediux-suggestions')) {
+    document.getElementById('mobile-mediux-suggestions').style.display = 'none';
+  }
+});
