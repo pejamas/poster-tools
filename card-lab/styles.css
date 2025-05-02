@@ -424,19 +424,31 @@ header {
 }
 
 .icon-button.teal {
-  background-color: #00bfa5;
+  background: linear-gradient(135deg, #00fff0, #6a11cb);
+  color: white;
+  border: none;
+  box-shadow: 0 4px 12px rgba(0, 255, 255, 0.25);
+  transition: all 0.3s ease;
 }
 
 .icon-button.teal:hover {
-  background-color: #1de9b6;
+  background: linear-gradient(135deg, #00e5ff, #8e2de2);
+  box-shadow: 0 6px 16px rgba(0, 255, 255, 0.4);
+  transform: translateY(-2px);
 }
 
 .icon-button.red {
-  background-color: #f44336;
+  background: linear-gradient(135deg, #ff5252, #ff1744, #d50000);
+  color: white;
+  border: none;
+  box-shadow: 0 4px 12px rgba(255, 23, 68, 0.3);
+  transition: all 0.3s ease;
 }
 
 .icon-button.red:hover {
-  background-color: #e53935;
+  background: linear-gradient(135deg, #ff5252, #d50000);
+  box-shadow: 0 6px 16px rgba(255, 23, 68, 0.4);
+  transform: translateY(-2px);
 }
 
 .action-row {
@@ -835,10 +847,38 @@ input:checked + .toggle-slider:before {
 
 #batch-download-btn {
   width: 100%;
-  background: linear-gradient(135deg, #00bfa5, #8e24aa);
+  background: linear-gradient(135deg, #00fff0, #6a11cb);
   color: white;
   border: none;
-  box-shadow: 0 4px 12px rgba(0, 191, 165, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 255, 255, 0.25);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  font-weight: 600;
+}
+
+#batch-download-btn:hover {
+  background: linear-gradient(135deg, #00e5ff, #8e2de2);
+  box-shadow: 0 6px 16px rgba(0, 255, 255, 0.4);
+  transform: translateY(-2px);
+}
+
+#batch-download-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0));
+  animation: shine 1.5s infinite;
+  animation-delay: 0.5s;
+}
+
+@keyframes shine {
+  0% { left: -100%; }
+  20% { left: 100%; }
+  100% { left: 100%; }
 }
 
 .alt-images-grid {
@@ -905,7 +945,21 @@ input:checked + .toggle-slider:before {
 }
 
 #resetBtn {
+  background: linear-gradient(135deg, #ff5252, #ff1744, #d50000);
+  color: white;
+  border: none;
+  box-shadow: 0 4px 12px rgba(255, 23, 68, 0.3);
+  transition: all 0.3s ease;
+  font-weight: 600;
   margin-bottom: 0.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+#resetBtn:hover {
+  background: linear-gradient(135deg, #ff5252, #d50000);
+  box-shadow: 0 6px 16px rgba(255, 23, 68, 0.4);
+  transform: translateY(-2px);
 }
 
 .action-button {

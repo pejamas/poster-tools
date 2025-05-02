@@ -215,19 +215,47 @@ header {
 }
 
 #download-btn.icon-button.teal {
-    background-color: #00bfa5;
+    background: linear-gradient(135deg, #00fff0, #6a11cb);
+    color: white;
+    border: none;
+    box-shadow: 0 4px 12px rgba(0, 255, 255, 0.25);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
 }
 
 #download-btn.icon-button.teal:hover {
-    background-color: #1de9b6;
+    background: linear-gradient(135deg, #00e5ff, #8e2de2);
+    box-shadow: 0 6px 16px rgba(0, 255, 255, 0.4);
+    transform: translateY(-2px);
 }
 
-.icon-button.red {
-    background-color: #f44336;
+#download-btn.icon-button.teal::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0));
+    animation: shine 1.5s infinite;
+    animation-delay: 0.5s;
 }
 
-.icon-button.red:hover {
-    background-color: #e53935;
+#reset-btn {
+    background: linear-gradient(135deg, #ff5252, #ff1744, #d50000);
+    color: white;
+    border: none;
+    box-shadow: 0 4px 12px rgba(255, 23, 68, 0.3);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+#reset-btn:hover {
+    background: linear-gradient(135deg, #ff5252, #d50000);
+    box-shadow: 0 6px 16px rgba(255, 23, 68, 0.4);
+    transform: translateY(-2px);
 }
 
 .sidebar-action-row {
@@ -380,8 +408,19 @@ header {
 }
 
 #reset-btn {
-    background: #ff4d4d;
+    background: linear-gradient(135deg, #ff5252, #ff1744, #d50000);
     color: white;
+    border: none;
+    box-shadow: 0 4px 12px rgba(255, 23, 68, 0.3);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+#reset-btn:hover {
+    background: linear-gradient(135deg, #ff5252, #d50000);
+    box-shadow: 0 6px 16px rgba(255, 23, 68, 0.4);
+    transform: translateY(-2px);
 }
 
 .sidebar input[type="file"] {
@@ -1364,6 +1403,64 @@ input:checked + .toggle-slider:before {
         padding: 0 1rem;
     }
 
+    .mobile-canvas-actions .icon-button {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.75rem;
+        border-radius: 8px;
+        font-weight: 600;
+        color: white;
+        border: none;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .mobile-canvas-actions .icon-button.teal {
+        background: linear-gradient(135deg, #00fff0, #6a11cb);
+        box-shadow: 0 4px 12px rgba(0, 255, 255, 0.25);
+        transition: all 0.3s ease;
+    }
+
+    .mobile-canvas-actions .icon-button.teal:hover {
+        background: linear-gradient(135deg, #00e5ff, #8e2de2);
+        box-shadow: 0 6px 16px rgba(0, 255, 255, 0.4);
+        transform: translateY(-2px);
+    }
+
+    .mobile-canvas-actions .icon-button.teal::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0));
+        animation: shine 1.5s infinite;
+        animation-delay: 0.5s;
+    }
+
+    .mobile-canvas-actions .icon-button.red {
+        background: linear-gradient(135deg, #ff5252, #ff1744, #d50000);
+        box-shadow: 0 4px 12px rgba(255, 23, 68, 0.3);
+        transition: all 0.3s ease;
+    }
+
+    .mobile-canvas-actions .icon-button.red:hover {
+        background: linear-gradient(135deg, #ff5252, #d50000);
+        box-shadow: 0 6px 16px rgba(255, 23, 68, 0.4);
+        transform: translateY(-2px);
+    }
+
+    .mobile-canvas-actions .icon {
+        width: 20px;
+        height: 20px;
+        filter: brightness(0) invert(1);
+    }
+
     .sidebar {
         width: 100%;
         max-width: 100%;
@@ -1739,14 +1836,44 @@ input:checked + .toggle-slider:before {
     color: white;
     border: none;
     cursor: pointer;
+    position: relative;
+    overflow: hidden;
 }
 
 .mobile-canvas-actions .icon-button.teal {
-    background: #00bfa5;
+    background: linear-gradient(135deg, #00fff0, #6a11cb);
+    box-shadow: 0 4px 12px rgba(0, 255, 255, 0.25);
+    transition: all 0.3s ease;
+}
+
+.mobile-canvas-actions .icon-button.teal:hover {
+    background: linear-gradient(135deg, #00e5ff, #8e2de2);
+    box-shadow: 0 6px 16px rgba(0, 255, 255, 0.4);
+    transform: translateY(-2px);
+}
+
+.mobile-canvas-actions .icon-button.teal::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0));
+    animation: shine 1.5s infinite;
+    animation-delay: 0.5s;
 }
 
 .mobile-canvas-actions .icon-button.red {
-    background: #f44336;
+    background: linear-gradient(135deg, #ff5252, #ff1744, #d50000);
+    box-shadow: 0 4px 12px rgba(255, 23, 68, 0.3);
+    transition: all 0.3s ease;
+}
+
+.mobile-canvas-actions .icon-button.red:hover {
+    background: linear-gradient(135deg, #ff5252, #d50000);
+    box-shadow: 0 6px 16px rgba(255, 23, 68, 0.4);
+    transform: translateY(-2px);
 }
 
 .mobile-canvas-actions .icon {
