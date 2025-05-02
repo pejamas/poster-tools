@@ -3185,11 +3185,6 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 });
 
-// Mobile file upload handling
-document.getElementById("mobile-upload-btn").addEventListener("click", () => {
-  document.getElementById("mobile-poster-upload").click();
-});
-
 document.getElementById("mobile-poster-upload").addEventListener("change", (e) => {
   const file = e.target.files[0];
   if (file) {
