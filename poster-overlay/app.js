@@ -2756,27 +2756,33 @@ function setupMobileMenu() {
       });
     }
 
-    // Mobile media type buttons
+    // Mobile media type buttons proper handling
     const mobileMediaTypeButtons = document.querySelectorAll(".mobile-tab-content .media-type-btn");
     if (mobileMediaTypeButtons) {
       mobileMediaTypeButtons.forEach((button) => {
         button.addEventListener("click", () => {
-          // Update mobile UI
-          mobileMediaTypeButtons.forEach((btn) => btn.classList.remove("active"));
+          // First update mobile UI
+          mobileMediaTypeButtons.forEach((btn) => {
+            btn.classList.remove("active");
+            // Force reset styles to ensure consistency
+            btn.style.removeProperty("background");
+            btn.style.removeProperty("opacity");
+            btn.style.removeProperty("filter");
+          });
+          
           button.classList.add("active");
-
-          // Apply gradient styling
-          if (button.dataset.type === "movie") {
-            button.style.background = "linear-gradient(to right, #00bfa5, #8e24aa)";
-            mobileMediaTypeButtons[1].style.background = "transparent";
-          } else {
-            button.style.background = "linear-gradient(to right, #00bfa5, #8e24aa)";
-            mobileMediaTypeButtons[0].style.background = "transparent";
-          }
-
-          // Sync to desktop
+          
+          // Explicitly set the gradient background and ensure opacity is 1
+          button.style.background = "linear-gradient(to right, #00bfa5, #8e24aa)";
+          button.style.opacity = "1";
+          button.style.filter = "none";
+          
+          // Sync with desktop
           const type = button.dataset.type;
-          document.querySelector(`.sidebar .media-type-btn[data-type="${type}"]`).click();
+          const desktopButton = document.querySelector(`.sidebar .media-type-btn[data-type="${type}"]`);
+          if (desktopButton && !desktopButton.classList.contains("active")) {
+            desktopButton.click();
+          }
         });
       });
     }
@@ -3174,4 +3180,135 @@ document.addEventListener('DOMContentLoaded', function() {
     // Set initial state (expanded)
     content.style.maxHeight = content.scrollHeight + 'px';
   });
+});
+
+// Mobile file upload handling
+document.getElementById("mobile-upload-btn").addEventListener("click", () => {
+  document.getElementById("mobile-poster-upload").click();
+});
+
+document.getElementById("mobile-poster-upload").addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (file) {
+    document.getElementById("mobile-file-name").textContent = file.name;
+    
+    // Trigger the main poster upload to keep functionality in sync
+    const mainPosterUpload = document.getElementById("poster-upload");
+    
+    // Create a new FileList-like object
+    const dataTransfer = new DataTransfer();
+    dataTransfer.items.add(file);
+    
+    // Set the files on the main upload input
+    mainPosterUpload.files = dataTransfer.files;
+    
+    // Trigger change event on the main upload input
+    mainPosterUpload.dispatchEvent(new Event('change'));
+    
+    // Close the mobile menu after file selection
+    document.getElementById("mobile-menu-overlay").style.display = "none";
+  }
+});
+
+// Fix mobile content type buttons by directly manipulating DOM properties
+function fixMobileContentTypeButtons() {
+  const mobileMediaTypeButtons = document.querySelectorAll(".mobile-tab-content .media-type-btn");
+  
+  if (mobileMediaTypeButtons) {
+    mobileMediaTypeButtons.forEach((button) => {
+      // Remove any existing click handlers
+      button.removeEventListener("click", handleMobileTypeButtonClick);
+      // Add our new click handler
+      button.addEventListener("click", handleMobileTypeButtonClick);
+    });
+  }
+}
+
+function handleMobileTypeButtonClick(event) {
+  const clickedButton = event.currentTarget;
+  const mobileMediaTypeButtons = document.querySelectorAll(".mobile-tab-content .media-type-btn");
+  
+  // Remove active class and reset styles for all buttons
+  mobileMediaTypeButtons.forEach((btn) => {
+    btn.classList.remove("active");
+    btn.style.background = "transparent";
+    btn.style.opacity = "0.6";
+    btn.style.filter = "grayscale(50%)";
+  });
+  
+  // Set active class and styles for clicked button
+  clickedButton.classList.add("active");
+  clickedButton.style.background = "linear-gradient(to right, #00bfa5, #8e24aa)";
+  clickedButton.style.opacity = "1";
+  clickedButton.style.filter = "none";
+  
+  // Sync with desktop selection
+  const type = clickedButton.dataset.type;
+  const desktopButton = document.querySelector(`.sidebar .media-type-btn[data-type="${type}"]`);
+  if (desktopButton) {
+    desktopButton.click();
+  }
+}
+
+// Call this when the page loads
+document.addEventListener("DOMContentLoaded", () => {
+  fixMobileContentTypeButtons();
+});
+
+// Initialize the mobile menu content type buttons when displayed
+function initMobileContentTypeButtons() {
+  const mobileMenuOverlay = document.getElementById("mobile-menu-overlay");
+  const mobileMenuToggle = document.getElementById("sidebar-toggle");
+  
+  if (mobileMenuToggle && mobileMenuOverlay) {
+    // Add event listener to sidebar toggle to initialize buttons
+    mobileMenuToggle.addEventListener("click", () => {
+      // Find the currently active content type in the desktop UI
+      const desktopActiveButton = document.querySelector(".sidebar .media-type-btn.active");
+      const activeType = desktopActiveButton ? desktopActiveButton.dataset.type : "movie";
+      
+      // Set up the mobile buttons based on the desktop active state
+      const mobileButtons = document.querySelectorAll(".mobile-tab-content .media-type-btn");
+      mobileButtons.forEach(btn => {
+        // Clear any inline styles that might be causing issues
+        btn.style.removeProperty("background");
+        btn.style.removeProperty("opacity");
+        btn.style.removeProperty("filter");
+        
+        if (btn.dataset.type === activeType) {
+          btn.classList.add("active");
+        } else {
+          btn.classList.remove("active");
+        }
+      });
+    });
+  }
+}
+
+// Listen for mobile type button clicks with a delegated event handler
+document.addEventListener("click", (e) => {
+  const button = e.target.closest(".mobile-tab-content .media-type-btn");
+  if (button) {
+    const mobileButtons = document.querySelectorAll(".mobile-tab-content .media-type-btn");
+    
+    // Remove active class from all buttons
+    mobileButtons.forEach(btn => {
+      btn.classList.remove("active");
+    });
+    
+    // Add active class to clicked button
+    button.classList.add("active");
+    
+    // Sync with desktop buttons
+    const type = button.dataset.type;
+    const desktopButton = document.querySelector(`.sidebar .media-type-btn[data-type="${type}"]`);
+    if (desktopButton && !desktopButton.classList.contains("active")) {
+      desktopButton.click();
+    }
+  }
+});
+
+// Call on DOMContentLoaded
+document.addEventListener("DOMContentLoaded", function() {
+  initMobileContentTypeButtons();
 });

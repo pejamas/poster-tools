@@ -205,8 +205,6 @@
           <div class="mobile-input-group">
             <label for="mobile-poster-upload" class="mobile-drop-zone-label">Select an image file to upload</label>
             <input type="file" id="mobile-poster-upload" accept="image/*" class="mobile-file-input" />
-            <button id="mobile-upload-btn" class="mobile-upload-button">Choose File</button>
-            <span id="mobile-file-name">No file chosen</span>
           </div>
         </div>
 
@@ -260,6 +258,39 @@
       </div>
     </div>
     <div id="tooltip" class="custom-tooltip"></div>
+    <script>
+      // Custom script to ensure proper mobile content type button behavior
+      document.addEventListener("DOMContentLoaded", function() {
+        // Grab the mobile content type buttons
+        const mobileBtns = document.querySelectorAll(".mobile-tab-content .media-type-btn");
+        
+        // Add direct event handlers to each button
+        mobileBtns.forEach(btn => {
+          btn.addEventListener("click", function() {
+            // First, reset all buttons
+            mobileBtns.forEach(b => {
+              b.classList.remove("active");
+              b.style.opacity = "0.6";
+              b.style.filter = "grayscale(50%)";
+              b.style.background = "transparent";
+            });
+            
+            // Then style the clicked button
+            btn.classList.add("active");
+            btn.style.background = "linear-gradient(to right, #00bfa5, #8e24aa)";
+            btn.style.opacity = "1";
+            btn.style.filter = "none";
+            
+            // Sync with main UI buttons
+            const type = btn.dataset.type;
+            const desktopBtn = document.querySelector(`.sidebar .media-type-btn[data-type="${type}"]`);
+            if (desktopBtn) {
+              desktopBtn.click();
+            }
+          });
+        });
+      });
+    </script>
     <script src="app.js"></script>
   </body>
 </html>
