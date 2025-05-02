@@ -1836,6 +1836,36 @@ input:checked + .toggle-slider:before {
     padding-right: 25px;
 }
 
+/* Mobile color picker styling */
+#mobile-pickr.mobile-color-picker.pickr-inline-square {
+    width: 36px;
+    height: 36px;
+    flex: 0 0 auto;
+    margin: 0 0 0 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    display: block;
+}
+
+@media screen and (max-width: 900px) {
+    .mobile-input-group.network-search-group.logo-row-aligned {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        width: 85%;
+        margin-left: auto;
+        margin-right: auto;
+        padding-right: 0;
+    }
+    
+    .mobile-input-group.network-search-group.logo-row-aligned input.logo-select-container {
+        flex: 1;
+        width: calc(100% - 44px);
+    }
+}
+
 /* ==========================================
    SMALL SCREEN DEVICES
    ========================================== */
@@ -2166,24 +2196,3 @@ input:checked + .toggle-slider:before {
     color: white;
     font-weight: 500;
 }
-
-/* Mobile color picker styling */
-#mobile-pickr {
-    width: 85%;
-    height: 36px;
-    border-radius: 8px;
-    margin: 0 auto 1.2rem auto;
-    display: block;
-    background: #ffffff;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-    cursor: pointer;
-}
-
-@media screen and (max-width: 900px) {
-    .pcr-app .pcr-button {
-        width: 100% !important;
-        height: 36px !important;
-        border-radius: 8px !important;
-    }
-  }
