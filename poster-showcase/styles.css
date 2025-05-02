@@ -1202,19 +1202,21 @@ input:checked + .toggle-slider:before {
 }
 
 .collapsible-header {
-  background: rgba(0, 0, 0, 0.3);
+  background: linear-gradient(90deg, rgba(0, 187, 170, 0.2), rgba(12, 38, 70, 0.4));
   padding: 0.6rem 0.8rem;
   border-radius: 6px;
   cursor: pointer;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-left: 3px solid #00fff0;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
   transition: all 0.2s ease;
+  box-sizing: border-box;
 }
 
 .collapsible-header:hover {
-  background: rgba(0, 0, 0, 0.4);
+  background: linear-gradient(90deg, rgba(0, 187, 170, 0.25), rgba(12, 38, 70, 0.45));
 }
 
 .collapsible-header h3 {
@@ -1267,11 +1269,7 @@ input:checked + .toggle-slider:before {
 
 .collapsible.active .collapsible-header {
   border-radius: 6px 6px 0 0;
-  background: linear-gradient(
-    90deg,
-    rgba(0, 0, 0, 0.3),
-    rgba(0, 191, 165, 0.1)
-  );
+  background: linear-gradient(90deg, rgba(0, 187, 170, 0.25), rgba(12, 38, 70, 0.45));
 }
 
 /* Collapsible section content styling */

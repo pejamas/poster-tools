@@ -508,29 +508,33 @@ header {
 }
 
 .collapsible {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
+  width: 100%;
 }
 
 .collapsible-header {
-  background: rgba(0, 0, 0, 0.2);
+  background: linear-gradient(90deg, rgba(0, 187, 170, 0.2), rgba(12, 38, 70, 0.4));
   padding: 0.6rem 0.8rem;
   border-radius: 6px;
   cursor: pointer;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-left: 3px solid #00fff0;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
   transition: all 0.2s ease;
+  box-sizing: border-box;
 }
 
 .collapsible-header:hover {
-  background: rgba(0, 0, 0, 0.3);
+  background: linear-gradient(90deg, rgba(0, 187, 170, 0.25), rgba(12, 38, 70, 0.45));
 }
 
 .collapsible-header h3 {
   margin: 0;
   font-size: 1rem;
   font-weight: 600;
+  color: white;
 }
 
 .toggle-icon {
@@ -560,11 +564,14 @@ header {
 }
 
 .collapsible-content {
-  padding: 0.5rem;
+  padding: 1rem;
   display: none;
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(0, 0, 0, 0.15);
   border-radius: 0 0 6px 6px;
-  margin-top: 1px;
+  margin-top: -0.5rem;
+  border-left: 1px solid rgba(255, 255, 255, 0.05);
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .collapsible.active .collapsible-content {
@@ -573,11 +580,7 @@ header {
 
 .collapsible.active .collapsible-header {
   border-radius: 6px 6px 0 0;
-  background: linear-gradient(
-    90deg,
-    rgba(0, 0, 0, 0.3),
-    rgba(0, 191, 165, 0.1)
-  );
+  background: linear-gradient(90deg, rgba(0, 187, 170, 0.25), rgba(12, 38, 70, 0.45));
 }
 
 .control-row {
