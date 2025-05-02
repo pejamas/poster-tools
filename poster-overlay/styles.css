@@ -1534,7 +1534,7 @@ input:checked + .toggle-slider:before {
         gap: 1rem;
         width: 90%;
         max-width: 550px;
-        margin: 0.5rem auto 0.5rem auto;
+        margin: -1.5rem auto 0.5rem auto;
         padding: 0;
     }
 
