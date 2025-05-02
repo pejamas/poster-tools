@@ -2793,6 +2793,9 @@ function setupMobileMenu() {
         el: document.getElementById("mobile-pickr"),
         theme: "monolith",
         default: "#ffffff",
+        swatches: false,
+        useAsButton: false,
+        inline: false, 
         components: {
           preview: true,
           opacity: false,
@@ -3312,6 +3315,11 @@ document.addEventListener("click", (e) => {
 document.addEventListener("DOMContentLoaded", function() {
   initMobileContentTypeButtons();
 });
+
+function hideNetworkSuggestions() {
+  document.getElementById('network-logo-suggestions').style.display = 'none';
+  document.getElementById('mobile-network-suggestions').style.display = 'none';
+}
 
 // Add event listener to hide suggestions when clicking elsewhere
 document.addEventListener('click', function(e) {

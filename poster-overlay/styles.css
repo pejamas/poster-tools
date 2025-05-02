@@ -1829,6 +1829,13 @@ input:checked + .toggle-slider:before {
     text-align: center;
 }
 
+.mobile-tab-content .mobile-input-group {
+    max-width: 85%;
+    margin-left: auto;
+    margin-right: auto;
+    padding-right: 25px;
+}
+
 /* ==========================================
    SMALL SCREEN DEVICES
    ========================================== */
@@ -2143,7 +2150,11 @@ input:checked + .toggle-slider:before {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    width: 85% !important; /* Match the width of search fields */
+    margin-left: auto;
+    margin-right: auto;
     padding: 0.8rem 1rem;
+    padding-left: 1rem; /* Reduce left padding from 65px */
     background: rgba(0, 0, 0, 0.25);
     border-radius: 8px;
     margin-bottom: 1.2rem;
@@ -2156,13 +2167,23 @@ input:checked + .toggle-slider:before {
     font-weight: 500;
 }
 
-/* Styling for the mobile color picker */
+/* Mobile color picker styling */
 #mobile-pickr {
-    width: 100%;
-    height: 40px !important;
-    border-radius: 6px;
+    width: 85%;
+    height: 36px;
+    border-radius: 8px;
+    margin: 0 auto 1.2rem auto;
+    display: block;
     background: #ffffff;
-    cursor: pointer;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
     border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
 }
+
+@media screen and (max-width: 900px) {
+    .pcr-app .pcr-button {
+        width: 100% !important;
+        height: 36px !important;
+        border-radius: 8px !important;
+    }
+  }
