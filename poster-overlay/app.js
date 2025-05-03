@@ -2337,15 +2337,22 @@ function displayTVShowMetadata(details) {
   document.getElementById("content-type-indicator").textContent = "TV Show";
   document.getElementById("content-type-indicator").className = "type-badge tv";
 
+  // Auto-add network logo for TV shows if they have network information
   if (details.networks && details.networks.length > 0) {
     const networkName = details.networks[0].name.toLowerCase();
+    console.log(`Looking for network logo match for: ${networkName}`);
+    
+    // First try for exact match
     let exactMatch = availableLogos.find((logo) => logo.name.toLowerCase() === networkName);
 
     if (exactMatch) {
+      console.log(`Found exact match for ${networkName}: ${exactMatch.name}`);
       networkLogoSearch.value = exactMatch.name;
       updateNetworkLogo(exactMatch.path);
       networkLogoCheckbox.checked = true;
+      hideNetworkSuggestions();
     } else {
+      // Check special cases
       const specialCases = {
         hbo: "HBO",
         "hbo max": "Hbo Max",
@@ -2355,13 +2362,16 @@ function displayTVShowMetadata(details) {
 
       if (specialCases[networkName]) {
         const specialMatch = availableLogos.find((logo) => logo.name === specialCases[networkName]);
-
         if (specialMatch) {
+          console.log(`Found special case match for ${networkName}: ${specialMatch.name}`);
           networkLogoSearch.value = specialMatch.name;
           updateNetworkLogo(specialMatch.path);
           networkLogoCheckbox.checked = true;
+          hideNetworkSuggestions();
         }
       } else {
+        // Try partial/regex match
+        let matchFound = false;
         for (const logo of availableLogos) {
           const logoName = logo.name.toLowerCase();
 
@@ -2369,11 +2379,18 @@ function displayTVShowMetadata(details) {
           const logoRegex = new RegExp(`\\b${logoName}\\b`);
 
           if (networkRegex.test(logoName) || logoRegex.test(networkName)) {
+            console.log(`Found regex match for ${networkName}: ${logo.name}`);
             networkLogoSearch.value = logo.name;
             updateNetworkLogo(logo.path);
             networkLogoCheckbox.checked = true;
+            hideNetworkSuggestions();
+            matchFound = true;
             break;
           }
+        }
+        
+        if (!matchFound) {
+          console.log(`No logo match found for network: ${networkName}`);
         }
       }
     }
