@@ -1906,7 +1906,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const availableWidth = Math.min(window.innerWidth - 360, 2000);
     let cardWidth = Math.floor((availableWidth * 0.9) / maxColumns) - 10;
     cardWidth = Math.max(cardWidth, 280);
-    const cardGap = Math.floor(availableWidth * 0.01);
+    const cardGap = Math.floor(availableWidth * 0.01) + 15; // Increased gap for better spacing
 
     // Determine number of columns based on episode count
     let columns;
@@ -1931,33 +1931,93 @@ document.addEventListener("DOMContentLoaded", () => {
     // Calculate total dimensions
     const totalWidth = columns * gridCardWidth + (columns - 1) * cardGap;
     const totalHeight =
-      rows * (gridCardHeight + 24) + (rows - 1) * cardGap + 50;
+      rows * (gridCardHeight + 30) + (rows - 1) * cardGap + 60; // Increased to accommodate new styling
 
     // Set canvas dimensions
-    gridCanvas.width = totalWidth + 40;
-    gridCanvas.height = totalHeight + 30;
+    gridCanvas.width = totalWidth + 50;
+    gridCanvas.height = totalHeight + 40;
 
-    // Clear canvas and fill background
-    gridCtx.clearRect(0, 0, gridCanvas.width, gridCanvas.height);
-    gridCtx.fillStyle = "#10102a";
+    // Render a modern background gradient
+    const gradient = gridCtx.createLinearGradient(0, 0, 0, gridCanvas.height);
+    gradient.addColorStop(0, '#10102a');
+    gradient.addColorStop(1, '#080818');
+    gridCtx.fillStyle = gradient;
     gridCtx.fillRect(0, 0, gridCanvas.width, gridCanvas.height);
+    
+    // Add subtle grid pattern
+    gridCtx.save();
+    gridCtx.globalAlpha = 0.05;
+    const gridSize = 40;
+    gridCtx.strokeStyle = "#ffffff";
+    gridCtx.lineWidth = 0.5;
+    
+    for (let i = 0; i <= gridCanvas.width; i += gridSize) {
+      gridCtx.beginPath();
+      gridCtx.moveTo(i, 0);
+      gridCtx.lineTo(i, gridCanvas.height);
+      gridCtx.stroke();
+    }
+    
+    for (let i = 0; i <= gridCanvas.height; i += gridSize) {
+      gridCtx.beginPath();
+      gridCtx.moveTo(0, i);
+      gridCtx.lineTo(gridCanvas.width, i);
+      gridCtx.stroke();
+    }
+    gridCtx.restore();
 
-    // Draw title
-    gridCtx.font = "bold 24px Gabarito, sans-serif";
+    // Draw header with gradient background
+    const headerHeight = 40;
+    const headerGradient = gridCtx.createLinearGradient(0, 0, gridCanvas.width, 0);
+    headerGradient.addColorStop(0, 'rgba(0, 191, 165, 0.3)');
+    headerGradient.addColorStop(0.5, 'rgba(142, 36, 170, 0.3)');
+    headerGradient.addColorStop(1, 'rgba(0, 191, 165, 0.3)');
+    
+    gridCtx.fillStyle = headerGradient;
+    gridCtx.beginPath();
+    gridCtx.roundRect(10, 10, gridCanvas.width - 20, headerHeight, 8);
+    gridCtx.fill();
+    
+    // Draw title with text shadow
+    gridCtx.font = "bold 20px Gabarito, sans-serif";
     gridCtx.fillStyle = "#ffffff";
     gridCtx.textAlign = "center";
+    gridCtx.shadowColor = "rgba(0, 0, 0, 0.5)";
+    gridCtx.shadowBlur = 5;
+    gridCtx.shadowOffsetX = 0;
+    gridCtx.shadowOffsetY = 2;
     gridCtx.fillText(
       `${currentShowData.name} - Season ${currentSeasonNumber}`,
       gridCanvas.width / 2,
-      30
+      35
     );
+    gridCtx.shadowColor = "transparent"; // Reset shadow
 
     // Draw each episode card
     episodeTitleCards.forEach((card, index) => {
       const row = Math.floor(index / columns);
       const col = index % columns;
-      const x = 20 + col * (gridCardWidth + gridGap);
-      const y = 50 + row * (gridCardHeight + gridGap + 24);
+      const x = 25 + col * (gridCardWidth + gridGap);
+      const y = 70 + row * (gridCardHeight + gridGap + 30);
+
+      // Draw card container with shadow effect
+      gridCtx.save();
+      
+      // Create card background with shadow
+      gridCtx.shadowColor = "rgba(0, 0, 0, 0.5)";
+      gridCtx.shadowBlur = 15;
+      gridCtx.shadowOffsetX = 0;
+      gridCtx.shadowOffsetY = 5;
+      
+      // Draw card background
+      gridCtx.fillStyle = "#161830";
+      gridCtx.beginPath();
+      gridCtx.roundRect(x - 5, y - 5, gridCardWidth + 10, gridCardHeight + 35, 8);
+      gridCtx.fill();
+      
+      // Reset shadow for content
+      gridCtx.shadowColor = "transparent";
+      gridCtx.restore();
 
       // Create temporary canvas for this card
       const tempCanvas = document.createElement("canvas");
@@ -1968,68 +2028,120 @@ document.addEventListener("DOMContentLoaded", () => {
       // Draw card to temp canvas
       drawCardToTempContext(tempCtx, card, gridCardWidth, gridCardHeight);
 
-      // Draw temp canvas to grid
+      // Add rounded corners to the card image
+      gridCtx.save();
+      gridCtx.beginPath();
+      gridCtx.roundRect(x, y, gridCardWidth, gridCardHeight, 6);
+      gridCtx.clip();
+      
+      // Draw card image
       gridCtx.drawImage(tempCanvas, x, y);
+      gridCtx.restore();
+      
+      // Add a subtle inner border glow
+      gridCtx.save();
+      gridCtx.strokeStyle = "rgba(255, 255, 255, 0.15)";
+      gridCtx.lineWidth = 1;
+      gridCtx.beginPath();
+      gridCtx.roundRect(x, y, gridCardWidth, gridCardHeight, 6);
+      gridCtx.stroke();
+      gridCtx.restore();
 
-      // Draw episode label
+      // Draw interactive hover effect hint (slight highlight)
+      gridCtx.fillStyle = "rgba(255, 255, 255, 0.05)";
+      gridCtx.beginPath();
+      gridCtx.roundRect(x, y, gridCardWidth, gridCardHeight, 6);
+      gridCtx.fill();
+
+      // Draw episode label with modern styling
       gridCtx.fillStyle = "rgba(0, 0, 0, 0.7)";
-      gridCtx.fillRect(x, y, 50, 16);
+      gridCtx.beginPath();
+      gridCtx.roundRect(x, y, 50, 22, [6, 0, 0, 0]);
+      gridCtx.fill();
 
       gridCtx.font = "bold 10px Gabarito, sans-serif";
       gridCtx.fillStyle = "#00bfa5";
       gridCtx.textAlign = "left";
       gridCtx.fillText(
         `S${card.seasonNumber}E${card.episodeNumber}`,
-        x + 4,
-        y + 12
+        x + 6,
+        y + 15
       );
 
-      // Draw episode title
-      gridCtx.font = "12px Gabarito, sans-serif";
-      gridCtx.fillStyle = "rgba(255, 255, 255, 0.9)";
+      // Draw episode title with improved text styling
+      gridCtx.font = "500 13px Gabarito, sans-serif";
       gridCtx.textAlign = "center";
+      
+      // Draw text shadow for better readability
+      gridCtx.fillStyle = "rgba(0, 0, 0, 0.7)";
+      gridCtx.fillText(
+        card.title,
+        x + gridCardWidth / 2 + 1,
+        y + gridCardHeight + 16 + 1,
+        gridCardWidth - 10
+      );
+      
+      gridCtx.fillStyle = "rgba(255, 255, 255, 0.95)";
       gridCtx.fillText(
         card.title,
         x + gridCardWidth / 2,
         y + gridCardHeight + 16,
-        gridCardWidth
+        gridCardWidth - 10
       );
 
-      // Draw checkbox for custom placement in top-right corner
-      const checkboxSize = 16;
-      const checkboxX = x + gridCardWidth - checkboxSize - 4;
-      const checkboxY = y + 4;
+      // Draw checkbox for custom placement using a modern toggle appearance
+      const toggleSize = 18;
+      const toggleX = x + gridCardWidth - toggleSize - 8;
+      const toggleY = y + 8;
       
-      // Draw checkbox background
-      gridCtx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-      gridCtx.fillRect(checkboxX - 2, checkboxY - 2, checkboxSize + 4, checkboxSize + 4);
+      // Draw toggle background
+      gridCtx.beginPath();
+      gridCtx.fillStyle = card.hasCustomPlacement ? 'rgba(0, 191, 165, 0.3)' : 'rgba(0, 0, 0, 0.5)';
+      gridCtx.roundRect(toggleX, toggleY, toggleSize, toggleSize, 4);
+      gridCtx.fill();
       
-      // Draw checkbox
-      gridCtx.fillStyle = 'rgba(255, 255, 255, 0.2)';
-      gridCtx.fillRect(checkboxX, checkboxY, checkboxSize, checkboxSize);
+      // Draw toggle border
+      gridCtx.beginPath();
+      gridCtx.strokeStyle = card.hasCustomPlacement ? '#00bfa5' : 'rgba(255, 255, 255, 0.2)';
+      gridCtx.lineWidth = 1.5;
+      gridCtx.roundRect(toggleX, toggleY, toggleSize, toggleSize, 4);
+      gridCtx.stroke();
       
-      // Draw check if this card has custom placement
+      // Draw check mark if custom placement is enabled
       if (card.hasCustomPlacement) {
         gridCtx.strokeStyle = '#00bfa5';
-        gridCtx.lineWidth = 2;
+        gridCtx.lineWidth = 2.5;
+        gridCtx.lineCap = 'round';
+        gridCtx.lineJoin = 'round';
         gridCtx.beginPath();
-        gridCtx.moveTo(checkboxX + 3, checkboxY + 8);
-        gridCtx.lineTo(checkboxX + 7, checkboxY + 12);
-        gridCtx.lineTo(checkboxX + 13, checkboxY + 4);
+        gridCtx.moveTo(toggleX + 4, toggleY + 9);
+        gridCtx.lineTo(toggleX + 8, toggleY + 13);
+        gridCtx.lineTo(toggleX + 14, toggleY + 5);
         gridCtx.stroke();
       }
 
       // Add indicator for custom placement
       if (card.hasCustomPlacement) {
-        // Draw indicator badge
-        gridCtx.fillStyle = 'rgba(0, 191, 165, 0.8)';
-        gridCtx.fillRect(x, y + 16, 50, 16);
+        // Draw badge with pill shape
+        gridCtx.fillStyle = 'rgba(0, 191, 165, 0.9)';
+        gridCtx.beginPath();
+        gridCtx.roundRect(x, y + gridCardHeight - 22, 60, 22, [0, 0, 0, 6]);
+        gridCtx.fill();
         
-        // Draw "Custom" text
-        gridCtx.font = "bold 9px Gabarito, sans-serif";
+        // Add subtle gradient to badge
+        const badgeGradient = gridCtx.createLinearGradient(x, y + gridCardHeight - 22, x + 60, y + gridCardHeight);
+        badgeGradient.addColorStop(0, 'rgba(255, 255, 255, 0.1)');
+        badgeGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+        gridCtx.fillStyle = badgeGradient;
+        gridCtx.beginPath();
+        gridCtx.roundRect(x, y + gridCardHeight - 22, 60, 22, [0, 0, 0, 6]);
+        gridCtx.fill();
+        
+        // Draw "Custom" text with improved styling
+        gridCtx.font = "bold 10px Gabarito, sans-serif";
         gridCtx.fillStyle = "#ffffff";
-        gridCtx.textAlign = "left";
-        gridCtx.fillText("CUSTOM", x + 4, y + 28);
+        gridCtx.textAlign = "center";
+        gridCtx.fillText("CUSTOM", x + 30, y + gridCardHeight - 8);
       }
 
       // Store card coordinates for click handling
@@ -2039,10 +2151,10 @@ document.addEventListener("DOMContentLoaded", () => {
         width: gridCardWidth,
         height: gridCardHeight,
         checkbox: {
-          x: checkboxX,
-          y: checkboxY,
-          width: checkboxSize,
-          height: checkboxSize
+          x: toggleX,
+          y: toggleY,
+          width: toggleSize,
+          height: toggleSize
         }
       };
     });
@@ -2050,6 +2162,71 @@ document.addEventListener("DOMContentLoaded", () => {
     // Add click handler to canvas if not already set
     if (!gridCanvas.onclick) {
       gridCanvas.onclick = handleGridCanvasClick;
+    }
+    
+    // Add hover effects via mousemove event
+    if (!gridCanvas.onmousemove) {
+      let lastHoveredIndex = -1;
+      
+      gridCanvas.onmousemove = function(event) {
+        const rect = gridCanvas.getBoundingClientRect();
+        const scaleX = gridCanvas.width / rect.width;
+        const scaleY = gridCanvas.height / rect.height;
+        const x = (event.clientX - rect.left) * scaleX;
+        const y = (event.clientY - rect.top) * scaleY;
+        
+        // Check if hover is on any card
+        let hoveredIndex = -1;
+        for (let i = 0; i < episodeTitleCards.length; i++) {
+          const card = episodeTitleCards[i];
+          if (card.gridCoords) {
+            const { x: cardX, y: cardY, width: cardWidth, height: cardHeight } = card.gridCoords;
+            
+            if (x >= cardX && x <= cardX + cardWidth && y >= cardY && y <= cardY + cardHeight) {
+              hoveredIndex = i;
+              break;
+            }
+          }
+        }
+        
+        // Only redraw if the hover state changed
+        if (hoveredIndex !== lastHoveredIndex) {
+          lastHoveredIndex = hoveredIndex;
+          renderEpisodeGrid();
+          
+          // Draw hover effect if a card is hovered
+          if (hoveredIndex >= 0) {
+            const card = episodeTitleCards[hoveredIndex];
+            const { x, y, width, height } = card.gridCoords;
+            
+            // Draw highlight effect
+            gridCtx.save();
+            gridCtx.fillStyle = "rgba(0, 191, 165, 0.2)";
+            gridCtx.beginPath();
+            gridCtx.roundRect(x, y, width, height, 6);
+            gridCtx.fill();
+            
+            // Draw glow border
+            gridCtx.strokeStyle = "rgba(0, 191, 165, 0.6)";
+            gridCtx.lineWidth = 2;
+            gridCtx.beginPath();
+            gridCtx.roundRect(x, y, width, height, 6);
+            gridCtx.stroke();
+            gridCtx.restore();
+            
+            // Change cursor to pointer
+            gridCanvas.style.cursor = 'pointer';
+          } else {
+            gridCanvas.style.cursor = 'default';
+          }
+        }
+      };
+      
+      // Reset cursor when leaving canvas
+      gridCanvas.onmouseleave = function() {
+        lastHoveredIndex = -1;
+        gridCanvas.style.cursor = 'default';
+      };
     }
   }
 
