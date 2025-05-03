@@ -31,3 +31,59 @@ window.addEventListener('resize', () => {
     mobileMenuDropdown.classList.remove('active');
   }
 });
+
+// Lightbox functionality for home page preview images
+document.addEventListener('DOMContentLoaded', function() {
+  const lightbox = document.getElementById('home-lightbox');
+  const lightboxImg = document.getElementById('lightbox-img');
+  const lightboxClose = document.getElementById('lightbox-close');
+  const previewImages = document.querySelectorAll('.preview-image');
+  
+  // Open lightbox when clicking on a preview image
+  previewImages.forEach(image => {
+    image.addEventListener('click', function() {
+      lightboxImg.src = this.src;
+      lightboxImg.alt = this.alt;
+      lightbox.classList.add('active');
+      
+      // Prevent scrolling on the body when lightbox is open
+      document.body.style.overflow = 'hidden';
+    });
+  });
+  
+  // Close lightbox when clicking the close button
+  lightboxClose.addEventListener('click', function() {
+    lightbox.classList.remove('active');
+    
+    // Re-enable scrolling when lightbox is closed
+    document.body.style.overflow = '';
+  });
+  
+  // Close lightbox when clicking outside the image
+  lightbox.addEventListener('click', function(e) {
+    if (e.target === lightbox) {
+      lightbox.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+  });
+  
+  // Add keyboard support for closing the lightbox with Escape key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && lightbox.classList.contains('active')) {
+      lightbox.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+  });
+  
+  // Add subtle animation effect to preview images
+  previewImages.forEach(image => {
+    // Create pulsing glow effect on hover
+    image.addEventListener('mouseover', function() {
+      this.style.animation = 'pulse 2s infinite';
+    });
+    
+    image.addEventListener('mouseout', function() {
+      this.style.animation = '';
+    });
+  });
+});

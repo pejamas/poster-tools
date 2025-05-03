@@ -470,6 +470,10 @@
     border-radius: 12px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
     object-fit: contain; /* Ensures the image maintains its aspect ratio */
+    max-height: 400px; /* Add a max height to maintain consistency */
+    transition: transform 0.3s ease, box-shadow 0.3s ease, filter 0.3s ease;
+    cursor: pointer;
+    filter: brightness(1);
   }
   
   .preview-content {
@@ -685,15 +689,48 @@
   .tool-preview {
     flex: 1;
     position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 15px;
+    overflow: visible;
+  }
+  
+  .tool-preview:hover .preview-image {
+    transform: scale(1.02) translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 255, 0.15), 0 0 0 1px rgba(0, 255, 240, 0.1);
+    filter: brightness(1.05);
+  }
+  
+  .tool-preview::after {
+    content: '👁️ Click to enlarge';
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    opacity: 0;
+    transition: all 0.3s ease;
+    pointer-events: none;
+  }
+  
+  .tool-preview:hover::after {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
   }
   
   .poster-preview-group {
     display: flex;
     gap: 16px;
-    justify-content: flex-start;
+    justify-content: center;
     padding: 15px;
     border-radius: 20px;
     background-color: rgba(26, 23, 42, 0.5);
+    width: 100%;
   }
   
   .poster-preview-image {
@@ -1201,5 +1238,109 @@
       max-width: 100%;
       box-sizing: border-box;
       overflow-x: hidden;
+    }
+    
+    .tool-preview {
+      width: 100%;
+      padding: 10px;
+    }
+    
+    .preview-image {
+      max-height: 300px;
+      width: auto;
+      margin: 0 auto;
+    }
+    
+    .poster-preview-group {
+      overflow-x: visible;
+      padding: 15px;
+      justify-content: center;
+      width: 100%;
+    }
+  }
+
+  /* Home Page Lightbox Styles */
+  .home-lightbox {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.9);
+    z-index: 10000;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  .home-lightbox.active {
+    display: flex;
+    opacity: 1;
+  }
+  
+  .home-lightbox-content {
+    position: relative;
+    max-width: 90%;
+    max-height: 90%;
+    animation: lightboxIn 0.3s ease;
+  }
+  
+  @keyframes lightboxIn {
+    from {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  
+  .home-lightbox-img {
+    max-width: 100%;
+    max-height: 90vh;
+    border-radius: 8px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  }
+  
+  .home-lightbox-close {
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    color: white;
+    background-color: rgba(0, 0, 0, 0.5);
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s ease;
+  }
+  
+  .home-lightbox-close:hover {
+    background-color: rgba(255, 0, 0, 0.5);
+  }
+  
+  /* Mobile Adjustments for Lightbox */
+  @media (max-width: 768px) {
+    .home-lightbox-content {
+      max-width: 95%;
+    }
+    
+    .home-lightbox-close {
+      top: -50px;
+      right: 0;
+    }
+    
+    .tool-preview::after {
+      content: '👁️ Tap to enlarge';
+      font-size: 12px;
+      padding: 6px 10px;
     }
   }
