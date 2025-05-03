@@ -645,6 +645,7 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("info-outline-width").value;
     const originalBlendMode = blendMode.value;
     const originalEffectType = effectType.value;
+    const originalPreset = presetSelect.value;
 
     // Save original colors
     const originalColors = {};
@@ -666,6 +667,20 @@ document.addEventListener("DOMContentLoaded", () => {
     episodeNumberInput.value = card.episodeNumber;
     thumbnailImg = card.thumbnailImg;
 
+    // Check if this card has custom placement settings
+    if (card.hasCustomPlacement && card.customPlacement) {
+      // Apply custom placement settings
+      if (card.customPlacement.placement) {
+        presetSelect.value = card.customPlacement.placement;
+      }
+      if (card.customPlacement.effectType) {
+        effectType.value = card.customPlacement.effectType;
+      }
+      if (card.customPlacement.blendMode) {
+        blendMode.value = card.customPlacement.blendMode;
+      }
+    }
+
     // Apply card's saved settings if available
     if (card.currentSettings) {
       fontFamily.value = card.currentSettings.fontFamily;
@@ -680,8 +695,12 @@ document.addEventListener("DOMContentLoaded", () => {
         card.currentSettings.infoShadowBlur;
       document.getElementById("info-outline-width").value =
         card.currentSettings.infoOutlineWidth;
-      effectType.value = card.currentSettings.effectType;
-      blendMode.value = card.currentSettings.blendMode;
+      
+      // Only apply these if not overridden by custom placement
+      if (!card.hasCustomPlacement || !card.customPlacement) {
+        effectType.value = card.currentSettings.effectType;
+        blendMode.value = card.currentSettings.blendMode;
+      }
 
       if (document.getElementById("title-wrapping")) {
         document.getElementById("title-wrapping").value =
@@ -723,6 +742,7 @@ document.addEventListener("DOMContentLoaded", () => {
       originalInfoOutlineWidth;
     blendMode.value = originalBlendMode;
     effectType.value = originalEffectType;
+    presetSelect.value = originalPreset;
 
     // Restore original colors
     for (const [colorName, value] of Object.entries(originalColors)) {
@@ -1610,6 +1630,8 @@ document.addEventListener("DOMContentLoaded", () => {
         canvasData: null,
         allImages: [],
         allImagePaths: [],
+        hasCustomPlacement: false, // Flag to indicate if this episode has custom placement
+        customPlacement: null, // Store custom placement settings
 
         // Store initial settings
         currentSettings: {
@@ -1639,6 +1661,7 @@ document.addEventListener("DOMContentLoaded", () => {
           blendMode: blendMode.value,
           titleWrapping: document.getElementById("title-wrapping") ? 
             document.getElementById("title-wrapping").value : 'singleLine',
+          placement: presetSelect.value, // Store current placement
         },
       };
 
@@ -1972,12 +1995,55 @@ document.addEventListener("DOMContentLoaded", () => {
         gridCardWidth
       );
 
+      // Draw checkbox for custom placement in top-right corner
+      const checkboxSize = 16;
+      const checkboxX = x + gridCardWidth - checkboxSize - 4;
+      const checkboxY = y + 4;
+      
+      // Draw checkbox background
+      gridCtx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+      gridCtx.fillRect(checkboxX - 2, checkboxY - 2, checkboxSize + 4, checkboxSize + 4);
+      
+      // Draw checkbox
+      gridCtx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+      gridCtx.fillRect(checkboxX, checkboxY, checkboxSize, checkboxSize);
+      
+      // Draw check if this card has custom placement
+      if (card.hasCustomPlacement) {
+        gridCtx.strokeStyle = '#00bfa5';
+        gridCtx.lineWidth = 2;
+        gridCtx.beginPath();
+        gridCtx.moveTo(checkboxX + 3, checkboxY + 8);
+        gridCtx.lineTo(checkboxX + 7, checkboxY + 12);
+        gridCtx.lineTo(checkboxX + 13, checkboxY + 4);
+        gridCtx.stroke();
+      }
+
+      // Add indicator for custom placement
+      if (card.hasCustomPlacement) {
+        // Draw indicator badge
+        gridCtx.fillStyle = 'rgba(0, 191, 165, 0.8)';
+        gridCtx.fillRect(x, y + 16, 50, 16);
+        
+        // Draw "Custom" text
+        gridCtx.font = "bold 9px Gabarito, sans-serif";
+        gridCtx.fillStyle = "#ffffff";
+        gridCtx.textAlign = "left";
+        gridCtx.fillText("CUSTOM", x + 4, y + 28);
+      }
+
       // Store card coordinates for click handling
       card.gridCoords = {
         x: x,
         y: y,
         width: gridCardWidth,
         height: gridCardHeight,
+        checkbox: {
+          x: checkboxX,
+          y: checkboxY,
+          width: checkboxSize,
+          height: checkboxSize
+        }
       };
     });
 
@@ -1996,7 +2062,27 @@ document.addEventListener("DOMContentLoaded", () => {
     const x = (event.clientX - rect.left) * scaleX;
     const y = (event.clientY - rect.top) * scaleY;
 
-    // Check if click is on any card
+    // Check if click is on any card's checkbox
+    for (let i = 0; i < episodeTitleCards.length; i++) {
+      const card = episodeTitleCards[i];
+      if (card.gridCoords && card.gridCoords.checkbox) {
+        const checkbox = card.gridCoords.checkbox;
+        
+        // Check if click is on checkbox
+        if (
+          x >= checkbox.x &&
+          x <= checkbox.x + checkbox.width &&
+          y >= checkbox.y &&
+          y <= checkbox.y + checkbox.height
+        ) {
+          toggleCustomPlacement(i);
+          renderEpisodeGrid(); // Redraw grid to update checkboxes
+          return;
+        }
+      }
+    }
+
+    // If not on checkbox, handle regular card click
     for (let i = 0; i < episodeTitleCards.length; i++) {
       const card = episodeTitleCards[i];
       if (card.gridCoords) {
@@ -2019,6 +2105,194 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
     }
+  }
+
+  // Toggle custom placement for a card
+  function toggleCustomPlacement(cardIndex) {
+    const card = episodeTitleCards[cardIndex];
+    if (!card) return;
+    
+    // Toggle the custom placement flag
+    card.hasCustomPlacement = !card.hasCustomPlacement;
+    
+    if (card.hasCustomPlacement) {
+      // If enabling custom placement, save current settings
+      if (!card.customPlacement) {
+        card.customPlacement = {
+          placement: presetSelect.value,
+          effectType: effectType.value,
+          blendMode: blendMode.value
+        };
+      }
+      
+      // Show custom placement dialog for this episode
+      showCustomPlacementDialog(cardIndex);
+    } else {
+      // If disabling custom placement, remove custom settings
+      card.customPlacement = null;
+      showToast(`Removed custom placement for Episode ${card.episodeNumber}`);
+    }
+  }
+
+  // Show dialog for custom placement settings
+  function showCustomPlacementDialog(cardIndex) {
+    const card = episodeTitleCards[cardIndex];
+    if (!card) return;
+    
+    // Create dialog overlay
+    const overlay = document.createElement("div");
+    overlay.className = "custom-overlay";
+    overlay.style.display = "flex";
+    
+    // Create dialog content
+    const dialog = document.createElement("div");
+    dialog.className = "custom-modal";
+    
+    // Add title
+    const title = document.createElement("h3");
+    title.textContent = `Custom Placement for S${card.seasonNumber}E${card.episodeNumber}: ${card.title}`;
+    title.style.marginBottom = "15px";
+    dialog.appendChild(title);
+    
+    // Add description
+    const description = document.createElement("p");
+    description.textContent = "Select custom placement settings for this episode only:";
+    description.style.marginBottom = "20px";
+    dialog.appendChild(description);
+    
+    // Add placement options
+    const placementLabel = document.createElement("label");
+    placementLabel.textContent = "Text Position:";
+    placementLabel.style.display = "block";
+    placementLabel.style.marginBottom = "5px";
+    dialog.appendChild(placementLabel);
+    
+    const placementSelect = document.createElement("select");
+    placementSelect.style.width = "100%";
+    placementSelect.style.marginBottom = "15px";
+    placementSelect.style.padding = "8px";
+    placementSelect.style.backgroundColor = "rgba(25, 25, 35, 0.9)";
+    placementSelect.style.color = "white";
+    placementSelect.style.border = "1px solid rgba(255, 255, 255, 0.2)";
+    placementSelect.style.borderRadius = "5px";
+    
+    // Add placement options
+    const placementOptions = [
+      { value: "leftMiddle", text: "Left Middle" },
+      { value: "centerMiddle", text: "Center Middle" },
+      { value: "rightMiddle", text: "Right Middle" },
+      { value: "giggle", text: "Center Bottom" },
+      { value: "manhunt", text: "Left Bottom" },
+      { value: "centerTop", text: "Center Top" }
+    ];
+    
+    placementOptions.forEach(option => {
+      const optionEl = document.createElement("option");
+      optionEl.value = option.value;
+      optionEl.textContent = option.text;
+      placementSelect.appendChild(optionEl);
+    });
+    
+    // Set initial value if previously set
+    if (card.customPlacement && card.customPlacement.placement) {
+      placementSelect.value = card.customPlacement.placement;
+    }
+    
+    dialog.appendChild(placementSelect);
+    
+    // Add effect type options
+    const effectLabel = document.createElement("label");
+    effectLabel.textContent = "Gradient Effect:";
+    effectLabel.style.display = "block";
+    effectLabel.style.marginBottom = "5px";
+    dialog.appendChild(effectLabel);
+    
+    const effectTypeSelect = document.createElement("select");
+    effectTypeSelect.style.width = "100%";
+    effectTypeSelect.style.marginBottom = "15px";
+    effectTypeSelect.style.padding = "8px";
+    effectTypeSelect.style.backgroundColor = "rgba(25, 25, 35, 0.9)";
+    effectTypeSelect.style.color = "white";
+    effectTypeSelect.style.border = "1px solid rgba(255, 255, 255, 0.2)";
+    effectTypeSelect.style.borderRadius = "5px";
+    
+    // Add effect type options
+    const effectOptions = [
+      { value: "none", text: "None" },
+      { value: "leftToRight", text: "Gradient (Left to Right)" },
+      { value: "rightToLeft", text: "Gradient (Right to Left)" },
+      { value: "topToBottom", text: "Gradient (Top to Bottom)" },
+      { value: "bottomToTop", text: "Gradient (Bottom to Top)" },
+      { value: "radial", text: "Radial Gradient" }
+    ];
+    
+    effectOptions.forEach(option => {
+      const optionEl = document.createElement("option");
+      optionEl.value = option.value;
+      optionEl.textContent = option.text;
+      effectTypeSelect.appendChild(optionEl);
+    });
+    
+    // Set initial value if previously set
+    if (card.customPlacement && card.customPlacement.effectType) {
+      effectTypeSelect.value = card.customPlacement.effectType;
+    }
+    
+    dialog.appendChild(effectTypeSelect);
+    
+    // Add buttons
+    const buttonsContainer = document.createElement("div");
+    buttonsContainer.className = "custom-buttons";
+    buttonsContainer.style.display = "flex";
+    buttonsContainer.style.gap = "10px";
+    buttonsContainer.style.justifyContent = "center";
+    buttonsContainer.style.marginTop = "20px";
+    
+    const saveButton = document.createElement("button");
+    saveButton.className = "custom-btn custom-btn-blue";
+    saveButton.textContent = "Save";
+    saveButton.addEventListener("click", () => {
+      // Save custom placement settings
+      card.customPlacement = {
+        placement: placementSelect.value,
+        effectType: effectTypeSelect.value
+      };
+      
+      // Close dialog
+      document.body.removeChild(overlay);
+      
+      // Update preview
+      renderEpisodeGrid();
+      showToast(`Custom placement saved for Episode ${card.episodeNumber}`);
+    });
+    
+    const cancelButton = document.createElement("button");
+    cancelButton.className = "custom-btn";
+    cancelButton.textContent = "Cancel";
+    cancelButton.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+    cancelButton.style.color = "white";
+    cancelButton.addEventListener("click", () => {
+      // If canceling and no existing settings, untoggle
+      if (!card.customPlacement || Object.keys(card.customPlacement).length === 0) {
+        card.hasCustomPlacement = false;
+      }
+      
+      // Close dialog
+      document.body.removeChild(overlay);
+      
+      // Update preview
+      renderEpisodeGrid();
+    });
+    
+    buttonsContainer.appendChild(cancelButton);
+    buttonsContainer.appendChild(saveButton);
+    dialog.appendChild(buttonsContainer);
+    
+    // Add dialog to overlay
+    overlay.appendChild(dialog);
+    
+    // Add overlay to body
+    document.body.appendChild(overlay);
   }
 
   // =====================================================
