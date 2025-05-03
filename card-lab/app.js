@@ -2151,56 +2151,94 @@ document.addEventListener("DOMContentLoaded", () => {
     overlay.style.left = "0";
     overlay.style.width = "100%";
     overlay.style.height = "100%";
-    overlay.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
+    overlay.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
     overlay.style.zIndex = "9999";
     
-    // Create dialog content
+    // Create dialog content - improved styling to match progress overlay
     const dialog = document.createElement("div");
     dialog.className = "custom-modal custom-placement-modal";
-    dialog.style.width = "380px";
-    dialog.style.background = "#161830";
-    dialog.style.boxShadow = "0 10px 30px rgba(0, 0, 0, 0.5)";
-    dialog.style.border = "1px solid rgba(255, 255, 255, 0.1)";
-    dialog.style.borderRadius = "12px";
-    dialog.style.padding = "20px";
+    dialog.style.width = "400px";
+    dialog.style.background = "linear-gradient(135deg, #161830 0%, #0F1020 100%)";
+    dialog.style.boxShadow = "0 20px 40px rgba(0, 0, 0, 0.6)";
+    dialog.style.border = "1px solid rgba(255, 255, 255, 0.08)";
+    dialog.style.borderRadius = "16px";
+    dialog.style.padding = "28px 24px";
+    dialog.style.animation = "modalFadeIn 0.3s ease-out forwards";
     
-    // Header section (centered)
+    // Add animation for the modal
+    const styleEl = document.createElement('style');
+    styleEl.textContent = `
+      @keyframes modalFadeIn {
+        from { opacity: 0; transform: translateY(-20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+    `;
+    document.head.appendChild(styleEl);
+    
+    // Header section with improved styling
     const headerWrapper = document.createElement("div");
     headerWrapper.style.display = "flex";
     headerWrapper.style.flexDirection = "column";
     headerWrapper.style.alignItems = "center";
     headerWrapper.style.textAlign = "center";
-    headerWrapper.style.marginBottom = "20px";
-    headerWrapper.style.padding = "0 0 15px 0";
-    headerWrapper.style.borderBottom = "1px solid rgba(255, 255, 255, 0.1)";
+    headerWrapper.style.marginBottom = "25px";
+    headerWrapper.style.padding = "0 0 20px 0";
+    headerWrapper.style.borderBottom = "1px solid rgba(255, 255, 255, 0.08)";
 
-    // Add episode title
+    // Accent color bar at the top for visual interest
+    const accentBar = document.createElement("div");
+    accentBar.style.background = "linear-gradient(90deg, #00bfa5, #8e24aa)";
+    accentBar.style.height = "4px";
+    accentBar.style.width = "60px";
+    accentBar.style.borderRadius = "2px";
+    accentBar.style.marginBottom = "20px";
+    headerWrapper.appendChild(accentBar);
+
+    // Add episode title with improved styling
     const episodeTitle = document.createElement("h3");
     episodeTitle.textContent = card.title;
     episodeTitle.style.margin = "0 0 12px 0";
     episodeTitle.style.color = "#fff";
-    episodeTitle.style.fontSize = "22px";
+    episodeTitle.style.fontSize = "24px";
     episodeTitle.style.fontWeight = "600";
+    episodeTitle.style.textShadow = "0 2px 4px rgba(0,0,0,0.3)";
     headerWrapper.appendChild(episodeTitle);
     
-    // Add episode info
+    // Add episode info with improved styling
     const episodeInfo = document.createElement("div");
     episodeInfo.innerHTML = `Season ${parseInt(card.seasonNumber)} <span style="color: #00bfa5; margin: 0 6px;">•</span> Episode ${parseInt(card.episodeNumber)}`;
     episodeInfo.style.color = "#FFFFFF";
-    episodeInfo.style.fontSize = "14px";
-    episodeInfo.style.opacity = "0.7";
+    episodeInfo.style.fontSize = "15px";
+    episodeInfo.style.opacity = "0.85";
     episodeInfo.style.fontWeight = "500";
     headerWrapper.appendChild(episodeInfo);
 
-    // Add episode thumbnail if available (centered)
+    // Add episode thumbnail with improved styling
     if (card.thumbnailImg) {
       const thumbnailContainer = document.createElement("div");
-      thumbnailContainer.style.width = "180px";
-      thumbnailContainer.style.height = "101px";
-      thumbnailContainer.style.marginTop = "15px";
+      thumbnailContainer.style.width = "220px";
+      thumbnailContainer.style.height = "124px";
+      thumbnailContainer.style.marginTop = "20px";
       thumbnailContainer.style.overflow = "hidden";
-      thumbnailContainer.style.borderRadius = "6px";
-      thumbnailContainer.style.boxShadow = "0 4px 10px rgba(0, 0, 0, 0.3)";
+      thumbnailContainer.style.borderRadius = "8px";
+      thumbnailContainer.style.boxShadow = "0 8px 20px rgba(0, 0, 0, 0.5)";
+      thumbnailContainer.style.border = "2px solid rgba(255, 255, 255, 0.1)";
+      thumbnailContainer.style.position = "relative";
+
+      // Add shimmer effect to thumbnail container
+      thumbnailContainer.style.background = "linear-gradient(45deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0) 100%)";
+      thumbnailContainer.style.backgroundSize = "200% 200%";
+      thumbnailContainer.style.animation = "shimmer 1.5s infinite";
+      
+      // Add shimmer animation
+      const shimmerStyle = document.createElement('style');
+      shimmerStyle.textContent = `
+        @keyframes shimmer {
+          0% { background-position: 0% 0%; }
+          100% { background-position: 200% 200%; }
+        }
+      `;
+      document.head.appendChild(shimmerStyle);
 
       const thumbnail = document.createElement("img");
       thumbnail.src = card.thumbnailImg.src;
@@ -2214,43 +2252,53 @@ document.addEventListener("DOMContentLoaded", () => {
     
     dialog.appendChild(headerWrapper);
     
-    // Add description
+    // Add description with improved styling
     const description = document.createElement("div");
-    description.style.background = "rgba(53, 53, 56, 0.89)";
-    description.style.padding = "12px 15px";
-    description.style.borderRadius = "6px";
+    description.style.background = "rgba(0, 191, 165, 0.08)";
+    description.style.padding = "14px 16px";
+    description.style.borderRadius = "8px";
     description.style.marginBottom = "25px";
     description.style.borderLeft = "3px solid #00bfa5";
     description.style.width = "80%";
-    description.style.margin = "0 auto 25px";
+    description.style.margin = "0 auto 28px";
     
     const descText = document.createElement("p");
-    descText.innerHTML = "This episode will use <strong>custom placement settings</strong>.";
+    descText.innerHTML = "This episode will use <strong>custom placement settings</strong> that override the global settings.";
     descText.style.margin = "0";
     descText.style.color = "rgba(255, 255, 255, 0.9)";
     descText.style.fontSize = "14px";
+    descText.style.lineHeight = "1.5";
     descText.style.textAlign = "center";
     
     description.appendChild(descText);
     dialog.appendChild(description);
     
-    // Add Text Position setting
+    // Form wrapper for better organization
+    const formWrapper = document.createElement("div");
+    formWrapper.style.display = "flex";
+    formWrapper.style.flexDirection = "column";
+    formWrapper.style.gap = "22px";
+    formWrapper.style.marginBottom = "25px";
+    
+    // Add Text Position setting with improved styling
+    const positionGroup = document.createElement("div");
+    positionGroup.style.display = "flex";
+    positionGroup.style.flexDirection = "column";
+    positionGroup.style.gap = "10px";
+    
     const positionLabel = document.createElement("div");
     positionLabel.textContent = "Text Position";
-    positionLabel.style.color = "#ffffff";
+    positionLabel.style.color = "#00bfa5";
     positionLabel.style.fontSize = "14px";
-    positionLabel.style.fontWeight = "500";
-    positionLabel.style.textAlign = "center";
-    positionLabel.style.marginBottom = "10px";
-    dialog.appendChild(positionLabel);
+    positionLabel.style.fontWeight = "600";
+    positionLabel.style.marginLeft = "2px";
+    positionGroup.appendChild(positionLabel);
     
     const placementSelect = document.createElement("select");
     placementSelect.className = "dialog-select";
     placementSelect.style.width = "100%";
-    placementSelect.style.maxWidth = "320px";
-    placementSelect.style.padding = "12px 15px";
-    placementSelect.style.margin = "0 auto 25px";
-    placementSelect.style.backgroundColor = "#0F1020";
+    placementSelect.style.padding = "12px 16px";
+    placementSelect.style.backgroundColor = "rgba(15, 16, 32, 0.8)";
     placementSelect.style.color = "white";
     placementSelect.style.border = "1px solid rgba(255, 255, 255, 0.15)";
     placementSelect.style.borderRadius = "6px";
@@ -2287,25 +2335,28 @@ document.addEventListener("DOMContentLoaded", () => {
       placementSelect.value = presetSelect.value;
     }
     
-    dialog.appendChild(placementSelect);
+    positionGroup.appendChild(placementSelect);
+    formWrapper.appendChild(positionGroup);
     
-    // Add Effect Type setting
+    // Add Effect Type setting with improved styling
+    const effectGroup = document.createElement("div");
+    effectGroup.style.display = "flex";
+    effectGroup.style.flexDirection = "column";
+    effectGroup.style.gap = "10px";
+    
     const effectLabel = document.createElement("div");
     effectLabel.textContent = "Gradient Effect";
-    effectLabel.style.color = "#ffffff";
+    effectLabel.style.color = "#00bfa5";
     effectLabel.style.fontSize = "14px";
-    effectLabel.style.fontWeight = "500";
-    effectLabel.style.textAlign = "center";
-    effectLabel.style.marginBottom = "10px";
-    dialog.appendChild(effectLabel);
+    effectLabel.style.fontWeight = "600";
+    effectLabel.style.marginLeft = "2px";
+    effectGroup.appendChild(effectLabel);
     
     const effectTypeSelect = document.createElement("select");
     effectTypeSelect.className = "dialog-select";
     effectTypeSelect.style.width = "100%";
-    effectTypeSelect.style.maxWidth = "320px";
-    effectTypeSelect.style.padding = "12px 15px";
-    effectTypeSelect.style.margin = "0 auto 25px";
-    effectTypeSelect.style.backgroundColor = "#0F1020";
+    effectTypeSelect.style.padding = "12px 16px";
+    effectTypeSelect.style.backgroundColor = "rgba(15, 16, 32, 0.8)";
     effectTypeSelect.style.color = "white";
     effectTypeSelect.style.border = "1px solid rgba(255, 255, 255, 0.15)";
     effectTypeSelect.style.borderRadius = "6px";
@@ -2342,25 +2393,28 @@ document.addEventListener("DOMContentLoaded", () => {
       effectTypeSelect.value = effectType.value;
     }
     
-    dialog.appendChild(effectTypeSelect);
+    effectGroup.appendChild(effectTypeSelect);
+    formWrapper.appendChild(effectGroup);
     
-    // Add Blend Mode setting
+    // Add Blend Mode setting with improved styling
+    const blendGroup = document.createElement("div");
+    blendGroup.style.display = "flex";
+    blendGroup.style.flexDirection = "column";
+    blendGroup.style.gap = "10px";
+    
     const blendLabel = document.createElement("div");
     blendLabel.textContent = "Blend Mode";
-    blendLabel.style.color = "#ffffff";
+    blendLabel.style.color = "#00bfa5";
     blendLabel.style.fontSize = "14px";
-    blendLabel.style.fontWeight = "500";
-    blendLabel.style.textAlign = "center";
-    blendLabel.style.marginBottom = "10px";
-    dialog.appendChild(blendLabel);
+    blendLabel.style.fontWeight = "600";
+    blendLabel.style.marginLeft = "2px";
+    blendGroup.appendChild(blendLabel);
     
     const blendSelect = document.createElement("select");
     blendSelect.className = "dialog-select";
     blendSelect.style.width = "100%";
-    blendSelect.style.maxWidth = "320px";
-    blendSelect.style.padding = "12px 15px";
-    blendSelect.style.margin = "0 auto 25px";
-    blendSelect.style.backgroundColor = "#0F1020";
+    blendSelect.style.padding = "12px 16px";
+    blendSelect.style.backgroundColor = "rgba(15, 16, 32, 0.8)";
     blendSelect.style.color = "white";
     blendSelect.style.border = "1px solid rgba(255, 255, 255, 0.15)";
     blendSelect.style.borderRadius = "6px";
@@ -2401,16 +2455,19 @@ document.addEventListener("DOMContentLoaded", () => {
       blendSelect.value = blendMode.value;
     }
     
-    dialog.appendChild(blendSelect);
+    blendGroup.appendChild(blendSelect);
+    formWrapper.appendChild(blendGroup);
     
-    // Add buttons
+    dialog.appendChild(formWrapper);
+    
+    // Add buttons with improved styling
     const buttonsContainer = document.createElement("div");
     buttonsContainer.style.display = "flex";
     buttonsContainer.style.gap = "10px";
     buttonsContainer.style.justifyContent = "center";
     buttonsContainer.style.marginTop = "15px";
     buttonsContainer.style.paddingTop = "15px";
-    buttonsContainer.style.borderTop = "1px solid rgba(255, 255, 255, 0.1)";
+    buttonsContainer.style.borderTop = "1px solid rgba(255, 255, 255, 0.08)";
     
     const cancelButton = document.createElement("button");
     cancelButton.textContent = "Cancel";
