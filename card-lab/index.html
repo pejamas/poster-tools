@@ -180,28 +180,33 @@
           </div>
           <div class="collapsible-content text-options">
             <h4>Title Text</h4>
-            <div class="text-options-grid">
-              <div>
-                <span class="option-label">Font Style</span>
-                <select id="font-family">
-                  <option value="Gabarito">Gabarito</option>
-                  <option value="Exo 2">Exo 2</option>
-                  <option value="Poppins">Poppins</option>
-                  <option value="Bebas Neue">Bebas Neue</option>
-                  <option value="Montserrat">Montserrat</option>
-                  <option value="Oswald">Oswald</option>
-                  <option value="Quicksand">Quicksand</option>
-                  <option value="Nunito">Nunito</option>
-                  <option value="Open Sans">Open Sans</option>
-                  <option value="Playfair Display">Playfair Display</option>
-                  <option value="Raleway">Raleway</option>
-                  <option value="Roboto">Roboto</option>
-                  <option value="Staatliches">Staatliches</option>
-                  <option value="Lato">Lato</option>
-                  <option value="custom-font" id="custom-font-option" style="display: none">Custom Font</option>
-                </select>
-              </div>
+            <div>
+              <span class="option-label">Font Style</span>
+              <select id="font-family">
+                <option value="Gabarito">Gabarito</option>
+                <option value="Exo 2">Exo 2</option>
+                <option value="Poppins">Poppins</option>
+                <option value="Bebas Neue">Bebas Neue</option>
+                <option value="Montserrat">Montserrat</option>
+                <option value="Oswald">Oswald</option>
+                <option value="Quicksand">Quicksand</option>
+                <option value="Nunito">Nunito</option>
+                <option value="Open Sans">Open Sans</option>
+                <option value="Playfair Display">Playfair Display</option>
+                <option value="Raleway">Raleway</option>
+                <option value="Roboto">Roboto</option>
+                <option value="Staatliches">Staatliches</option>
+                <option value="Lato">Lato</option>
+                <option value="custom-font" id="custom-font-option" style="display: none">Custom Font</option>
+              </select>
+            </div>
 
+            <div class="custom-font-upload-container">
+              <span>Upload Custom Font</span>
+              <input type="file" id="custom-font-upload" accept=".ttf,.woff,.woff2,.otf" style="display: none" />
+            </div>
+
+            <div class="text-options-grid">
               <div>
                 <span class="option-label">Text Size</span>
                 <select id="text-size">
@@ -210,16 +215,11 @@
                   <option value="large">Large</option>
                 </select>
               </div>
-            </div>
 
-            <div class="custom-font-upload-container">
-              <span>Upload Custom Font</span>
-              <input type="file" id="custom-font-upload" accept=".ttf,.woff,.woff2,.otf" style="display: none" />
-            </div>
-
-            <div>
-              <span class="option-label">Title Color</span>
-              <div id="text-color-pickr" class="color-box"></div>
+              <div>
+                <span class="option-label">Font Color</span>
+                <div id="text-color-pickr" class="color-box"></div>
+              </div>
             </div>
 
             <div class="effect-section">
@@ -242,27 +242,27 @@
 
             <div class="section-separator"></div>
             <h4>Info Text</h4>
+            <div>
+              <span class="option-label">Font Style</span>
+              <select id="info-font-family">
+                <option value="Gabarito">Gabarito</option>
+                <option value="Exo 2">Exo 2</option>
+                <option value="Poppins">Poppins</option>
+                <option value="Bebas Neue">Bebas Neue</option>
+                <option value="Montserrat">Montserrat</option>
+                <option value="Oswald">Oswald</option>
+                <option value="Quicksand">Quicksand</option>
+                <option value="Nunito">Nunito</option>
+                <option value="Open Sans">Open Sans</option>
+                <option value="Playfair Display">Playfair Display</option>
+                <option value="Raleway">Raleway</option>
+                <option value="Roboto">Roboto</option>
+                <option value="Staatliches">Staatliches</option>
+                <option value="Lato">Lato</option>
+              </select>
+            </div>
+            
             <div class="text-options-grid">
-              <div>
-                <span class="option-label">Font Style</span>
-                <select id="info-font-family">
-                  <option value="Gabarito">Gabarito</option>
-                  <option value="Exo 2">Exo 2</option>
-                  <option value="Poppins">Poppins</option>
-                  <option value="Bebas Neue">Bebas Neue</option>
-                  <option value="Montserrat">Montserrat</option>
-                  <option value="Oswald">Oswald</option>
-                  <option value="Quicksand">Quicksand</option>
-                  <option value="Nunito">Nunito</option>
-                  <option value="Open Sans">Open Sans</option>
-                  <option value="Playfair Display">Playfair Display</option>
-                  <option value="Raleway">Raleway</option>
-                  <option value="Roboto">Roboto</option>
-                  <option value="Staatliches">Staatliches</option>
-                  <option value="Lato">Lato</option>
-                </select>
-              </div>
-
               <div>
                 <span class="option-label">Text Size</span>
                 <select id="info-text-size">
@@ -271,10 +271,11 @@
                   <option value="small">Small</option>
                 </select>
               </div>
-            </div>
-            <div>
-              <span class="option-label">Info Text Color</span>
-              <div id="info-color-pickr" class="color-box"></div>
+              
+              <div>
+                <span class="option-label">Font Color</span>
+                <div id="info-color-pickr" class="color-box"></div>
+              </div>
             </div>
 
             <div class="effect-section">
@@ -301,11 +302,11 @@
                 <span class="label-text">Info Text Spacing</span>
                 <span class="gap-value" id="spacing-value">15px</span>
               </div>
-              <input type="range" id="title-info-spacing" min="5" max="40" value="15" />
+              <input type="range" id="title-info-spacing" min="0" max="50" value="10" />
             </div>
             <div class="horizontal-position">
               <div class="position-label">
-                <span class="label-text">Info Text X Offset</span>
+                <span class="label-text">Text X Offset</span>
                 <span class="position-value" id="position-value">0px</span>
               </div>
               <input type="range" id="horizontal-position" min="-300" max="300" value="0" />
