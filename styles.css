@@ -1344,3 +1344,121 @@
       padding: 6px 10px;
     }
   }
+
+  @media (max-width: 768px) {
+    /* General mobile styles */
+    header {
+      padding: 1rem;
+    }
+    
+    .logo-container {
+      position: static;
+      transform: none;
+    }
+    
+    .nav-links {
+      display: none;
+    }
+    
+    .header-mobile-menu {
+      display: block;
+    }
+    
+    /* Fix hero section spacing on mobile specifically */
+    .hero-section {
+      min-height: 40vh;
+      padding: 3rem 1.5rem 2rem;
+      text-align: center;
+    }
+    
+    .hero-title {
+      font-size: 3.2rem;
+      line-height: 1.2;
+      margin-bottom: 1.5rem;
+    }
+    
+    .hero-subtitle {
+      font-size: 1.2rem;
+      line-height: 1.5;
+      padding: 0 0.5rem;
+      margin-bottom: 2rem;
+    }
+    
+    /* Adjust tool section spacing for mobile */
+    .tool-features {
+      padding: 1rem 1rem 0;
+      margin-top: 0;
+    }
+    
+    .tools-container {
+      gap: 4rem;
+    }
+    
+    /* Make tool features more readable on mobile */
+    .tool-feature {
+      margin-bottom: 0;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .tool-title {
+      font-size: 2rem;
+      margin: 1rem 0 1.2rem;
+      text-align: left; /* Left align the title */
+    }
+    
+    .tool-title::after {
+      left: 0; /* Left align the gradient bar */
+      transform: none; /* Remove the centering transform */
+      width: 60px; /* Make it the same width as desktop */
+    }
+    
+    .tool-description {
+      text-align: left; /* Left align the description */
+      font-size: 1rem;
+      margin-bottom: 1.5rem;
+      padding: 0;
+    }
+    
+    /* Fix nested scrolling by making the preview areas not scrollable */
+    .tool-preview {
+      overflow: visible;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      margin: 1rem 0 2rem;
+    }
+    
+    .preview-image {
+      max-width: 85%;
+      height: auto;
+      object-fit: contain;
+      margin: 0 auto;
+    }
+    
+    .poster-preview-group {
+      overflow-x: visible !important;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
+    }
+    
+    .poster-preview-image {
+      height: 200px;
+    }
+    
+    /* Fix tool details for mobile */
+    .tool-detail {
+      flex-basis: 100%;
+      padding: 1rem;
+    }
+    
+    .detail-title {
+      font-size: 1.1rem;
+      margin-bottom: 0.7rem;
+    }
+    
+    .detail-text {
+      font-size: 0.95rem;
+    }
+  }
