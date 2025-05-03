@@ -994,7 +994,7 @@
     margin-bottom: 2rem;
     position: relative;
     display: inline-block;
-    text-align: center; /* Center the title text */
+    text-align: center; /* Center the title text for desktop */
   }
   
   .section-title::after {
@@ -1058,7 +1058,7 @@
     max-width: 1200px;
     margin: 0 auto;
     position: relative;
-    text-align: center; /* Center align the container contents */
+    text-align: center; /* Center align for desktop */
   }
   
   .features-container::before {
