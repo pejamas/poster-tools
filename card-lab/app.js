@@ -2143,38 +2143,121 @@ document.addEventListener("DOMContentLoaded", () => {
     const overlay = document.createElement("div");
     overlay.className = "custom-overlay";
     overlay.style.display = "flex";
+    overlay.style.backdropFilter = "blur(8px)";
     
     // Create dialog content
     const dialog = document.createElement("div");
-    dialog.className = "custom-modal";
+    dialog.className = "custom-modal custom-placement-modal";
+    dialog.style.width = "450px";
+    dialog.style.background = "linear-gradient(135deg, #1a1a2e, #16213e)";
+    dialog.style.boxShadow = "0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 255, 255, 0.15)";
+    dialog.style.border = "1px solid rgba(255, 255, 255, 0.1)";
+    dialog.style.borderRadius = "12px";
+    dialog.style.padding = "25px";
     
-    // Add title
-    const title = document.createElement("h3");
-    title.textContent = `Custom Placement for S${card.seasonNumber}E${card.episodeNumber}: ${card.title}`;
-    title.style.marginBottom = "15px";
-    dialog.appendChild(title);
+    // Add header with episode info
+    const header = document.createElement("div");
+    header.style.display = "flex";
+    header.style.alignItems = "center";
+    header.style.marginBottom = "20px";
+    header.style.paddingBottom = "15px";
+    header.style.borderBottom = "1px solid rgba(255, 255, 255, 0.1)";
+    
+    // Add episode thumbnail if available
+    if (card.thumbnailImg) {
+      const thumbnailContainer = document.createElement("div");
+      thumbnailContainer.style.width = "100px";
+      thumbnailContainer.style.height = "56px";
+      thumbnailContainer.style.marginRight = "15px";
+      thumbnailContainer.style.overflow = "hidden";
+      thumbnailContainer.style.borderRadius = "6px";
+      thumbnailContainer.style.flexShrink = "0";
+      thumbnailContainer.style.boxShadow = "0 4px 10px rgba(0, 0, 0, 0.3)";
+
+      const thumbnail = document.createElement("img");
+      thumbnail.src = card.thumbnailImg.src;
+      thumbnail.style.width = "100%";
+      thumbnail.style.height = "100%";
+      thumbnail.style.objectFit = "cover";
+      
+      thumbnailContainer.appendChild(thumbnail);
+      header.appendChild(thumbnailContainer);
+    }
+    
+    // Add header text
+    const headerText = document.createElement("div");
+    
+    const episodeTitle = document.createElement("h3");
+    episodeTitle.textContent = card.title;
+    episodeTitle.style.margin = "0 0 8px 0";
+    episodeTitle.style.color = "#fff";
+    episodeTitle.style.fontSize = "18px";
+    episodeTitle.style.fontWeight = "600";
+    
+    const episodeInfo = document.createElement("div");
+    episodeInfo.textContent = `Season ${card.seasonNumber} • Episode ${card.episodeNumber}`;
+    episodeInfo.style.color = "#00bfa5";
+    episodeInfo.style.fontSize = "14px";
+    episodeInfo.style.fontWeight = "500";
+    
+    headerText.appendChild(episodeTitle);
+    headerText.appendChild(episodeInfo);
+    header.appendChild(headerText);
+    
+    dialog.appendChild(header);
     
     // Add description
-    const description = document.createElement("p");
-    description.textContent = "Select custom placement settings for this episode only:";
+    const description = document.createElement("div");
+    description.style.background = "rgba(0, 0, 0, 0.2)";
+    description.style.padding = "12px 15px";
+    description.style.borderRadius = "8px";
     description.style.marginBottom = "20px";
+    description.style.borderLeft = "3px solid #00bfa5";
+    
+    const descText = document.createElement("p");
+    descText.innerHTML = "This episode will use <strong>custom placement settings</strong>, overriding the global settings.";
+    descText.style.margin = "0";
+    descText.style.color = "rgba(255, 255, 255, 0.9)";
+    descText.style.fontSize = "14px";
+    
+    description.appendChild(descText);
     dialog.appendChild(description);
     
-    // Add placement options
+    // Add settings container
+    const settingsContainer = document.createElement("div");
+    settingsContainer.style.display = "grid";
+    settingsContainer.style.gridTemplateColumns = "1fr";
+    settingsContainer.style.gap = "20px";
+    
+    // 1. Text Position setting
+    const positionSetting = document.createElement("div");
+    
     const placementLabel = document.createElement("label");
-    placementLabel.textContent = "Text Position:";
+    placementLabel.textContent = "Text Position";
     placementLabel.style.display = "block";
-    placementLabel.style.marginBottom = "5px";
-    dialog.appendChild(placementLabel);
+    placementLabel.style.marginBottom = "8px";
+    placementLabel.style.color = "#fff";
+    placementLabel.style.fontSize = "15px";
+    placementLabel.style.fontWeight = "500";
+    positionSetting.appendChild(placementLabel);
     
     const placementSelect = document.createElement("select");
+    placementSelect.className = "dialog-select";
     placementSelect.style.width = "100%";
-    placementSelect.style.marginBottom = "15px";
-    placementSelect.style.padding = "8px";
-    placementSelect.style.backgroundColor = "rgba(25, 25, 35, 0.9)";
+    placementSelect.style.padding = "10px 12px";
+    placementSelect.style.backgroundColor = "rgba(25, 25, 35, 0.8)";
     placementSelect.style.color = "white";
     placementSelect.style.border = "1px solid rgba(255, 255, 255, 0.2)";
-    placementSelect.style.borderRadius = "5px";
+    placementSelect.style.borderRadius = "6px";
+    placementSelect.style.fontSize = "14px";
+    placementSelect.style.appearance = "none";
+    placementSelect.style.backgroundImage = "url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FFFFFF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')";
+    placementSelect.style.backgroundRepeat = "no-repeat";
+    placementSelect.style.backgroundPosition = "right 0.7rem top 50%";
+    placementSelect.style.backgroundSize = "0.65rem auto";
+    placementSelect.style.paddingRight = "25px";
+    placementSelect.style.cursor = "pointer";
+    placementSelect.style.marginBottom = "5px";
     
     // Add placement options
     const placementOptions = [
@@ -2196,25 +2279,51 @@ document.addEventListener("DOMContentLoaded", () => {
     // Set initial value if previously set
     if (card.customPlacement && card.customPlacement.placement) {
       placementSelect.value = card.customPlacement.placement;
+    } else {
+      placementSelect.value = presetSelect.value;
     }
     
-    dialog.appendChild(placementSelect);
+    positionSetting.appendChild(placementSelect);
     
-    // Add effect type options
+    // Add help text
+    const placementHelp = document.createElement("div");
+    placementHelp.textContent = "Sets where the title and info text will appear on the card.";
+    placementHelp.style.fontSize = "12px";
+    placementHelp.style.color = "rgba(255, 255, 255, 0.6)";
+    placementHelp.style.marginTop = "6px";
+    positionSetting.appendChild(placementHelp);
+    
+    settingsContainer.appendChild(positionSetting);
+    
+    // 2. Effect Type setting
+    const effectSetting = document.createElement("div");
+    
     const effectLabel = document.createElement("label");
-    effectLabel.textContent = "Gradient Effect:";
+    effectLabel.textContent = "Gradient Effect";
     effectLabel.style.display = "block";
-    effectLabel.style.marginBottom = "5px";
-    dialog.appendChild(effectLabel);
+    effectLabel.style.marginBottom = "8px";
+    effectLabel.style.color = "#fff";
+    effectLabel.style.fontSize = "15px";
+    effectLabel.style.fontWeight = "500";
+    effectSetting.appendChild(effectLabel);
     
     const effectTypeSelect = document.createElement("select");
+    effectTypeSelect.className = "dialog-select";
     effectTypeSelect.style.width = "100%";
-    effectTypeSelect.style.marginBottom = "15px";
-    effectTypeSelect.style.padding = "8px";
-    effectTypeSelect.style.backgroundColor = "rgba(25, 25, 35, 0.9)";
+    effectTypeSelect.style.padding = "10px 12px";
+    effectTypeSelect.style.backgroundColor = "rgba(25, 25, 35, 0.8)";
     effectTypeSelect.style.color = "white";
     effectTypeSelect.style.border = "1px solid rgba(255, 255, 255, 0.2)";
-    effectTypeSelect.style.borderRadius = "5px";
+    effectTypeSelect.style.borderRadius = "6px";
+    effectTypeSelect.style.fontSize = "14px";
+    effectTypeSelect.style.appearance = "none";
+    effectTypeSelect.style.backgroundImage = "url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FFFFFF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')";
+    effectTypeSelect.style.backgroundRepeat = "no-repeat";
+    effectTypeSelect.style.backgroundPosition = "right 0.7rem top 50%";
+    effectTypeSelect.style.backgroundSize = "0.65rem auto";
+    effectTypeSelect.style.paddingRight = "25px";
+    effectTypeSelect.style.cursor = "pointer";
+    effectTypeSelect.style.marginBottom = "5px";
     
     // Add effect type options
     const effectOptions = [
@@ -2236,41 +2345,125 @@ document.addEventListener("DOMContentLoaded", () => {
     // Set initial value if previously set
     if (card.customPlacement && card.customPlacement.effectType) {
       effectTypeSelect.value = card.customPlacement.effectType;
+    } else {
+      effectTypeSelect.value = effectType.value;
     }
     
-    dialog.appendChild(effectTypeSelect);
+    effectSetting.appendChild(effectTypeSelect);
+    
+    // Add help text
+    const effectHelp = document.createElement("div");
+    effectHelp.textContent = "Applies a gradient overlay to enhance text visibility.";
+    effectHelp.style.fontSize = "12px";
+    effectHelp.style.color = "rgba(255, 255, 255, 0.6)";
+    effectHelp.style.marginTop = "6px";
+    effectSetting.appendChild(effectHelp);
+    
+    settingsContainer.appendChild(effectSetting);
+    
+    // 3. Blend Mode setting
+    const blendSetting = document.createElement("div");
+    
+    const blendLabel = document.createElement("label");
+    blendLabel.textContent = "Blend Mode";
+    blendLabel.style.display = "block";
+    blendLabel.style.marginBottom = "8px";
+    blendLabel.style.color = "#fff";
+    blendLabel.style.fontSize = "15px";
+    blendLabel.style.fontWeight = "500";
+    blendSetting.appendChild(blendLabel);
+    
+    const blendSelect = document.createElement("select");
+    blendSelect.className = "dialog-select";
+    blendSelect.style.width = "100%";
+    blendSelect.style.padding = "10px 12px";
+    blendSelect.style.backgroundColor = "rgba(25, 25, 35, 0.8)";
+    blendSelect.style.color = "white";
+    blendSelect.style.border = "1px solid rgba(255, 255, 255, 0.2)";
+    blendSelect.style.borderRadius = "6px";
+    blendSelect.style.fontSize = "14px";
+    blendSelect.style.appearance = "none";
+    blendSelect.style.backgroundImage = "url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FFFFFF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')";
+    blendSelect.style.backgroundRepeat = "no-repeat";
+    blendSelect.style.backgroundPosition = "right 0.7rem top 50%";
+    blendSelect.style.backgroundSize = "0.65rem auto";
+    blendSelect.style.paddingRight = "25px";
+    blendSelect.style.cursor = "pointer";
+    blendSelect.style.marginBottom = "5px";
+    
+    // Add blend mode options
+    const blendOptions = [
+      { value: "normal", text: "Normal" },
+      { value: "multiply", text: "Multiply" },
+      { value: "screen", text: "Screen" },
+      { value: "overlay", text: "Overlay" },
+      { value: "darken", text: "Darken" },
+      { value: "lighten", text: "Lighten" },
+      { value: "color-dodge", text: "Color Dodge" },
+      { value: "color-burn", text: "Color Burn" },
+      { value: "hard-light", text: "Hard Light" },
+      { value: "soft-light", text: "Soft Light" }
+    ];
+    
+    blendOptions.forEach(option => {
+      const optionEl = document.createElement("option");
+      optionEl.value = option.value;
+      optionEl.textContent = option.text;
+      blendSelect.appendChild(optionEl);
+    });
+    
+    // Set initial value if previously set
+    if (card.customPlacement && card.customPlacement.blendMode) {
+      blendSelect.value = card.customPlacement.blendMode;
+    } else {
+      blendSelect.value = blendMode.value;
+    }
+    
+    blendSetting.appendChild(blendSelect);
+    
+    // Add help text
+    const blendHelp = document.createElement("div");
+    blendHelp.textContent = "Controls how the gradient blends with the background image.";
+    blendHelp.style.fontSize = "12px";
+    blendHelp.style.color = "rgba(255, 255, 255, 0.6)";
+    blendHelp.style.marginTop = "6px";
+    blendSetting.appendChild(blendHelp);
+    
+    settingsContainer.appendChild(blendSetting);
+    
+    dialog.appendChild(settingsContainer);
     
     // Add buttons
     const buttonsContainer = document.createElement("div");
-    buttonsContainer.className = "custom-buttons";
     buttonsContainer.style.display = "flex";
-    buttonsContainer.style.gap = "10px";
-    buttonsContainer.style.justifyContent = "center";
-    buttonsContainer.style.marginTop = "20px";
-    
-    const saveButton = document.createElement("button");
-    saveButton.className = "custom-btn custom-btn-blue";
-    saveButton.textContent = "Save";
-    saveButton.addEventListener("click", () => {
-      // Save custom placement settings
-      card.customPlacement = {
-        placement: placementSelect.value,
-        effectType: effectTypeSelect.value
-      };
-      
-      // Close dialog
-      document.body.removeChild(overlay);
-      
-      // Update preview
-      renderEpisodeGrid();
-      showToast(`Custom placement saved for Episode ${card.episodeNumber}`);
-    });
+    buttonsContainer.style.gap = "15px";
+    buttonsContainer.style.justifyContent = "flex-end";
+    buttonsContainer.style.marginTop = "30px";
+    buttonsContainer.style.paddingTop = "20px";
+    buttonsContainer.style.borderTop = "1px solid rgba(255, 255, 255, 0.1)";
     
     const cancelButton = document.createElement("button");
-    cancelButton.className = "custom-btn";
     cancelButton.textContent = "Cancel";
     cancelButton.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
     cancelButton.style.color = "white";
+    cancelButton.style.border = "none";
+    cancelButton.style.borderRadius = "6px";
+    cancelButton.style.padding = "10px 20px";
+    cancelButton.style.fontSize = "14px";
+    cancelButton.style.fontWeight = "500";
+    cancelButton.style.cursor = "pointer";
+    cancelButton.style.transition = "background-color 0.2s ease, transform 0.2s ease";
+    
+    cancelButton.addEventListener("mouseenter", () => {
+      cancelButton.style.backgroundColor = "rgba(255, 255, 255, 0.2)";
+      cancelButton.style.transform = "translateY(-2px)";
+    });
+    
+    cancelButton.addEventListener("mouseleave", () => {
+      cancelButton.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+      cancelButton.style.transform = "translateY(0)";
+    });
+    
     cancelButton.addEventListener("click", () => {
       // If canceling and no existing settings, untoggle
       if (!card.customPlacement || Object.keys(card.customPlacement).length === 0) {
@@ -2282,6 +2475,47 @@ document.addEventListener("DOMContentLoaded", () => {
       
       // Update preview
       renderEpisodeGrid();
+    });
+    
+    const saveButton = document.createElement("button");
+    saveButton.textContent = "Apply Custom Settings";
+    saveButton.style.background = "linear-gradient(135deg, #00bfa5, #8e24aa)";
+    saveButton.style.color = "white";
+    saveButton.style.border = "none";
+    saveButton.style.borderRadius = "6px";
+    saveButton.style.padding = "10px 20px";
+    saveButton.style.fontSize = "14px";
+    saveButton.style.fontWeight = "500";
+    saveButton.style.cursor = "pointer";
+    saveButton.style.transition = "all 0.2s ease";
+    saveButton.style.boxShadow = "0 4px 10px rgba(0, 191, 165, 0.2)";
+    
+    saveButton.addEventListener("mouseenter", () => {
+      saveButton.style.background = "linear-gradient(135deg, #1de9b6, #a600ff)";
+      saveButton.style.transform = "translateY(-2px)";
+      saveButton.style.boxShadow = "0 6px 12px rgba(0, 191, 165, 0.3)";
+    });
+    
+    saveButton.addEventListener("mouseleave", () => {
+      saveButton.style.background = "linear-gradient(135deg, #00bfa5, #8e24aa)";
+      saveButton.style.transform = "translateY(0)";
+      saveButton.style.boxShadow = "0 4px 10px rgba(0, 191, 165, 0.2)";
+    });
+    
+    saveButton.addEventListener("click", () => {
+      // Save custom placement settings
+      card.customPlacement = {
+        placement: placementSelect.value,
+        effectType: effectTypeSelect.value,
+        blendMode: blendSelect.value
+      };
+      
+      // Close dialog
+      document.body.removeChild(overlay);
+      
+      // Update preview
+      renderEpisodeGrid();
+      showToast(`Custom placement applied to Episode ${card.episodeNumber}`);
     });
     
     buttonsContainer.appendChild(cancelButton);
