@@ -84,7 +84,7 @@ document.addEventListener("DOMContentLoaded", () => {
     title: "",
     seasonNumber: "",
     episodeNumber: "",
-    separator: "dash",
+    separator: "dot",
     font: "Gabarito",
     infoFont: "Gabarito",
     textColor: "#ffffff",
@@ -93,7 +93,7 @@ document.addEventListener("DOMContentLoaded", () => {
     infoTextSize: "normal",
     titleWrapping: "singleLine",
     lineSpacing: 1.2,
-    infoPosition: "below",
+    infoPosition: "above",
     textShadowBlur: 0,
     textOutlineWidth: 0,
     horizontalPosition: 0,
@@ -109,6 +109,7 @@ document.addEventListener("DOMContentLoaded", () => {
     outlineColor: "#000000",
     infoShadowColor: "#000000",
     infoOutlineColor: "#000000",
+    preset: "leftMiddle"
   };
 
   // =====================================================
