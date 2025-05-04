@@ -68,6 +68,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let isTMDBMode = false;
   let thumbnailImg = null;
   let hasSearchResults = false;
+  let originalThumbnail = null; // To store original thumbnail for revert functionality
 
   let gridCardWidth = 240;
   let gridCardHeight = 135;
@@ -227,15 +228,23 @@ document.addEventListener("DOMContentLoaded", () => {
         thumbnailInput.click();
       });
 
+      // Add or update thumbnail for the current episode
       thumbnailInput.addEventListener("change", function () {
         if (this.files && this.files[0]) {
           const file = this.files[0];
           const img = new Image();
           img.onload = () => {
             thumbnailImg = img;
+            
+            // Save the custom thumbnail to the current episode card
+            if (selectedCardIndex >= 0 && episodeTitleCards[selectedCardIndex]) {
+              episodeTitleCards[selectedCardIndex].thumbnailImg = img;
+            }
+            
+            // Update both views to reflect the change
             updateBothViews();
             thumbnailContainer.querySelector("span").textContent =
-              "Thumbnail Selected";
+              "Custom Thumbnail Applied";
           };
           img.onerror = () => {
             console.error("Failed to load selected thumbnail image.");
@@ -244,8 +253,7 @@ document.addEventListener("DOMContentLoaded", () => {
           };
           img.src = URL.createObjectURL(file);
         } else {
-          thumbnailContainer.querySelector("span").textContent =
-            "Upload Show Thumbnail";
+          console.log("No file was selected");
         }
       });
     }
@@ -1762,9 +1770,15 @@ document.addEventListener("DOMContentLoaded", () => {
     seasonNumberInput.value = card.seasonNumber;
     episodeNumberInput.value = card.episodeNumber;
 
+    // Store original thumbnail when first selecting an episode
+    if (!originalThumbnail && card.thumbnailImg) {
+      originalThumbnail = card.thumbnailImg;
+    }
+
     // Set thumbnail image
     if (card.thumbnailImg) {
       thumbnailImg = card.thumbnailImg;
+      document.querySelector('#thumbnail-container span').textContent = 'Custom Thumbnail Applied';
     }
 
     // Apply card-specific settings if available
@@ -3110,6 +3124,35 @@ document.addEventListener("DOMContentLoaded", () => {
   // Setup search form handler
   const searchForm = document.getElementById("show-search-form");
   const searchInput = document.getElementById("show-search-input");
+
+  // Setup revert thumbnail button
+  const revertThumbnailBtn = document.getElementById("revert-thumbnail-btn");
+  if (revertThumbnailBtn) {
+    revertThumbnailBtn.addEventListener("click", () => {
+      if (originalThumbnail && selectedCardIndex >= 0) {
+        // Restore original thumbnail
+        thumbnailImg = originalThumbnail;
+        
+        // Update the current episode card with the original thumbnail
+        if (episodeTitleCards[selectedCardIndex]) {
+          episodeTitleCards[selectedCardIndex].thumbnailImg = originalThumbnail;
+        }
+        
+        // Update UI to show thumbnail has been reverted
+        document.querySelector('#thumbnail-container span').textContent = 'Original Thumbnail Restored';
+        
+        // Update both views
+        drawCard();
+        if (isTMDBMode) {
+          renderEpisodeGrid();
+        }
+        
+        showToast("Reverted to default thumbnail");
+      } else {
+        showToast("No default thumbnail available");
+      }
+    });
+  }
 
   if (searchForm) {
     searchForm.addEventListener("submit", async (e) => {
