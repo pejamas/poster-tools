@@ -3332,3 +3332,109 @@ function hideNetworkSuggestions() {
   document.getElementById('network-logo-suggestions').style.display = 'none';
   document.getElementById('mobile-network-suggestions').style.display = 'none';
 }
+
+// Reset button
+function setupResetButton() {
+  const resetBtn = document.querySelector("#reset-btn");
+  const mobileResetBtn = document.querySelector("#mobile-reset-btn");
+  const mobileCanvasResetBtn = document.querySelector("#mobile-canvas-reset-btn");
+
+  const handleReset = (event) => {
+    event.preventDefault();
+    
+    // Show the reset confirmation overlay
+    const confirmOverlay = document.getElementById("custom-confirm-overlay");
+    confirmOverlay.style.display = "flex";
+    
+    // Setup confirmation button handlers
+    document.getElementById("confirmYes").addEventListener("click", function() {
+      confirmOverlay.style.display = "none";
+      
+      // Clear the canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "#000000";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // Reset upload status
+      hideMetadataPanel();
+      resetCanvasState();
+      
+      // Reset UI elements
+      document.getElementById("network-logo-checkbox").checked = false;
+      document.getElementById("overlay-select").value = "none";
+      if (document.getElementById("mobile-overlay-select")) {
+        document.getElementById("mobile-overlay-select").value = "none";
+      }
+      if (document.getElementById("mobile-network-checkbox")) {
+        document.getElementById("mobile-network-checkbox").checked = false;
+      }
+      
+      if (networkLogo) {
+        networkLogo = null;
+      }
+      
+      // Clear search inputs
+      document.getElementById("tmdb-search-input").value = "";
+      document.getElementById("mediux-search-input").value = "";
+      document.getElementById("network-logo-search").value = "";
+      
+      if (document.getElementById("mobile-tmdb-search")) {
+        document.getElementById("mobile-tmdb-search").value = "";
+      }
+      if (document.getElementById("mobile-mediux-search")) {
+        document.getElementById("mobile-mediux-search").value = "";
+      }
+      if (document.getElementById("mobile-network-search")) {
+        document.getElementById("mobile-network-search").value = "";
+      }
+
+      const pickrInstance = Pickr.all[0];
+      if (pickrInstance) {
+        pickrInstance.setColor("#ffffff");
+      }
+
+      // Display a message
+      showToast("Reset complete");
+    });
+    
+    document.getElementById("confirmNo").addEventListener("click", function() {
+      confirmOverlay.style.display = "none";
+    });
+  };
+
+  resetBtn.addEventListener("click", handleReset);
+  
+  if (mobileResetBtn) {
+    mobileResetBtn.addEventListener("click", handleReset);
+  }
+  
+  if (mobileCanvasResetBtn) {
+    mobileCanvasResetBtn.addEventListener("click", handleReset);
+  }
+}
+
+function resetCanvasState() {
+  // Fill canvas with black background
+  ctx.fillStyle = "#000000";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  
+  // Reset variables
+  baseImage = null;
+  networkLogoImage = null;
+  currentLogoPath = "none";
+  
+  // Reset file input
+  posterUpload.value = "";
+  
+  // Hide metadata panel
+  hideMetadataPanel();
+}
+
+function hideMetadataPanel() {
+  metaPanel.style.display = "none";
+}
+
+// Initialize the reset button confirmation
+document.addEventListener("DOMContentLoaded", function() {
+  setupResetButton();
+});

@@ -3418,26 +3418,35 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Reset form to default values
   function resetColorPickers() {
-    const allPickrs = Pickr.all;
-    if (allPickrs) {
-      for (const pickr of allPickrs) {
+    // Reset color pickers
+    if (Pickr.all) {
+      Pickr.all.forEach((pickr) => {
+        if (!pickr._root || !pickr._root.button || !pickr._root.button.id) return;
+        
         const id = pickr._root.button.id;
         if (id === "text-color-pickr") {
           pickr.setColor(defaultValues.textColor);
+          window["text-color"] = defaultValues.textColor;
         } else if (id === "info-color-pickr") {
           pickr.setColor(defaultValues.infoColor);
+          window["info-color"] = defaultValues.infoColor;
         } else if (id === "text-shadow-color-pickr") {
           pickr.setColor(defaultValues.shadowColor);
+          window["text-shadow-color"] = defaultValues.shadowColor;
         } else if (id === "text-outline-color-pickr") {
           pickr.setColor(defaultValues.outlineColor);
-        } else if (id === "gradient-color-pickr") {
-          pickr.setColor(defaultValues.gradientColor);
+          window["text-outline-color"] = defaultValues.outlineColor;
         } else if (id === "info-shadow-color-pickr") {
           pickr.setColor(defaultValues.infoShadowColor);
+          window["info-shadow-color"] = defaultValues.infoShadowColor;
         } else if (id === "info-outline-color-pickr") {
           pickr.setColor(defaultValues.infoOutlineColor);
+          window["info-outline-color"] = defaultValues.infoOutlineColor;
+        } else if (id === "gradient-color-pickr") {
+          pickr.setColor("#000000");
+          window["gradient-color"] = "#000000";
         }
-      }
+      });
     }
   }
 
@@ -3555,104 +3564,118 @@ document.addEventListener("DOMContentLoaded", () => {
   // Setup reset button handler
   const resetBtn = document.getElementById("resetBtn");
   resetBtn.addEventListener("click", () => {
-    // Reset form fields to default values
-    titleInput.value = defaultValues.title;
-    seasonNumberInput.value = defaultValues.seasonNumber;
-    episodeNumberInput.value = defaultValues.episodeNumber;
-    separatorType.value = defaultValues.separator;
-    horizontalPosition.value = defaultValues.horizontalPosition;
-    fontFamily.value = defaultValues.font;
-    textSize.value = defaultValues.textSize;
+    // Show the reset confirmation overlay
+    const confirmOverlay = document.getElementById("custom-confirm-overlay");
+    confirmOverlay.style.display = "flex";
+    
+    // Setup confirmation button handlers
+    document.getElementById("confirmYes").addEventListener("click", function() {
+      confirmOverlay.style.display = "none";
+      
+      // Reset form fields to default values
+      titleInput.value = defaultValues.title;
+      seasonNumberInput.value = defaultValues.seasonNumber;
+      episodeNumberInput.value = defaultValues.episodeNumber;
+      separatorType.value = defaultValues.separator;
+      horizontalPosition.value = defaultValues.horizontalPosition;
+      fontFamily.value = defaultValues.font;
+      textSize.value = defaultValues.textSize;
 
-    const infoFontFamily = document.getElementById("info-font-family");
-    const infoTextSize = document.getElementById("info-text-size");
-    if (infoFontFamily) infoFontFamily.value = defaultValues.infoFont;
-    if (infoTextSize) infoTextSize.value = defaultValues.infoTextSize;
+      const infoFontFamily = document.getElementById("info-font-family");
+      const infoTextSize = document.getElementById("info-text-size");
+      if (infoFontFamily) infoFontFamily.value = defaultValues.infoFont;
+      if (infoTextSize) infoTextSize.value = defaultValues.infoTextSize;
 
-    textShadowBlur.value = defaultValues.textShadowBlur;
-    textOutlineWidth.value = defaultValues.textOutlineWidth;
-    titleInfoSpacing.value = defaultValues.titleInfoSpacing;
-    infoPosition.value = defaultValues.infoPosition;
+      textShadowBlur.value = defaultValues.textShadowBlur;
+      textOutlineWidth.value = defaultValues.textOutlineWidth;
+      titleInfoSpacing.value = defaultValues.titleInfoSpacing;
+      infoPosition.value = defaultValues.infoPosition;
 
-    const infoShadowBlur = document.getElementById("info-shadow-blur");
-    const infoOutlineWidth = document.getElementById("info-outline-width");
-    if (infoShadowBlur) infoShadowBlur.value = defaultValues.infoShadowBlur;
-    if (infoOutlineWidth)
-      infoOutlineWidth.value = defaultValues.infoOutlineWidth;
+      const infoShadowBlur = document.getElementById("info-shadow-blur");
+      const infoOutlineWidth = document.getElementById("info-outline-width");
+      if (infoShadowBlur) infoShadowBlur.value = defaultValues.infoShadowBlur;
+      if (infoOutlineWidth) infoOutlineWidth.value = defaultValues.infoOutlineWidth;
 
-    if (document.getElementById("title-wrapping")) {
-      document.getElementById("title-wrapping").value =
-        defaultValues.titleWrapping;
-    }
+      if (document.getElementById("title-wrapping")) {
+        document.getElementById("title-wrapping").value = defaultValues.titleWrapping;
+      }
 
-    // Update slider displays
-    updateSliderValueDisplay("text-shadow-blur", "shadow-value", "px");
-    updateSliderValueDisplay("text-outline-width", "outline-value", "px");
-    updateSliderValueDisplay("info-shadow-blur", "info-shadow-value", "px");
-    updateSliderValueDisplay("info-outline-width", "info-outline-value", "px");
-    updateSliderValueDisplay("title-info-spacing", "spacing-value", "px");
-    updateSliderValueDisplay("horizontal-position", "position-value", "px");
+      // Update slider displays
+      updateSliderValueDisplay("text-shadow-blur", "shadow-value", "px");
+      updateSliderValueDisplay("text-outline-width", "outline-value", "px");
+      updateSliderValueDisplay("info-shadow-blur", "info-shadow-value", "px");
+      updateSliderValueDisplay("info-outline-width", "info-outline-value", "px");
+      updateSliderValueDisplay("title-info-spacing", "spacing-value", "px");
+      updateSliderValueDisplay("horizontal-position", "position-value", "px");
 
-    // Reset other options
-    thumbnailFullsize.checked = defaultValues.thumbnailFullsize;
-    effectType.value = defaultValues.effectType;
-    gradientOpacity.value = defaultValues.gradientOpacity;
-    blendMode.value = defaultValues.blendMode;
+      // Reset other options
+      thumbnailFullsize.checked = defaultValues.thumbnailFullsize;
+      effectType.value = defaultValues.effectType;
+      gradientOpacity.value = defaultValues.gradientOpacity;
+      blendMode.value = defaultValues.blendMode;
 
-    // Reset colors
-    textColor = defaultValues.textColor;
-    infoColor = defaultValues.infoColor;
-    textShadowColor = defaultValues.shadowColor;
-    textOutlineColor = defaultValues.outlineColor;
-    window["info-shadow-color"] = defaultValues.infoShadowColor;
-    window["info-outline-color"] = defaultValues.infoOutlineColor;
+      // Reset colors
+      textColor = defaultValues.textColor;
+      infoColor = defaultValues.infoColor;
+      textShadowColor = defaultValues.shadowColor;
+      textOutlineColor = defaultValues.outlineColor;
+      window["info-shadow-color"] = defaultValues.infoShadowColor;
+      window["info-outline-color"] = defaultValues.infoOutlineColor;
 
-    // Reset color pickers
-    resetColorPickers();
+      // Reset color pickers
+      resetColorPickers();
 
-    // Hide custom font options
-    const customFontOption = document.getElementById("custom-font-option");
-    const infoCustomOption = document.getElementById("info-custom-font-option");
-    if (customFontOption) customFontOption.style.display = "none";
-    if (infoCustomOption) infoCustomOption.style.display = "none";
+      // Hide custom font options
+      const customFontOption = document.getElementById("custom-font-option");
+      const infoCustomOption = document.getElementById("info-custom-font-option");
+      if (customFontOption) customFontOption.style.display = "none";
+      if (infoCustomOption) infoCustomOption.style.display = "none";
 
-    // Reset custom font
-    window.customFontFamily = null;
-    document.querySelector(".custom-font-upload-container").textContent =
-      "Upload Custom Font";
+      // Reset custom font
+      window.customFontFamily = null;
+      document.querySelector(".custom-font-upload-container").textContent =
+        "Upload Custom Font";
 
-    // Clear thumbnail
-    thumbnailImg = null;
+      // Clear thumbnail
+      thumbnailImg = null;
+      
+      // Reset thumbnail container text
+      document.querySelector('#thumbnail-container span').textContent = 'Upload Show Thumbnail';
 
-    // Hide gradient controls if effect is none
-    if (effectType.value === "none") {
-      document.getElementById("gradient-controls").style.display = "none";
-    }
+      // Hide gradient controls if effect is none
+      if (effectType.value === "none") {
+        document.getElementById("gradient-controls").style.display = "none";
+      }
 
-    // Clear UI elements
-    document.getElementById("search-results").innerHTML = "";
-    document.getElementById("season-selector").innerHTML = "";
-    document.getElementById("alt-images-container").innerHTML = "";
-    document.getElementById("alt-images-info").textContent =
-      "Select an episode to see available images";
-    document.getElementById("show-search-input").value = "";
+      // Clear UI elements
+      document.getElementById("search-results").innerHTML = "";
+      document.getElementById("season-selector").innerHTML = "";
+      document.getElementById("alt-images-container").innerHTML = "";
+      document.getElementById("alt-images-info").textContent =
+        "Select an episode to see available images";
+      document.getElementById("show-search-input").value = "";
 
-    // Reset state variables
-    currentShowData = null;
-    currentSeasonData = [];
-    episodeTitleCards = [];
-    selectedCardIndex = -1;
-    isTMDBMode = false;
-    hasSearchResults = false;
+      // Reset state variables
+      currentShowData = null;
+      currentSeasonData = [];
+      episodeTitleCards = [];
+      selectedCardIndex = -1;
+      isTMDBMode = false;
+      hasSearchResults = false;
 
-    // Reset view
-    showSingleCardView();
-    returnToGridBtn.style.display = "none";
+      // Reset view
+      showSingleCardView();
+      returnToGridBtn.style.display = "none";
 
-    // Update card display
-    updateBothViews();
+      // Update card display
+      updateBothViews();
 
-    showToast("Title card has been reset to defaults");
+      showToast("Title card has been reset to defaults");
+    });
+    
+    document.getElementById("confirmNo").addEventListener("click", function() {
+      confirmOverlay.style.display = "none";
+    });
   });
 
   // Setup download button handler

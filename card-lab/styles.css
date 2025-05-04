@@ -1031,6 +1031,15 @@ input:checked + .toggle-slider:before {
   color: white;
 }
 
+#custom-confirm-overlay .custom-modal h3 {
+  color: white;
+  margin-top: 0;
+  background: linear-gradient(to right, #00fff0, #a600ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
 .custom-buttons {
   display: flex;
   justify-content: center;
@@ -1053,6 +1062,29 @@ input:checked + .toggle-slider:before {
 
 .custom-btn-blue:hover {
   background: linear-gradient(135deg, #1de9b6, #a600ff);
+  transform: translateY(-2px);
+}
+
+.custom-btn-red {
+  background: linear-gradient(135deg, #ff5252, #ff1744, #d50000);
+  color: white;
+  box-shadow: 0 4px 12px rgba(255, 23, 68, 0.3);
+}
+
+.custom-btn-red:hover {
+  background: linear-gradient(135deg, #ff5252, #d50000);
+  box-shadow: 0 6px 16px rgba(255, 23, 68, 0.4);
+  transform: translateY(-2px);
+}
+
+.custom-btn-gray {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.custom-btn-gray:hover {
+  background: rgba(255, 255, 255, 0.3);
   transform: translateY(-2px);
 }
 
