@@ -92,6 +92,7 @@ document.addEventListener("DOMContentLoaded", () => {
     textSize: "normal",
     infoTextSize: "normal",
     titleWrapping: "singleLine",
+    lineSpacing: 1.2,
     infoPosition: "below",
     textShadowBlur: 0,
     textOutlineWidth: 0,
@@ -1145,7 +1146,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (shouldWrap) {
         titleLines = wrapTextFunc(titleText, titleMaxWidth);
-        const lineHeight = Math.round(titleSize * 1.2);
+        
+        // Get the line spacing value from the slider
+        const lineSpacingElement = document.getElementById("line-spacing");
+        const lineSpacingMultiplier = lineSpacingElement ? parseFloat(lineSpacingElement.value) : 1.2;
+        
+        // Calculate total height based on line spacing
+        const lineHeight = Math.round(titleSize * lineSpacingMultiplier);
         titleHeight = titleLines.length * lineHeight;
       } else {
         titleHeight = titleSize;
@@ -1218,8 +1225,12 @@ document.addEventListener("DOMContentLoaded", () => {
       targetCtx.fillStyle = window["text-color"] || "#ffffff";
 
       if (shouldWrap) {
-        // Handle multi-line title
-        const lineHeight = Math.round(titleSize * 1.2);
+        // Get the line spacing value from the slider for multi-line title
+        const lineSpacingElement = document.getElementById("line-spacing");
+        const lineSpacingMultiplier = lineSpacingElement ? parseFloat(lineSpacingElement.value) : 1.2;
+        
+        // Set the line height based on the line spacing slider value
+        const lineHeight = Math.round(titleSize * lineSpacingMultiplier);
 
         // Draw each line
         titleLines.forEach((line, index) => {
@@ -1270,11 +1281,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
       targetCtx.fillStyle = window["text-color"] || "#ffffff";
 
-      let infoY; // Will be calculated based on title position
-
       if (shouldWrap && titleText.length > 15) {
         // Handle multi-line text
-        const lineHeight = Math.round(titleSize * 1.2);
+        // Get the line spacing value from the slider
+        const lineSpacingElement = document.getElementById("line-spacing");
+        const lineSpacingMultiplier = lineSpacingElement ? parseFloat(lineSpacingElement.value) : 1.2;
+        
+        // Set the line height based on the line spacing slider value
+        const lineHeight = Math.round(titleSize * lineSpacingMultiplier);
+        
         const lines = wrapTextFunc(titleText, titleMaxWidth);
         const totalTextHeight = lines.length * lineHeight;
 
@@ -3809,6 +3824,42 @@ document.addEventListener("DOMContentLoaded", () => {
   // Setup save/load configuration buttons
   saveConfigBtn.addEventListener("click", saveCurrentConfig);
   loadConfigBtn.addEventListener("click", showLoadConfigDialog);
+
+  // Setup title wrapping and line spacing relationship
+  titleWrapping.addEventListener("change", function() {
+    const lineSpacingContainer = document.getElementById("line-spacing-container");
+    if (this.value === "singleLine") {
+      lineSpacingContainer.style.display = "none";
+    } else {
+      lineSpacingContainer.style.display = "block";
+    }
+    updateBothViews();
+  });
+  
+  // Setup line spacing slider
+  const lineSpacing = document.getElementById("line-spacing");
+  const lineSpacingValue = document.getElementById("line-spacing-value");
+  if (lineSpacing && lineSpacingValue) {
+    // Initialize with the default value
+    lineSpacingValue.textContent = lineSpacing.value;
+    
+    lineSpacing.addEventListener("input", function() {
+      lineSpacingValue.textContent = this.value;
+      updateBothViews();
+    });
+  }
+
+  // Initialize line spacing visibility based on initial title wrapping selection
+  if (document.getElementById("title-wrapping")) {
+    const lineSpacingContainer = document.getElementById("line-spacing-container");
+    if (document.getElementById("title-wrapping").value === "singleLine") {
+      lineSpacingContainer.style.display = "none";
+    } else {
+      lineSpacingContainer.style.display = "block";
+    }
+  }
+
+  // Setup input event listeners
 
   // =====================================================
   // INITIALIZATION
