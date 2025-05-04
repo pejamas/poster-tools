@@ -6,6 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const TMDB_API_KEY = "96c821c9e98fab6a43bff8021d508d1d";
   const TMDB_BASE_URL = "https://api.themoviedb.org/3";
   const TMDB_IMG_BASE_URL = "https://image.tmdb.org/t/p/";
+  const LOCAL_STORAGE_KEY = "cardLabShowConfigs"; // Key for storing show configurations
 
   // =====================================================
   // GLOBAL COLOR STATE VARIABLES
@@ -3055,6 +3056,367 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // =====================================================
+  // SAVE/LOAD CONFIGURATION FUNCTIONS
+  // =====================================================
+
+  // Save current configuration for the current show
+  function saveCurrentConfig() {
+    // Only allow saving if a show is selected
+    if (!currentShowData) {
+      showToast("Please select a show first", 3000);
+      return;
+    }
+
+    // Get all current settings
+    const config = {
+      showId: currentShowData.id,
+      showName: currentShowData.name,
+      savedDate: new Date().toISOString(),
+      settings: {
+        fontFamily: fontFamily.value,
+        infoFontFamily: document.getElementById("info-font-family").value,
+        textSize: textSize.value,
+        infoTextSize: document.getElementById("info-text-size").value,
+        textShadowBlur: textShadowBlur.value,
+        textOutlineWidth: textOutlineWidth.value,
+        infoShadowBlur: document.getElementById("info-shadow-blur").value,
+        infoOutlineWidth: document.getElementById("info-outline-width").value,
+        titleInfoSpacing: titleInfoSpacing.value,
+        horizontalPosition: horizontalPosition.value,
+        infoPosition: infoPosition.value,
+        titleWrapping: document.getElementById("title-wrapping") ? 
+          document.getElementById("title-wrapping").value : 'singleLine',
+        textColor: window["text-color"],
+        infoColor: window["info-color"],
+        textShadowColor: window["text-shadow-color"],
+        textOutlineColor: window["text-outline-color"],
+        infoShadowColor: window["info-shadow-color"],
+        infoOutlineColor: window["info-outline-color"],
+        effectType: effectType.value,
+        gradientColor: window["gradient-color"],
+        gradientOpacity: gradientOpacity.value,
+        blendMode: blendMode.value,
+        separator: separatorType.value,
+        seriesType: seriesType.value,
+        thumbnailFullsize: thumbnailFullsize.checked,
+        preset: presetSelect.value
+      }
+    };
+
+    // Get existing configs or create empty array
+    let savedConfigs = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '[]');
+    
+    // Look for existing config for this show
+    const existingConfigIndex = savedConfigs.findIndex(c => c.showId === config.showId);
+    
+    if (existingConfigIndex >= 0) {
+      // Update existing config
+      savedConfigs[existingConfigIndex] = config;
+    } else {
+      // Add new config
+      savedConfigs.push(config);
+    }
+    
+    // Save back to localStorage
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(savedConfigs));
+    
+    // Show confirmation
+    const saveConfirmOverlay = document.getElementById("save-confirm-overlay");
+    saveConfirmOverlay.style.display = "flex";
+    
+    // Close confirmation when OK is clicked
+    document.getElementById("saveConfirmOk").onclick = () => {
+      saveConfirmOverlay.style.display = "none";
+    };
+    
+    showToast(`Configuration saved for "${currentShowData.name}"`, 3000);
+  }
+
+  // Load configuration selection dialog
+  function showLoadConfigDialog() {
+    // Get saved configs
+    const savedConfigs = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '[]');
+    
+    if (savedConfigs.length === 0) {
+      showToast("No saved configurations found", 3000);
+      return;
+    }
+    
+    // Create overlay
+    const overlay = document.createElement("div");
+    overlay.className = "custom-overlay";
+    overlay.style.display = "flex";
+    overlay.style.backdropFilter = "blur(8px)";
+    overlay.style.justifyContent = "center";
+    overlay.style.alignItems = "center";
+    overlay.style.position = "fixed";
+    overlay.style.top = "0";
+    overlay.style.left = "0";
+    overlay.style.width = "100%";
+    overlay.style.height = "100%";
+    overlay.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
+    overlay.style.zIndex = "9999";
+    
+    // Create dialog content
+    const dialog = document.createElement("div");
+    dialog.className = "custom-modal load-config-modal";
+    dialog.style.width = "450px";
+    dialog.style.background = "linear-gradient(135deg, #161830 0%, #0F1020 100%)";
+    dialog.style.boxShadow = "0 20px 40px rgba(0, 0, 0, 0.6)";
+    dialog.style.border = "1px solid rgba(255, 255, 255, 0.08)";
+    dialog.style.borderRadius = "16px";
+    dialog.style.padding = "28px 24px";
+    dialog.style.animation = "modalFadeIn 0.3s ease-out forwards";
+    
+    // Add header
+    const header = document.createElement("div");
+    header.style.textAlign = "center";
+    header.style.marginBottom = "20px";
+    header.style.borderBottom = "1px solid rgba(255, 255, 255, 0.1)";
+    header.style.paddingBottom = "15px";
+    
+    const headerTitle = document.createElement("h3");
+    headerTitle.textContent = "Load Configuration";
+    headerTitle.style.margin = "0 0 10px 0";
+    headerTitle.style.fontSize = "24px";
+    headerTitle.style.fontWeight = "600";
+    headerTitle.style.color = "#fff";
+    header.appendChild(headerTitle);
+    
+    const headerDesc = document.createElement("p");
+    headerDesc.textContent = `Select a show to load its saved configuration (${savedConfigs.length} available)`;
+    headerDesc.style.margin = "0";
+    headerDesc.style.fontSize = "14px";
+    headerDesc.style.color = "rgba(255, 255, 255, 0.7)";
+    header.appendChild(headerDesc);
+    
+    dialog.appendChild(header);
+    
+    // Create config list container with scrolling
+    const configListContainer = document.createElement("div");
+    configListContainer.style.maxHeight = "300px";
+    configListContainer.style.overflowY = "auto";
+    configListContainer.style.padding = "5px";
+    configListContainer.style.marginBottom = "20px";
+    
+    // Sort configs by name
+    savedConfigs.sort((a, b) => a.showName.localeCompare(b.showName));
+    
+    // Add each config as a button
+    savedConfigs.forEach(config => {
+      const item = document.createElement("div");
+      item.className = "config-item";
+      item.style.display = "flex";
+      item.style.justifyContent = "space-between";
+      item.style.alignItems = "center";
+      item.style.padding = "12px 15px";
+      item.style.margin = "8px 0";
+      item.style.borderRadius = "8px";
+      item.style.background = "rgba(255, 255, 255, 0.05)";
+      item.style.border = "1px solid rgba(255, 255, 255, 0.1)";
+      item.style.cursor = "pointer";
+      item.style.transition = "all 0.2s ease";
+      
+      // Hover effects
+      item.addEventListener("mouseenter", () => {
+        item.style.background = "rgba(0, 191, 165, 0.1)";
+        item.style.borderColor = "rgba(0, 191, 165, 0.3)";
+        item.style.transform = "translateY(-2px)";
+      });
+      
+      item.addEventListener("mouseleave", () => {
+        item.style.background = "rgba(255, 255, 255, 0.05)";
+        item.style.borderColor = "rgba(255, 255, 255, 0.1)";
+        item.style.transform = "translateY(0)";
+      });
+      
+      // Info section
+      const infoSection = document.createElement("div");
+      infoSection.style.flexGrow = "1";
+      
+      const showName = document.createElement("div");
+      showName.textContent = config.showName;
+      showName.style.fontSize = "16px";
+      showName.style.fontWeight = "600";
+      showName.style.color = "#fff";
+      showName.style.marginBottom = "5px";
+      infoSection.appendChild(showName);
+      
+      const savedDate = document.createElement("div");
+      const date = new Date(config.savedDate);
+      const formattedDate = date.toLocaleDateString(undefined, {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+      savedDate.textContent = `Saved on ${formattedDate}`;
+      savedDate.style.fontSize = "12px";
+      savedDate.style.color = "rgba(255, 255, 255, 0.5)";
+      infoSection.appendChild(savedDate);
+      
+      item.appendChild(infoSection);
+      
+      // Load button
+      const loadButton = document.createElement("button");
+      loadButton.textContent = "Load";
+      loadButton.style.padding = "8px 16px";
+      loadButton.style.background = "linear-gradient(135deg, #00bfa5, #8e24aa)";
+      loadButton.style.border = "none";
+      loadButton.style.borderRadius = "6px";
+      loadButton.style.color = "#fff";
+      loadButton.style.fontSize = "14px";
+      loadButton.style.cursor = "pointer";
+      loadButton.style.fontWeight = "500";
+      
+      loadButton.addEventListener("click", () => {
+        // Load this configuration
+        loadConfiguration(config);
+        
+        // Close the dialog
+        document.body.removeChild(overlay);
+        
+        // Show confirm toast
+        const loadConfirmOverlay = document.getElementById("load-confirm-overlay");
+        loadConfirmOverlay.style.display = "flex";
+        
+        document.getElementById("loadConfirmOk").onclick = () => {
+          loadConfirmOverlay.style.display = "none";
+        };
+      });
+      
+      item.appendChild(loadButton);
+      configListContainer.appendChild(item);
+    });
+    
+    dialog.appendChild(configListContainer);
+    
+    // Add cancel button
+    const cancelButton = document.createElement("button");
+    cancelButton.textContent = "Cancel";
+    cancelButton.style.width = "100%";
+    cancelButton.style.padding = "12px";
+    cancelButton.style.background = "rgba(255, 255, 255, 0.1)";
+    cancelButton.style.border = "none";
+    cancelButton.style.borderRadius = "8px";
+    cancelButton.style.color = "#fff";
+    cancelButton.style.fontSize = "14px";
+    cancelButton.style.cursor = "pointer";
+    cancelButton.style.marginTop = "10px";
+    
+    cancelButton.addEventListener("mouseenter", () => {
+      cancelButton.style.background = "rgba(255, 255, 255, 0.15)";
+    });
+    
+    cancelButton.addEventListener("mouseleave", () => {
+      cancelButton.style.background = "rgba(255, 255, 255, 0.1)";
+    });
+    
+    cancelButton.addEventListener("click", () => {
+      document.body.removeChild(overlay);
+    });
+    
+    dialog.appendChild(cancelButton);
+    
+    // Add dialog to overlay and overlay to body
+    overlay.appendChild(dialog);
+    document.body.appendChild(overlay);
+  }
+
+  // Apply a saved configuration
+  function loadConfiguration(config) {
+    // Apply all settings from the config
+    const settings = config.settings;
+    
+    // Apply UI element values
+    if (settings.fontFamily) fontFamily.value = settings.fontFamily;
+    if (settings.infoFontFamily) document.getElementById("info-font-family").value = settings.infoFontFamily;
+    if (settings.textSize) textSize.value = settings.textSize;
+    if (settings.infoTextSize) document.getElementById("info-text-size").value = settings.infoTextSize;
+    if (settings.textShadowBlur) textShadowBlur.value = settings.textShadowBlur;
+    if (settings.textOutlineWidth) textOutlineWidth.value = settings.textOutlineWidth;
+    if (settings.infoShadowBlur) document.getElementById("info-shadow-blur").value = settings.infoShadowBlur;
+    if (settings.infoOutlineWidth) document.getElementById("info-outline-width").value = settings.infoOutlineWidth;
+    if (settings.titleInfoSpacing) titleInfoSpacing.value = settings.titleInfoSpacing;
+    if (settings.horizontalPosition) horizontalPosition.value = settings.horizontalPosition;
+    if (settings.infoPosition) infoPosition.value = settings.infoPosition;
+    if (settings.titleWrapping && document.getElementById("title-wrapping")) {
+      document.getElementById("title-wrapping").value = settings.titleWrapping;
+    }
+    if (settings.effectType) effectType.value = settings.effectType;
+    if (settings.gradientOpacity) gradientOpacity.value = settings.gradientOpacity;
+    if (settings.blendMode) blendMode.value = settings.blendMode;
+    if (settings.separator) separatorType.value = settings.separator;
+    if (settings.seriesType) seriesType.value = settings.seriesType;
+    if (typeof settings.thumbnailFullsize !== 'undefined') thumbnailFullsize.checked = settings.thumbnailFullsize;
+    if (settings.preset) presetSelect.value = settings.preset;
+    
+    // Apply color settings
+    if (settings.textColor) window["text-color"] = settings.textColor;
+    if (settings.infoColor) window["info-color"] = settings.infoColor;
+    if (settings.textShadowColor) window["text-shadow-color"] = settings.textShadowColor;
+    if (settings.textOutlineColor) window["text-outline-color"] = settings.textOutlineColor;
+    if (settings.infoShadowColor) window["info-shadow-color"] = settings.infoShadowColor;
+    if (settings.infoOutlineColor) window["info-outline-color"] = settings.infoOutlineColor;
+    if (settings.gradientColor) window["gradient-color"] = settings.gradientColor;
+    
+    // Update color pickers to match loaded settings
+    if (Pickr.all) {
+      Pickr.all.forEach((pickr) => {
+        if (!pickr._root || !pickr._root.button || !pickr._root.button.id) 
+          return;
+        
+        const id = pickr._root.button.id;
+        if (id === "text-color-pickr" && settings.textColor) {
+          pickr.setColor(settings.textColor);
+        } else if (id === "info-color-pickr" && settings.infoColor) {
+          pickr.setColor(settings.infoColor);
+        } else if (id === "text-shadow-color-pickr" && settings.textShadowColor) {
+          pickr.setColor(settings.textShadowColor);
+        } else if (id === "text-outline-color-pickr" && settings.textOutlineColor) {
+          pickr.setColor(settings.textOutlineColor);
+        } else if (id === "info-shadow-color-pickr" && settings.infoShadowColor) {
+          pickr.setColor(settings.infoShadowColor);
+        } else if (id === "info-outline-color-pickr" && settings.infoOutlineColor) {
+          pickr.setColor(settings.infoOutlineColor);
+        } else if (id === "gradient-color-pickr" && settings.gradientColor) {
+          pickr.setColor(settings.gradientColor);
+        }
+      });
+    }
+    
+    // Update slider displays
+    updateSliderValueDisplay("text-shadow-blur", "shadow-value", "px");
+    updateSliderValueDisplay("text-outline-width", "outline-value", "px");
+    updateSliderValueDisplay("info-shadow-blur", "info-shadow-value", "px");
+    updateSliderValueDisplay("info-outline-width", "info-outline-value", "px");
+    updateSliderValueDisplay("title-info-spacing", "spacing-value", "px");
+    updateSliderValueDisplay("horizontal-position", "position-value", "px");
+    
+    // Show/hide gradient controls based on effect type
+    if (settings.effectType === "none") {
+      document.getElementById("gradient-controls").style.display = "none";
+    } else {
+      document.getElementById("gradient-controls").style.display = "block";
+    }
+    
+    // Update current title card and grid view if necessary
+    updateBothViews();
+    
+    // If the loaded show is different from current show, suggest searching for it
+    if (currentShowData && config.showId !== currentShowData.id) {
+      showToast(`Configuration loaded for "${config.showName}" - Search for this show to see it with these settings`, 5000);
+    } else {
+      showToast(`Configuration loaded for "${config.showName}"`, 3000);
+    }
+    
+    // Update all episode cards with new settings if in TMDB mode
+    if (isTMDBMode && episodeTitleCards.length > 0) {
+      updateEpisodeCardSettings();
+      renderEpisodeGrid();
+    }
+  }
+
+  // =====================================================
   // UI EVENT LISTENERS & HANDLERS
   // =====================================================
 
@@ -3443,6 +3805,10 @@ document.addEventListener("DOMContentLoaded", () => {
   if (infoShadowBlur) infoShadowBlur.addEventListener("input", updateBothViews);
   if (infoOutlineWidth)
     infoOutlineWidth.addEventListener("input", updateBothViews);
+
+  // Setup save/load configuration buttons
+  saveConfigBtn.addEventListener("click", saveCurrentConfig);
+  loadConfigBtn.addEventListener("click", showLoadConfigDialog);
 
   // =====================================================
   // INITIALIZATION
