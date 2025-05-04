@@ -60,7 +60,28 @@
 
         <div class="collapsible">
           <div class="collapsible-header">
-            <h3>Manual Tools</h3>
+            <h3>Custom Thumbnail</h3>
+            <span class="toggle-icon"></span>
+          </div>
+          <div class="collapsible-content">
+            <div class="thumbnail-upload-container drop-zone" id="thumbnail-container">
+              <span>Upload Show Thumbnail</span>
+              <input type="file" id="thumbnail-upload" accept="image/*" style="display: none" />
+            </div>
+
+            <div class="toggle-container">
+              <span class="toggle-label">Full Size Background</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="thumbnail-fullsize" checked />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="collapsible">
+          <div class="collapsible-header">
+            <h3>Episode Formatting</h3>
             <span class="toggle-icon"></span>
           </div>
           <div class="collapsible-content">
@@ -91,20 +112,6 @@
               <option value="none">None</option>
             </select>
 
-            <div class="section-separator"></div>
-
-            <div class="thumbnail-upload-container drop-zone" id="thumbnail-container">
-              <span>Upload Show Thumbnail</span>
-              <input type="file" id="thumbnail-upload" accept="image/*" style="display: none" />
-            </div>
-
-            <div class="toggle-container">
-              <span class="toggle-label">Full Size Background</span>
-              <label class="toggle-switch">
-                <input type="checkbox" id="thumbnail-fullsize" checked />
-                <span class="toggle-slider"></span>
-              </label>
-            </div>
           </div>
         </div>
 
