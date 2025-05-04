@@ -867,30 +867,11 @@ document.addEventListener("DOMContentLoaded", () => {
       presetLayoutConfig["centerMiddle"];
 
     // Calculate text sizes based on canvas dimensions
-    let titleSize;
-    switch (textSize.value) {
-      case "small":
-        titleSize = Math.round(56 * (width / 1280));
-        break;
-      case "large":
-        titleSize = Math.round(86 * (width / 1280));
-        break;
-      default:
-        titleSize = Math.round(72 * (width / 1280));
-    }
+    let titleSize = Math.round(parseInt(textSize.value) * (width / 1280));
 
     let infoSize;
     const infoTextSize = document.getElementById("info-text-size");
-    switch (infoTextSize.value) {
-      case "small":
-        infoSize = Math.round(32 * (width / 1280));
-        break;
-      case "large":
-        infoSize = Math.round(48 * (width / 1280));
-        break;
-      default:
-        infoSize = Math.round(36 * (width / 1280));
-    }
+    infoSize = Math.round(parseInt(infoTextSize.value) * (width / 1280));
 
     // Calculate initial position based on preset
     let textBoxX, textBoxY, textAlign, maxWidth;
