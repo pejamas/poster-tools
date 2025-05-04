@@ -49,9 +49,6 @@
             <div id="search-results" class="search-results"></div>
             <div id="season-selector" class="season-selector"></div>
 
-            <div id="alt-images-info" class="info-text">Select an episode to see available images</div>
-            <div id="alt-images-container" class="alt-images-grid"></div>
-
             <button id="returnToGridBtn" class="icon-button">
               <span>Return to Grid View</span>
             </button>
@@ -352,6 +349,19 @@
 
       <div class="main">
         <canvas id="titlecard-canvas" width="1280" height="720"></canvas>
+        
+        <!-- New modular frame that shows below the canvas in single view -->
+        <div class="modular-frame" id="modular-frame">
+          <div class="modular-frame-content">
+            <div class="modular-frame-header">
+              <h4>Available Images</h4>
+              <span class="alt-images-count" id="modular-frame-count"></span>
+            </div>
+            <div class="alt-images-row" id="modular-frame-images"></div>
+            <button id="modular-frame-return-btn">Return to Grid View</button>
+          </div>
+        </div>
+        
         <canvas id="grid-canvas" class="grid-canvas"></canvas>
       </div>
     </div>

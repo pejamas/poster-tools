@@ -602,8 +602,12 @@ document.addEventListener("DOMContentLoaded", () => {
     canvas.style.display = "block";
     gridCanvas.style.display = "none";
 
+    // Show the modular frame below the canvas when in single card view
+    document.getElementById("modular-frame").style.display = "block";
+
     if (hasSearchResults) {
-      returnToGridBtn.style.display = "flex";
+      // Hide the sidebar version of the return button, using the modular frame one instead
+      returnToGridBtn.style.display = "none";
     } else {
       returnToGridBtn.style.display = "none";
     }
@@ -614,6 +618,9 @@ document.addEventListener("DOMContentLoaded", () => {
     canvas.style.display = "none";
     gridCanvas.style.display = "block";
     returnToGridBtn.style.display = "none";
+    
+    // Hide the modular frame when in grid view
+    document.getElementById("modular-frame").style.display = "none";
   }
 
   // =====================================================
@@ -1824,56 +1831,75 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Display alternative images for an episode
   function displayAlternativeImages(card) {
-    const altImagesContainer = document.getElementById("alt-images-container");
-    const altImagesInfo = document.getElementById("alt-images-info");
+    const modularFrame = document.getElementById("modular-frame");
+    const modularFrameImages = document.getElementById("modular-frame-images");
+    const modularFrameCount = document.getElementById("modular-frame-count");
 
-    altImagesContainer.innerHTML = "";
+    // Clear the container
+    modularFrameImages.innerHTML = "";
 
     if (!card.allImages || card.allImages.length <= 1) {
-      altImagesInfo.textContent =
-        "No alternative images available for this episode";
+      modularFrameCount.textContent = "No alternative images available";
+      modularFrameImages.style.maxHeight = "auto";
       return;
     }
 
-    altImagesInfo.textContent = `${card.allImages.length} images available - click to select`;
+    // Update text
+    modularFrameCount.textContent = `${card.allImages.length} images available`;
 
+    // Determine optimal layout for different image counts
+    if (card.allImages.length <= 4) {
+      // For 1-4 images: Single row, no scrolling
+      modularFrameImages.style.maxHeight = "auto";
+      modularFrameImages.style.justifyContent = "center";
+    } else if (card.allImages.length <= 8) {
+      // For 5-8 images: Two rows without scrolling
+      modularFrameImages.style.maxHeight = "160px"; // Height to accommodate 2 rows
+      modularFrameImages.style.justifyContent = "center";
+    } else if (card.allImages.length <= 16) {
+      // For 9-16 images: Three rows with possible scrolling
+      modularFrameImages.style.maxHeight = "240px"; // Height to accommodate 3 rows
+      modularFrameImages.style.justifyContent = "flex-start"; // Left-align for consistent scrolling
+    } else {
+      // For more than 16 images: Four rows with scrolling
+      modularFrameImages.style.maxHeight = "300px"; // Height to accommodate 4 rows
+      modularFrameImages.style.justifyContent = "flex-start"; // Left-align for consistent scrolling
+    }
+
+    // Create image items for the modular frame
     card.allImages.forEach((img, index) => {
-      const imageItem = document.createElement("div");
-      imageItem.className = "alt-image-item";
+      // Create image for modular frame
+      const modularImageItem = document.createElement("div");
+      modularImageItem.className = "alt-image-item";
       if (card.thumbnailImg === img) {
-        imageItem.classList.add("selected");
+        modularImageItem.classList.add("selected");
       }
 
-      // Create image element
-      const imgEl = document.createElement("img");
-      imgEl.src = img.src;
-      imgEl.alt = `Alternative image ${index + 1}`;
-      imageItem.appendChild(imgEl);
+      const modularImgEl = document.createElement("img");
+      modularImgEl.src = img.src;
+      modularImgEl.alt = `Alternative image ${index + 1}`;
+      modularImageItem.appendChild(modularImgEl);
 
-      // Add number badge
-      const badge = document.createElement("span");
-      badge.className = "image-badge";
-      badge.textContent = index + 1;
-      imageItem.appendChild(badge);
+      const modularBadge = document.createElement("span");
+      modularBadge.className = "image-badge";
+      modularBadge.textContent = index + 1;
+      modularImageItem.appendChild(modularBadge);
 
-      // Add click handler to select this image
-      imageItem.addEventListener("click", () => {
+      modularImageItem.addEventListener("click", () => {
         thumbnailImg = img;
         card.thumbnailImg = img;
 
+        // Update selected class
         document.querySelectorAll(".alt-image-item").forEach((item) => {
           item.classList.remove("selected");
         });
-        imageItem.classList.add("selected");
+        modularImageItem.classList.add("selected");
 
         drawCard();
       });
 
-      altImagesContainer.appendChild(imageItem);
+      modularFrameImages.appendChild(modularImageItem);
     });
-
-    // Expand the first collapsible panel
-    document.querySelector(".collapsible:nth-child(1)").classList.add("active");
   }
 
   // Calculate grid dimensions based on episode count
@@ -3864,6 +3890,15 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Setup input event listeners
+
+  // Setup the modular frame return to grid button
+  const modularFrameReturnBtn = document.getElementById("modular-frame-return-btn");
+  if (modularFrameReturnBtn) {
+    modularFrameReturnBtn.addEventListener("click", () => {
+      renderEpisodeGrid();
+      showGridView();
+    });
+  }
 
   // =====================================================
   // INITIALIZATION
