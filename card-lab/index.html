@@ -60,10 +60,39 @@
 
         <div class="collapsible">
           <div class="collapsible-header">
-            <h3>Custom Thumbnail</h3>
+            <h3>Manual Tools</h3>
             <span class="toggle-icon"></span>
           </div>
           <div class="collapsible-content">
+            <label for="title-text">Episode Name</label>
+            <input type="text" id="title-text" placeholder="Enter Episode Name" />
+
+            <label for="season-number">Season Number</label>
+            <input type="text" id="season-number" placeholder="e.g., 07" />
+
+            <label for="series-type">Series Type</label>
+            <select id="series-type">
+              <option value="regular">Regular Season</option>
+              <option value="limited">Limited Series</option>
+              <option value="mini">Mini-Series</option>
+              <option value="anthology">Anthology</option>
+              <option value="special">Special</option>
+            </select>
+
+            <label for="episode-number">Episode Number</label>
+            <input type="text" id="episode-number" placeholder="e.g., 01" />
+
+            <label for="separator-type">Season/Episode Separator</label>
+            <select id="separator-type">
+              <option value="dot">Dot (•)</option>
+              <option value="dash">Dash (-)</option>
+              <option value="pipe">Pipe (|)</option>
+              <option value="space">Space</option>
+              <option value="none">None</option>
+            </select>
+
+            <div class="section-separator"></div>
+
             <div class="thumbnail-upload-container drop-zone" id="thumbnail-container">
               <span>Upload Show Thumbnail</span>
               <input type="file" id="thumbnail-upload" accept="image/*" style="display: none" />
@@ -146,79 +175,7 @@
 
         <div class="collapsible">
           <div class="collapsible-header">
-            <h3>Episode Formatting</h3>
-            <span class="toggle-icon"></span>
-          </div>
-          <div class="collapsible-content">
-            <label for="title-text">Episode Name</label>
-            <input type="text" id="title-text" placeholder="Enter Episode Name" />
-
-            <label for="season-number">Season Number</label>
-            <input type="text" id="season-number" placeholder="e.g., 07" />
-
-            <div class="formatting-toggles">
-              <div class="toggle-container">
-                <span class="toggle-label">Bold</span>
-                <label class="toggle-switch">
-                  <input type="checkbox" id="season-bold" />
-                  <span class="toggle-slider"></span>
-                </label>
-              </div>
-              
-              <div class="toggle-container">
-                <span class="toggle-label">Italic</span>
-                <label class="toggle-switch">
-                  <input type="checkbox" id="season-italic" />
-                  <span class="toggle-slider"></span>
-                </label>
-              </div>
-            </div>
-
-            <label for="series-type">Series Type</label>
-            <select id="series-type">
-              <option value="regular">Regular Season</option>
-              <option value="limited">Limited Series</option>
-              <option value="mini">Mini-Series</option>
-              <option value="anthology">Anthology</option>
-              <option value="special">Special</option>
-            </select>
-
-            <label for="episode-number">Episode Number</label>
-            <input type="text" id="episode-number" placeholder="e.g., 01" />
-            
-            <div class="formatting-toggles">
-              <div class="toggle-container">
-                <span class="toggle-label">Bold</span>
-                <label class="toggle-switch">
-                  <input type="checkbox" id="episode-bold" />
-                  <span class="toggle-slider"></span>
-                </label>
-              </div>
-              
-              <div class="toggle-container">
-                <span class="toggle-label">Italic</span>
-                <label class="toggle-switch">
-                  <input type="checkbox" id="episode-italic" />
-                  <span class="toggle-slider"></span>
-                </label>
-              </div>
-            </div>
-
-            <label for="separator-type">Season/Episode Separator</label>
-            <select id="separator-type">
-              <option value="dot">Dot (•)</option>
-              <option value="dash">Dash (-)</option>
-              <option value="pipe">Pipe (|)</option>
-              <option value="space">Space</option>
-              <option value="none">None</option>
-            </select>
-            
-          </div>
-        </div>
-
-        <div class="collapsible">
-          <div class="collapsible-header">
-            <h3>Advanced Text Options</h3>
+            <h3>Text Options</h3>
             <span class="toggle-icon"></span>
           </div>
           <div class="collapsible-content text-options">
