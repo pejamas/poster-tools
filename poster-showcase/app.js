@@ -1342,48 +1342,233 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 document.getElementById("saveConfigBtn").addEventListener("click", () => {
-  const config = {
-    creatorName: document.getElementById("creator-name").value,
-    setId: document.getElementById("set-id").value,
-    logoScale: document.getElementById("logo-scale").value,
+  // Create detailed save selection popup
+  const overlay = document.getElementById("save-confirm-overlay");
+  const confirmContent = document.getElementById("save-confirm-content") || document.createElement("div");
+  
+  if (!document.getElementById("save-confirm-content")) {
+    confirmContent.id = "save-confirm-content";
+    const modalContent = overlay.querySelector(".custom-modal") || overlay;
+    modalContent.appendChild(confirmContent);
+  }
+  
+  // Get current values to show in the selection dialog
+  const currentValues = {
+    creatorName: document.getElementById("creator-name").value || "(empty)",
+    hasCreatorIcon: !!document.getElementById("creator-icon").src && 
+                  document.getElementById("creator-icon").src !== window.location.href && 
+                  document.getElementById("creator-icon").style.display !== "none",
     showPostersHeader: document.getElementById("show-posters-header").checked,
     showAlbumArtHeader: document.getElementById("show-album-art-header").checked,
     showTitlecardsHeader: document.getElementById("show-titlecards-header").checked,
-    useBackdrop: document.getElementById("use-backdrop-toggle").checked,
-    // Get color values from CSS variables instead of input elements
-    bgStart: getComputedStyle(document.documentElement).getPropertyValue("--bg-start").trim() || "#2c3e50",
-    bgEnd: getComputedStyle(document.documentElement).getPropertyValue("--bg-end").trim() || "#6a11cb",
     columns: document.getElementById("columns-select").value,
     titlecardColumns: document.getElementById("titlecard-columns-select").value,
+    albumArtColumns: document.getElementById("album-art-columns-select").value
   };
+  
+  // Build selection interface with simplified options
+  let settingsSelectionHTML = `
+    <h4>Select settings to save:</h4>
+    <div class="settings-selection">
+      <div class="settings-group">
+        <h5>User Information</h5>
+        <label class="checkbox-container">
+          <input type="checkbox" id="save-creator-name" checked>
+          <span class="checkmark"></span>
+          <div class="setting-label">
+            <div class="setting-name">Creator Name</div>
+            <div class="setting-status">${currentValues.creatorName}</div>
+          </div>
+        </label>
+        <label class="checkbox-container">
+          <input type="checkbox" id="save-creator-icon" ${currentValues.hasCreatorIcon ? 'checked' : ''}>
+          <span class="checkmark"></span>
+          <div class="setting-label">
+            <div class="setting-name">Creator Icon</div>
+            <div class="setting-status">${currentValues.hasCreatorIcon ? 'Present' : 'Not set'}</div>
+          </div>
+        </label>
+      </div>
 
-  const logoPreview = document.getElementById("logo-preview");
-  if (logoPreview && logoPreview.src && logoPreview.src !== window.location.href) {
-    config.logoData = logoPreview.src;
+      <div class="settings-group">
+        <h5>Section Headers</h5>
+        <label class="checkbox-container">
+          <input type="checkbox" id="save-posters-header" checked>
+          <span class="checkmark"></span>
+          <div class="setting-label">
+            <div class="setting-name">Posters Header</div>
+            <div class="setting-status">${currentValues.showPostersHeader ? 'Shown' : 'Hidden'}</div>
+          </div>
+        </label>
+        <label class="checkbox-container">
+          <input type="checkbox" id="save-album-art-header" checked>
+          <span class="checkmark"></span>
+          <div class="setting-label">
+            <div class="setting-name">Album Art Header</div>
+            <div class="setting-status">${currentValues.showAlbumArtHeader ? 'Shown' : 'Hidden'}</div>
+          </div>
+        </label>
+        <label class="checkbox-container">
+          <input type="checkbox" id="save-titlecards-header" checked>
+          <span class="checkmark"></span>
+          <div class="setting-label">
+            <div class="setting-name">Titlecards Header</div>
+            <div class="setting-status">${currentValues.showTitlecardsHeader ? 'Shown' : 'Hidden'}</div>
+          </div>
+        </label>
+      </div>
+
+      <div class="settings-group">
+        <h5>Grid Columns</h5>
+        <label class="checkbox-container">
+          <input type="checkbox" id="save-posters-columns" checked>
+          <span class="checkmark"></span>
+          <div class="setting-label">
+            <div class="setting-name">Posters Columns</div>
+            <div class="setting-status">${currentValues.columns}</div>
+          </div>
+        </label>
+        <label class="checkbox-container">
+          <input type="checkbox" id="save-album-art-columns" checked>
+          <span class="checkmark"></span>
+          <div class="setting-label">
+            <div class="setting-name">Album Art Columns</div>
+            <div class="setting-status">${currentValues.albumArtColumns}</div>
+          </div>
+        </label>
+        <label class="checkbox-container">
+          <input type="checkbox" id="save-titlecards-columns" checked>
+          <span class="checkmark"></span>
+          <div class="setting-label">
+            <div class="setting-name">Titlecards Columns</div>
+            <div class="setting-status">${currentValues.titlecardColumns}</div>
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <div class="save-selection-actions">
+      <button id="save-select-all" class="mini-btn">Select All</button>
+      <button id="save-deselect-all" class="mini-btn">Deselect All</button>
+    </div>
+  `;
+  
+  confirmContent.innerHTML = settingsSelectionHTML;
+  
+  // Change title to make it clear this is for selection
+  const titleElement = overlay.querySelector("h3");
+  if (titleElement) {
+    titleElement.textContent = "Save Configuration";
   }
-
-  // Fix: Properly save creator icon data
-  const creatorIcon = document.getElementById("creator-icon");
-  if (
-    creatorIcon &&
-    creatorIcon.src &&
-    creatorIcon.src !== window.location.href &&
-    creatorIcon.style.display !== "none"
-  ) {
-    config.creatorIconData = creatorIcon.src;
+  
+  // Change Save button text and make it use the gradient style
+  const saveButton = document.getElementById("saveConfirmOk");
+  if (saveButton) {
+    saveButton.textContent = "Save Selected";
+    saveButton.style.background = "linear-gradient(135deg, #00bfa5, #8e24aa)";
+    saveButton.style.boxShadow = "0 4px 12px rgba(0, 191, 165, 0.3)";
   }
+  
+  // Add event listeners for the select/deselect all buttons
+  setTimeout(() => {
+    const selectAllBtn = document.getElementById("save-select-all");
+    const deselectAllBtn = document.getElementById("save-deselect-all");
+    
+    if (selectAllBtn) {
+      selectAllBtn.addEventListener("click", () => {
+        document.querySelectorAll('.settings-selection input[type="checkbox"]').forEach(cb => {
+          cb.checked = true;
+        });
+      });
+    }
+    
+    if (deselectAllBtn) {
+      deselectAllBtn.addEventListener("click", () => {
+        document.querySelectorAll('.settings-selection input[type="checkbox"]').forEach(cb => {
+          cb.checked = false;
+        });
+      });
+    }
+    
+    // Show the overlay
+    overlay.style.display = "flex";
+  }, 0);
 
-  // Always save creator name when saving config
-  config.creatorName = document.getElementById("creator-name").value;
-
-  localStorage.setItem("posterToolsConfig", JSON.stringify(config));
-
-  // Show custom save confirmation popup instead of alert
-  const overlay = document.getElementById("save-confirm-overlay");
-  overlay.style.display = "flex";
-
+  // Save button handler
   document.getElementById("saveConfirmOk").onclick = () => {
-    overlay.style.display = "none";
+    const config = {};
+    
+    // Only save selected settings
+    if (document.getElementById("save-creator-name").checked) {
+      config.creatorName = document.getElementById("creator-name").value;
+    }
+    
+    // Save creator icon if selected and available
+    if (document.getElementById("save-creator-icon").checked) {
+      const creatorIcon = document.getElementById("creator-icon");
+      if (
+        creatorIcon &&
+        creatorIcon.src &&
+        creatorIcon.src !== window.location.href &&
+        creatorIcon.style.display !== "none"
+      ) {
+        config.creatorIconData = creatorIcon.src;
+      }
+    }
+
+    // Save individual section header settings
+    if (document.getElementById("save-posters-header").checked) {
+      config.showPostersHeader = document.getElementById("show-posters-header").checked;
+    }
+    
+    if (document.getElementById("save-album-art-header").checked) {
+      config.showAlbumArtHeader = document.getElementById("show-album-art-header").checked;
+    }
+    
+    if (document.getElementById("save-titlecards-header").checked) {
+      config.showTitlecardsHeader = document.getElementById("show-titlecards-header").checked;
+    }
+    
+    // Save individual grid column settings
+    if (document.getElementById("save-posters-columns").checked) {
+      config.columns = document.getElementById("columns-select").value;
+    }
+    
+    if (document.getElementById("save-album-art-columns").checked) {
+      config.albumArtColumns = document.getElementById("album-art-columns-select").value;
+    }
+    
+    if (document.getElementById("save-titlecards-columns").checked) {
+      config.titlecardColumns = document.getElementById("titlecard-columns-select").value;
+    }
+
+    // Save the config
+    localStorage.setItem("posterToolsConfig", JSON.stringify(config));
+    
+    // Show saved confirmation
+    confirmContent.innerHTML = `
+      <div style="text-align: center; padding: 1rem;">
+        <p style="font-size: 1.2rem; margin: 0.5rem 0;">Settings saved successfully!</p>
+        <p style="color: #00bfa5; font-size: 0.9rem; margin: 0;">Your configuration has been saved.</p>
+      </div>
+    `;
+    
+    // Reset the button text and style
+    if (saveButton) {
+      saveButton.textContent = "OK";
+      saveButton.style.background = "#0ac2b8";
+      saveButton.style.boxShadow = "none";
+    }
+    
+    // Reset the title
+    if (titleElement) {
+      titleElement.textContent = "Settings Saved";
+    }
+    
+    // Auto-close after a delay
+    setTimeout(() => {
+      overlay.style.display = "none";
+    }, 2000);
   };
 });
 
