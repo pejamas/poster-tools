@@ -242,6 +242,12 @@ header {
     animation-delay: 0.5s;
 }
 
+@keyframes shine {
+    0% { left: -100%; }
+    20% { left: 100%; }
+    100% { left: 100%; }
+}
+
 #reset-btn {
     background: linear-gradient(135deg, #ff5252, #ff1744, #d50000);
     color: white;
@@ -1269,6 +1275,7 @@ input:checked + .toggle-slider:before {
 }
 
 .media-type-btn.active::after {
+    content: "✓";
     font-size: 1rem;
     color: white;
     position: absolute;
