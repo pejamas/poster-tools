@@ -44,6 +44,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const titleInfoSpacing = document.getElementById("title-info-spacing");
   const titleWrapping = document.getElementById("title-wrapping");
 
+  const seasonBold = document.getElementById("season-bold");
+  const seasonItalic = document.getElementById("season-italic");
+  const episodeBold = document.getElementById("episode-bold");
+  const episodeItalic = document.getElementById("episode-italic");
+
   const thumbnailInput = document.getElementById("thumbnail-upload");
   const thumbnailFullsize = document.getElementById("thumbnail-fullsize");
 
@@ -106,6 +111,10 @@ document.addEventListener("DOMContentLoaded", () => {
     outlineColor: "#000000",
     infoShadowColor: "#000000",
     infoOutlineColor: "#000000",
+    seasonBold: false,
+    seasonItalic: false,
+    episodeBold: false,
+    episodeItalic: false,
   };
 
   // =====================================================
@@ -583,6 +592,10 @@ document.addEventListener("DOMContentLoaded", () => {
           currentColors.gradientColor || fallbackColors.gradientColor,
         gradientOpacity: gradientOpacity.value,
         blendMode: blendMode.value,
+        seasonBold: seasonBold && seasonBold.checked,
+        seasonItalic: seasonItalic && seasonItalic.checked,
+        episodeBold: episodeBold && episodeBold.checked,
+        episodeItalic: episodeItalic && episodeItalic.checked
       };
     }
   }
@@ -952,40 +965,54 @@ document.addEventListener("DOMContentLoaded", () => {
           separator = " - ";
       }
 
+      // Create separate parts for season and episode text
+      let seasonPart = "";
+      let episodePart = "";
+
       if (seasonNumberInput.value) {
         // Check if we're using a special series type or regular season
         const seriesTypeValue = seriesType.value;
         
         if (seriesTypeValue === 'regular' || !seriesTypeValue) {
           // Regular season display
-          infoText += "Season " + seasonNumberInput.value;
+          seasonPart = "Season " + seasonNumberInput.value;
         } else {
           // Special series type display (Limited Series, Mini Series, etc.)
           switch (seriesTypeValue) {
             case 'limited':
-              infoText += "Limited Series";
+              seasonPart = "Limited Series";
               break;
             case 'mini':
-              infoText += "Mini-Series";
+              seasonPart = "Mini-Series";
               break;
             case 'anthology':
-              infoText += "Anthology Series";
+              seasonPart = "Anthology Series";
               break;
             case 'special':
-              infoText += "Special";
+              seasonPart = "Special";
               break;
             default:
-              infoText += "Season " + seasonNumberInput.value;
+              seasonPart = "Season " + seasonNumberInput.value;
           }
         }
       }
 
-      if (seasonNumberInput.value && episodeNumberInput.value) {
-        infoText += separator;
+      if (episodeNumberInput.value) {
+        episodePart = "Episode " + episodeNumberInput.value;
       }
 
-      if (episodeNumberInput.value) {
-        infoText += "Episode " + episodeNumberInput.value;
+      // We will draw the formatted text components separately,
+      // but for now, create a plain text version for measuring and calculations
+      if (seasonPart) {
+        infoText += seasonPart;
+      }
+      
+      if (seasonPart && episodePart) {
+        infoText += separator;
+      }
+      
+      if (episodePart) {
+        infoText += episodePart;
       }
     }
 
@@ -1167,7 +1194,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const iFont = `${Math.round(
         infoSize * infoFontSizeAdjustment
       )}px "${infoFontToUse}", sans-serif`;
-      targetCtx.font = iFont;
+      
       targetCtx.textAlign = textAlign;
       targetCtx.textBaseline = "top";
 
@@ -1180,16 +1207,181 @@ document.addEventListener("DOMContentLoaded", () => {
       targetCtx.shadowOffsetX = 1 * (width / 1280);
       targetCtx.shadowOffsetY = 1 * (height / 720);
 
-      // Draw info text outline if enabled
-      if (parseInt(infoOutlineWidth.value) > 0) {
-        targetCtx.lineWidth = parseInt(infoOutlineWidth.value) * (width / 1280);
-        targetCtx.strokeStyle = window["info-outline-color"] || "#000000";
-        targetCtx.strokeText(infoText, infoX, infoY, maxWidth);
+      // Instead of drawing the combined infoText, we'll draw season and episode parts separately
+      // with their own formatting
+      let seasonPart = "";
+      let episodePart = "";
+      
+      // Create separate parts for season and episode text
+      if (seasonNumberInput.value) {
+        // Check if we're using a special series type or regular season
+        const seriesTypeValue = seriesType.value;
+        
+        if (seriesTypeValue === 'regular' || !seriesTypeValue) {
+          // Regular season display
+          seasonPart = "Season " + seasonNumberInput.value;
+        } else {
+          // Special series type display (Limited Series, Mini Series, etc.)
+          switch (seriesTypeValue) {
+            case 'limited':
+              seasonPart = "Limited Series";
+              break;
+            case 'mini':
+              seasonPart = "Mini-Series";
+              break;
+            case 'anthology':
+              seasonPart = "Anthology Series";
+              break;
+            case 'special':
+              seasonPart = "Special";
+              break;
+            default:
+              seasonPart = "Season " + seasonNumberInput.value;
+          }
+        }
+      }
+      
+      if (episodeNumberInput.value) {
+        episodePart = "Episode " + episodeNumberInput.value;
+      }
+      
+      // Calculate text measurements for positioning
+      targetCtx.font = iFont; // Set base font for measurements
+      
+      // Get width of each part and separator for positioning
+      let seasonWidth = 0;
+      let separatorWidth = 0;
+      let episodeWidth = 0;
+      let totalWidth = 0;
+      
+      if (seasonPart) {
+        // Apply bold/italic for measurement
+        let seasonFontStyle = "";
+        if (seasonBold && seasonBold.checked) seasonFontStyle += "bold ";
+        if (seasonItalic && seasonItalic.checked) seasonFontStyle += "italic ";
+        
+        // Only add font style if there's something to add
+        if (seasonFontStyle) {
+          targetCtx.font = `${seasonFontStyle}${Math.round(
+            infoSize * infoFontSizeAdjustment
+          )}px "${infoFontToUse}", sans-serif`;
+        } else {
+          targetCtx.font = iFont;
+        }
+        
+        seasonWidth = targetCtx.measureText(seasonPart).width;
+      }
+      
+      // Measure separator if both parts exist
+      if (seasonPart && episodePart) {
+        targetCtx.font = iFont; // Reset to base font for separator
+        separatorWidth = targetCtx.measureText(separator).width;
+      }
+      
+      if (episodePart) {
+        // Apply bold/italic for measurement
+        let episodeFontStyle = "";
+        if (episodeBold && episodeBold.checked) episodeFontStyle += "bold ";
+        if (episodeItalic && episodeItalic.checked) episodeFontStyle += "italic ";
+        
+        // Only add font style if there's something to add
+        if (episodeFontStyle) {
+          targetCtx.font = `${episodeFontStyle}${Math.round(
+            infoSize * infoFontSizeAdjustment
+          )}px "${infoFontToUse}", sans-serif`;
+        } else {
+          targetCtx.font = iFont;
+        }
+        
+        episodeWidth = targetCtx.measureText(episodePart).width;
+      }
+      
+      // Calculate total width for alignment
+      totalWidth = seasonWidth + separatorWidth + episodeWidth;
+      
+      // Calculate the starting position based on alignment
+      let startX = infoX;
+      if (textAlign === "center") {
+        startX = infoX - (totalWidth / 2);
+      } else if (textAlign === "right") {
+        startX = infoX - totalWidth;
+      }
+      
+      // Draw each part with its own formatting
+      let currentX = startX;
+      
+      // Draw the season part
+      if (seasonPart) {
+        // Apply formatting
+        let seasonFontStyle = "";
+        if (seasonBold && seasonBold.checked) seasonFontStyle += "bold ";
+        if (seasonItalic && seasonItalic.checked) seasonFontStyle += "italic ";
+        
+        // Only apply font style if there's something to apply
+        if (seasonFontStyle) {
+          targetCtx.font = `${seasonFontStyle}${Math.round(
+            infoSize * infoFontSizeAdjustment
+          )}px "${infoFontToUse}", sans-serif`;
+        } else {
+          targetCtx.font = iFont;
+        }
+        
+        // Draw outline if enabled
+        if (parseInt(infoOutlineWidth.value) > 0) {
+          targetCtx.lineWidth = parseInt(infoOutlineWidth.value) * (width / 1280);
+          targetCtx.strokeStyle = window["info-outline-color"] || "#000000";
+          targetCtx.strokeText(seasonPart, currentX, infoY);
+        }
+        
+        // Draw season text fill
+        targetCtx.fillStyle = window["info-color"] || "#ffffff";
+        targetCtx.fillText(seasonPart, currentX, infoY);
+        
+        currentX += seasonWidth;
+      }
+      
+      // Draw separator if both parts exist
+      if (seasonPart && episodePart) {
+        // Reset to base font for separator
+        targetCtx.font = iFont;
+        
+        // Draw separator
+        if (parseInt(infoOutlineWidth.value) > 0) {
+          targetCtx.strokeText(separator, currentX, infoY);
+        }
+        targetCtx.fillText(separator, currentX, infoY);
+        
+        currentX += separatorWidth;
+      }
+      
+      // Draw the episode part
+      if (episodePart) {
+        // Apply formatting
+        let episodeFontStyle = "";
+        if (episodeBold && episodeBold.checked) episodeFontStyle += "bold ";
+        if (episodeItalic && episodeItalic.checked) episodeFontStyle += "italic ";
+        
+        // Only apply font style if there's something to apply
+        if (episodeFontStyle) {
+          targetCtx.font = `${episodeFontStyle}${Math.round(
+            infoSize * infoFontSizeAdjustment
+          )}px "${infoFontToUse}", sans-serif`;
+        } else {
+          targetCtx.font = iFont;
+        }
+        
+        // Draw outline if enabled
+        if (parseInt(infoOutlineWidth.value) > 0) {
+          targetCtx.lineWidth = parseInt(infoOutlineWidth.value) * (width / 1280);
+          targetCtx.strokeStyle = window["info-outline-color"] || "#000000";
+          targetCtx.strokeText(episodePart, currentX, infoY);
+        }
+        
+        // Draw episode text fill
+        targetCtx.fillStyle = window["info-color"] || "#ffffff";
+        targetCtx.fillText(episodePart, currentX, infoY);
       }
 
-      // Draw info text fill
-      targetCtx.fillStyle = window["info-color"] || "#ffffff";
-      targetCtx.fillText(infoText, infoX, infoY, maxWidth);
       targetCtx.restore();
 
       // Calculate where title should go (below info)
@@ -1340,17 +1532,147 @@ document.addEventListener("DOMContentLoaded", () => {
         targetCtx.shadowOffsetX = 1 * (width / 1280);
         targetCtx.shadowOffsetY = 1 * (height / 720);
 
-        // Draw info text outline if enabled
-        if (parseInt(infoOutlineWidth.value) > 0) {
-          targetCtx.lineWidth =
-            parseInt(infoOutlineWidth.value) * (width / 1280);
-          targetCtx.strokeStyle = window["info-outline-color"] || "#000000";
-          targetCtx.strokeText(infoText, infoX, infoY, maxWidth);
+        // Instead of drawing the combined infoText, we'll draw season and episode parts separately
+        // with their own formatting
+        let seasonPart = "";
+        let episodePart = "";
+        let seasonWidth = 0;
+        let totalWidth = 0;
+        
+        // Check for season text
+        if (seasonNumberInput.value) {
+          // Check if we're using a special series type or regular season
+          const seriesTypeValue = seriesType.value;
+          
+          if (seriesTypeValue === 'regular' || !seriesTypeValue) {
+            // Regular season display
+            seasonPart = "Season " + seasonNumberInput.value;
+          } else {
+            // Special series type display (Limited Series, Mini Series, etc.)
+            switch (seriesTypeValue) {
+              case 'limited':
+                seasonPart = "Limited Series";
+                break;
+              case 'mini':
+                seasonPart = "Mini-Series";
+                break;
+              case 'anthology':
+                seasonPart = "Anthology Series";
+                break;
+              case 'special':
+                seasonPart = "Special";
+                break;
+              default:
+                seasonPart = "Season " + seasonNumberInput.value;
+            }
+          }
         }
-
-        // Draw info text fill
-        targetCtx.fillStyle = window["info-color"] || "#ffffff";
-        targetCtx.fillText(infoText, infoX, infoY, maxWidth);
+        
+        // Check for episode text
+        if (episodeNumberInput.value) {
+          episodePart = "Episode " + episodeNumberInput.value;
+        }
+        
+        // Calculate positions based on text alignment
+        if (seasonPart && episodePart) {
+          // Measure the width of season part to position the separator and episode part properly
+          targetCtx.save();
+          
+          // Apply bold/italic formatting to season text for measurement
+          let seasonFont = `${Math.round(infoSize * infoFontSizeAdjustment)}px`;
+          if (seasonBold && seasonBold.checked) seasonFont = `bold ${seasonFont}`;
+          if (seasonItalic && seasonItalic.checked) seasonFont = `italic ${seasonFont}`;
+          seasonFont += ` "${infoFontToUse}", sans-serif`;
+          
+          targetCtx.font = seasonFont;
+          seasonWidth = targetCtx.measureText(seasonPart).width;
+          
+          // Measure the total width for center/right alignment
+          const sepWidth = targetCtx.measureText(separator).width;
+          
+          // Apply bold/italic formatting to episode text for measurement
+          let episodeFont = `${Math.round(infoSize * infoFontSizeAdjustment)}px`;
+          if (episodeBold && episodeBold.checked) episodeFont = `bold ${episodeFont}`;
+          if (episodeItalic && episodeItalic.checked) episodeFont = `italic ${episodeFont}`;
+          episodeFont += ` "${infoFontToUse}", sans-serif`;
+          
+          targetCtx.font = episodeFont;
+          const episodeWidth = targetCtx.measureText(episodePart).width;
+          
+          totalWidth = seasonWidth + sepWidth + episodeWidth;
+          targetCtx.restore();
+        }
+        
+        let startX;
+        // Calculate the starting position based on alignment
+        if (textAlign === "center") {
+          startX = infoX - (totalWidth / 2);
+        } else if (textAlign === "right") {
+          startX = infoX - totalWidth;
+        } else {
+          startX = infoX;
+        }
+        
+        // Draw each part with its own formatting
+        let currentX = startX;
+        
+        if (seasonPart) {
+          // Apply bold/italic formatting to season text for drawing
+          let seasonFont = `${Math.round(infoSize * infoFontSizeAdjustment)}px`;
+          if (seasonBold && seasonBold.checked) seasonFont = `bold ${seasonFont}`;
+          if (seasonItalic && seasonItalic.checked) seasonFont = `italic ${seasonFont}`;
+          seasonFont += ` "${infoFontToUse}", sans-serif`;
+          
+          targetCtx.font = seasonFont;
+          
+          // Draw outline if enabled
+          if (parseInt(infoOutlineWidth.value) > 0) {
+            targetCtx.lineWidth = parseInt(infoOutlineWidth.value) * (width / 1280);
+            targetCtx.strokeStyle = window["info-outline-color"] || "#000000";
+            targetCtx.strokeText(seasonPart, currentX, infoY, maxWidth);
+          }
+          
+          // Draw season text
+          targetCtx.fillStyle = window["info-color"] || "#ffffff";
+          targetCtx.fillText(seasonPart, currentX, infoY, maxWidth);
+          
+          currentX += seasonWidth;
+        }
+        
+        if (seasonPart && episodePart) {
+          // Reset font for separator
+          targetCtx.font = iFont;
+          
+          // Draw separator
+          if (parseInt(infoOutlineWidth.value) > 0) {
+            targetCtx.strokeText(separator, currentX, infoY, maxWidth);
+          }
+          targetCtx.fillText(separator, currentX, infoY, maxWidth);
+          
+          // Update position
+          currentX += targetCtx.measureText(separator).width;
+        }
+        
+        if (episodePart) {
+          // Apply bold/italic formatting to episode text for drawing
+          let episodeFont = `${Math.round(infoSize * infoFontSizeAdjustment)}px`;
+          if (episodeBold && episodeBold.checked) episodeFont = `bold ${episodeFont}`;
+          if (episodeItalic && episodeItalic.checked) episodeFont = `italic ${episodeFont}`;
+          episodeFont += ` "${infoFontToUse}", sans-serif`;
+          
+          targetCtx.font = episodeFont;
+          
+          // Draw outline if enabled
+          if (parseInt(infoOutlineWidth.value) > 0) {
+            targetCtx.lineWidth = parseInt(infoOutlineWidth.value) * (width / 1280);
+            targetCtx.strokeStyle = window["info-outline-color"] || "#000000";
+            targetCtx.strokeText(episodePart, currentX, infoY, maxWidth);
+          }
+          
+          // Draw episode text
+          targetCtx.fillStyle = window["info-color"] || "#ffffff";
+          targetCtx.fillText(episodePart, currentX, infoY, maxWidth);
+        }
 
         targetCtx.restore();
       }
@@ -3400,6 +3722,12 @@ document.addEventListener("DOMContentLoaded", () => {
   if (infoShadowBlur) infoShadowBlur.addEventListener("input", updateBothViews);
   if (infoOutlineWidth)
     infoOutlineWidth.addEventListener("input", updateBothViews);
+    
+  // Setup season and episode text formatting toggle event listeners
+  if (seasonBold) seasonBold.addEventListener("change", updateBothViews);
+  if (seasonItalic) seasonItalic.addEventListener("change", updateBothViews);
+  if (episodeBold) episodeBold.addEventListener("change", updateBothViews);
+  if (episodeItalic) episodeItalic.addEventListener("change", updateBothViews);
 
   // =====================================================
   // INITIALIZATION
