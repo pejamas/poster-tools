@@ -985,7 +985,6 @@ input:checked + .toggle-slider:before {
   background-repeat: no-repeat;
   background-position: right 0.7rem top 50%;
   background-size: 0.65rem auto;
-  padding-right: 1.75rem;
 }
 
 #returnToGridBtn {
@@ -1486,4 +1485,45 @@ input:checked + .toggle-slider:before {
   border: none;
   cursor: pointer;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Setting row for toggle switches */
+.setting-row {
+  margin-bottom: 15px;
+}
+
+.setting-label-group {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+/* Small toggle switches */
+.toggle-switch.small {
+  width: 34px;
+  height: 18px;
+}
+
+.toggle-switch.small .toggle-slider:before {
+  height: 12px;
+  width: 12px;
+  left: 3px;
+  bottom: 3px;
+}
+
+.toggle-switch.small input:checked + .toggle-slider:before {
+  transform: translateX(16px);
+}
+
+.toggle-label-small {
+  font-size: 0.75rem;
+  margin-left: 5px;
+  opacity: 0.8;
+}
+
+/* Toggle container for right-aligned toggles */
+.toggle-container {
+  display: flex;
+  align-items: center;
 }

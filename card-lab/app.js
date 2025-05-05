@@ -29,10 +29,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const ctx = canvas.getContext("2d");
   const gridCtx = gridCanvas.getContext("2d");
   const infoPosition = document.getElementById("info-position");
-
   const titleInput = document.getElementById("title-text");
   const seasonNumberInput = document.getElementById("season-number");
   const episodeNumberInput = document.getElementById("episode-number");
+  const seasonNumberDisplay = document.getElementById("season-number-display");
+  const episodeNumberDisplay = document.getElementById("episode-number-display");
   const separatorType = document.getElementById("separator-type");
   const seriesType = document.getElementById("series-type");
   const horizontalPosition = document.getElementById("horizontal-position");
@@ -79,11 +80,12 @@ document.addEventListener("DOMContentLoaded", () => {
   // =====================================================
   // DEFAULT CONFIGURATION VALUES
   // =====================================================
-
   const defaultValues = {
     title: "",
     seasonNumber: "",
     episodeNumber: "",
+    showSeasonNumber: true,
+    showEpisodeNumber: true,
     separator: "dot",
     font: "Gabarito",
     infoFont: "Gabarito",
@@ -562,9 +564,7 @@ document.addEventListener("DOMContentLoaded", () => {
       infoShadowColor: window["info-shadow-color"] || "#000000",
       infoOutlineColor: window["info-outline-color"] || "#000000",
       gradientColor: window["gradient-color"] || "#000000",
-    };
-
-    // Update each card's settings
+    };    // Update each card's settings
     for (const card of episodeTitleCards) {
       card.currentSettings = {
         fontFamily: fontFamily.value,
@@ -579,6 +579,8 @@ document.addEventListener("DOMContentLoaded", () => {
         titleInfoSpacing: titleInfoSpacing.value,
         horizontalPosition: horizontalPosition.value, // Include horizontal position for info text
         titleWrapping: document.getElementById("title-wrapping").value,
+        showSeasonNumber: seasonNumberDisplay.checked,
+        showEpisodeNumber: episodeNumberDisplay.checked,
         textColor: currentColors.textColor || fallbackColors.textColor,
         infoColor: currentColors.infoColor || fallbackColors.infoColor,
         textShadowColor:
@@ -642,11 +644,12 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Draw card to a temporary context for grid view
-  function drawCardToTempContext(tempCtx, card, width, height) {
-    // Save original values to restore after drawing
+  function drawCardToTempContext(tempCtx, card, width, height) {    // Save original values to restore after drawing
     const originalTitle = titleInput.value;
     const originalSeason = seasonNumberInput.value;
     const originalEpisode = episodeNumberInput.value;
+    const originalSeasonDisplay = seasonNumberDisplay.checked;
+    const originalEpisodeDisplay = episodeNumberDisplay.checked;
     const originalThumbnail = thumbnailImg;
 
     const originalFontFamily = fontFamily.value;
@@ -697,9 +700,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (card.customPlacement.blendMode) {
         blendMode.value = card.customPlacement.blendMode;
       }
-    }
-
-    // Apply card's saved settings if available
+    }    // Apply card's saved settings if available
     if (card.currentSettings) {
       fontFamily.value = card.currentSettings.fontFamily;
       document.getElementById("info-font-family").value =
@@ -713,6 +714,14 @@ document.addEventListener("DOMContentLoaded", () => {
         card.currentSettings.infoShadowBlur;
       document.getElementById("info-outline-width").value =
         card.currentSettings.infoOutlineWidth;
+      
+      // Apply season/episode display settings
+      if (typeof card.currentSettings.showSeasonNumber !== 'undefined') {
+        seasonNumberDisplay.checked = card.currentSettings.showSeasonNumber;
+      }
+      if (typeof card.currentSettings.showEpisodeNumber !== 'undefined') {
+        episodeNumberDisplay.checked = card.currentSettings.showEpisodeNumber;
+      }
       
       // Only apply these if not overridden by custom placement
       if (!card.hasCustomPlacement || !card.customPlacement) {
@@ -741,12 +750,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Draw the card
-    drawCardToContext(tempCtx, width, height);
-
-    // Restore original values
+    drawCardToContext(tempCtx, width, height);    // Restore original values
     titleInput.value = originalTitle;
     seasonNumberInput.value = originalSeason;
     episodeNumberInput.value = originalEpisode;
+    seasonNumberDisplay.checked = originalSeasonDisplay;
+    episodeNumberDisplay.checked = originalEpisodeDisplay;
     thumbnailImg = originalThumbnail;
 
     fontFamily.value = originalFontFamily;
@@ -924,13 +933,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Get title text
-    const titleText = titleInput.value || "";
-
-    // Get info text with appropriate separator
+    const titleText = titleInput.value || "";    // Get info text with appropriate separator
     let infoText = "";
     let separator = "";
 
-    if (seasonNumberInput.value || episodeNumberInput.value) {
+    if ((seasonNumberInput.value && seasonNumberDisplay.checked) || (episodeNumberInput.value && episodeNumberDisplay.checked)) {
       switch (separatorType.value) {
         case "dash":
           separator = " - ";
@@ -951,7 +958,7 @@ document.addEventListener("DOMContentLoaded", () => {
           separator = " - ";
       }
 
-      if (seasonNumberInput.value) {
+      if (seasonNumberInput.value && seasonNumberDisplay.checked) {
         // Check if we're using a special series type or regular season
         const seriesTypeValue = seriesType.value;
         
@@ -979,11 +986,12 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
 
-      if (seasonNumberInput.value && episodeNumberInput.value) {
+      if (seasonNumberInput.value && seasonNumberDisplay.checked && 
+          episodeNumberInput.value && episodeNumberDisplay.checked) {
         infoText += separator;
       }
 
-      if (episodeNumberInput.value) {
+      if (episodeNumberInput.value && episodeNumberDisplay.checked) {
         infoText += "Episode " + episodeNumberInput.value;
       }
     }
@@ -2795,6 +2803,7 @@ document.addEventListener("DOMContentLoaded", () => {
       overlay.style.justifyContent = "center";
       overlay.style.zIndex = "9999";
       overlay.style.backdropFilter = "blur(4px)";
+      overlay.style.boxShadow = "0 4px 20px rgba(0, 255, 255, 0.2)";
       document.body.appendChild(overlay);
 
       // Create modal container to match poster-showcase style
@@ -3090,7 +3099,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // Get all current settings
+    // Get all current settings    
     const config = {
       showId: currentShowData.id,
       showName: currentShowData.name,
@@ -3122,6 +3131,8 @@ document.addEventListener("DOMContentLoaded", () => {
         separator: separatorType.value,
         seriesType: seriesType.value,
         thumbnailFullsize: thumbnailFullsize.checked,
+        showSeasonNumber: seasonNumberDisplay.checked,
+        showEpisodeNumber: episodeNumberDisplay.checked,
         preset: presetSelect.value
       }
     };
@@ -3367,10 +3378,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     if (settings.effectType) effectType.value = settings.effectType;
     if (settings.gradientOpacity) gradientOpacity.value = settings.gradientOpacity;
-    if (settings.blendMode) blendMode.value = settings.blendMode;
-    if (settings.separator) separatorType.value = settings.separator;
+    if (settings.blendMode) blendMode.value = settings.blendMode;    if (settings.separator) separatorType.value = settings.separator;
     if (settings.seriesType) seriesType.value = settings.seriesType;
     if (typeof settings.thumbnailFullsize !== 'undefined') thumbnailFullsize.checked = settings.thumbnailFullsize;
+    if (typeof settings.showSeasonNumber !== 'undefined') seasonNumberDisplay.checked = settings.showSeasonNumber;
+    if (typeof settings.showEpisodeNumber !== 'undefined') episodeNumberDisplay.checked = settings.showEpisodeNumber;
     if (settings.preset) presetSelect.value = settings.preset;
     
     // Apply color settings
@@ -3658,16 +3670,16 @@ resetBtn.addEventListener("click", () => {
           titleWrapping.value = defaultValues.titleWrapping;
         }
 
-        // Update slider displays with null checks
+        // Update slider displays
         updateSliderValueDisplay("text-shadow-blur", "shadow-value", "px");
         updateSliderValueDisplay("text-outline-width", "outline-value", "px");
         updateSliderValueDisplay("info-shadow-blur", "info-shadow-value", "px");
         updateSliderValueDisplay("info-outline-width", "info-outline-value", "px");
         updateSliderValueDisplay("title-info-spacing", "spacing-value", "px");
-        updateSliderValueDisplay("horizontal-position", "position-value", "px");
-
-        // Reset other options with null checks
+        updateSliderValueDisplay("horizontal-position", "position-value", "px");        // Reset other options with null checks
         if (thumbnailFullsize) thumbnailFullsize.checked = defaultValues.thumbnailFullsize;
+        if (seasonNumberDisplay) seasonNumberDisplay.checked = defaultValues.showSeasonNumber;
+        if (episodeNumberDisplay) episodeNumberDisplay.checked = defaultValues.showEpisodeNumber;
         if (effectType) effectType.value = defaultValues.effectType;
         if (gradientOpacity) gradientOpacity.value = defaultValues.gradientOpacity;
         if (blendMode) blendMode.value = defaultValues.blendMode;
@@ -3798,11 +3810,12 @@ resetBtn.addEventListener("click", () => {
       parent.classList.toggle("active");
     });
   });
-
   // Setup input event listeners
   titleInput.addEventListener("input", updateBothViews);
   seasonNumberInput.addEventListener("input", updateBothViews);
   episodeNumberInput.addEventListener("input", updateBothViews);
+  seasonNumberDisplay.addEventListener("change", updateBothViews);
+  episodeNumberDisplay.addEventListener("change", updateBothViews);
   separatorType.addEventListener("change", updateBothViews);
   seriesType.addEventListener("change", updateBothViews); // Add event listener for series type
   presetSelect.addEventListener("change", updateBothViews);

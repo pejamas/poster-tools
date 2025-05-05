@@ -88,10 +88,19 @@
           </div>
           <div class="collapsible-content">
             <label for="title-text">Episode Name</label>
-            <input type="text" id="title-text" placeholder="Enter Episode Name" />
-
-            <label for="season-number">Season Number</label>
-            <input type="text" id="season-number" placeholder="e.g., 07" />
+            <input type="text" id="title-text" placeholder="Enter Episode Name" />            <div class="setting-row">
+              <div class="setting-label-group">
+                <label for="season-number">Season Number</label>
+                <div class="toggle-container">
+                  <label class="toggle-switch small">
+                    <input type="checkbox" id="season-number-display" checked />
+                    <span class="toggle-slider"></span>
+                  </label>
+                  <span class="toggle-label-small">Show</span>
+                </div>
+              </div>
+              <input type="text" id="season-number" placeholder="e.g., 07" />
+            </div>
 
             <label for="series-type">Series Type</label>
             <select id="series-type">
@@ -102,8 +111,19 @@
               <option value="special">Special</option>
             </select>
 
-            <label for="episode-number">Episode Number</label>
-            <input type="text" id="episode-number" placeholder="e.g., 01" />
+            <div class="setting-row">
+              <div class="setting-label-group">
+                <label for="episode-number">Episode Number</label>
+                <div class="toggle-container">
+                  <label class="toggle-switch small">
+                    <input type="checkbox" id="episode-number-display" checked />
+                    <span class="toggle-slider"></span>
+                  </label>
+                  <span class="toggle-label-small">Show</span>
+                </div>
+              </div>
+              <input type="text" id="episode-number" placeholder="e.g., 01" />
+            </div>
 
             <label for="separator-type">Season/Episode Separator</label>
             <select id="separator-type">
