@@ -41,9 +41,27 @@
           </div>
           <div class="collapsible-content">
             <form id="show-search-form">
-              <div class="search-container">
-                <input type="text" id="show-search-input" placeholder="Search TV shows..." />
-                <button type="submit" class="search-button">Search</button>
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <label for="language-select" style="margin-bottom: 0; font-weight: 500; color: #00bfa5;">Language</label>
+                <select id="language-select" style="margin-bottom: 0.5em;">
+                  <option value="en">English</option>
+                  <option value="fr">Français</option>
+                  <option value="de">Deutsch</option>
+                  <option value="es">Español</option>
+                  <option value="it">Italiano</option>
+                  <option value="pt">Português</option>
+                  <option value="nl">Nederlands</option>
+                  <option value="sv">Svenska</option>
+                  <option value="pl">Polski</option>
+                  <option value="tr">Türkçe</option>
+                  <option value="ru">Русский</option>
+                  <option value="ja">日本語</option>
+                  <option value="zh">中文</option>
+                </select>
+                <div class="search-container">
+                  <input type="text" id="show-search-input" placeholder="Search TV shows..." />
+                  <button type="submit" class="search-button">Search</button>
+                </div>
               </div>
             </form>
             <div id="search-results" class="search-results"></div>
@@ -134,22 +152,7 @@
               <option value="none">None</option>
             </select>
 
-            <label for="language-select" style="margin-top:10px;display:block;">Language</label>
-            <select id="language-select">
-              <option value="en">English</option>
-              <option value="fr">Français</option>
-              <option value="de">Deutsch</option>
-              <option value="es">Español</option>
-              <option value="it">Italiano</option>
-              <option value="pt">Português</option>
-              <option value="nl">Nederlands</option>
-              <option value="sv">Svenska</option>
-              <option value="pl">Polski</option>
-              <option value="tr">Türkçe</option>
-              <option value="ru">Русский</option>
-              <option value="ja">日本語</option>
-              <option value="zh">中文</option>
-            </select>
+
 
           </div>
         </div>

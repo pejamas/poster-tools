@@ -52,12 +52,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Get language select element
   const languageSelect = document.getElementById("language-select");
-  if (languageSelect) {
-    languageSelect.addEventListener("change", function() {
-      currentLang = languageSelect.value;
+if (languageSelect) {
+  languageSelect.addEventListener("change", async function() {
+    currentLang = languageSelect.value;
+    // If TMDB mode, reload show/season in new language
+    if (isTMDBMode && currentShowData && currentShowData.id) {
+      // Refetch show details and season in new language
+      const showDetails = await getShowDetails(currentShowData.id, currentLang);
+      if (showDetails) {
+        currentShowData = showDetails;
+        displaySeasonSelector(showDetails);
+        await selectSeason(currentSeasonNumber);
+      }
+    } else {
       updateBothViews();
-    });
-  }
+    }
+  });
+}
   // =====================================================
   // CONFIGURATION CONSTANTS
   // =====================================================
@@ -1705,10 +1716,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Get detailed information about a show
-  async function getShowDetails(showId) {
+  async function getShowDetails(showId, lang = currentLang) {
     try {
       const response = await fetch(
-        `${TMDB_BASE_URL}/tv/${showId}?api_key=${TMDB_API_KEY}`
+        `${TMDB_BASE_URL}/tv/${showId}?api_key=${TMDB_API_KEY}&language=${lang}`
       );
       return await response.json();
     } catch (err) {
@@ -1718,10 +1729,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Get detailed information about a specific season
-  async function getSeasonDetails(showId, seasonNumber) {
+  async function getSeasonDetails(showId, seasonNumber, lang = currentLang) {
     try {
       const response = await fetch(
-        `${TMDB_BASE_URL}/tv/${showId}/season/${seasonNumber}?api_key=${TMDB_API_KEY}`
+        `${TMDB_BASE_URL}/tv/${showId}/season/${seasonNumber}?api_key=${TMDB_API_KEY}&language=${lang}`
       );
       return await response.json();
     } catch (err) {
@@ -1812,7 +1823,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Handle show selection from search results
   async function selectShow(showId) {
-    const showDetails = await getShowDetails(showId);
+    const showDetails = await getShowDetails(showId, currentLang);
     if (!showDetails) return;
 
     currentShowData = showDetails;
@@ -1865,7 +1876,7 @@ document.addEventListener("DOMContentLoaded", () => {
     showProgressOverlay(`Loading Season ${seasonNumber}...`, true);
     updateProgressOverlay(5, "Fetching season details");
 
-    const seasonData = await getSeasonDetails(currentShowData.id, seasonNumber);
+    const seasonData = await getSeasonDetails(currentShowData.id, seasonNumber, currentLang);
     if (!seasonData) {
       hideProgressOverlay();
       return;
