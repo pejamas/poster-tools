@@ -1458,6 +1458,7 @@ input:checked + .toggle-slider:before {
   -webkit-appearance: none;
   width: 100%;
   margin-top: 6px;
+  margin-bottom: 8px;
   height: 5px;
   border-radius: 3px;
   background: linear-gradient(to right, #00bfa5, #8e24aa);

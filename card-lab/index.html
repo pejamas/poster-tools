@@ -74,7 +74,7 @@
               </label>
             </div>
             
-            <button id="revert-thumbnail-btn" class="action-button" style="margin-top: 10px; width: 92%;">
+            <button id="revert-thumbnail-btn" class="action-button" style="margin-top: 5px; width: 92%;">
               <img src="../assets/poster-overlay-icons/refresh-cw.svg" class="action-icon" style="margin-right: 8px;" />
               Revert to Default Thumbnail
             </button>
@@ -152,18 +152,34 @@
               <option value="manhunt">Left Bottom</option>
               <option value="centerTop">Center Top</option>
             </select>
+              <div class="horizontal-position">
+              <div class="position-label">
+                <span class="label-text">Text X Offset</span>
+                <span class="position-value" id="position-value">0px</span>
+              </div>
+              <input type="range" id="horizontal-position" min="-300" max="300" value="0" />
+            </div>            
             <label for="info-position">Info Text Position</label>
             <select id="info-position">
               <option value="above">Above Title</option>
               <option value="below">Below Title</option>
             </select>
+            
+            <div class="title-info-gap">
+              <div class="gap-label">
+                <span class="label-text">Info Text Spacing</span>
+                <span class="gap-value" id="spacing-value">15px</span>
+              </div>
+              <input type="range" id="title-info-spacing" min="0" max="50" value="10" />
+            </div>
+            
             <label for="option-label">Title Wrapping</label>
             <select id="title-wrapping">
               <option value="singleLine">Single Line</option>
               <option value="autoWrap">Multiple Lines</option>
             </select>
             
-            <div id="line-spacing-container" style="margin-top: 8px; display: none;">
+            <div id="line-spacing-container" style="margin-top: 10px; display: none;">
               <div class="gap-label">
                 <span class="label-text">Line Spacing</span>
                 <span class="gap-value" id="line-spacing-value">1.2</span>
@@ -337,23 +353,7 @@
                 <div class="slider-bar"></div>
                 <input type="range" id="info-outline-width" min="0" max="10" value="0" />
               </div>
-            </div>
-
-            <div class="section-separator"></div>
-            <div class="title-info-gap">
-              <div class="gap-label">
-                <span class="label-text">Info Text Spacing</span>
-                <span class="gap-value" id="spacing-value">15px</span>
-              </div>
-              <input type="range" id="title-info-spacing" min="0" max="50" value="10" />
-            </div>
-            <div class="horizontal-position">
-              <div class="position-label">
-                <span class="label-text">Text X Offset</span>
-                <span class="position-value" id="position-value">0px</span>
-              </div>
-              <input type="range" id="horizontal-position" min="-300" max="300" value="0" />
-            </div>
+            </div>            
           </div>
         </div>
 
