@@ -1,4 +1,32 @@
 document.addEventListener("DOMContentLoaded", () => {
+  // =====================
+  // LANGUAGE MAP FOR I18N
+  // =====================
+  const i18n = {
+    en: { season: "Season", episode: "Episode" },
+    fr: { season: "Saison", episode: "Épisode" },
+    de: { season: "Staffel", episode: "Folge" },
+    es: { season: "Temporada", episode: "Episodio" },
+    it: { season: "Stagione", episode: "Episodio" },
+    pt: { season: "Temporada", episode: "Episódio" },
+    nl: { season: "Seizoen", episode: "Aflevering" },
+    sv: { season: "Säsong", episode: "Avsnitt" },
+    pl: { season: "Sezon", episode: "Odcinek" },
+    tr: { season: "Sezon", episode: "Bölüm" },
+    ru: { season: "Сезон", episode: "Серия" },
+    ja: { season: "シーズン", episode: "エピソード" },
+    zh: { season: "季", episode: "集" },
+  };
+  let currentLang = 'en';
+
+  // Get language select element
+  const languageSelect = document.getElementById("language-select");
+  if (languageSelect) {
+    languageSelect.addEventListener("change", function() {
+      currentLang = languageSelect.value;
+      updateBothViews();
+    });
+  }
   // =====================================================
   // CONFIGURATION CONSTANTS
   // =====================================================
@@ -956,7 +984,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const titleBold = document.getElementById("title-bold").checked;
     if (titleUppercase) titleText = titleText.toUpperCase();
 
-    // Info text parts
+    // Info text parts (i18n)
     let infoText = "";
     let separator = "";
     let seasonText = "";
@@ -965,6 +993,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const infoSeasonBold = document.getElementById("info-season-bold").checked;
     const infoEpisodeUppercase = document.getElementById("info-episode-uppercase").checked;
     const infoEpisodeBold = document.getElementById("info-episode-bold").checked;
+
+    // Get language map
+    const langMap = i18n[currentLang] || i18n['en'];
 
     if ((seasonNumberInput.value && seasonNumberDisplay.checked) || (episodeNumberInput.value && episodeNumberDisplay.checked)) {
       switch (separatorType.value) {
@@ -990,30 +1021,30 @@ document.addEventListener("DOMContentLoaded", () => {
       if (seasonNumberInput.value && seasonNumberDisplay.checked) {
         const seriesTypeValue = seriesType.value;
         if (seriesTypeValue === 'regular' || !seriesTypeValue) {
-          seasonText = "Season " + seasonNumberInput.value;
+          seasonText = langMap.season + " " + seasonNumberInput.value;
         } else {
           switch (seriesTypeValue) {
             case 'limited':
-              seasonText = "Limited Series";
+              seasonText = (currentLang === 'en' ? "Limited Series" : langMap.season + " " + seasonNumberInput.value);
               break;
             case 'mini':
-              seasonText = "Mini-Series";
+              seasonText = (currentLang === 'en' ? "Mini-Series" : langMap.season + " " + seasonNumberInput.value);
               break;
             case 'anthology':
-              seasonText = "Anthology Series";
+              seasonText = (currentLang === 'en' ? "Anthology Series" : langMap.season + " " + seasonNumberInput.value);
               break;
             case 'special':
-              seasonText = "Special";
+              seasonText = (currentLang === 'en' ? "Special" : langMap.season + " " + seasonNumberInput.value);
               break;
             default:
-              seasonText = "Season " + seasonNumberInput.value;
+              seasonText = langMap.season + " " + seasonNumberInput.value;
           }
         }
         if (infoSeasonUppercase) seasonText = seasonText.toUpperCase();
       }
 
       if (episodeNumberInput.value && episodeNumberDisplay.checked) {
-        episodeText = "Episode " + episodeNumberInput.value;
+        episodeText = langMap.episode + " " + episodeNumberInput.value;
         if (infoEpisodeUppercase) episodeText = episodeText.toUpperCase();
       }
 
