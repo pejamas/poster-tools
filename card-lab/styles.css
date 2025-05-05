@@ -1495,7 +1495,7 @@ input:checked + .toggle-slider:before {
 .setting-label-group {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start; /* Change from center to flex-start for better vertical control */
   margin-bottom: 5px;
 }
 
@@ -1503,6 +1503,7 @@ input:checked + .toggle-slider:before {
 .toggle-switch.small {
   width: 34px;
   height: 18px;
+  margin-top: 8px; /* Adjust vertical position */
 }
 
 .toggle-switch.small .toggle-slider:before {
@@ -1520,10 +1521,12 @@ input:checked + .toggle-slider:before {
   font-size: 0.75rem;
   margin-left: 5px;
   opacity: 0.8;
+  margin-top: 2px; /* Align text with toggle */
 }
 
 /* Toggle container for right-aligned toggles */
 .toggle-container {
   display: flex;
   align-items: center;
+  margin-top: 3px; /* Adjust vertical alignment with label */
 }
