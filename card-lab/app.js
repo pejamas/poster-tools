@@ -2302,23 +2302,25 @@ document.addEventListener("DOMContentLoaded", () => {
       gridCtx.shadowColor = "transparent";
       gridCtx.restore();
 
-      // Create temporary canvas for this card
-      const tempCanvas = document.createElement("canvas");
-      tempCanvas.width = gridCardWidth;
-      tempCanvas.height = gridCardHeight;
-      const tempCtx = tempCanvas.getContext("2d");
+      // Create a reference-size canvas (1280x720) for consistent text rendering
+      const refWidth = 1280;
+      const refHeight = 720;
+      const refCanvas = document.createElement("canvas");
+      refCanvas.width = refWidth;
+      refCanvas.height = refHeight;
+      const refCtx = refCanvas.getContext("2d");
 
-      // Draw card to temp canvas
-      drawCardToTempContext(tempCtx, card, gridCardWidth, gridCardHeight);
+      // Draw card at reference size
+      drawCardToTempContext(refCtx, card, refWidth, refHeight);
 
+      // Now scale down to grid card size
       // Add rounded corners to the card image
       gridCtx.save();
       gridCtx.beginPath();
       gridCtx.roundRect(x, y, gridCardWidth, gridCardHeight, 6);
       gridCtx.clip();
-      
-      // Draw card image
-      gridCtx.drawImage(tempCanvas, x, y);
+      // Draw the reference canvas scaled to grid card size
+      gridCtx.drawImage(refCanvas, x, y, gridCardWidth, gridCardHeight);
       gridCtx.restore();
       
       // Add a subtle inner border glow
