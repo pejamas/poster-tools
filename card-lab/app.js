@@ -1905,25 +1905,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Calculate grid dimensions based on episode count
   function calculateGridDimensions(episodeCount) {
-    if (episodeCount <= 4) {
+    if (episodeCount <= 5) {
       gridColumns = episodeCount;
       gridCardWidth = 270;
-    } else if (episodeCount <= 8) {
-      gridColumns = Math.min(4, episodeCount);
-      gridCardWidth = 260;
-    } else if (episodeCount <= 16) {
-      gridColumns = 5;
+    } else if (episodeCount <= 10) {
+      gridColumns = Math.min(5, episodeCount); // Changed from 4 to 5
+      gridCardWidth = 240;  // Slightly reduced width to accommodate 5 columns
+    } else if (episodeCount <= 20) {
+      gridColumns = 5; // Always use 5 columns for medium sized collections
       gridCardWidth = 230;
     } else {
       gridColumns = 6;
       gridCardWidth = 210;
     }
-
+  
     const rows = Math.ceil(episodeCount / gridColumns);
     gridCardHeight = Math.round(gridCardWidth * (9 / 16));
-
+  
     gridGap = episodeCount > 20 ? 10 : 12;
-
+  
     return {
       columns: gridColumns,
       rows: rows,
@@ -1937,22 +1937,22 @@ document.addEventListener("DOMContentLoaded", () => {
   // Render the episode grid
   function renderEpisodeGrid() {
     if (episodeTitleCards.length === 0) return;
-
-    const maxColumns = 4;
-
+  
+    const maxColumns = 5; // Changed from 4 to 5
+  
     // Calculate dimensions based on window size
     const availableWidth = Math.min(window.innerWidth - 360, 2000);
     let cardWidth = Math.floor((availableWidth * 0.9) / maxColumns) - 10;
-    cardWidth = Math.max(cardWidth, 280);
+    cardWidth = Math.max(cardWidth, 240); // Slightly reduced minimum width
     const cardGap = Math.floor(availableWidth * 0.01) + 15; // Increased gap for better spacing
-
+  
     // Determine number of columns based on episode count
     let columns;
-    if (episodeTitleCards.length <= 3) {
+    if (episodeTitleCards.length <= 5) { // Changed to accommodate up to 5 in first case
       columns = episodeTitleCards.length;
       gridCardWidth = Math.floor((availableWidth * 0.9) / columns) - 15;
-    } else if (episodeTitleCards.length <= 6) {
-      columns = episodeTitleCards.length;
+    } else if (episodeTitleCards.length <= 10) { // Changed from 6 to 10
+      columns = Math.min(5, episodeTitleCards.length); // Use 5 columns
       gridCardWidth = Math.floor((availableWidth * 0.9) / columns) - 10;
     } else {
       columns = Math.min(maxColumns, episodeTitleCards.length);
