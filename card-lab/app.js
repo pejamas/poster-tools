@@ -3752,11 +3752,12 @@ resetBtn.addEventListener("click", () => {
         
         if (modularFrameImages) modularFrameImages.innerHTML = "";
         if (modularFrameCount) modularFrameCount.textContent = "No alternative images available";
-        if (modularFrame) modularFrame.style.display = "block"; // Ensure it's visible in single card view
+        
         
         // Reset view
         showSingleCardView();
         if (returnToGridBtn) returnToGridBtn.style.display = "none";
+        if (modularFrame) modularFrame.style.display = "none"; // Ensure it's visible in single card view
 
         // Update card display
         updateBothViews();
