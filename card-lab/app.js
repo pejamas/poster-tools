@@ -111,7 +111,13 @@ document.addEventListener("DOMContentLoaded", () => {
     outlineColor: "#000000",
     infoShadowColor: "#000000",
     infoOutlineColor: "#000000",
-    preset: "leftMiddle"
+    preset: "leftMiddle",
+    titleUppercase: false,
+    titleBold: false,
+    infoSeasonUppercase: false,
+    infoSeasonBold: false,
+    infoEpisodeUppercase: false,
+    infoEpisodeBold: false
   };
 
   // =====================================================
@@ -220,6 +226,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Initialize text options for sliders, toggles, etc.
   function initializeTextOptionsUI() {
+    // Set default state for new checkboxes
+    document.getElementById("title-uppercase").checked = defaultValues.titleUppercase;
+    document.getElementById("title-bold").checked = defaultValues.titleBold;
+    document.getElementById("info-season-uppercase").checked = defaultValues.infoSeasonUppercase;
+    document.getElementById("info-season-bold").checked = defaultValues.infoSeasonBold;
+    document.getElementById("info-episode-uppercase").checked = defaultValues.infoEpisodeUppercase;
+    document.getElementById("info-episode-bold").checked = defaultValues.infoEpisodeBold;
+
+    // Add event listeners to update views
+    ["title-uppercase","title-bold","info-season-uppercase","info-season-bold","info-episode-uppercase","info-episode-bold"].forEach(id => {
+      document.getElementById(id).addEventListener("change", updateBothViews);
+    });
     const customFontUploadContainer = document.querySelector(
       ".custom-font-upload-container"
     );
@@ -933,9 +951,20 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Get title text
-    const titleText = titleInput.value || "";    // Get info text with appropriate separator
+    let titleText = titleInput.value || "";
+    const titleUppercase = document.getElementById("title-uppercase").checked;
+    const titleBold = document.getElementById("title-bold").checked;
+    if (titleUppercase) titleText = titleText.toUpperCase();
+
+    // Info text parts
     let infoText = "";
     let separator = "";
+    let seasonText = "";
+    let episodeText = "";
+    const infoSeasonUppercase = document.getElementById("info-season-uppercase").checked;
+    const infoSeasonBold = document.getElementById("info-season-bold").checked;
+    const infoEpisodeUppercase = document.getElementById("info-episode-uppercase").checked;
+    const infoEpisodeBold = document.getElementById("info-episode-bold").checked;
 
     if ((seasonNumberInput.value && seasonNumberDisplay.checked) || (episodeNumberInput.value && episodeNumberDisplay.checked)) {
       switch (separatorType.value) {
@@ -959,40 +988,41 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       if (seasonNumberInput.value && seasonNumberDisplay.checked) {
-        // Check if we're using a special series type or regular season
         const seriesTypeValue = seriesType.value;
-        
         if (seriesTypeValue === 'regular' || !seriesTypeValue) {
-          // Regular season display
-          infoText += "Season " + seasonNumberInput.value;
+          seasonText = "Season " + seasonNumberInput.value;
         } else {
-          // Special series type display (Limited Series, Mini Series, etc.)
           switch (seriesTypeValue) {
             case 'limited':
-              infoText += "Limited Series";
+              seasonText = "Limited Series";
               break;
             case 'mini':
-              infoText += "Mini-Series";
+              seasonText = "Mini-Series";
               break;
             case 'anthology':
-              infoText += "Anthology Series";
+              seasonText = "Anthology Series";
               break;
             case 'special':
-              infoText += "Special";
+              seasonText = "Special";
               break;
             default:
-              infoText += "Season " + seasonNumberInput.value;
+              seasonText = "Season " + seasonNumberInput.value;
           }
         }
-      }
-
-      if (seasonNumberInput.value && seasonNumberDisplay.checked && 
-          episodeNumberInput.value && episodeNumberDisplay.checked) {
-        infoText += separator;
+        if (infoSeasonUppercase) seasonText = seasonText.toUpperCase();
       }
 
       if (episodeNumberInput.value && episodeNumberDisplay.checked) {
-        infoText += "Episode " + episodeNumberInput.value;
+        episodeText = "Episode " + episodeNumberInput.value;
+        if (infoEpisodeUppercase) episodeText = episodeText.toUpperCase();
+      }
+
+      if (seasonText && episodeText) {
+        infoText = seasonText + separator + episodeText;
+      } else if (seasonText) {
+        infoText = seasonText;
+      } else if (episodeText) {
+        infoText = episodeText;
       }
     }
 
@@ -1193,16 +1223,107 @@ document.addEventListener("DOMContentLoaded", () => {
       targetCtx.shadowOffsetX = 1 * (width / 1280);
       targetCtx.shadowOffsetY = 1 * (height / 720);
 
-      // Draw info text outline if enabled
-      if (parseInt(infoOutlineWidth.value) > 0) {
-        targetCtx.lineWidth = parseInt(infoOutlineWidth.value) * (width / 1280);
-        targetCtx.strokeStyle = window["info-outline-color"] || "#000000";
-        targetCtx.strokeText(infoText, infoX, infoY, maxWidth);
-      }
+      // --- Info text font weight and span logic ---
+      // If both season and episode are present, and above title, allow separate bold/uppercase for each
+      let infoTextToDraw = infoText;
+      let infoFontWeight = "normal";
+      let useSpan = false;
+      let seasonDraw = seasonText;
+      let episodeDraw = episodeText;
+      // Only split and style if both are present and above title
+      if (infoPositionSetting === "above" && seasonText && episodeText) {
+        useSpan = true;
+        // Apply uppercase
+        if (infoSeasonUppercase) seasonDraw = seasonDraw.toUpperCase();
+        if (infoEpisodeUppercase) episodeDraw = episodeDraw.toUpperCase();
+        // Draw season/sep/episode as a block, always left-to-right, with correct alignment
+        let x = infoX;
+        let y = infoY;
+        let align = textAlign;
+        // Measure widths for each part
+        targetCtx.save();
+        targetCtx.font = `${infoSeasonBold ? "bold" : "normal"} ${Math.round(infoSize * infoFontSizeAdjustment)}px "${infoFontToUse}", sans-serif`;
+        let seasonWidth = targetCtx.measureText(seasonDraw).width;
+        targetCtx.restore();
 
-      // Draw info text fill
-      targetCtx.fillStyle = window["info-color"] || "#ffffff";
-      targetCtx.fillText(infoText, infoX, infoY, maxWidth);
+        targetCtx.save();
+        targetCtx.font = `${Math.round(infoSize * infoFontSizeAdjustment)}px "${infoFontToUse}", sans-serif`;
+        let sepWidth = targetCtx.measureText(separator).width;
+        targetCtx.restore();
+
+        targetCtx.save();
+        targetCtx.font = `${infoEpisodeBold ? "bold" : "normal"} ${Math.round(infoSize * infoFontSizeAdjustment)}px "${infoFontToUse}", sans-serif`;
+        let episodeWidth = targetCtx.measureText(episodeDraw).width;
+        targetCtx.restore();
+
+        // Calculate total width and starting X for correct order and alignment
+        let totalWidth = seasonWidth + sepWidth + episodeWidth;
+        let startX = x;
+        if (align === "center") {
+          startX = x - totalWidth / 2;
+        } else if (align === "right") {
+          startX = x - totalWidth;
+        }
+        let seasonX = startX;
+        let sepX = seasonX + seasonWidth;
+        let episodeX = sepX + sepWidth;
+
+        // Draw season part
+        targetCtx.save();
+        targetCtx.font = `${infoSeasonBold ? "bold" : "normal"} ${Math.round(infoSize * infoFontSizeAdjustment)}px "${infoFontToUse}", sans-serif`;
+        targetCtx.textAlign = "left";
+        targetCtx.textBaseline = "top";
+        if (parseInt(infoOutlineWidth.value) > 0) {
+          targetCtx.lineWidth = parseInt(infoOutlineWidth.value) * (width / 1280);
+          targetCtx.strokeStyle = window["info-outline-color"] || "#000000";
+          targetCtx.strokeText(seasonDraw, seasonX, y, maxWidth);
+        }
+        targetCtx.fillStyle = window["info-color"] || "#ffffff";
+        targetCtx.fillText(seasonDraw, seasonX, y, maxWidth);
+        targetCtx.restore();
+
+        // Draw separator
+        targetCtx.save();
+        targetCtx.font = `${Math.round(infoSize * infoFontSizeAdjustment)}px "${infoFontToUse}", sans-serif`;
+        targetCtx.textAlign = "left";
+        targetCtx.textBaseline = "top";
+        targetCtx.fillStyle = window["info-color"] || "#ffffff";
+        targetCtx.fillText(separator, sepX, y, maxWidth);
+        targetCtx.restore();
+
+        // Draw episode part
+        targetCtx.save();
+        targetCtx.font = `${infoEpisodeBold ? "bold" : "normal"} ${Math.round(infoSize * infoFontSizeAdjustment)}px "${infoFontToUse}", sans-serif`;
+        targetCtx.textAlign = "left";
+        targetCtx.textBaseline = "top";
+        if (parseInt(infoOutlineWidth.value) > 0) {
+          targetCtx.lineWidth = parseInt(infoOutlineWidth.value) * (width / 1280);
+          targetCtx.strokeStyle = window["info-outline-color"] || "#000000";
+          targetCtx.strokeText(episodeDraw, episodeX, y, maxWidth);
+        }
+        targetCtx.fillStyle = window["info-color"] || "#ffffff";
+        targetCtx.fillText(episodeDraw, episodeX, y, maxWidth);
+        targetCtx.restore();
+      } else {
+        // Not both present or not above title: treat as one string, apply bold if either is checked (even when below)
+        infoFontWeight = (seasonText && infoSeasonBold) || (episodeText && infoEpisodeBold) ? "bold" : "normal";
+        // Apply uppercase if set
+        if (seasonText && infoSeasonUppercase) infoTextToDraw = infoTextToDraw.replace(seasonText, seasonText.toUpperCase());
+        if (episodeText && infoEpisodeUppercase) infoTextToDraw = infoTextToDraw.replace(episodeText, episodeText.toUpperCase());
+        // Draw info text outline if enabled
+        if (parseInt(infoOutlineWidth.value) > 0) {
+          targetCtx.save();
+          targetCtx.font = `${infoFontWeight} ${Math.round(infoSize * infoFontSizeAdjustment)}px "${infoFontToUse}", sans-serif`;
+          targetCtx.lineWidth = parseInt(infoOutlineWidth.value) * (width / 1280);
+          targetCtx.strokeStyle = window["info-outline-color"] || "#000000";
+          targetCtx.strokeText(infoTextToDraw, infoX, infoY, maxWidth);
+          targetCtx.restore();
+        }
+        // Draw info text fill
+        targetCtx.fillStyle = window["info-color"] || "#ffffff";
+        targetCtx.font = `${infoFontWeight} ${Math.round(infoSize * infoFontSizeAdjustment)}px "${infoFontToUse}", sans-serif`;
+        targetCtx.fillText(infoTextToDraw, infoX, infoY, maxWidth);
+      }
       targetCtx.restore();
 
       // Calculate where title should go (below info)
@@ -1210,7 +1331,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Draw title text with adjusted position
       targetCtx.save();
-      targetCtx.font = tFont;
+      targetCtx.font = `${titleBold ? "bold" : "normal"} ${Math.round(titleSize * fontSizeAdjustment)}px "${fontToUse}", sans-serif`;
       targetCtx.textAlign = textAlign;
       targetCtx.textBaseline = "top";
 
@@ -1233,28 +1354,26 @@ document.addEventListener("DOMContentLoaded", () => {
         titleLines.forEach((line, index) => {
           const y = titleY + index * lineHeight;
           const x = textBoxX + horizontalOffset;
-
+          let drawLine = titleUppercase ? line.toUpperCase() : line;
           if (parseInt(textOutlineWidth.value) > 0) {
             targetCtx.lineWidth =
               parseInt(textOutlineWidth.value) * (width / 1280);
             targetCtx.strokeStyle = window["text-outline-color"] || "#000000";
-            targetCtx.strokeText(line, x, y, titleMaxWidth);
+            targetCtx.strokeText(drawLine, x, y, titleMaxWidth);
           }
-
-          targetCtx.fillText(line, x, y, titleMaxWidth);
+          targetCtx.fillText(drawLine, x, y, titleMaxWidth);
         });
       } else {
         // Single line title
         const x = textBoxX + horizontalOffset;
-
+        let drawLine = titleUppercase ? titleText.toUpperCase() : titleText;
         if (parseInt(textOutlineWidth.value) > 0) {
           targetCtx.lineWidth =
             parseInt(textOutlineWidth.value) * (width / 1280);
           targetCtx.strokeStyle = window["text-outline-color"] || "#000000";
-          targetCtx.strokeText(titleText, x, titleY, maxWidth);
+          targetCtx.strokeText(drawLine, x, titleY, maxWidth);
         }
-
-        targetCtx.fillText(titleText, x, titleY, maxWidth);
+        targetCtx.fillText(drawLine, x, titleY, maxWidth);
       }
 
       targetCtx.restore();
@@ -1267,7 +1386,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const tFont = `${Math.round(
         titleSize * fontSizeAdjustment
       )}px "${fontToUse}", sans-serif`;
-      targetCtx.font = tFont;
+      targetCtx.font = `${titleBold ? "bold" : "normal"} ${Math.round(titleSize * fontSizeAdjustment)}px "${fontToUse}", sans-serif`;
       targetCtx.textAlign = textAlign;
       targetCtx.textBaseline = "top";
 
@@ -1304,16 +1423,15 @@ document.addEventListener("DOMContentLoaded", () => {
         // Draw each line
         lines.forEach((line, index) => {
           const y = startY + index * lineHeight;
-          const x = textBoxX + horizontalOffset; // Apply horizontal offset consistently
-
+          const x = textBoxX + horizontalOffset;
+          let drawLine = titleUppercase ? line.toUpperCase() : line;
           if (parseInt(textOutlineWidth.value) > 0) {
             targetCtx.lineWidth =
               parseInt(textOutlineWidth.value) * (width / 1280);
             targetCtx.strokeStyle = window["text-outline-color"] || "#000000";
-            targetCtx.strokeText(line, x, y, titleMaxWidth);
+            targetCtx.strokeText(drawLine, x, y, titleMaxWidth);
           }
-
-          targetCtx.fillText(line, x, y, titleMaxWidth);
+          targetCtx.fillText(drawLine, x, y, titleMaxWidth);
         });
 
         // Calculate position for info text
@@ -1321,16 +1439,15 @@ document.addEventListener("DOMContentLoaded", () => {
         infoY = startY + totalTextHeight + spacing;
       } else {
         // Single line title
-        const x = textBoxX + horizontalOffset; // Apply horizontal offset consistently
-
+        const x = textBoxX + horizontalOffset;
+        let drawLine = titleUppercase ? titleText.toUpperCase() : titleText;
         if (parseInt(textOutlineWidth.value) > 0) {
           targetCtx.lineWidth =
             parseInt(textOutlineWidth.value) * (width / 1280);
           targetCtx.strokeStyle = window["text-outline-color"] || "#000000";
-          targetCtx.strokeText(titleText, x, textBoxY, maxWidth);
+          targetCtx.strokeText(drawLine, x, textBoxY, maxWidth);
         }
-
-        targetCtx.fillText(titleText, x, textBoxY, maxWidth);
+        targetCtx.fillText(drawLine, x, textBoxY, maxWidth);
 
         // Calculate position for info text
         const spacing = parseInt(titleInfoSpacing.value) * (height / 720);
@@ -1341,39 +1458,159 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Draw info text if needed
       if (infoPositionSetting === "below" && infoText) {
-        targetCtx.save();
-
-        const iFont = `${Math.round(
-          infoSize * infoFontSizeAdjustment
-        )}px "${infoFontToUse}", sans-serif`;
-        targetCtx.font = iFont;
-        targetCtx.textAlign = textAlign;
-        targetCtx.textBaseline = "top";
-
-        const infoX = textBoxX + horizontalOffset;
-
-        // Setup info shadow
+        // --- Draw season/sep/episode as a block, with bold/uppercase toggles, just like above ---
+        let infoX = textBoxX + horizontalOffset;
+        let y = infoY;
+        let align = textAlign;
         const infoShadowBlur = document.getElementById("info-shadow-blur");
         const infoOutlineWidth = document.getElementById("info-outline-width");
 
-        targetCtx.shadowColor = window["info-shadow-color"] || "#000000";
-        targetCtx.shadowBlur = parseInt(infoShadowBlur.value) * (width / 1280);
-        targetCtx.shadowOffsetX = 1 * (width / 1280);
-        targetCtx.shadowOffsetY = 1 * (height / 720);
+        // If both season and episode are present, draw separately with separator and correct alignment
+        if (seasonText && episodeText) {
+          let seasonDraw = seasonText;
+          let episodeDraw = episodeText;
+          if (infoSeasonUppercase) seasonDraw = seasonDraw.toUpperCase();
+          if (infoEpisodeUppercase) episodeDraw = episodeDraw.toUpperCase();
 
-        // Draw info text outline if enabled
-        if (parseInt(infoOutlineWidth.value) > 0) {
-          targetCtx.lineWidth =
-            parseInt(infoOutlineWidth.value) * (width / 1280);
-          targetCtx.strokeStyle = window["info-outline-color"] || "#000000";
-          targetCtx.strokeText(infoText, infoX, infoY, maxWidth);
+          // Measure widths for each part
+          targetCtx.save();
+          targetCtx.font = `${infoSeasonBold ? "bold" : "normal"} ${Math.round(infoSize * infoFontSizeAdjustment)}px "${infoFontToUse}", sans-serif`;
+          let seasonWidth = targetCtx.measureText(seasonDraw).width;
+          targetCtx.restore();
+
+          targetCtx.save();
+          targetCtx.font = `${Math.round(infoSize * infoFontSizeAdjustment)}px "${infoFontToUse}", sans-serif`;
+          let sepWidth = targetCtx.measureText(separator).width;
+          targetCtx.restore();
+
+          targetCtx.save();
+          targetCtx.font = `${infoEpisodeBold ? "bold" : "normal"} ${Math.round(infoSize * infoFontSizeAdjustment)}px "${infoFontToUse}", sans-serif`;
+          let episodeWidth = targetCtx.measureText(episodeDraw).width;
+          targetCtx.restore();
+
+          // Calculate total width and starting X for correct order and alignment
+          let totalWidth = seasonWidth + sepWidth + episodeWidth;
+          let startX = infoX;
+          if (align === "center") {
+            startX = infoX - totalWidth / 2;
+          } else if (align === "right") {
+            startX = infoX - totalWidth;
+          }
+          let seasonX = startX;
+          let sepX = seasonX + seasonWidth;
+          let episodeX = sepX + sepWidth;
+
+          // Draw season part
+          targetCtx.save();
+          targetCtx.font = `${infoSeasonBold ? "bold" : "normal"} ${Math.round(infoSize * infoFontSizeAdjustment)}px "${infoFontToUse}", sans-serif`;
+          targetCtx.textAlign = "left";
+          targetCtx.textBaseline = "top";
+          targetCtx.shadowColor = window["info-shadow-color"] || "#000000";
+          targetCtx.shadowBlur = parseInt(infoShadowBlur.value) * (width / 1280);
+          targetCtx.shadowOffsetX = 1 * (width / 1280);
+          targetCtx.shadowOffsetY = 1 * (height / 720);
+          if (parseInt(infoOutlineWidth.value) > 0) {
+            targetCtx.lineWidth = parseInt(infoOutlineWidth.value) * (width / 1280);
+            targetCtx.strokeStyle = window["info-outline-color"] || "#000000";
+            targetCtx.strokeText(seasonDraw, seasonX, y, maxWidth);
+          }
+          targetCtx.fillStyle = window["info-color"] || "#ffffff";
+          targetCtx.fillText(seasonDraw, seasonX, y, maxWidth);
+          targetCtx.restore();
+
+          // Draw separator
+          targetCtx.save();
+          targetCtx.font = `${Math.round(infoSize * infoFontSizeAdjustment)}px "${infoFontToUse}", sans-serif`;
+          targetCtx.textAlign = "left";
+          targetCtx.textBaseline = "top";
+          targetCtx.shadowColor = window["info-shadow-color"] || "#000000";
+          targetCtx.shadowBlur = parseInt(infoShadowBlur.value) * (width / 1280);
+          targetCtx.shadowOffsetX = 1 * (width / 1280);
+          targetCtx.shadowOffsetY = 1 * (height / 720);
+          targetCtx.fillStyle = window["info-color"] || "#ffffff";
+          targetCtx.fillText(separator, sepX, y, maxWidth);
+          targetCtx.restore();
+
+          // Draw episode part
+          targetCtx.save();
+          targetCtx.font = `${infoEpisodeBold ? "bold" : "normal"} ${Math.round(infoSize * infoFontSizeAdjustment)}px "${infoFontToUse}", sans-serif`;
+          targetCtx.textAlign = "left";
+          targetCtx.textBaseline = "top";
+          targetCtx.shadowColor = window["info-shadow-color"] || "#000000";
+          targetCtx.shadowBlur = parseInt(infoShadowBlur.value) * (width / 1280);
+          targetCtx.shadowOffsetX = 1 * (width / 1280);
+          targetCtx.shadowOffsetY = 1 * (height / 720);
+          if (parseInt(infoOutlineWidth.value) > 0) {
+            targetCtx.lineWidth = parseInt(infoOutlineWidth.value) * (width / 1280);
+            targetCtx.strokeStyle = window["info-outline-color"] || "#000000";
+            targetCtx.strokeText(episodeDraw, episodeX, y, maxWidth);
+          }
+          targetCtx.fillStyle = window["info-color"] || "#ffffff";
+          targetCtx.fillText(episodeDraw, episodeX, y, maxWidth);
+          targetCtx.restore();
+        } else if (seasonText) {
+          // Only season present
+          let seasonDraw = seasonText;
+          if (infoSeasonUppercase) seasonDraw = seasonDraw.toUpperCase();
+          targetCtx.save();
+          targetCtx.font = `${infoSeasonBold ? "bold" : "normal"} ${Math.round(infoSize * infoFontSizeAdjustment)}px "${infoFontToUse}", sans-serif`;
+          targetCtx.textAlign = align;
+          targetCtx.textBaseline = "top";
+          targetCtx.shadowColor = window["info-shadow-color"] || "#000000";
+          targetCtx.shadowBlur = parseInt(infoShadowBlur.value) * (width / 1280);
+          targetCtx.shadowOffsetX = 1 * (width / 1280);
+          targetCtx.shadowOffsetY = 1 * (height / 720);
+          if (parseInt(infoOutlineWidth.value) > 0) {
+            targetCtx.lineWidth = parseInt(infoOutlineWidth.value) * (width / 1280);
+            targetCtx.strokeStyle = window["info-outline-color"] || "#000000";
+            targetCtx.strokeText(seasonDraw, infoX, y, maxWidth);
+          }
+          targetCtx.fillStyle = window["info-color"] || "#ffffff";
+          targetCtx.fillText(seasonDraw, infoX, y, maxWidth);
+          targetCtx.restore();
+        } else if (episodeText) {
+          // Only episode present
+          let episodeDraw = episodeText;
+          if (infoEpisodeUppercase) episodeDraw = episodeDraw.toUpperCase();
+          targetCtx.save();
+          targetCtx.font = `${infoEpisodeBold ? "bold" : "normal"} ${Math.round(infoSize * infoFontSizeAdjustment)}px "${infoFontToUse}", sans-serif`;
+          targetCtx.textAlign = align;
+          targetCtx.textBaseline = "top";
+          targetCtx.shadowColor = window["info-shadow-color"] || "#000000";
+          targetCtx.shadowBlur = parseInt(infoShadowBlur.value) * (width / 1280);
+          targetCtx.shadowOffsetX = 1 * (width / 1280);
+          targetCtx.shadowOffsetY = 1 * (height / 720);
+          if (parseInt(infoOutlineWidth.value) > 0) {
+            targetCtx.lineWidth = parseInt(infoOutlineWidth.value) * (width / 1280);
+            targetCtx.strokeStyle = window["info-outline-color"] || "#000000";
+            targetCtx.strokeText(episodeDraw, infoX, y, maxWidth);
+          }
+          targetCtx.fillStyle = window["info-color"] || "#ffffff";
+          targetCtx.fillText(episodeDraw, infoX, y, maxWidth);
+          targetCtx.restore();
+        } else {
+          // Fallback: treat as one string, apply bold if either is checked
+          let infoTextToDraw = infoText;
+          let infoFontWeight = (seasonText && infoSeasonBold) || (episodeText && infoEpisodeBold) ? "bold" : "normal";
+          if (seasonText && infoSeasonUppercase) infoTextToDraw = infoTextToDraw.replace(seasonText, seasonText.toUpperCase());
+          if (episodeText && infoEpisodeUppercase) infoTextToDraw = infoTextToDraw.replace(episodeText, episodeText.toUpperCase());
+          targetCtx.save();
+          targetCtx.font = `${infoFontWeight} ${Math.round(infoSize * infoFontSizeAdjustment)}px "${infoFontToUse}", sans-serif`;
+          targetCtx.textAlign = align;
+          targetCtx.textBaseline = "top";
+          targetCtx.shadowColor = window["info-shadow-color"] || "#000000";
+          targetCtx.shadowBlur = parseInt(infoShadowBlur.value) * (width / 1280);
+          targetCtx.shadowOffsetX = 1 * (width / 1280);
+          targetCtx.shadowOffsetY = 1 * (height / 720);
+          if (parseInt(infoOutlineWidth.value) > 0) {
+            targetCtx.lineWidth = parseInt(infoOutlineWidth.value) * (width / 1280);
+            targetCtx.strokeStyle = window["info-outline-color"] || "#000000";
+            targetCtx.strokeText(infoTextToDraw, infoX, y, maxWidth);
+          }
+          targetCtx.fillStyle = window["info-color"] || "#ffffff";
+          targetCtx.fillText(infoTextToDraw, infoX, y, maxWidth);
+          targetCtx.restore();
         }
-
-        // Draw info text fill
-        targetCtx.fillStyle = window["info-color"] || "#ffffff";
-        targetCtx.fillText(infoText, infoX, infoY, maxWidth);
-
-        targetCtx.restore();
       }
     }
   }
@@ -3133,7 +3370,13 @@ document.addEventListener("DOMContentLoaded", () => {
         thumbnailFullsize: thumbnailFullsize.checked,
         showSeasonNumber: seasonNumberDisplay.checked,
         showEpisodeNumber: episodeNumberDisplay.checked,
-        preset: presetSelect.value
+        preset: presetSelect.value,
+        titleUppercase: document.getElementById("title-uppercase").checked,
+        titleBold: document.getElementById("title-bold").checked,
+        infoSeasonUppercase: document.getElementById("info-season-uppercase").checked,
+        infoSeasonBold: document.getElementById("info-season-bold").checked,
+        infoEpisodeUppercase: document.getElementById("info-episode-uppercase").checked,
+        infoEpisodeBold: document.getElementById("info-episode-bold").checked
       }
     };
 
@@ -3384,6 +3627,12 @@ document.addEventListener("DOMContentLoaded", () => {
     if (typeof settings.showSeasonNumber !== 'undefined') seasonNumberDisplay.checked = settings.showSeasonNumber;
     if (typeof settings.showEpisodeNumber !== 'undefined') episodeNumberDisplay.checked = settings.showEpisodeNumber;
     if (settings.preset) presetSelect.value = settings.preset;
+    if (typeof settings.titleUppercase !== 'undefined') document.getElementById("title-uppercase").checked = settings.titleUppercase;
+    if (typeof settings.titleBold !== 'undefined') document.getElementById("title-bold").checked = settings.titleBold;
+    if (typeof settings.infoSeasonUppercase !== 'undefined') document.getElementById("info-season-uppercase").checked = settings.infoSeasonUppercase;
+    if (typeof settings.infoSeasonBold !== 'undefined') document.getElementById("info-season-bold").checked = settings.infoSeasonBold;
+    if (typeof settings.infoEpisodeUppercase !== 'undefined') document.getElementById("info-episode-uppercase").checked = settings.infoEpisodeUppercase;
+    if (typeof settings.infoEpisodeBold !== 'undefined') document.getElementById("info-episode-bold").checked = settings.infoEpisodeBold;
     
     // Apply color settings
     if (settings.textColor) window["text-color"] = settings.textColor;
@@ -3623,13 +3872,8 @@ resetBtn.addEventListener("click", () => {
         if (horizontalPosition) horizontalPosition.value = defaultValues.horizontalPosition;
         if (fontFamily) fontFamily.value = defaultValues.font;
         if (textSize) {
-          // For textSize dropdown, we need to check if the value exists in the options
-          // Default to "72" (which is the selected option in HTML) if not found
-          textSize.value = "72"; // Set to the default selected value in HTML
-          
-          // Try to set to the default value from config if it exists and is valid
+          textSize.value = "72";
           if (defaultValues.textSize) {
-            // Check if this value exists in the options
             const validOption = Array.from(textSize.options).some(option => option.value === defaultValues.textSize);
             if (validOption) {
               textSize.value = defaultValues.textSize;
@@ -3641,19 +3885,22 @@ resetBtn.addEventListener("click", () => {
         const infoTextSize = document.getElementById("info-text-size");
         if (infoFontFamily) infoFontFamily.value = defaultValues.infoFont;
         if (infoTextSize) {
-          // For infoTextSize dropdown, we need to check if the value exists in the options
-          // Default to "36" (which is the selected option in HTML) if not found
-          infoTextSize.value = "36"; // Set to the default selected value in HTML
-          
-          // Try to set to the default value from config if it exists and is valid
+          infoTextSize.value = "36";
           if (defaultValues.infoTextSize) {
-            // Check if this value exists in the options
             const validOption = Array.from(infoTextSize.options).some(option => option.value === defaultValues.infoTextSize);
             if (validOption) {
               infoTextSize.value = defaultValues.infoTextSize;
             }
           }
         }
+
+        // Reset new text style checkboxes
+        document.getElementById("title-uppercase").checked = defaultValues.titleUppercase;
+        document.getElementById("title-bold").checked = defaultValues.titleBold;
+        document.getElementById("info-season-uppercase").checked = defaultValues.infoSeasonUppercase;
+        document.getElementById("info-season-bold").checked = defaultValues.infoSeasonBold;
+        document.getElementById("info-episode-uppercase").checked = defaultValues.infoEpisodeUppercase;
+        document.getElementById("info-episode-bold").checked = defaultValues.infoEpisodeBold;
 
         if (textShadowBlur) textShadowBlur.value = defaultValues.textShadowBlur;
         if (textOutlineWidth) textOutlineWidth.value = defaultValues.textOutlineWidth;

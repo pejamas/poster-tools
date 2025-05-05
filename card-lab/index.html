@@ -234,7 +234,12 @@
           </div>
           <div class="collapsible-content text-options">
             <h4>Title Text</h4>
+
             <div>
+              <div class="custom-font-upload-container">
+              <span>Upload Custom Font</span>
+              <input type="file" id="custom-font-upload" accept=".ttf,.woff,.woff2,.otf" style="display: none" />
+            </div>
               <span class="option-label">Font Style</span>
               <select id="font-family">
                 <option value="Gabarito">Gabarito</option>
@@ -254,11 +259,12 @@
                 <option value="custom-font" id="custom-font-option" style="display: none">Custom Font</option>
               </select>
             </div>
-
-            <div class="custom-font-upload-container">
-              <span>Upload Custom Font</span>
-              <input type="file" id="custom-font-upload" accept=".ttf,.woff,.woff2,.otf" style="display: none" />
+            <div class="text-style-row">
+              <label><input type="checkbox" id="title-uppercase" /> Uppercase</label>
+              <label><input type="checkbox" id="title-bold" /> Bold</label>
             </div>
+
+            
 
             <div class="text-options-grid">
               <div>
@@ -281,6 +287,7 @@
 
             <div class="section-separator"></div>
             <h4>Info Text</h4>
+
             <div>
               <span class="option-label">Font Style</span>
               <select id="info-font-family">
@@ -299,6 +306,14 @@
                 <option value="Staatliches">Staatliches</option>
                 <option value="Lato">Lato</option>
               </select>
+            </div>
+            <div class="text-style-row">
+              <label><input type="checkbox" id="info-season-uppercase" /> Season Uppercase</label>
+              <label><input type="checkbox" id="info-season-bold" /> Season Bold</label>
+            </div>
+            <div class="text-style-row">
+              <label><input type="checkbox" id="info-episode-uppercase" /> Episode Uppercase</label>
+              <label><input type="checkbox" id="info-episode-bold" /> Episode Bold</label>
             </div>
             
             <div class="text-options-grid">

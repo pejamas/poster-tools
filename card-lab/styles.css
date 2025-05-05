@@ -1009,8 +1009,6 @@ input:checked + .toggle-slider:before {
   background-repeat: no-repeat;
   background-position: right 0.7rem top 50%;
   background-size: 0.65rem auto;
-  padding-top: 0.4rem;
-  padding-bottom: 0.4rem;
 }
 
 #returnToGridBtn {
@@ -1479,40 +1477,71 @@ input:checked + .toggle-slider:before {
   color: #00bfa5;
 }
 
-.title-info-gap input[type="range"],
-.horizontal-position input[type="range"],
-#line-spacing-container input[type="range"] {
-  -webkit-appearance: none;
-  width: 100%;
-  margin-top: 6px;
-  margin-bottom: 8px;
-  height: 5px;
-  border-radius: 3px;
-  background: linear-gradient(to right, #00bfa5, #8e24aa);
+/* Text Style Row for uppercase and bold options */
+.text-style-row {
+  display: flex;
+  gap: 12px;
+  margin: 8px 0 12px;
+  flex-wrap: wrap;
 }
 
-.title-info-gap input[type="range"]::-webkit-slider-thumb,
-.horizontal-position input[type="range"]::-webkit-slider-thumb,
-#line-spacing-container input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: white;
+.text-style-row label {
+  display: flex;
+  align-items: center;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
   cursor: pointer;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  transition: color 0.2s ease;
+  background: rgba(25, 25, 35, 0.7);
+  padding: 5px 10px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.title-info-gap input[type="range"]::-moz-range-thumb,
-.horizontal-position input[type="range"]::-moz-range-thumb,
-#line-spacing-container input[type="range"]::-moz-range-thumb {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: white;
-  border: none;
+.text-style-row label:hover {
+  color: white;
+  background: rgba(35, 35, 45, 0.7);
+  border-color: rgba(0, 255, 255, 0.2);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(0, 255, 255, 0.15);
+}
+
+.text-style-row input[type="checkbox"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  margin-right: 6px;
+  background: rgba(25, 25, 35, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  position: relative;
   cursor: pointer;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+.text-style-row input[type="checkbox"]:checked {
+  background: linear-gradient(135deg, #00bfa5, #8e24aa);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.text-style-row input[type="checkbox"]:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 8px rgba(0, 191, 165, 0.3);
+}
+
+.text-style-row input[type="checkbox"]:checked::before {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 2px;
+  width: 4px;
+  height: 8px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
 }
 
 /* Setting row for toggle switches */
