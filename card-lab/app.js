@@ -1,4 +1,35 @@
 document.addEventListener("DOMContentLoaded", () => {
+  // =====================================================
+  // SEASON/EPISODE NUMBER THEME OPTION
+  // =====================================================
+
+  // Add option for number theme: 'padded' (01,02) or 'plain' (1,2)
+  let numberTheme = 'padded'; // default
+  // Add UI: select box for number theme
+  const numberThemeContainer = document.createElement('div');
+  numberThemeContainer.id = 'number-theme-container';
+  numberThemeContainer.style.margin = '10px 0 18px 0';
+  numberThemeContainer.innerHTML = `
+    <label for="number-theme-select" style="margin-right: 12px; font-weight: 500; color: #00bfa5;">Number Style:</label>
+    <select id="number-theme-select" style="padding: 6px 12px; border-radius: 5px; background: #222; color: white; border: 1px solid rgba(255,255,255,0.15); font-size: 1rem;">
+      <option value="padded">Formatted (01)</option>
+      <option value="plain">Simple (1)</option>
+    </select>
+  `;
+  // Insert into DOM near the season/episode number inputs
+  const episodeNumberInputEl = document.getElementById("episode-number");
+  if (episodeNumberInputEl && episodeNumberInputEl.parentElement) {
+    episodeNumberInputEl.parentElement.parentElement.insertBefore(numberThemeContainer, episodeNumberInputEl.parentElement.nextSibling);
+  }
+  // Listen for changes
+  const numberThemeSelect = numberThemeContainer.querySelector('#number-theme-select');
+  if (numberThemeSelect) {
+    numberThemeSelect.value = numberTheme;
+    numberThemeSelect.addEventListener('change', function() {
+      numberTheme = this.value;
+      updateBothViews();
+    });
+  }
   // =====================
   // LANGUAGE MAP FOR I18N
   // =====================
@@ -824,6 +855,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function drawCardToContext(targetCtx, width, height) {
+    // Format season/episode numbers for display
+    const formatNumber = (n) => {
+      if (numberTheme === 'plain') return String(Number(n));
+      return String(n).padStart(2, "0");
+    };
     // Clear the canvas
     targetCtx.clearRect(0, 0, width, height);
 
@@ -1020,31 +1056,33 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (seasonNumberInput.value && seasonNumberDisplay.checked) {
         const seriesTypeValue = seriesType.value;
+        const seasonNumDisplay = formatNumber(seasonNumberInput.value);
         if (seriesTypeValue === 'regular' || !seriesTypeValue) {
-          seasonText = langMap.season + " " + seasonNumberInput.value;
+          seasonText = langMap.season + " " + seasonNumDisplay;
         } else {
           switch (seriesTypeValue) {
             case 'limited':
-              seasonText = (currentLang === 'en' ? "Limited Series" : langMap.season + " " + seasonNumberInput.value);
+              seasonText = (currentLang === 'en' ? "Limited Series" : langMap.season + " " + seasonNumDisplay);
               break;
             case 'mini':
-              seasonText = (currentLang === 'en' ? "Mini-Series" : langMap.season + " " + seasonNumberInput.value);
+              seasonText = (currentLang === 'en' ? "Mini-Series" : langMap.season + " " + seasonNumDisplay);
               break;
             case 'anthology':
-              seasonText = (currentLang === 'en' ? "Anthology Series" : langMap.season + " " + seasonNumberInput.value);
+              seasonText = (currentLang === 'en' ? "Anthology Series" : langMap.season + " " + seasonNumDisplay);
               break;
             case 'special':
-              seasonText = (currentLang === 'en' ? "Special" : langMap.season + " " + seasonNumberInput.value);
+              seasonText = (currentLang === 'en' ? "Special" : langMap.season + " " + seasonNumDisplay);
               break;
             default:
-              seasonText = langMap.season + " " + seasonNumberInput.value;
+              seasonText = langMap.season + " " + seasonNumDisplay;
           }
         }
         if (infoSeasonUppercase) seasonText = seasonText.toUpperCase();
       }
 
       if (episodeNumberInput.value && episodeNumberDisplay.checked) {
-        episodeText = langMap.episode + " " + episodeNumberInput.value;
+        const episodeNumDisplay = formatNumber(episodeNumberInput.value);
+        episodeText = langMap.episode + " " + episodeNumDisplay;
         if (infoEpisodeUppercase) episodeText = episodeText.toUpperCase();
       }
 
@@ -1911,10 +1949,15 @@ document.addEventListener("DOMContentLoaded", () => {
       );
 
       // Create base card object
+      // Use numberTheme for season/episode numbers
+      const formatNumber = (n) => {
+        if (numberTheme === 'plain') return String(Number(n));
+        return String(n).padStart(2, "0");
+      };
       const card = {
         title: episode.name,
-        seasonNumber: String(episode.season_number).padStart(2, "0"),
-        episodeNumber: String(episode.episode_number).padStart(2, "0"),
+        seasonNumber: formatNumber(episode.season_number),
+        episodeNumber: formatNumber(episode.episode_number),
         thumbnailImg: null,
         canvasData: null,
         allImages: [],
@@ -2048,8 +2091,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Set form values from card data
     titleInput.value = card.title;
-    seasonNumberInput.value = card.seasonNumber;
-    episodeNumberInput.value = card.episodeNumber;
+    // Always set input fields to plain numbers for editing
+    seasonNumberInput.value = String(Number(card.seasonNumber));
+    episodeNumberInput.value = String(Number(card.episodeNumber));
 
     // Store original thumbnail when first selecting an episode
     if (!originalThumbnail && card.thumbnailImg) {
@@ -2378,8 +2422,13 @@ document.addEventListener("DOMContentLoaded", () => {
       gridCtx.font = "bold 10px Gabarito, sans-serif";
       gridCtx.fillStyle = "#00bfa5";
       gridCtx.textAlign = "left";
+      // Use numberTheme for grid label
+      const formatNumber = (n) => {
+        if (numberTheme === 'plain') return String(Number(n));
+        return String(n).padStart(2, "0");
+      };
       gridCtx.fillText(
-        `S${card.seasonNumber}E${card.episodeNumber}`,
+        `S${formatNumber(card.seasonNumber)}E${formatNumber(card.episodeNumber)}`,
         x + 6,
         y + 15
       );

@@ -1579,6 +1579,42 @@ input:checked + .toggle-slider:before {
   margin-bottom: 15px;
 }
 
+/* Number Theme Style */
+#number-theme-container {
+  background: rgba(10, 10, 18, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 12px 0 16px 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  gap: 0.7rem 1.2rem;
+}
+
+#number-theme-container label {
+  margin: 0 18px 8px 0;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  line-height: 1.5;
+  cursor: pointer;
+  user-select: none;
+}
+
+#number-theme-select {
+  padding: 6px 12px;
+  border-radius: 5px;
+  background: #222;
+  color: white;
+  border: 1px solid rgba(255,255,255,0.15);
+  font-size: 1rem;
+  min-width: 140px;
+  margin-right: 8px;
+}
+
 .setting-label-group {
   display: flex;
   justify-content: space-between;
