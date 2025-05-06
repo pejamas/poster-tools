@@ -1,3 +1,88 @@
+/* Sidebar scrollbar (WebKit) - match main gradient and thin style */
+.sidebar {
+  /* Ensure sidebar is scrollable and has its own stacking context for the scrollbar */
+  position: relative;
+  z-index: 2;
+}
+.sidebar::-webkit-scrollbar {
+  width: 8px !important;
+  background: rgba(0,0,0,0.08) !important;
+}
+.sidebar::-webkit-scrollbar-thumb {
+  background: linear-gradient(to right, #00bfa5, #8e24aa) !important;
+  border-radius: 8px !important;
+  border: 2px solid rgba(0,0,0,0.08) !important;
+  min-height: 30px !important;
+  transition: background 0.3s !important;
+}
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to right, #00bfa5, #8e24aa) !important;
+  filter: brightness(1.2) !important;
+}
+.sidebar::-webkit-scrollbar-track {
+  background: rgba(0,0,0,0.04) !important;
+  border-radius: 8px !important;
+}
+
+/* Firefox: thin, colored scrollbars for all main areas and sidebar */
+/* Custom scrollbar styling for Chrome/WebKit browsers (main and sidebar) */
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+.main::-webkit-scrollbar,
+.layout::-webkit-scrollbar {
+  width: 8px;
+  background: rgba(0,0,0,0.08);
+}
+
+html::-webkit-scrollbar-thumb,
+body::-webkit-scrollbar-thumb,
+.main::-webkit-scrollbar-thumb,
+.layout::-webkit-scrollbar-thumb {
+  background: linear-gradient(to right, #00bfa5, #8e24aa);
+  border-radius: 8px;
+  border: 2px solid rgba(0,0,0,0.08);
+  min-height: 30px;
+  transition: background 0.3s;
+}
+
+html::-webkit-scrollbar-thumb:hover,
+body::-webkit-scrollbar-thumb:hover,
+.main::-webkit-scrollbar-thumb:hover,
+.layout::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to right, #00bfa5, #8e24aa);
+  filter: brightness(1.2);
+}
+
+html::-webkit-scrollbar-track,
+body::-webkit-scrollbar-track,
+.main::-webkit-scrollbar-track,
+.layout::-webkit-scrollbar-track {
+  background: rgba(0,0,0,0.04);
+  border-radius: 8px;
+}
+
+/* Remove scrollbar arrows for Chrome/WebKit */
+html::-webkit-scrollbar-button,
+body::-webkit-scrollbar-button,
+.main::-webkit-scrollbar-button,
+.layout::-webkit-scrollbar-button,
+.sidebar::-webkit-scrollbar-button {
+  display: none;
+  height: 0;
+  width: 0;
+}
+
+/* Sidebar scrollbar (WebKit) */
+
+/* Firefox scrollbar styling for all main areas and sidebar */
+html,
+body,
+.main,
+.layout,
+.sidebar {
+  scrollbar-width: thin;
+  scrollbar-color: #228cac #181828;
+}
 /* Spoiler Blur Option */
 .spoiler-blur {
   filter: blur(16px) !important;
@@ -116,27 +201,8 @@ header {
   box-sizing: border-box;
   overflow-y: auto;
   height: calc(100vh - 70px);
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.3) rgba(0, 0, 0, 0.1);
 }
 
-.sidebar::-webkit-scrollbar {
-  width: 8px;
-}
-
-.sidebar::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.1);
-  border-radius: 4px;
-}
-
-.sidebar::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.3);
-  border-radius: 4px;
-}
-
-.sidebar::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(255, 255, 255, 0.5);
-}
 
 .sidebar h3 {
   font-size: 1.1rem;
