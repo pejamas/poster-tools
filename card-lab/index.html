@@ -42,7 +42,7 @@
           <div class="collapsible-content">
             <form id="show-search-form">
               <div style="display: flex; flex-direction: column; gap: 8px;">
-                <label for="language-select" style="margin-bottom: 0; font-weight: 500; color: #00bfa5;">Language</label>
+                <label for="language-select" style="margin-bottom: 0; font-weight: 500; color: #ffffff;">Language</label>
                 <select id="language-select" style="margin-bottom: 0.5em;">
                   <option value="en">English</option>
                   <option value="fr">Français</option>
@@ -163,6 +163,13 @@
             <span class="toggle-icon"></span>
           </div>
           <div class="collapsible-content">
+            <div class="toggle-container" style="margin-bottom: 12px;">
+              <span class="toggle-label">Enable Spoiiler Blur</span>
+              <label class="toggle-switch" style="margin-left: 12px;">
+                <input type="checkbox" id="spoiler-toggle" />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
             <label for="preset-select">Text Poisition</label>
             <select id="preset-select">
               <option value="leftMiddle">Left Middle</option>

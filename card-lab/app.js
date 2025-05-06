@@ -1,4 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
+  // SPOILER/BLUR OPTION LOGIC (single instance)
+
   // =====================================================
   // SEASON/EPISODE NUMBER THEME OPTION
   // =====================================================
@@ -96,6 +98,19 @@ if (languageSelect) {
 
   const canvas = document.getElementById("titlecard-canvas");
   const gridCanvas = document.getElementById("grid-canvas");
+
+  // SPOILER/BLUR OPTION LOGIC (single instance, after canvas/gridCanvas are defined)
+  // SPOILER/BLUR OPTION LOGIC (single instance, after canvas/gridCanvas are defined)
+var spoilerToggle = document.getElementById("spoiler-toggle");
+function isSpoilerBlurEnabled() {
+  return spoilerToggle && spoilerToggle.checked;
+}
+if (spoilerToggle) {
+  spoilerToggle.addEventListener("change", function() {
+    updateBothViews();
+  });
+}
+  // (Moved below canvas/gridCanvas declarations)
   const ctx = canvas.getContext("2d");
   const gridCtx = gridCanvas.getContext("2d");
   const infoPosition = document.getElementById("info-position");
@@ -883,30 +898,35 @@ if (languageSelect) {
       targetCtx.save();
       targetCtx.globalAlpha = 1.0;
 
-      if (thumbnailFullsize && thumbnailFullsize.checked) {
-        // Draw at full size
-        targetCtx.drawImage(thumbnailImg, 0, 0, width, height);
-      } else {
+      // Calculate draw dimensions
+      let drawX = 0, drawY = 0, drawW = width, drawH = height;
+      if (!(thumbnailFullsize && thumbnailFullsize.checked)) {
         // Draw maintaining aspect ratio
         const scale = 1.0;
-        let w, h;
-
         if (thumbnailImg.width / thumbnailImg.height > width / height) {
-          // Image is wider than the canvas
-          h = height * scale;
-          w = thumbnailImg.width * (h / thumbnailImg.height);
+          drawH = height * scale;
+          drawW = thumbnailImg.width * (drawH / thumbnailImg.height);
         } else {
-          // Image is taller than the canvas
-          w = width * scale;
-          h = thumbnailImg.height * (w / thumbnailImg.width);
+          drawW = width * scale;
+          drawH = thumbnailImg.height * (drawW / thumbnailImg.width);
         }
-
-        const x = (width - w) / 2;
-        const y = (height - h) / 2;
-
-        targetCtx.drawImage(thumbnailImg, x, y, w, h);
+        drawX = (width - drawW) / 2;
+        drawY = (height - drawH) / 2;
       }
 
+      // If spoiler/blur is enabled, draw with blur filter
+      if (isSpoilerBlurEnabled()) {
+        // Create an offscreen canvas to apply blur
+        const offCanvas = document.createElement('canvas');
+        offCanvas.width = drawW;
+        offCanvas.height = drawH;
+        const offCtx = offCanvas.getContext('2d');
+        offCtx.filter = 'blur(18px)';
+        offCtx.drawImage(thumbnailImg, 0, 0, drawW, drawH);
+        targetCtx.drawImage(offCanvas, drawX, drawY, drawW, drawH);
+      } else {
+        targetCtx.drawImage(thumbnailImg, drawX, drawY, drawW, drawH);
+      }
       targetCtx.restore();
     }
 

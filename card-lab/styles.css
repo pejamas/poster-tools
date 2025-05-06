@@ -1,3 +1,15 @@
+/* Spoiler Blur Option */
+.spoiler-blur {
+  filter: blur(16px) !important;
+  transition: filter 0.3s;
+}
+/* Spoiler Blur Option */
+#spoiler-toggle:checked ~ .main #titlecard-canvas,
+#spoiler-toggle:checked ~ .main #grid-canvas,
+.spoiler-blur {
+  filter: blur(16px) !important;
+  transition: filter 0.3s;
+}
 body {
   margin: 0;
   font-family: "Gabarito", sans-serif;
@@ -856,14 +868,14 @@ header {
   height: 18px;
   width: 18px;
   left: 3px;
-  bottom: 3px;
+  top: 3px;
   background-color: white;
   transition: 0.3s;
   border-radius: 50%;
 }
 
 input:checked + .toggle-slider {
-  background-color: #0088cc;
+  background: linear-gradient(90deg, #00bfa5 0%, #8e24aa 100%);
 }
 
 input:checked + .toggle-slider:before {
@@ -879,7 +891,7 @@ input:checked + .toggle-slider:before {
 
 .toggle-label {
   font-size: 0.95rem;
-  color: white;
+  color: #00bfa5;
 }
 
 .search-container {
