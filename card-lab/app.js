@@ -12,10 +12,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
   if (!userGuideBtn) return;
 
-  const userGuidePages = [    {
+  const userGuidePages = [
+    {
       title: 'Welcome to Card Lab!',
-      content: `<p style="padding-left: 15px;">Card Lab lets you create, customize, and download beautiful episode title cards for your favorite TV shows.<br><br>
-      <b style="display:block; text-align:center;">This guide will walk you through every major feature.</b></p>
+      content: `<p>Card Lab lets you create, customize, and download beautiful episode title cards for your favorite TV shows.<br><br>
+      <b>This guide will walk you through every major feature.</b></p>
       <ul>
         <li>Step-by-step instructions for searching, customizing, and exporting cards</li>
         <li>Tips for advanced customization and troubleshooting</li>
@@ -45,16 +46,21 @@ document.addEventListener('DOMContentLoaded', function() {
           </ul>
         </li>
       </ol>`
-    },    {      title: 'Step 3: Customizing Cards',
+    },
+    {
+      title: 'Step 3: Customizing Cards',
       content: `<ol>
-        <li>Use the sidebar panels to adjust:</li>
+        <li>Use the sidebar panels to adjust:
+          <ul>
+            <li><b>Thumbnails:</b> Upload a custom image or revert to the default</li>
+            <li><b>Text:</b> Change title, font, size, color, shadow, outline, and position</li>
+            <li><b>Info:</b> Customize season/episode number display, separator, and language</li>
+            <li><b>Effects:</b> Add gradients, change blend mode, and apply visual effects</li>
+            <li><b>Presets:</b> Quickly apply popular layout and style combinations</li>
+          </ul>
+        </li>
+        <li>Hover over any button or option for a tooltip with more info.</li>
       </ol>
-      <ul>
-        <li><b>Thumbnails:</b> Upload a custom image or revert to the default</li>
-        <li><b>Text:</b> Change title, font, size, color, shadow, outline, and position</li>
-        <li><b>Info:</b> Customize season/episode number display, separator, and language</li>
-        <li><b>Effects:</b> Add gradients, change blend mode, and apply visual effects</li>
-      </ul>
       <p><b>Tip:</b> Use the <b>Number Style</b> dropdown to switch between padded (01) and plain (1) episode/season numbers.</p>`
     },
     {
@@ -75,23 +81,21 @@ document.addEventListener('DOMContentLoaded', function() {
         <li>Use <b>Reset</b> to return all settings to default.</li>
       </ol>
       <p><b>Tip:</b> Saved configs include all your customizations for easy sharing or backup.</p>`
-    },    {
+    },
+    {
       title: 'More Tools & Help',
       content: `<ul>
         <li>Check out <b>Poster Showcase</b> and <b>Poster Overlay</b> from the top menu for more poster tools.</li>
         <li>For troubleshooting, refresh the page or use the <b>Reset</b> button.</li>
         <li>For feedback or help, visit the Mediux Discord or GitHub (see project README).</li>
       </ul>
-      <p style="margin-top:1.5em; color:#00bfa5; text-align:center;"><b>Enjoy creating your custom title cards!</b></p>`
+      <p style="margin-top:1em; color:#00bfa5;"><b>Enjoy creating your custom title cards!</b></p>`
     }
   ];
 
   let userGuidePage = 0;
 
   function showUserGuidePage(idx) {
-    // Update the page indicator
-    document.getElementById('current-page').textContent = idx + 1;
-    document.getElementById('total-pages').textContent = userGuidePages.length;
     userGuidePage = idx;
     userGuideTitle.innerHTML = userGuidePages[idx].title;
     userGuideContent.innerHTML = userGuidePages[idx].content;
@@ -102,17 +106,6 @@ document.addEventListener('DOMContentLoaded', function() {
   userGuideBtn.addEventListener('click', () => {
     userGuideOverlay.classList.add('active');
     showUserGuidePage(0);
-    
-    // Process content after it's loaded to handle special formatting
-    setTimeout(() => {
-      // Wrap tips in a container for browsers that don't support :has
-      const tipParagraphs = userGuideContent.querySelectorAll('p');
-      tipParagraphs.forEach(p => {
-        if (p.innerHTML.includes('<b>Tip:</b>')) {
-          p.classList.add('tip-container');
-        }
-      });
-    }, 50);
   });
   userGuideClose.addEventListener('click', () => {
     userGuideOverlay.classList.remove('active');
@@ -1738,7 +1731,7 @@ if (spoilerToggle) {
           targetCtx.shadowBlur = parseInt(infoShadowBlur.value) * (width / 1280);
           targetCtx.shadowOffsetX = 1 * (width / 1280);
           targetCtx.shadowOffsetY = 1 * (height / 720);
-          if (parseInt(infoOutlineWidth.value) >  0) {
+          if (parseInt(infoOutlineWidth.value) > 0) {
             targetCtx.lineWidth = parseInt(infoOutlineWidth.value) * (width / 1280);
             targetCtx.strokeStyle = window["info-outline-color"] || "#000000";
             targetCtx.strokeText(seasonDraw, seasonX, y, maxWidth);
@@ -1752,6 +1745,10 @@ if (spoilerToggle) {
           targetCtx.font = `${Math.round(infoSize * infoFontSizeAdjustment)}px "${infoFontToUse}", sans-serif`;
           targetCtx.textAlign = "left";
           targetCtx.textBaseline = "top";
+          targetCtx.shadowColor = window["info-shadow-color"] || "#000000";
+          targetCtx.shadowBlur = parseInt(infoShadowBlur.value) * (width / 1280);
+          targetCtx.shadowOffsetX = 1 * (width / 1280);
+          targetCtx.shadowOffsetY = 1 * (height / 720);
           targetCtx.fillStyle = window["info-color"] || "#ffffff";
           targetCtx.fillText(separator, sepX, y, maxWidth);
           targetCtx.restore();
@@ -3232,18 +3229,18 @@ if (spoilerToggle) {
     saveButton.style.cursor = "pointer";
     saveButton.style.minWidth = "180px";
     saveButton.style.transition = "filter 0.2s ease";
-    saveButton.style.boxShadow = "0 2px 8px rgba(0, 255, 255, 0.25)";
+    saveButton.style.boxShadow = "0 2px 8px rgba(0, 191, 165, 0.25)";
     
     saveButton.addEventListener("mouseenter", () => {
       saveButton.style.background = "linear-gradient(135deg, #1de9b6, #a600ff)";
       saveButton.style.transform = "translateY(-2px)";
-      saveButton.style.boxShadow = "0 6px 12px rgba(0, 255, 255, 0.3)";
+      saveButton.style.boxShadow = "0 6px 12px rgba(0, 191, 165, 0.3)";
     });
     
     saveButton.addEventListener("mouseleave", () => {
       saveButton.style.background = "linear-gradient(135deg, #00bfa5, #8e24aa)";
       saveButton.style.transform = "translateY(0)";
-      saveButton.style.boxShadow = "0 4px 10px rgba(0, 255, 255, 0.2)";
+      saveButton.style.boxShadow = "0 4px 10px rgba(0, 191, 165, 0.2)";
     });
     
     saveButton.addEventListener("click", () => {
@@ -3702,53 +3699,29 @@ if (spoilerToggle) {
     dialog.style.padding = "28px 24px";
     dialog.style.animation = "modalFadeIn 0.3s ease-out forwards";
     
-    // Add animation for the modal
-    const styleEl = document.createElement('style');
-    styleEl.textContent = `
-      @keyframes modalFadeIn {
-        from { opacity: 0; transform: translateY(-20px); }
-        to { opacity: 1; transform: translateY(0); }
-      }
-    `;
-    document.head.appendChild(styleEl);
+    // Add header
+    const header = document.createElement("div");
+    header.style.textAlign = "center";
+    header.style.marginBottom = "20px";
+    header.style.borderBottom = "1px solid rgba(255, 255, 255, 0.1)";
+    header.style.paddingBottom = "15px";
     
-    // Header section with improved styling
-    const headerWrapper = document.createElement("div");
-    headerWrapper.style.display = "flex";
-    headerWrapper.style.flexDirection = "column";
-    headerWrapper.style.alignItems = "center";
-    headerWrapper.style.textAlign = "center";
-    headerWrapper.style.marginBottom = "25px";
-    headerWrapper.style.padding = "0 0 20px 0";
-    headerWrapper.style.borderBottom = "1px solid rgba(255, 255, 255, 0.08)";
-
-    // Accent color bar at the top for visual interest
-    const accentBar = document.createElement("div");
-    accentBar.style.background = "linear-gradient(90deg, #00bfa5, #8e24aa)";
-    accentBar.style.height = "4px";
-    accentBar.style.width = "60px";
-    accentBar.style.borderRadius = "2px";
-    accentBar.style.marginBottom = "20px";
-    headerWrapper.appendChild(accentBar);
-
-    // Add header title
     const headerTitle = document.createElement("h3");
     headerTitle.textContent = "Load Configuration";
     headerTitle.style.margin = "0 0 10px 0";
     headerTitle.style.fontSize = "24px";
     headerTitle.style.fontWeight = "600";
     headerTitle.style.color = "#fff";
-    headerWrapper.appendChild(headerTitle);
+    header.appendChild(headerTitle);
     
-    // Add header description
     const headerDesc = document.createElement("p");
     headerDesc.textContent = `Select a show to load its saved configuration (${savedConfigs.length} available)`;
     headerDesc.style.margin = "0";
     headerDesc.style.fontSize = "14px";
     headerDesc.style.color = "rgba(255, 255, 255, 0.7)";
-    headerWrapper.appendChild(headerDesc);
+    header.appendChild(headerDesc);
     
-    dialog.appendChild(headerWrapper);
+    dialog.appendChild(header);
     
     // Create config list container with scrolling
     const configListContainer = document.createElement("div");
@@ -4497,6 +4470,8 @@ resetBtn.addEventListener("click", () => {
       lineSpacingContainer.style.display = "block";
     }
   }
+
+  // Setup input event listeners
 
   // Setup the modular frame return to grid button
   const modularFrameReturnBtn = document.getElementById("modular-frame-return-btn");
