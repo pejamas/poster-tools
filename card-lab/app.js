@@ -1850,7 +1850,9 @@ if (spoilerToggle) {
     hasSearchResults = true;
 
     displaySeasonSelector(showDetails);
-    await selectSeason(1);
+    // Load the first (lowest) season number, which will be 0 if specials exist
+    const firstSeasonNumber = Math.min(...(showDetails.seasons.map(s => s.season_number)));
+    await selectSeason(firstSeasonNumber);
     showGridView();
   }
 
@@ -1868,15 +1870,19 @@ if (spoilerToggle) {
     const selectEl = document.createElement("select");
     selectEl.id = "season-select";
 
-    // Filter out special seasons unless they're the only season
-    const seasons = show.seasons.filter(
-      (s) => s.season_number > 0 || show.seasons.length === 1
-    );
+
+    // Always include all seasons, including specials (season_number === 0)
+    const seasons = show.seasons;
 
     seasons.forEach((season) => {
+      // Optionally, label specials more clearly
+      let label = `Season ${season.season_number} (${season.episode_count} episodes)`;
+      if (season.season_number === 0) {
+        label = `Specials (${season.episode_count} episodes)`;
+      }
       const option = document.createElement("option");
       option.value = season.season_number;
-      option.textContent = `Season ${season.season_number} (${season.episode_count} episodes)`;
+      option.textContent = label;
       selectEl.appendChild(option);
     });
 
