@@ -100,7 +100,6 @@ if (languageSelect) {
   const gridCanvas = document.getElementById("grid-canvas");
 
   // SPOILER/BLUR OPTION LOGIC (single instance, after canvas/gridCanvas are defined)
-  // SPOILER/BLUR OPTION LOGIC (single instance, after canvas/gridCanvas are defined)
 var spoilerToggle = document.getElementById("spoiler-toggle");
 function isSpoilerBlurEnabled() {
   return spoilerToggle && spoilerToggle.checked;
