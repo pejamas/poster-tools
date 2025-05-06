@@ -2294,25 +2294,38 @@ if (spoilerToggle) {
   function renderEpisodeGrid() {
     if (episodeTitleCards.length === 0) return;
   
-    const maxColumns = 5; // Changed from 4 to 5
-  
+
+    // Dynamically set columns based on episode count
+    let maxColumns = 5;
+    if (episodeTitleCards.length > 40) {
+      maxColumns = 10;
+    } else if (episodeTitleCards.length > 20) {
+      maxColumns = 6;
+    }
+
     // Calculate dimensions based on window size
     const availableWidth = Math.min(window.innerWidth - 360, 2000);
     let cardWidth = Math.floor((availableWidth * 0.9) / maxColumns) - 10;
-    cardWidth = Math.max(cardWidth, 240); // Slightly reduced minimum width
-    const cardGap = Math.floor(availableWidth * 0.01) + 15; // Increased gap for better spacing
-  
+    cardWidth = Math.max(cardWidth, 180); // Allow smaller cards for large grids
+    const cardGap = Math.floor(availableWidth * 0.01) + 15;
+
     // Determine number of columns based on episode count
     let columns;
-    if (episodeTitleCards.length <= 5) { // Changed to accommodate up to 5 in first case
+    if (episodeTitleCards.length <= 5) {
       columns = episodeTitleCards.length;
       gridCardWidth = Math.floor((availableWidth * 0.9) / columns) - 15;
-    } else if (episodeTitleCards.length <= 10) { // Changed from 6 to 10
-      columns = Math.min(5, episodeTitleCards.length); // Use 5 columns
+    } else if (episodeTitleCards.length <= 10) {
+      columns = Math.min(5, episodeTitleCards.length);
       gridCardWidth = Math.floor((availableWidth * 0.9) / columns) - 10;
+    } else if (episodeTitleCards.length <= 20) {
+      columns = 5;
+      gridCardWidth = Math.floor((availableWidth * 0.9) / columns) - 10;
+    } else if (episodeTitleCards.length <= 40) {
+      columns = 6;
+      gridCardWidth = Math.floor((availableWidth * 0.9) / columns) - 8;
     } else {
-      columns = Math.min(maxColumns, episodeTitleCards.length);
-      gridCardWidth = cardWidth;
+      columns = 10;
+      gridCardWidth = Math.floor((availableWidth * 0.9) / columns) - 6;
     }
 
     // Update grid layout variables
