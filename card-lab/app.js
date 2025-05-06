@@ -4351,13 +4351,76 @@ resetBtn.addEventListener("click", () => {
   // Setup input event listeners
 
   // Setup the modular frame return to grid button
+  // Setup modular frame navigation buttons
   const modularFrameReturnBtn = document.getElementById("modular-frame-return-btn");
+  const modularFramePrevBtn = document.getElementById("modular-frame-prev-btn");
+  const modularFrameNextBtn = document.getElementById("modular-frame-next-btn");
+
+  function updateModularFrameNavButtons() {
+    if (!modularFramePrevBtn || !modularFrameNextBtn) return;
+    modularFramePrevBtn.disabled = selectedCardIndex <= 0;
+    modularFrameNextBtn.disabled =
+      episodeTitleCards.length === 0 || selectedCardIndex >= episodeTitleCards.length - 1;
+  }
+
   if (modularFrameReturnBtn) {
     modularFrameReturnBtn.addEventListener("click", () => {
       renderEpisodeGrid();
       showGridView();
     });
   }
+  function setEpisodeInputsFromCard(card) {
+    // Update the sidebar inputs to match the selected episode card
+    if (!card) return;
+    titleInput.value = card.title || "";
+    seasonNumberInput.value = card.seasonNumber || "";
+    episodeNumberInput.value = card.episodeNumber || "";
+    // If the card has a thumbnail, update the global thumbnailImg
+    if (card.thumbnailImg) {
+      thumbnailImg = card.thumbnailImg;
+    }
+  }
+
+  if (modularFramePrevBtn) {
+    modularFramePrevBtn.addEventListener("click", () => {
+      if (selectedCardIndex > 0) {
+        selectedCardIndex--;
+        const card = episodeTitleCards[selectedCardIndex];
+        setEpisodeInputsFromCard(card);
+        updateCard();
+        updateModularFrameNavButtons();
+        if (card) {
+          displayAlternativeImages(card);
+        }
+      }
+    });
+  }
+  if (modularFrameNextBtn) {
+    modularFrameNextBtn.addEventListener("click", () => {
+      if (selectedCardIndex < episodeTitleCards.length - 1) {
+        selectedCardIndex++;
+        const card = episodeTitleCards[selectedCardIndex];
+        setEpisodeInputsFromCard(card);
+        updateCard();
+        updateModularFrameNavButtons();
+        if (card) {
+          displayAlternativeImages(card);
+        }
+      }
+    });
+  }
+
+  // Update nav buttons whenever single card view is shown or card index changes
+  function showSingleCardViewWithNavUpdate() {
+    showSingleCardView();
+    updateModularFrameNavButtons();
+  }
+  // Patch showSingleCardView to always update nav buttons
+  const origShowSingleCardView = showSingleCardView;
+  showSingleCardView = function() {
+    origShowSingleCardView();
+    updateModularFrameNavButtons();
+  };
 
   // =====================================================
   // INITIALIZATION

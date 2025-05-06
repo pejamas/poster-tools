@@ -1,3 +1,61 @@
+.modular-frame-nav-row #modular-frame-prev-btn::before {
+  content: '←';
+  font-size: 18px;
+  font-weight: bold;
+  margin-right: 8px;
+}
+
+.modular-frame-nav-row #modular-frame-next-btn::after {
+  content: '→';
+  font-size: 18px;
+  font-weight: bold;
+  margin-left: 8px;
+}
+.modular-frame-nav-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 18px;
+  margin-top: 10px;
+}
+.modular-frame-nav-row button {
+  background: linear-gradient(135deg, #00bfa5, #8e24aa);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 20px;
+  font-weight: 600;
+  font-family: "Gabarito", sans-serif;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+  min-width: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 191, 165, 0.18);
+}
+.modular-frame-nav-row button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: linear-gradient(135deg, #888888, #444444);
+}
+.modular-frame-nav-row #modular-frame-return-btn {
+  min-width: 160px;
+  margin: 0 8px;
+}
+.modular-frame-nav-row #modular-frame-prev-btn,
+.modular-frame-nav-row #modular-frame-next-btn {
+  min-width: 90px;
+}
+.modular-frame-nav-row #modular-frame-prev-btn {
+  padding-left: 18px;
+  padding-right: 18px;
+}
+.modular-frame-nav-row #modular-frame-next-btn {
+  padding-left: 18px;
+  padding-right: 18px;
+}
 /* Sidebar scrollbar (WebKit) - match main gradient and thin style */
 .sidebar {
   /* Ensure sidebar is scrollable and has its own stacking context for the scrollbar */
@@ -766,7 +824,6 @@ header {
 }
 
 .modular-frame #modular-frame-return-btn::before {
-  content: '←';
   font-size: 18px;
   font-weight: bold;
 }
