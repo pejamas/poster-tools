@@ -121,6 +121,22 @@ if (spoilerToggle) {
   const separatorType = document.getElementById("separator-type");
   const seriesType = document.getElementById("series-type");
   const horizontalPosition = document.getElementById("horizontal-position");
+  const verticalPosition = document.getElementById("vertical-position");
+
+  // Make Y offset update in real time
+  if (verticalPosition) {
+    verticalPosition.addEventListener("input", function () {
+      updateSliderValueDisplay("vertical-position", "position-y-value", "px");
+      updateBothViews();
+    });
+  }
+  // Make X offset update in real time (if not already)
+  if (horizontalPosition) {
+    horizontalPosition.addEventListener("input", function () {
+      updateSliderValueDisplay("horizontal-position", "position-value", "px");
+      updateBothViews();
+    });
+  }
 
   const presetSelect = document.getElementById("preset-select");
   const fontFamily = document.getElementById("font-family");
@@ -475,6 +491,7 @@ if (spoilerToggle) {
     updateSliderValueDisplay("info-outline-width", "info-outline-value", "px");
     updateSliderValueDisplay("title-info-spacing", "spacing-value", "px");
     updateSliderValueDisplay("horizontal-position", "position-value", "px");
+    updateSliderValueDisplay("vertical-position", "position-y-value", "px");
 
     // Set default values for sliders
     document.getElementById("text-shadow-blur").value = 0;
@@ -487,6 +504,7 @@ if (spoilerToggle) {
     updateSliderValueDisplay("text-outline-width", "outline-value", "px");
     updateSliderValueDisplay("info-shadow-blur", "info-shadow-value", "px");
     updateSliderValueDisplay("info-outline-width", "info-outline-value", "px");
+    updateSliderValueDisplay("vertical-position", "position-y-value", "px");
   }
 
   // Updates the display of slider values
@@ -1325,25 +1343,25 @@ if (spoilerToggle) {
     // Get info position setting
     const infoPositionSetting = infoPosition ? infoPosition.value : "below";
 
-    // IMPORTANT FIX: Calculate horizontal offset properly for all text alignments
+    // Calculate horizontal and vertical offsets
     const rawHorizontalOffset = parseInt(horizontalPosition.value);
-    // Scale the offset based on screen width
+    const rawVerticalOffset = parseInt(verticalPosition.value);
+    // Scale the offsets based on screen size
     const scaledOffset = rawHorizontalOffset * (width / 1280);
+    const scaledYOffset = rawVerticalOffset * (height / 720);
 
     // Calculate the actual offset based on text alignment
     let horizontalOffset;
     if (textAlign === "center") {
-      // For center alignment, apply offset directly
       horizontalOffset = scaledOffset;
     } else if (textAlign === "right") {
-      // For right alignment, invert the direction
       horizontalOffset = -scaledOffset;
     } else {
-      // For left alignment, apply offset directly
       horizontalOffset = scaledOffset;
     }
 
     // Calculate and draw based on the info position setting
+    // Apply vertical offset to the entire text block (title and info)
     if (infoPositionSetting === "above" && infoText) {
       // CASE: INFO ABOVE TITLE
 
@@ -1382,14 +1400,11 @@ if (spoilerToggle) {
       // Calculate vertical starting position to center the entire block
       let startY;
       if (preset.position.includes("Top")) {
-        // If preset is top-aligned, keep it at the top
-        startY = textBoxY;
+        startY = textBoxY + scaledYOffset;
       } else if (preset.position.includes("Bottom")) {
-        // If preset is bottom-aligned, position from bottom
-        startY = height - Math.round(180 * (height / 720)) - totalBlockHeight;
+        startY = height - Math.round(180 * (height / 720)) - totalBlockHeight + scaledYOffset;
       } else {
-        // For middle alignment, center the entire text block
-        startY = height / 2 - totalBlockHeight / 2;
+        startY = height / 2 - totalBlockHeight / 2 + scaledYOffset;
       }
 
       // Draw info text
@@ -1567,15 +1582,12 @@ if (spoilerToggle) {
       }
 
       targetCtx.restore();
+
     } else {
       // CASE: INFO BELOW TITLE (or no info text)
-
-      // This part of the code needs similar fixes for consistent positioning
       // Draw title text
       targetCtx.save();
-      const tFont = `${Math.round(
-        titleSize * fontSizeAdjustment
-      )}px "${fontToUse}", sans-serif`;
+      const tFont = `${Math.round(titleSize * fontSizeAdjustment)}px "${fontToUse}", sans-serif`;
       targetCtx.font = `${titleBold ? "bold" : "normal"} ${Math.round(titleSize * fontSizeAdjustment)}px "${fontToUse}", sans-serif`;
       targetCtx.textAlign = textAlign;
       targetCtx.textBaseline = "top";
@@ -1587,27 +1599,23 @@ if (spoilerToggle) {
 
       targetCtx.fillStyle = window["text-color"] || "#ffffff";
 
+      let infoY;
       if (shouldWrap && titleText.length > 15) {
         // Handle multi-line text
-        // Get the line spacing value from the slider
         const lineSpacingElement = document.getElementById("line-spacing");
         const lineSpacingMultiplier = lineSpacingElement ? parseFloat(lineSpacingElement.value) : 1.2;
-        
-        // Set the line height based on the line spacing slider value
         const lineHeight = Math.round(titleSize * lineSpacingMultiplier);
-        
         const lines = wrapTextFunc(titleText, titleMaxWidth);
         const totalTextHeight = lines.length * lineHeight;
 
         // Determine starting Y position
         let startY;
         if (preset.position.includes("Top")) {
-          startY = textBoxY;
+          startY = textBoxY + scaledYOffset;
         } else if (preset.position.includes("Bottom")) {
-          startY = textBoxY - totalTextHeight + lineHeight;
+          startY = textBoxY - totalTextHeight + lineHeight + scaledYOffset;
         } else {
-          // Center vertically
-          startY = textBoxY - totalTextHeight / 2 + lineHeight / 2;
+          startY = textBoxY - totalTextHeight / 2 + lineHeight / 2 + scaledYOffset;
         }
 
         // Draw each line
@@ -1635,13 +1643,13 @@ if (spoilerToggle) {
           targetCtx.lineWidth =
             parseInt(textOutlineWidth.value) * (width / 1280);
           targetCtx.strokeStyle = window["text-outline-color"] || "#000000";
-          targetCtx.strokeText(drawLine, x, textBoxY, maxWidth);
+          targetCtx.strokeText(drawLine, x, textBoxY + scaledYOffset, maxWidth);
         }
-        targetCtx.fillText(drawLine, x, textBoxY, maxWidth);
+        targetCtx.fillText(drawLine, x, textBoxY + scaledYOffset, maxWidth);
 
         // Calculate position for info text
         const spacing = parseInt(titleInfoSpacing.value) * (height / 720);
-        infoY = textBoxY + titleSize + spacing;
+        infoY = textBoxY + titleSize + spacing + scaledYOffset;
       }
 
       targetCtx.restore();
@@ -3629,6 +3637,7 @@ if (spoilerToggle) {
         infoOutlineWidth: document.getElementById("info-outline-width").value,
         titleInfoSpacing: titleInfoSpacing.value,
         horizontalPosition: horizontalPosition.value,
+        verticalPosition: verticalPosition.value,
         infoPosition: infoPosition.value,
         titleWrapping: document.getElementById("title-wrapping") ? 
           document.getElementById("title-wrapping").value : 'singleLine',
@@ -3892,6 +3901,7 @@ if (spoilerToggle) {
     if (settings.infoOutlineWidth) document.getElementById("info-outline-width").value = settings.infoOutlineWidth;
     if (settings.titleInfoSpacing) titleInfoSpacing.value = settings.titleInfoSpacing;
     if (settings.horizontalPosition) horizontalPosition.value = settings.horizontalPosition;
+    if (typeof settings.verticalPosition !== 'undefined') verticalPosition.value = settings.verticalPosition;
     if (settings.infoPosition) infoPosition.value = settings.infoPosition;
     if (settings.titleWrapping && document.getElementById("title-wrapping")) {
       document.getElementById("title-wrapping").value = settings.titleWrapping;
@@ -3952,6 +3962,7 @@ if (spoilerToggle) {
     updateSliderValueDisplay("info-outline-width", "info-outline-value", "px");
     updateSliderValueDisplay("title-info-spacing", "spacing-value", "px");
     updateSliderValueDisplay("horizontal-position", "position-value", "px");
+    updateSliderValueDisplay("vertical-position", "position-y-value", "px");
     
     // Show/hide gradient controls based on effect type
     if (settings.effectType === "none") {
@@ -4145,6 +4156,7 @@ resetBtn.addEventListener("click", () => {
         if (episodeNumberInput) episodeNumberInput.value = defaultValues.episodeNumber;
         if (separatorType) separatorType.value = defaultValues.separator;
         if (horizontalPosition) horizontalPosition.value = defaultValues.horizontalPosition;
+        if (verticalPosition) verticalPosition.value = 0;
         if (fontFamily) fontFamily.value = defaultValues.font;
         if (textSize) {
           textSize.value = "72";
@@ -4198,7 +4210,8 @@ resetBtn.addEventListener("click", () => {
         updateSliderValueDisplay("info-shadow-blur", "info-shadow-value", "px");
         updateSliderValueDisplay("info-outline-width", "info-outline-value", "px");
         updateSliderValueDisplay("title-info-spacing", "spacing-value", "px");
-        updateSliderValueDisplay("horizontal-position", "position-value", "px");        // Reset other options with null checks
+        updateSliderValueDisplay("horizontal-position", "position-value", "px");
+        updateSliderValueDisplay("vertical-position", "position-y-value", "px");
         if (thumbnailFullsize) thumbnailFullsize.checked = defaultValues.thumbnailFullsize;
         if (seasonNumberDisplay) seasonNumberDisplay.checked = defaultValues.showSeasonNumber;
         if (episodeNumberDisplay) episodeNumberDisplay.checked = defaultValues.showEpisodeNumber;
