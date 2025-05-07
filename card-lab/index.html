@@ -79,23 +79,35 @@
             <span class="toggle-icon"></span>
           </div>
           <div class="collapsible-content">
-            <div class="thumbnail-upload-container drop-zone" id="thumbnail-container">
-              <span>Upload Show Thumbnail</span>
-              <input type="file" id="thumbnail-upload" accept="image/*" style="display: none" />
-            </div>
-
-            <div class="toggle-container">
+            <div class="toggle-container" style="margin-bottom: 10px;">
               <span class="toggle-label">Full Size Background</span>
               <label class="toggle-switch">
                 <input type="checkbox" id="thumbnail-fullsize" checked />
                 <span class="toggle-slider"></span>
               </label>
             </div>
-            
-            <button id="revert-thumbnail-btn" class="action-button" style="margin-top: 5px; width: 92%;">
-              <img src="../assets/poster-overlay-icons/refresh-cw.svg" class="action-icon" style="margin-right: 8px;" />
-              Revert to Default Thumbnail
+
+            <button id="upload-thumbnail-btn" class="action-button" style="width: 92%; margin-bottom: 6px;">
+              <img src="../assets/poster-overlay-icons/upload.svg" class="action-icon" alt="Upload" />
+              Replace Current Episode
             </button>
+            <button id="revert-thumbnail-btn" class="action-button" style="width: 92%; margin-bottom: 6px;">
+              <img src="../assets/poster-overlay-icons/refresh-cw.svg" class="action-icon" alt="Revert" />
+              Revert Current Episode Thumbnail
+            </button>
+            <button id="upload-thumbnail-all-btn" class="action-button" style="width: 92%; margin-bottom: 6px;">
+              <img src="../assets/poster-overlay-icons/upload.svg" class="action-icon" alt="Upload All" />
+              Replace ALL Episode images
+            </button>
+
+            <button id="revert-all-thumbnails-btn" class="action-button" style="width: 92%;">
+              <img src="../assets/poster-overlay-icons/refresh-cw.svg" class="action-icon" alt="Revert All" />
+              Revert All to Default Thumbnails
+            </button>
+
+            <!-- Hidden file inputs for upload buttons -->
+            <input type="file" id="thumbnail-upload" accept="image/*" style="display: none" />
+            <input type="file" id="thumbnail-upload-all" accept="image/*" style="display: none" />
           </div>
         </div>
 

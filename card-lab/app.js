@@ -327,40 +327,87 @@ if (spoilerToggle) {
     );
     const customFontUpload = document.getElementById("custom-font-upload");
 
-    // Set up thumbnail upload handling
-    const thumbnailContainer = document.getElementById("thumbnail-container");
+    // Set up new thumbnail/revert buttons
+    const uploadThumbnailBtn = document.getElementById("upload-thumbnail-btn");
+    const thumbnailInput = document.getElementById("thumbnail-upload");
+    const uploadThumbnailAllBtn = document.getElementById("upload-thumbnail-all-btn");
+    const thumbnailInputAll = document.getElementById("thumbnail-upload-all");
+    const revertAllThumbnailsBtn = document.getElementById("revert-all-thumbnails-btn");
 
-    if (thumbnailContainer && thumbnailInput) {
-      thumbnailContainer.addEventListener("click", () => {
+    // Upload for single episode
+    if (uploadThumbnailBtn && thumbnailInput) {
+      uploadThumbnailBtn.addEventListener("click", () => {
         thumbnailInput.click();
       });
-
-      // Add or update thumbnail for the current episode
       thumbnailInput.addEventListener("change", function () {
         if (this.files && this.files[0]) {
           const file = this.files[0];
           const img = new Image();
           img.onload = () => {
             thumbnailImg = img;
-            
-            // Save the custom thumbnail to the current episode card
             if (selectedCardIndex >= 0 && episodeTitleCards[selectedCardIndex]) {
+              if (!episodeTitleCards[selectedCardIndex].originalThumbnail && episodeTitleCards[selectedCardIndex].thumbnailImg) {
+                episodeTitleCards[selectedCardIndex].originalThumbnail = episodeTitleCards[selectedCardIndex].thumbnailImg;
+              }
               episodeTitleCards[selectedCardIndex].thumbnailImg = img;
             }
-            
-            // Update both views to reflect the change
             updateBothViews();
-            thumbnailContainer.querySelector("span").textContent =
-              "Custom Thumbnail Applied";
           };
           img.onerror = () => {
             console.error("Failed to load selected thumbnail image.");
-            thumbnailContainer.querySelector("span").textContent =
-              "Error loading thumbnail";
           };
           img.src = URL.createObjectURL(file);
+        }
+      });
+    }
+
+    // Upload for all episodes
+    if (uploadThumbnailAllBtn && thumbnailInputAll) {
+      uploadThumbnailAllBtn.addEventListener("click", () => {
+        thumbnailInputAll.click();
+      });
+      thumbnailInputAll.addEventListener("change", function () {
+        if (this.files && this.files[0]) {
+          const file = this.files[0];
+          const img = new Image();
+          img.onload = () => {
+            episodeTitleCards.forEach((card) => {
+              if (!card.originalThumbnail && card.thumbnailImg) {
+                card.originalThumbnail = card.thumbnailImg;
+              }
+              card.thumbnailImg = img;
+            });
+            if (selectedCardIndex >= 0 && episodeTitleCards[selectedCardIndex]) {
+              thumbnailImg = img;
+            }
+            updateBothViews();
+          };
+          img.onerror = () => {
+            console.error("Failed to load selected thumbnail image for all episodes.");
+          };
+          img.src = URL.createObjectURL(file);
+        }
+      });
+    }
+
+    // Revert all thumbnails to original
+    if (revertAllThumbnailsBtn) {
+      revertAllThumbnailsBtn.addEventListener("click", () => {
+        let reverted = false;
+        episodeTitleCards.forEach((card) => {
+          if (card.originalThumbnail) {
+            card.thumbnailImg = card.originalThumbnail;
+            reverted = true;
+          }
+        });
+        if (reverted) {
+          if (selectedCardIndex >= 0 && episodeTitleCards[selectedCardIndex]) {
+            thumbnailImg = episodeTitleCards[selectedCardIndex].thumbnailImg;
+          }
+          updateBothViews();
+          showToast("All episode thumbnails reverted to default.");
         } else {
-          console.log("No file was selected");
+          showToast("No original thumbnails to revert to.");
         }
       });
     }
@@ -1995,6 +2042,7 @@ if (spoilerToggle) {
         seasonNumber: formatNumber(episode.season_number),
         episodeNumber: formatNumber(episode.episode_number),
         thumbnailImg: null,
+        originalThumbnail: null, // Store the original TMDB thumbnail for revert
         canvasData: null,
         allImages: [],
         allImagePaths: [],
@@ -2041,6 +2089,7 @@ if (spoilerToggle) {
             `Loading thumbnail for episode ${episode.episode_number}...`
           );
           card.thumbnailImg = await getEpisodeThumbnail(episode.still_path);
+          card.originalThumbnail = card.thumbnailImg; // Store original for revert
           card.allImagePaths.push(episode.still_path);
 
           // Fetch additional images if possible
@@ -2139,7 +2188,11 @@ if (spoilerToggle) {
     // Set thumbnail image
     if (card.thumbnailImg) {
       thumbnailImg = card.thumbnailImg;
-      document.querySelector('#thumbnail-container span').textContent = 'Custom Thumbnail Applied';
+      // Only update the label if the element exists
+      const thumbContainer = document.querySelector('#thumbnail-container span');
+      if (thumbContainer) {
+        thumbContainer.textContent = 'Custom Thumbnail Applied';
+      }
     }
 
     // Apply card-specific settings if available
@@ -3915,27 +3968,25 @@ if (spoilerToggle) {
   const revertThumbnailBtn = document.getElementById("revert-thumbnail-btn");
   if (revertThumbnailBtn) {
     revertThumbnailBtn.addEventListener("click", () => {
-      if (originalThumbnail && selectedCardIndex >= 0) {
-        // Restore original thumbnail
-        thumbnailImg = originalThumbnail;
-        
-        // Update the current episode card with the original thumbnail
-        if (episodeTitleCards[selectedCardIndex]) {
-          episodeTitleCards[selectedCardIndex].thumbnailImg = originalThumbnail;
+      if (selectedCardIndex >= 0 && episodeTitleCards[selectedCardIndex]) {
+        const card = episodeTitleCards[selectedCardIndex];
+        if (card.originalThumbnail) {
+          card.thumbnailImg = card.originalThumbnail;
+          thumbnailImg = card.originalThumbnail;
+          const thumbContainer = document.querySelector('#thumbnail-container span');
+          if (thumbContainer) {
+            thumbContainer.textContent = 'Original Thumbnail Restored';
+          }
+          drawCard();
+          if (isTMDBMode) {
+            renderEpisodeGrid();
+          }
+          showToast("Reverted to default thumbnail for this episode");
+        } else {
+          showToast("No default thumbnail available for this episode");
         }
-        
-        // Update UI to show thumbnail has been reverted
-        document.querySelector('#thumbnail-container span').textContent = 'Original Thumbnail Restored';
-        
-        // Update both views
-        drawCard();
-        if (isTMDBMode) {
-          renderEpisodeGrid();
-        }
-        
-        showToast("Reverted to default thumbnail");
       } else {
-        showToast("No default thumbnail available");
+        showToast("No episode selected");
       }
     });
   }

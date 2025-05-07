@@ -1320,10 +1320,14 @@ input:checked + .toggle-slider:before {
 }
 
 .action-icon {
-  width: 16px;
-  height: 16px;
-  margin-right: 6px;
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  min-height: 20px;
+  margin-right: 10px;
   filter: invert(1);
+  display: inline-block;
+  vertical-align: middle;
 }
 
 .custom-overlay {
@@ -1469,27 +1473,30 @@ input:checked + .toggle-slider:before {
 }
 
 .drop-zone {
-  border: 1.5px dashed rgba(255, 255, 255, 0.3);
-  background: rgba(25, 25, 35, 0.7);
-  text-align: center;
-  padding: 1rem 0;
-  margin: 8px 0 12px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.9);
-  transition: all 0.2s ease;
-  border-radius: 6px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 5px;
+background: linear-gradient(135deg, rgba(0, 255, 240, 0.1), rgba(166, 0, 255, 0.1));
+border: 1px solid rgba(255, 255, 255, 0.1);
+border-radius: 6px;
+padding: 0.5rem 0.8rem;
+display: flex;
+align-items: center;
+justify-content: center;
+cursor: pointer;
+transition: all 0.3s ease;
+box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+font-weight: 500;
+color: white;
+font-family: "Gabarito", sans-serif;
+font-size: 1rem;
+margin: 8px 0 12px;
+min-height: 40px;
+height: auto;
+text-align: center;
 }
 
 .drop-zone:hover {
-  background: rgba(35, 35, 45, 0.7);
-  border-color: rgba(0, 255, 255, 0.4);
-  transform: translateY(-1px);
-  box-shadow: 0 3px 8px rgba(0, 255, 255, 0.15);
+background: linear-gradient(135deg, rgba(0, 255, 240, 0.2), rgba(166, 0, 255, 0.2));
+transform: translateY(-2px);
+box-shadow: 0 4px 12px rgba(0, 255, 255, 0.15);
 }
 
 #gradient-opacity {
