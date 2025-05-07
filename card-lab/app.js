@@ -590,20 +590,64 @@ if (spoilerToggle) {
     setupPickrEvents(infoOutlineColorPickr, "info-outline-color");
     setupPickrEvents(gradientColorPickr, "gradient-color");
   }
-
   // Setup events for a color picker
   function setupPickrEvents(pickr, colorName) {
     window[colorName] = pickr.getColor().toHEXA().toString();
 
     pickr.on("change", (color) => {
       const hexColor = color.toHEXA().toString();
+      // Store color in global window object for persistence
       window[colorName] = hexColor;
+      
+      // Explicitly update all episode cards with the new color to ensure persistence
+      if (isTMDBMode && episodeTitleCards.length > 0) {
+        episodeTitleCards.forEach(card => {
+          if (colorName === "text-color") {
+            card.currentSettings.textColor = hexColor;
+          } else if (colorName === "info-color") {
+            card.currentSettings.infoColor = hexColor;
+          } else if (colorName === "text-shadow-color") {
+            card.currentSettings.textShadowColor = hexColor;
+          } else if (colorName === "text-outline-color") {
+            card.currentSettings.textOutlineColor = hexColor;
+          } else if (colorName === "info-shadow-color") {
+            card.currentSettings.infoShadowColor = hexColor;
+          } else if (colorName === "info-outline-color") {
+            card.currentSettings.infoOutlineColor = hexColor;
+          } else if (colorName === "gradient-color") {
+            card.currentSettings.gradientColor = hexColor;
+          }
+        });
+      }
+      
       updateBothViews();
     });
 
     pickr.on("save", (color) => {
       const hexColor = color.toHEXA().toString();
       window[colorName] = hexColor;
+      
+      // Same update as in change event
+      if (isTMDBMode && episodeTitleCards.length > 0) {
+        episodeTitleCards.forEach(card => {
+          if (colorName === "text-color") {
+            card.currentSettings.textColor = hexColor;
+          } else if (colorName === "info-color") {
+            card.currentSettings.infoColor = hexColor;
+          } else if (colorName === "text-shadow-color") {
+            card.currentSettings.textShadowColor = hexColor;
+          } else if (colorName === "text-outline-color") {
+            card.currentSettings.textOutlineColor = hexColor;
+          } else if (colorName === "info-shadow-color") {
+            card.currentSettings.infoShadowColor = hexColor;
+          } else if (colorName === "info-outline-color") {
+            card.currentSettings.infoOutlineColor = hexColor;
+          } else if (colorName === "gradient-color") {
+            card.currentSettings.gradientColor = hexColor;
+          }
+        });
+      }
+      
       pickr.hide();
       updateBothViews();
     });
@@ -1939,11 +1983,50 @@ if (spoilerToggle) {
     });
 
     seasonSelector.appendChild(selectEl);
-  }
-
-  // Handle season selection from dropdown
+  }  // Handle season selection from dropdown
   async function selectSeason(seasonNumber) {
     currentSeasonNumber = seasonNumber;
+
+    // Store and ensure color settings persist across season changes
+    // This is crucial for maintaining user color selections
+    if (Pickr.all) {
+      Pickr.all.forEach((pickr) => {
+        if (!pickr._root || !pickr._root.button || !pickr._root.button.id) return;
+        
+        const id = pickr._root.button.id;
+        if (pickr.getColor && typeof pickr.getColor === "function") {
+          const colorValue = pickr.getColor().toHEXA().toString();
+          
+          // Persist color values in the global window variables
+          if (id === "text-color-pickr") {
+            window["text-color"] = colorValue;
+          } else if (id === "info-color-pickr") {
+            window["info-color"] = colorValue;
+          } else if (id === "text-shadow-color-pickr") {
+            window["text-shadow-color"] = colorValue;
+          } else if (id === "text-outline-color-pickr") {
+            window["text-outline-color"] = colorValue;
+          } else if (id === "info-shadow-color-pickr") {
+            window["info-shadow-color"] = colorValue;
+          } else if (id === "info-outline-color-pickr") {
+            window["info-outline-color"] = colorValue;
+          } else if (id === "gradient-color-pickr") {
+            window["gradient-color"] = colorValue;
+          }
+        }
+      });
+    }
+    
+    // Save the current color state for debugging and verification
+    console.log("Persisting color settings across season change:", {
+      textColor: window["text-color"],
+      infoColor: window["info-color"],
+      textShadowColor: window["text-shadow-color"],
+      textOutlineColor: window["text-outline-color"],
+      infoShadowColor: window["info-shadow-color"],
+      infoOutlineColor: window["info-outline-color"],
+      gradientColor: window["gradient-color"]
+    });
 
     showProgressOverlay(`Loading Season ${seasonNumber}...`, true);
     updateProgressOverlay(5, "Fetching season details");
@@ -1977,39 +2060,49 @@ if (spoilerToggle) {
   // =====================================================
   // EPISODE TITLE CARD CREATION
   // =====================================================
-
   // Create title cards for all episodes in a season
   async function createEpisodeTitleCards(episodes) {
     episodeTitleCards = [];
 
     updateProgressOverlay(20, `Processing ${episodes.length} episodes...`);
 
-    // Get current colors from color pickers
-    const currentColors = {};
+    // Prioritize the global window color values that persist between seasons
+    // This ensures custom colors are maintained when switching seasons
+    const currentColors = {
+      textColor: window["text-color"] || "#ffffff",
+      infoColor: window["info-color"] || "#ffffff",
+      textShadowColor: window["text-shadow-color"] || "#000000",
+      textOutlineColor: window["text-outline-color"] || "#000000",
+      infoShadowColor: window["info-shadow-color"] || "#000000",
+      infoOutlineColor: window["info-outline-color"] || "#000000",
+      gradientColor: window["gradient-color"] || "#000000",
+    };
+    
+    // Update color pickers to match our stored values
     if (Pickr.all) {
       Pickr.all.forEach((pickr) => {
+        if (!pickr._root || !pickr._root.button || !pickr._root.button.id) return;
+        
         const id = pickr._root.button.id;
-        const colorValue = pickr.getColor().toHEXA().toString();
-
         if (id === "text-color-pickr") {
-          currentColors.textColor = colorValue;
+          pickr.setColor(currentColors.textColor);
         } else if (id === "info-color-pickr") {
-          currentColors.infoColor = colorValue;
+          pickr.setColor(currentColors.infoColor);
         } else if (id === "text-shadow-color-pickr") {
-          currentColors.textShadowColor = colorValue;
+          pickr.setColor(currentColors.textShadowColor);
         } else if (id === "text-outline-color-pickr") {
-          currentColors.textOutlineColor = colorValue;
+          pickr.setColor(currentColors.textOutlineColor);
         } else if (id === "info-shadow-color-pickr") {
-          currentColors.infoShadowColor = colorValue;
+          pickr.setColor(currentColors.infoShadowColor);
         } else if (id === "info-outline-color-pickr") {
-          currentColors.infoOutlineColor = colorValue;
+          pickr.setColor(currentColors.infoOutlineColor);
         } else if (id === "gradient-color-pickr") {
-          currentColors.gradientColor = colorValue;
+          pickr.setColor(currentColors.gradientColor);
         }
       });
     }
 
-    // Fallback colors in case the pickers fail
+    // Fallback colors in case the window variables aren't set
     const fallbackColors = {
       textColor: "#ffffff",
       infoColor: "#ffffff",
