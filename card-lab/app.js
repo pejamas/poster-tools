@@ -428,56 +428,52 @@ if (spoilerToggle) {
       });
     }
 
-    // Set up custom font upload handling
+    // Set up custom font upload handling (multiple fonts, colored options)
     if (customFontUploadContainer && customFontUpload) {
+      customFontUpload.setAttribute('multiple', 'multiple');
+      window.customFonts = window.customFonts || {};
       customFontUploadContainer.addEventListener("click", () => {
         customFontUpload.click();
       });
-
       customFontUpload.addEventListener("change", function () {
-        if (this.files && this.files[0]) {
-          const file = this.files[0];
-          const fontName = file.name.split(".")[0];
-          customFontUploadContainer.textContent = file.name;
-
-          const fontUrl = URL.createObjectURL(file);
-          const fontFace = new FontFace("CustomFont", `url(${fontUrl})`);
-
-          fontFace
-            .load()
-            .then(function (loadedFace) {
+        if (this.files && this.files.length > 0) {
+          let fontNames = [];
+          Array.from(this.files).forEach(file => {
+            const fontName = file.name.split(".")[0];
+            fontNames.push(fontName);
+            const fontUrl = URL.createObjectURL(file);
+            const fontFace = new FontFace(fontName, `url(${fontUrl})`);
+            fontFace.load().then(function (loadedFace) {
               document.fonts.add(loadedFace);
-
-              window.customFontFamily = "CustomFont";
-
-              const customFontOption =
-                document.getElementById("custom-font-option");
-              if (customFontOption) {
-                customFontOption.style.display = "block";
-                customFontOption.textContent = `Custom: ${fontName}`;
-                fontFamily.value = "custom-font";
+              window.customFonts[fontName] = loadedFace;
+              // Add to title font dropdown
+              let existingOption = fontFamily.querySelector(`option[value="custom-${fontName}"]`);
+              if (!existingOption) {
+                const opt = document.createElement('option');
+                opt.value = `custom-${fontName}`;
+                opt.textContent = fontName;
+                opt.style.color = '#00bfa5';
+                fontFamily.appendChild(opt);
               }
-
-              let infoCustomOption = document.getElementById(
-                "info-custom-font-option"
-              );
-              if (!infoCustomOption && infoFontFamily) {
-                infoCustomOption = document.createElement("option");
-                infoCustomOption.id = "info-custom-font-option";
-                infoCustomOption.value = "custom-font";
-                infoCustomOption.textContent = `Custom: ${fontName}`;
-                infoFontFamily.appendChild(infoCustomOption);
-              } else if (infoCustomOption) {
-                infoCustomOption.style.display = "block";
-                infoCustomOption.textContent = `Custom: ${fontName}`;
+              // Add to info font dropdown
+              let infoFontFamily = document.getElementById("info-font-family");
+              if (infoFontFamily) {
+                let infoExisting = infoFontFamily.querySelector(`option[value="custom-${fontName}"]`);
+                if (!infoExisting) {
+                  const opt2 = document.createElement('option');
+                  opt2.value = `custom-${fontName}`;
+                  opt2.textContent = fontName;
+                  opt2.style.color = '#00bfa5';
+                  infoFontFamily.appendChild(opt2);
+                }
               }
-
               updateBothViews();
-            })
-            .catch(function (error) {
+            }).catch(function (error) {
               console.error("Error loading font:", error);
               customFontUploadContainer.textContent = "Error loading font";
             });
+          });
+          customFontUploadContainer.textContent = fontNames.join(", ");
         } else {
           customFontUploadContainer.textContent = "Upload Custom Font";
         }
@@ -1241,23 +1237,21 @@ if (spoilerToggle) {
     if (fontFamily.value === "Exo 2") {
       fontSizeAdjustment = 1.2;
     }
-
-    const fontToUse =
-      fontFamily.value === "custom-font" && window.customFontFamily
-        ? window.customFontFamily
-        : fontFamily.value;
+    // Support custom font selection
+    let fontToUse;
+    if (fontFamily.value && fontFamily.value.startsWith('custom-')) {
+      fontToUse = fontFamily.value.replace('custom-', '');
+    } else {
+      fontToUse = fontFamily.value;
+    }
 
     // Configure info font
     const infoFontFamily = document.getElementById("info-font-family");
     let infoFontToUse;
-
     if (infoFontFamily.value === "same-as-title") {
       infoFontToUse = fontToUse;
-    } else if (
-      infoFontFamily.value === "custom-font" &&
-      window.customFontFamily
-    ) {
-      infoFontToUse = window.customFontFamily;
+    } else if (infoFontFamily.value && infoFontFamily.value.startsWith('custom-')) {
+      infoFontToUse = infoFontFamily.value.replace('custom-', '');
     } else {
       infoFontToUse = infoFontFamily.value;
     }
@@ -4250,7 +4244,24 @@ resetBtn.addEventListener("click", () => {
         if (customFontOption) customFontOption.style.display = "none";
         if (infoCustomOption) infoCustomOption.style.display = "none";
 
-        // Reset custom font
+
+        // Remove all custom font options from both dropdowns and clear custom font state
+        if (window.customFonts) {
+          window.customFonts = {};
+        }
+        // Remove custom font options from title font dropdown
+        if (fontFamily) {
+          Array.from(fontFamily.querySelectorAll('option'))
+            .filter(opt => opt.value.startsWith('custom-'))
+            .forEach(opt => fontFamily.removeChild(opt));
+        }
+        // Remove custom font options from info font dropdown
+        const infoFontFamilyDropdown = document.getElementById("info-font-family");
+        if (infoFontFamilyDropdown) {
+          Array.from(infoFontFamilyDropdown.querySelectorAll('option'))
+            .filter(opt => opt.value.startsWith('custom-'))
+            .forEach(opt => infoFontFamilyDropdown.removeChild(opt));
+        }
         window.customFontFamily = null;
         const customFontUploadContainer = document.querySelector(".custom-font-upload-container");
         if (customFontUploadContainer) {

@@ -1,3 +1,7 @@
+/* Style custom font options in dropdowns with a teal color */
+select option[value^="custom-"] {
+  color: #00bfa5 !important;
+}
 .modular-frame-nav-row #modular-frame-prev-btn::before {
   content: '←';
   font-size: 18px;
