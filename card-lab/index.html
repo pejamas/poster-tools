@@ -197,7 +197,7 @@
                 <span class="label-text">Info Text Spacing</span>
                 <span class="gap-value" id="spacing-value">15px</span>
               </div>
-              <input type="range" id="title-info-spacing" min="0" max="50" value="10" />
+              <input type="range" id="title-info-spacing" min="-50" max="50" value="10" />
             </div>
             
             <label for="option-label">Title Wrapping</label>
@@ -298,7 +298,9 @@
                   <option value="80">80px</option>
                   <option value="86">86px</option>
                   <option value="94">94px</option>
+                  <option value="custom">Custom…</option>
                 </select>
+                <input type="number" id="custom-text-size" min="8" max="200" step="1" style="width:100px; display:none; margin-top:6px;" placeholder="px">
               </div>
 
               <div>
@@ -347,7 +349,9 @@
                   <option value="40">40px</option>
                   <option value="44">44px</option>
                   <option value="48">48px</option>
+                  <option value="custom">Custom…</option>
                 </select>
+                <input type="number" id="custom-info-text-size" min="8" max="200" step="1" style="width:100%; display:none; margin-top:6px;" placeholder="px">
               </div>
               
               <div>

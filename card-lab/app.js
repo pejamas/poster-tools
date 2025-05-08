@@ -326,6 +326,35 @@ if (spoilerToggle) {
 
   // Initialize text options for sliders, toggles, etc.
   function initializeTextOptionsUI() {
+    // --- Custom Info Font Size Option ---
+    const infoTextSize = document.getElementById("info-text-size");
+    const customInfoTextSize = document.getElementById("custom-info-text-size");
+    if (infoTextSize && customInfoTextSize) {
+      infoTextSize.addEventListener("change", function () {
+        if (this.value === "custom") {
+          customInfoTextSize.style.display = "inline-block";
+          if (!customInfoTextSize.value) customInfoTextSize.value = 36;
+        } else {
+          customInfoTextSize.style.display = "none";
+        }
+        updateBothViews();
+      });
+      customInfoTextSize.addEventListener("input", updateBothViews);
+    }
+    // --- Custom Title Font Size Option ---
+    const customTextSize = document.getElementById("custom-text-size");
+    if (textSize && customTextSize) {
+      textSize.addEventListener("change", function () {
+        if (this.value === "custom") {
+          customTextSize.style.display = "inline-block";
+          if (!customTextSize.value) customTextSize.value = 72;
+        } else {
+          customTextSize.style.display = "none";
+        }
+        updateBothViews();
+      });
+      customTextSize.addEventListener("input", updateBothViews);
+    }
     // Set default state for new checkboxes
     document.getElementById("title-uppercase").checked = defaultValues.titleUppercase;
     document.getElementById("title-bold").checked = defaultValues.titleBold;
@@ -1101,11 +1130,22 @@ if (spoilerToggle) {
       presetLayoutConfig["centerMiddle"];
 
     // Calculate text sizes based on canvas dimensions
-    let titleSize = Math.round(parseInt(textSize.value) * (width / 1280));
+    let titleSize;
+    const customTextSize = document.getElementById("custom-text-size");
+    if (textSize.value === "custom" && customTextSize && customTextSize.value) {
+      titleSize = Math.round(parseInt(customTextSize.value) * (width / 1280));
+    } else {
+      titleSize = Math.round(parseInt(textSize.value) * (width / 1280));
+    }
 
     let infoSize;
     const infoTextSize = document.getElementById("info-text-size");
-    infoSize = Math.round(parseInt(infoTextSize.value) * (width / 1280));
+    const customInfoTextSize = document.getElementById("custom-info-text-size");
+    if (infoTextSize.value === "custom" && customInfoTextSize && customInfoTextSize.value) {
+      infoSize = Math.round(parseInt(customInfoTextSize.value) * (width / 1280));
+    } else {
+      infoSize = Math.round(parseInt(infoTextSize.value) * (width / 1280));
+    }
 
     // Calculate initial position based on preset
     let textBoxX, textBoxY, textAlign, maxWidth;
@@ -3628,13 +3668,23 @@ if (spoilerToggle) {
     }
 
     // Get all current settings    
+    // Save custom font info if used
+    let customFontName = null;
+    if (fontFamily.value && fontFamily.value.startsWith('custom-')) {
+      customFontName = fontFamily.value;
+    }
+    let infoCustomFontName = null;
+    const infoFontFamilyEl = document.getElementById("info-font-family");
+    if (infoFontFamilyEl && infoFontFamilyEl.value.startsWith('custom-')) {
+      infoCustomFontName = infoFontFamilyEl.value;
+    }
     const config = {
       showId: currentShowData.id,
       showName: currentShowData.name,
       savedDate: new Date().toISOString(),
       settings: {
         fontFamily: fontFamily.value,
-        infoFontFamily: document.getElementById("info-font-family").value,
+        infoFontFamily: infoFontFamilyEl.value,
         textSize: textSize.value,
         infoTextSize: document.getElementById("info-text-size").value,
         textShadowBlur: textShadowBlur.value,
@@ -3668,7 +3718,9 @@ if (spoilerToggle) {
         infoSeasonUppercase: document.getElementById("info-season-uppercase").checked,
         infoSeasonBold: document.getElementById("info-season-bold").checked,
         infoEpisodeUppercase: document.getElementById("info-episode-uppercase").checked,
-        infoEpisodeBold: document.getElementById("info-episode-bold").checked
+        infoEpisodeBold: document.getElementById("info-episode-bold").checked,
+        customFontName,
+        infoCustomFontName
       }
     };
 
@@ -3897,8 +3949,19 @@ if (spoilerToggle) {
     const settings = config.settings;
     
     // Apply UI element values
-    if (settings.fontFamily) fontFamily.value = settings.fontFamily;
-    if (settings.infoFontFamily) document.getElementById("info-font-family").value = settings.infoFontFamily;
+    // Restore custom font for title if needed
+    if (settings.customFontName && fontFamily.querySelector(`option[value="${settings.customFontName}"]`)) {
+      fontFamily.value = settings.customFontName;
+    } else if (settings.fontFamily) {
+      fontFamily.value = settings.fontFamily;
+    }
+    // Restore custom font for info if needed
+    const infoFontFamilyEl = document.getElementById("info-font-family");
+    if (settings.infoCustomFontName && infoFontFamilyEl && infoFontFamilyEl.querySelector(`option[value="${settings.infoCustomFontName}"]`)) {
+      infoFontFamilyEl.value = settings.infoCustomFontName;
+    } else if (settings.infoFontFamily && infoFontFamilyEl) {
+      infoFontFamilyEl.value = settings.infoFontFamily;
+    }
     if (settings.textSize) textSize.value = settings.textSize;
     if (settings.infoTextSize) document.getElementById("info-text-size").value = settings.infoTextSize;
     if (settings.textShadowBlur) textShadowBlur.value = settings.textShadowBlur;
@@ -4163,8 +4226,11 @@ resetBtn.addEventListener("click", () => {
         if (separatorType) separatorType.value = defaultValues.separator;
         if (horizontalPosition) horizontalPosition.value = defaultValues.horizontalPosition;
         if (verticalPosition) verticalPosition.value = 0;
+
         if (fontFamily) fontFamily.value = defaultValues.font;
+        // --- Title Font Size Reset ---
         if (textSize) {
+          // Reset dropdown to default
           textSize.value = "72";
           if (defaultValues.textSize) {
             const validOption = Array.from(textSize.options).some(option => option.value === defaultValues.textSize);
@@ -4172,18 +4238,32 @@ resetBtn.addEventListener("click", () => {
               textSize.value = defaultValues.textSize;
             }
           }
+          // Hide and reset custom input
+          const customTextSize = document.getElementById("custom-text-size");
+          if (customTextSize) {
+            customTextSize.style.display = "none";
+            customTextSize.value = 72;
+          }
         }
 
+        // --- Info Font Family and Size Reset ---
         const infoFontFamily = document.getElementById("info-font-family");
         const infoTextSize = document.getElementById("info-text-size");
         if (infoFontFamily) infoFontFamily.value = defaultValues.infoFont;
         if (infoTextSize) {
+          // Reset dropdown to default
           infoTextSize.value = "36";
           if (defaultValues.infoTextSize) {
             const validOption = Array.from(infoTextSize.options).some(option => option.value === defaultValues.infoTextSize);
             if (validOption) {
               infoTextSize.value = defaultValues.infoTextSize;
             }
+          }
+          // Hide and reset custom input
+          const customInfoTextSize = document.getElementById("custom-info-text-size");
+          if (customInfoTextSize) {
+            customInfoTextSize.style.display = "none";
+            customInfoTextSize.value = 36;
           }
         }
 
