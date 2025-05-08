@@ -32,8 +32,7 @@
         </button>
       </div>
     </header>
-    <div class="layout">      <div class="sidebar">
-        <div class="collapsible active">          <div class="collapsible-header" id="header-tmdb" data-tooltip="Search for TV shows from TMDB to find episodes to customize. Select your language, enter a show name, choose a season, and click on episodes to edit. Use the grid view to work with multiple episodes at once.">
+    <div class="layout">      <div class="sidebar">        <div class="collapsible active">          <div class="collapsible-header" id="header-tmdb" data-tooltip="Search for TV shows and episodes from TMDB. Select language, find shows, and customize episodes individually or in grid view.">
             <h3>Search</h3>
             <span class="toggle-icon"></span>
           </div>
@@ -68,8 +67,7 @@
             <button id="returnToGridBtn" class="icon-button">
               <span>Return to Grid View</span>
             </button>
-          </div>
-        </div>        <div class="collapsible">          <div class="collapsible-header" id="header-thumbnail" data-tooltip="Customize episode images by uploading your own thumbnails. Use 'Full Size Background' to stretch images across the entire card. You can replace individual episode images or apply the same image to all episodes, and revert to original TMDB images anytime.">
+          </div>        </div>        <div class="collapsible">          <div class="collapsible-header" id="header-thumbnail" data-tooltip="Upload custom thumbnails for episodes. Toggle full-size background, replace individual or all images, and revert to originals when needed.">
             <h3>Thumbnail Options</h3>
             <span class="toggle-icon"></span>
           </div>
@@ -103,8 +101,7 @@
             <!-- Hidden file inputs for upload buttons -->
             <input type="file" id="thumbnail-upload" accept="image/*" style="display: none" />
             <input type="file" id="thumbnail-upload-all" accept="image/*" style="display: none" />
-          </div>
-        </div>        <div class="collapsible">          <div class="collapsible-header" id="header-formatting" data-tooltip="Control how episode information appears on your card. Customize the episode name, show/hide season and episode numbers, set leading zeros (like 01 vs 1), choose a series type (Regular, Mini-Series, Special, etc.), and select separator characters between season and episode info (dot, dash, pipe, etc.)">
+          </div>        </div>        <div class="collapsible">          <div class="collapsible-header" id="header-formatting" data-tooltip="Edit episode names, toggle season/episode numbers, select series type (Regular, Limited, etc.), and choose separators between information.">
             <h3>Episode Formatting</h3>
             <span class="toggle-icon"></span>
           </div>
@@ -155,24 +152,18 @@
               <option value="pipe">Pipe (|)</option>
               <option value="space">Space</option>
               <option value="none">None</option>
-            </select>
-
-
-
-          </div>
-        </div>        <div class="collapsible">          <div class="collapsible-header" id="header-layout" data-tooltip="Fine-tune how text appears on your card with positioning presets (Left, Center, Bottom, etc.) and precise X/Y offset controls. Add spoiler blur to hide sensitive content, position season/episode info above or below the title, adjust line spacing for multi-line titles, and apply gradient effects with customizable blend modes to enhance visibility on any background.">
+            </select>          </div>
+        </div>        <div class="collapsible">          <div class="collapsible-header" id="header-layout" data-tooltip="Control text positioning with presets and X/Y offsets. Enable spoiler blur, adjust info text placement, set line spacing, and apply gradient effects with blend modes.">
             <h3>Layout Controls</h3>
             <span class="toggle-icon"></span>
           </div>
           <div class="collapsible-content">
-            <div class="toggle-container" style="margin-bottom: 12px;">
-              <span class="toggle-label">Enable Spoiiler Blur</span>
+            <div class="toggle-container" style="margin-bottom: 12px;">              <span class="toggle-label">Enable Spoiler Blur</span>
               <label class="toggle-switch" style="margin-left: 12px;">
                 <input type="checkbox" id="spoiler-toggle" />
                 <span class="toggle-slider"></span>
               </label>
-            </div>
-            <label for="preset-select">Text Poisition</label>
+            </div>            <label for="preset-select">Text Position</label>
             <select id="preset-select">
               <option value="leftMiddle">Left Middle</option>
               <option value="centerMiddle">Center Middle</option>
@@ -259,20 +250,18 @@
 
               <label for="gradient-opacity">Gradient Intensity</label>
               <input type="range" id="gradient-opacity" min="0.1" max="1" step="0.05" value="0.7" />
-            </div>
-          </div>
-        </div>        <div class="collapsible">          <div class="collapsible-header" id="header-font" data-tooltip="Control the visual appearance of text on your cards with font options for both title and info text. Choose from 14 built-in fonts or upload your own custom font. Adjust text size, color, and apply styling options like bold and uppercase individually for episode titles and season/episode info text. Create perfect contrast with any background by fine-tuning these settings.">
+            </div>          </div>
+        </div>        <div class="collapsible">          <div class="collapsible-header" id="header-font" data-tooltip="Select from 14 built-in fonts or upload custom fonts. Adjust size, color, and apply bold/uppercase styling separately for title and info text.">
             <h3>Font Styling</h3>
             <span class="toggle-icon"></span>
           </div>
           <div class="collapsible-content text-options">
-            <h4>Title Text</h4>
-
-            <div>
-              <div class="custom-font-upload-container">
-              <span>Upload Custom Font</span>
+            <h4>Title Text</h4>            <div>
+              <button class="action-button custom-font-upload-container" style="width: 92%; margin-bottom: 10px;">
+                <img src="../assets/poster-overlay-icons/upload.svg" class="action-icon" alt="Upload" />
+                Upload Custom Font
+              </button>
               <input type="file" id="custom-font-upload" accept=".ttf,.woff,.woff2,.otf" style="display: none" />
-            </div>
               <span class="option-label">Font Style</span>
               <select id="font-family">
                 <option value="Gabarito">Gabarito</option>
@@ -365,9 +354,8 @@
                 <span class="option-label">Font Color</span>
                 <div id="info-color-pickr" class="color-box"></div>
               </div>
-            </div>
-          </div>
-        </div>        <div class="collapsible">          <div class="collapsible-header" id="header-effects" data-tooltip="Make your text stand out with powerful visual effects. Add customizable drop shadows with adjustable blur radius and color to create depth. Apply text outlines with variable thickness and color to ensure readability on any background. Both title and info text have separate controls, allowing you to create the perfect visual hierarchy and ensure text remains readable regardless of the background image.">
+            </div>          </div>
+        </div>        <div class="collapsible">          <div class="collapsible-header" id="header-effects" data-tooltip="Add drop shadows and outlines to improve text visibility. Adjust color, blur radius, and thickness separately for title and info text.">
             <h3>Text Effects</h3>
             <span class="toggle-icon"></span>
           </div>
