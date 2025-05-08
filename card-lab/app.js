@@ -1198,6 +1198,8 @@ if (spoilerToggle) {
         const seasonNumDisplay = formatNumber(seasonNumberInput.value);
         if (seriesTypeValue === 'regular' || !seriesTypeValue) {
           seasonText = langMap.season + " " + seasonNumDisplay;
+        } else if (seriesTypeValue === 'series') {
+          seasonText = "Series " + seasonNumDisplay;
         } else {
           switch (seriesTypeValue) {
             case 'limited':
@@ -2547,8 +2549,13 @@ if (spoilerToggle) {
     gridCtx.shadowBlur = 5;
     gridCtx.shadowOffsetX = 0;
     gridCtx.shadowOffsetY = 2;
+    // Use "Series" label if selected in dropdown
+    let gridHeaderLabel = "Season";
+    if (document.getElementById("series-type") && document.getElementById("series-type").value === "series") {
+      gridHeaderLabel = "Series";
+    }
     gridCtx.fillText(
-      `${currentShowData.name} - Season ${currentSeasonNumber}`,
+      `${currentShowData.name} - ${gridHeaderLabel} ${currentSeasonNumber}`,
       gridCanvas.width / 2,
       35
     );
@@ -2951,7 +2958,12 @@ if (spoilerToggle) {
     
     // Add episode info with improved styling
     const episodeInfo = document.createElement("div");
-    episodeInfo.innerHTML = `Season ${parseInt(card.seasonNumber)} <span style="color: #00bfa5; margin: 0 6px;">•</span> Episode ${parseInt(card.episodeNumber)}`;
+    // Use "Series" label if selected in dropdown for custom placement dialog
+    let customPlacementLabel = "Season";
+    if (document.getElementById("series-type") && document.getElementById("series-type").value === "series") {
+      customPlacementLabel = "Series";
+    }
+    episodeInfo.innerHTML = `${customPlacementLabel} ${parseInt(card.seasonNumber)} <span style="color: #00bfa5; margin: 0 6px;">•</span> Episode ${parseInt(card.episodeNumber)}`;
     episodeInfo.style.color = "#FFFFFF";
     episodeInfo.style.fontSize = "15px";
     episodeInfo.style.opacity = "0.85";
