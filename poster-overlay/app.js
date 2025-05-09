@@ -1,3 +1,5 @@
+// Logo scale state
+let logoScale = 1;
 const posterUpload = document.getElementById("poster-upload");
 const overlaySelect = document.getElementById("overlay-select");
 const canvas = document.getElementById("overlay-canvas");
@@ -566,10 +568,10 @@ function drawCanvas() {
   ctx.drawImage(baseImage, 0, 0, canvas.width, canvas.height);
 
   if (networkLogoImage) {
-    const TARGET_WIDTH = 250;
-    const TARGET_HEIGHT = 43;
+    const TARGET_WIDTH = 250 * logoScale;
+    const TARGET_HEIGHT = 43 * logoScale;
     const MARGIN_LEFT = 54;
-    const MARGIN_TOP = 55;
+    const MARGIN_TOP = 55 + ((43 - TARGET_HEIGHT) / 2);
     const logoRatio = networkLogoImage.width / networkLogoImage.height;
     let logoWidth, logoHeight;
 
@@ -623,6 +625,18 @@ function drawCanvas() {
     };
     overlayImage.src = overlaySelect.value;
   }
+}
+// Logo scale slider logic
+const logoScaleSlider = document.getElementById("logo-scale-slider");
+const logoScaleValue = document.getElementById("logo-scale-value");
+if (logoScaleSlider && logoScaleValue) {
+  logoScaleSlider.addEventListener("input", function () {
+    logoScale = parseFloat(logoScaleSlider.value);
+    logoScaleValue.textContent = Math.round(logoScale * 100) + "%";
+    if (networkLogoImage && baseImage) {
+      drawCanvas();
+    }
+  });
 }
 
 function multiStepSearch(title, type) {
