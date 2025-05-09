@@ -782,7 +782,246 @@
   stroke: white;
 }
 
-/* Responsive Adjustments for poster grid */
+/* View Controls */
+.sonarr-view-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 15px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.view-toggle-container {
+  display: flex;
+  gap: 10px;
+}
+
+.view-toggle-btn {
+  background: rgba(20, 20, 20, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #aaaaaa;
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.view-toggle-btn.active {
+  background: linear-gradient(135deg, rgba(0, 191, 165, 0.2), rgba(142, 36, 170, 0.2));
+  border: 1px solid rgba(0, 191, 165, 0.3);
+  color: #ffffff;
+}
+
+.view-toggle-btn:hover {
+  background: rgba(30, 30, 30, 0.8);
+}
+
+.sonarr-search-container input {
+  flex: 1;
+  max-width: 300px;
+  min-width: 0;
+  margin-left: -25px;
+  margin-right: auto;
+}
+
+.sonarr-search-input {
+  width: 100%;
+  padding: 8px 15px;
+  border-radius: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(20, 20, 20, 0.6);
+  color: #ffffff;
+  font-size: 14px;
+}
+
+.sonarr-search-input:focus {
+  outline: none;
+  border-color: rgba(0, 191, 165, 0.5);
+  box-shadow: 0 0 0 1px rgba(0, 191, 165, 0.2);
+}
+
+/* Table View Styles */
+.sonarr-shows-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  margin-bottom: 30px;
+}
+
+.sonarr-shows-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  color: #e0e0e0;
+}
+
+.sonarr-shows-table thead {
+  position: sticky;
+  top: 0;
+  background: rgba(10, 10, 10, 0.95);
+  z-index: 10;
+}
+
+.sonarr-shows-table th {
+  text-align: left;
+  padding: 15px 15px;
+  font-weight: 600;
+  font-size: 0.9em;
+  color: #ffffff;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  background: linear-gradient(180deg, rgba(30, 30, 30, 0.9), rgba(15, 15, 15, 1));
+}
+
+/* Sortable Table Headers */
+.sonarr-shows-table th.sortable {
+  cursor: pointer;
+  position: relative;
+  padding-right: 25px;
+}
+
+.sonarr-shows-table th.sortable::after {
+  content: "⇕";
+  position: absolute;
+  right: 8px;
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 0.85em;
+}
+
+.sonarr-shows-table th.sortable.sort-asc::after {
+  content: "↓";
+  color: rgba(0, 191, 165, 0.8);
+}
+
+.sonarr-shows-table th.sortable.sort-desc::after {
+  content: "↑";
+  color: rgba(0, 191, 165, 0.8);
+}
+
+.sonarr-shows-table td {
+  padding: 12px 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  vertical-align: middle;
+}
+
+.sonarr-shows-table tbody tr {
+  transition: background-color 0.2s ease;
+  cursor: pointer;
+}
+
+.sonarr-shows-table tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+.sonarr-shows-table .show-title {
+  font-weight: 500;
+  color: #ffffff;
+}
+
+/* Title card status indicators */
+.sonarr-shows-table tr.has-titlecards {
+  background: rgba(76, 175, 80, 0.06);
+}
+
+.sonarr-shows-table tr.partial-titlecards {
+  background: rgba(255, 152, 0, 0.04);
+}
+
+.sonarr-shows-table tr.has-titlecards:hover {
+  background: rgba(76, 175, 80, 0.1);
+}
+
+.sonarr-shows-table tr.partial-titlecards:hover {
+  background: rgba(255, 152, 0, 0.08);
+}
+
+.sonarr-shows-table .title-cards-status {
+  position: relative;
+}
+
+/* Completion badges */
+.completion-badge {
+  display: inline-flex;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 0.85em;
+  font-weight: 500;
+}
+
+.completion-badge.none {
+  background: rgba(150, 150, 150, 0.1);
+  color: #999999;
+}
+
+.completion-badge.partial {
+  background: rgba(255, 152, 0, 0.15);
+  color: #ffab40;
+  cursor: pointer;
+}
+
+.completion-badge.complete {
+  background: rgba(76, 175, 80, 0.15);
+  color: #81c784;
+}
+
+/* Season breakdown tooltip */
+.title-cards-status {
+  position: relative;
+}
+
+.season-breakdown-tooltip {
+  display: none;
+  position: absolute;
+  bottom: 120%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, rgba(30, 30, 30, 0.95), rgba(15, 15, 15, 0.97));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 15px;
+  z-index: 100;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+  min-width: 180px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.title-cards-status:hover .season-breakdown-tooltip {
+  display: block;
+  opacity: 1;
+}
+
+.season-breakdown-tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -10px;
+  border-width: 10px;
+  border-style: solid;
+  border-color: rgba(15, 15, 15, 0.97) transparent transparent transparent;
+}
+
+.season-breakdown {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.season-breakdown li {
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.season-breakdown li:last-child {
+  border-bottom: none;
+}
+
+/* Responsive adjustments */
 @media (max-width: 768px) {
   .sonarr-dashboard-fullscreen {
     padding: 15px;
@@ -816,6 +1055,17 @@
   .popup-content {
     padding: 20px;
     width: 95%;
+  }
+  
+  .sonarr-view-controls {
+    flex-direction: column;
+    gap: 15px;
+    align-items: stretch;
+  }
+  
+  .search-container {
+    margin-left: 0;
+    max-width: 100%;
   }
 }
 

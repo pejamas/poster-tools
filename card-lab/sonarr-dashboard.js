@@ -10,10 +10,15 @@ document.addEventListener("DOMContentLoaded", () => {
     connected: false
   };
 
+  // Globals to track view mode
+  let sonarrViewMode = localStorage.getItem("sonarrViewMode") || "grid"; // Default to grid view
+
   // DOM elements
   let sonarrDashboardElement = null;
   let sonarrConnectBtn = null;
   let sonarrShowsContainer = null;
+  let sonarrViewToggle = null;
+
   // Initialize Sonarr Dashboard UI
   async function initSonarrDashboard() {
     // Create a fullscreen Sonarr dashboard container that overlays the main content
@@ -63,11 +68,27 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
       </div>
       
+      <div id="sonarr-view-controls" class="sonarr-view-controls" style="display:none;">
+        <div class="view-toggle-container">
+          <button id="grid-view-btn" class="view-toggle-btn active">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            Grid
+          </button>
+          <button id="table-view-btn" class="view-toggle-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            Table
+          </button>
+        </div>
+        <div class="sonarr-search-container">
+          <input type="text" id="show-search" placeholder="Search shows..." class="sonarr-search-input">
+        </div>
+      </div>
+      
       <div class="sonarr-shows-container" id="sonarr-shows-container">
         <!-- Shows will be populated here -->
       </div>
     `;
-    
+  
     // Add to the body so it overlays everything
     document.body.appendChild(sonarrContainer);
     
@@ -75,6 +96,47 @@ document.addEventListener("DOMContentLoaded", () => {
     sonarrDashboardElement = sonarrContainer;
     sonarrConnectBtn = document.getElementById("sonarr-connect-btn");
     sonarrShowsContainer = document.getElementById("sonarr-shows-container");
+    
+    // Initialize view toggle buttons
+    const gridViewBtn = document.getElementById("grid-view-btn");
+    const tableViewBtn = document.getElementById("table-view-btn");
+    
+    // Set initial active state based on saved preference
+    if (sonarrViewMode === "table") {
+      gridViewBtn.classList.remove("active");
+      tableViewBtn.classList.add("active");
+    } else {
+      gridViewBtn.classList.add("active");
+      tableViewBtn.classList.remove("active");
+    }
+    
+    // Add view toggle events
+    gridViewBtn.addEventListener("click", () => {
+      sonarrViewMode = "grid";
+      localStorage.setItem("sonarrViewMode", "grid");
+      gridViewBtn.classList.add("active");
+      tableViewBtn.classList.remove("active");
+      if (sonarrConfig.connected) {
+        loadSonarrShows();
+      }
+    });
+    
+    tableViewBtn.addEventListener("click", () => {
+      sonarrViewMode = "table";
+      localStorage.setItem("sonarrViewMode", "table");
+      tableViewBtn.classList.add("active");
+      gridViewBtn.classList.remove("active");
+      if (sonarrConfig.connected) {
+        loadSonarrShows();
+      }
+    });
+    
+    // Initialize search functionality
+    const searchInput = document.getElementById("show-search");
+    searchInput.addEventListener("input", (e) => {
+      const searchTerm = e.target.value.toLowerCase();
+      filterShows(searchTerm);
+    });
     
     // Add event listeners
     sonarrConnectBtn.addEventListener("click", connectToSonarr);
@@ -131,7 +193,6 @@ document.addEventListener("DOMContentLoaded", () => {
       document.body.classList.remove("sonarr-dashboard-open");
     }
   }
-  
   // Hide the connection form and show just the show listings
   function hideConnectionForm() {
     const connectionForm = document.querySelector('.sonarr-connection-form');
@@ -163,9 +224,26 @@ document.addEventListener("DOMContentLoaded", () => {
       // Add event listener for disconnect button
       document.getElementById('disconnect-sonarr').addEventListener('click', showConnectionForm);
     }
+    
+    // Show view controls
+    const viewControls = document.getElementById('sonarr-view-controls');
+    if (viewControls) {
+      viewControls.style.display = 'flex';
+      
+      // Ensure the correct view button is active
+      const gridViewBtn = document.getElementById("grid-view-btn");
+      const tableViewBtn = document.getElementById("table-view-btn");
+      
+      if (sonarrViewMode === "table") {
+        gridViewBtn.classList.remove("active");
+        tableViewBtn.classList.add("active");
+      } else {
+        gridViewBtn.classList.add("active");
+        tableViewBtn.classList.remove("active");
+      }
+    }
   }
-  
-  // Show the connection form (used when disconnecting)
+    // Show the connection form (used when disconnecting)
   function showConnectionForm() {
     // Remove the connection status bar if it exists
     const connectionStatus = document.getElementById('sonarr-connection-status');
@@ -177,6 +255,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const connectionForm = document.querySelector('.sonarr-connection-form');
     if (connectionForm) {
       connectionForm.style.display = 'block';
+    }
+    
+    // Hide view controls
+    const viewControls = document.getElementById('sonarr-view-controls');
+    if (viewControls) {
+      viewControls.style.display = 'none';
     }
     
     // Clear the shows container
@@ -336,8 +420,7 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("retry-loading-shows")?.addEventListener("click", loadSonarrShows);
     }
   }
-  
-  // Render Sonarr shows in the UI
+    // Render Sonarr shows in the UI
   function renderSonarrShows(shows) {
     if (!shows || shows.length === 0) {
       sonarrShowsContainer.innerHTML = `
@@ -351,72 +434,183 @@ document.addEventListener("DOMContentLoaded", () => {
     // Sort shows alphabetically by title
     shows.sort((a, b) => a.title.localeCompare(b.title));
     
-    // Create shows list HTML
-    let showsHtml = `
-      <h3>Your Sonarr Shows (${shows.length})</h3>
-      <div class="sonarr-shows-list">
-    `;
-    shows.forEach(show => {
-      // Create thumbnail URL (if available from Sonarr)
-      const posterUrl = show.images && show.images.find(img => img.coverType === 'poster');
-      // Format show info
-      const stats = show.statistics || {};
-      const seasonCount = stats.seasonCount || show.seasonCount || 0;
-      const episodeCount = stats.episodeFileCount || stats.episodeCount || show.episodeCount || 0;
+    // Show view controls
+    document.getElementById('sonarr-view-controls').style.display = 'flex';
+    
+    // Create shows list HTML - either grid or table view
+    let showsHtml = `<h3>Your Sonarr Shows (${shows.length})</h3>`;
+    
+    if (sonarrViewMode === 'grid') {
+      // GRID VIEW
+      showsHtml += `<div class="sonarr-shows-list">`;
+      shows.forEach(show => {
+        // Create thumbnail URL (if available from Sonarr)
+        const posterUrl = show.images && show.images.find(img => img.coverType === 'poster');
+        // Format show info
+        const stats = show.statistics || {};
+        const seasonCount = stats.seasonCount || show.seasonCount || 0;
+        const episodeCount = stats.episodeFileCount || stats.episodeCount || show.episodeCount || 0;
 
-      // --- Title Card Completion State Logic ---
-      const titleCardData = getTitleCardSeasonsForShow(show.tvdbId);
-      const markedSeasons = titleCardData ? Object.values(titleCardData).filter(Boolean).length : 0;
-      let completionClass = 'no-titlecards';
-      let badgeHtml = `<span class="completion-badge none">None</span>`;
-      if (markedSeasons === seasonCount && seasonCount > 0) {
-        completionClass = 'has-titlecards';
-        badgeHtml = `<span class="completion-badge complete">Complete</span>`;
-      } else if (markedSeasons > 0 && markedSeasons < seasonCount) {
-        completionClass = 'partial-titlecards';
-        badgeHtml = `<span class="completion-badge partial">Partial</span>`;
-      }
+        // --- Title Card Completion State Logic ---
+        const titleCardData = getTitleCardSeasonsForShow(show.tvdbId);
+        const markedSeasons = titleCardData ? Object.values(titleCardData).filter(Boolean).length : 0;
+        let completionClass = 'no-titlecards';
+        let badgeHtml = `<span class="completion-badge none">None</span>`;
+        if (markedSeasons === seasonCount && seasonCount > 0) {
+          completionClass = 'has-titlecards';
+          badgeHtml = `<span class="completion-badge complete">Complete</span>`;
+        } else if (markedSeasons > 0 && markedSeasons < seasonCount) {
+          completionClass = 'partial-titlecards';
+          badgeHtml = `<span class="completion-badge partial">Partial</span>`;
+        }
 
-      showsHtml += `
-        <div class="sonarr-show-item ${completionClass}" data-tvdbid="${show.tvdbId}" data-title="${show.title}" data-seasons="${seasonCount}">
-          <div class="sonarr-show-poster">
-            ${posterUrl ? `<img src="${posterUrl.remoteUrl}" alt="${show.title}" loading="lazy">` : 
-            `<div class="no-poster">
-               <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="m9.5 15 5-5"></path><path d="m9.5 10 5 5"></path></svg>
-               <span>No Poster</span>
-             </div>`}
-          </div>
-          <div class="sonarr-show-info">
-            <div class="info-content">
-              <h4>${show.title}</h4>
-              <p>${show.year || 'Unknown Year'} • ${show.status}</p>
-              <p>${seasonCount} Seasons • ${episodeCount} Episodes</p>
-              ${badgeHtml}
+        showsHtml += `
+          <div class="sonarr-show-item ${completionClass}" data-tvdbid="${show.tvdbId}" data-title="${show.title}" data-seasons="${seasonCount}">
+            <div class="sonarr-show-poster">
+              ${posterUrl ? `<img src="${posterUrl.remoteUrl}" alt="${show.title}" loading="lazy">` : 
+              `<div class="no-poster">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="m9.5 15 5-5"></path><path d="m9.5 10 5 5"></path></svg>
+                <span>No Poster</span>
+              </div>`}
             </div>
-            <button class="mark-titlecards-btn action-button small" data-tvdbid="${show.tvdbId}" data-title="${show.title}" data-seasons="${seasonCount}">
-              <svg class="action-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M9 12l2 2 4-4"></path></svg>
-              Mark Title Cards
-            </button>
+            <div class="sonarr-show-info">
+              <div class="info-content">
+                <h4>${show.title}</h4>
+                <p>${show.year || 'Unknown Year'} • ${show.status}</p>
+                <p>${seasonCount} Seasons • ${episodeCount} Episodes</p>
+                ${badgeHtml}
+              </div>
+              <button class="mark-titlecards-btn action-button small" data-tvdbid="${show.tvdbId}" data-title="${show.title}" data-seasons="${seasonCount}">
+                <svg class="action-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M9 12l2 2 4-4"></path></svg>
+                Mark Title Cards
+              </button>
+            </div>
           </div>
-        </div>
-      `;
-    });
-
-    showsHtml += `</div>`;
-    sonarrShowsContainer.innerHTML = showsHtml;
-
-    // Add click event listeners to shows (for selection)
-    document.querySelectorAll('.sonarr-show-item').forEach(showEl => {
-      showEl.addEventListener('click', (e) => {
-        // Prevent click if Mark Title Cards button was clicked
-        if (e.target.closest('.mark-titlecards-btn')) return;
-        const tvdbId = showEl.dataset.tvdbid;
-        const title = showEl.dataset.title;
-        selectSonarrShow(tvdbId, title);
+        `;
       });
-    });
+      showsHtml += `</div>`;
+    } else {      // TABLE VIEW
+      showsHtml += `<div class="sonarr-shows-table-wrapper">
+        <table class="sonarr-shows-table">
+          <thead>
+            <tr>
+              <th class="sortable sort-asc" data-column="0">Title</th>
+              <th class="sortable" data-column="1">Year</th>
+              <th class="sortable" data-column="2">Status</th>
+              <th class="sortable" data-column="3">Seasons</th>
+              <th class="sortable" data-column="4">Episodes</th>
+              <th class="sortable" data-column="5">Title Cards</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>`;
+      
+      shows.forEach(show => {
+        // Format show info
+        const stats = show.statistics || {};
+        const seasonCount = stats.seasonCount || show.seasonCount || 0;
+        const episodeCount = stats.episodeFileCount || stats.episodeCount || show.episodeCount || 0;
+        
+        // Title Card Completion State Logic
+        const titleCardData = getTitleCardSeasonsForShow(show.tvdbId);
+        const markedSeasons = titleCardData ? Object.values(titleCardData).filter(Boolean).length : 0;
+        
+        // Create season breakdown list for tooltip
+        let seasonBreakdown = '';
+        if (markedSeasons > 0) {
+          seasonBreakdown = '<ul class="season-breakdown">';
+          for (let i = 1; i <= seasonCount; i++) {
+            const hasCard = titleCardData && titleCardData[i];
+            seasonBreakdown += `<li>Season ${i}: ${hasCard ? '✓' : '✗'}</li>`;
+          }
+          seasonBreakdown += '</ul>';
+        }
+        
+        let completionClass = 'no-titlecards';
+        let badgeHtml = `<span class="completion-badge none">None</span>`;
+        if (markedSeasons === seasonCount && seasonCount > 0) {
+          completionClass = 'has-titlecards';
+          badgeHtml = `<span class="completion-badge complete">Complete (${markedSeasons}/${seasonCount})</span>`;
+        } else if (markedSeasons > 0) {
+          completionClass = 'partial-titlecards';
+          badgeHtml = `<span class="completion-badge partial" title="Click to see details">Partial (${markedSeasons}/${seasonCount})</span>`;
+        }
+        
+        showsHtml += `
+          <tr class="${completionClass}" data-tvdbid="${show.tvdbId}" data-title="${show.title}" data-seasons="${seasonCount}">
+            <td class="show-title">${show.title}</td>
+            <td>${show.year || 'Unknown'}</td>
+            <td>${show.status || 'Unknown'}</td>
+            <td>${seasonCount}</td>
+            <td>${episodeCount}</td>
+            <td class="title-cards-status">
+              ${badgeHtml}
+              ${markedSeasons > 0 ? `<div class="season-breakdown-tooltip">${seasonBreakdown}</div>` : ''}
+            </td>
+            <td>
+              <button class="mark-titlecards-btn action-button small" data-tvdbid="${show.tvdbId}" data-title="${show.title}" data-seasons="${seasonCount}">
+                <svg class="action-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M9 12l2 2 4-4"></path></svg>
+                Mark Title Cards
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+      
+      showsHtml += `
+          </tbody>
+        </table>
+      </div>`;
+    }
+      sonarrShowsContainer.innerHTML = showsHtml;
+    if (sonarrViewMode === 'grid') {
+      // Add click event listeners to shows in grid view (for selection)
+      document.querySelectorAll('.sonarr-show-item').forEach(showEl => {
+        showEl.addEventListener('click', (e) => {
+          // Prevent click if Mark Title Cards button was clicked
+          if (e.target.closest('.mark-titlecards-btn')) return;
+          const tvdbId = showEl.dataset.tvdbid;
+          const title = showEl.dataset.title;
+          selectSonarrShow(tvdbId, title);
+        });
+      });
+    } else {
+      // Add click event listeners to table rows (for selection)
+      document.querySelectorAll('.sonarr-shows-table tbody tr').forEach(row => {
+        row.addEventListener('click', (e) => {
+          // Prevent click if Mark Title Cards button or title card status cell was clicked
+          if (e.target.closest('.mark-titlecards-btn') || e.target.closest('.title-cards-status')) return;
+          const tvdbId = row.dataset.tvdbid;
+          const title = row.dataset.title;
+          selectSonarrShow(tvdbId, title);
+        });
+      });
 
-    // Add event listeners for Mark Title Cards buttons
+      // Add event listeners for title card status cells in table view
+      document.querySelectorAll('.title-cards-status .completion-badge:not(.none)').forEach(badge => {
+        badge.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const row = badge.closest('tr');
+          if (row) {
+            const tvdbId = row.dataset.tvdbid;
+            const title = row.dataset.title;
+            const seasons = parseInt(row.dataset.seasons, 10) || 0;
+            showTitleCardSeasonModal(tvdbId, title, seasons);
+          }
+        });
+      });
+      
+      // Add event listeners for sortable table headers
+      document.querySelectorAll('.sonarr-shows-table th.sortable').forEach(header => {
+        header.addEventListener('click', () => {
+          const columnIndex = parseInt(header.dataset.column, 10);
+          const isAscending = !header.classList.contains('sort-asc');
+          sortTableByColumn(columnIndex, isAscending);
+        });
+      });
+    }
+
+    // Add event listeners for Mark Title Cards buttons (both views)
     document.querySelectorAll('.mark-titlecards-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -426,7 +620,9 @@ document.addEventListener("DOMContentLoaded", () => {
         showTitleCardSeasonModal(tvdbId, title, seasons);
       });
     });
-  // --- Title Card Tracking Logic ---
+    // --- Title Card Tracking Logic ---
+  }
+
   // Get title card season data for a show from localStorage
   function getTitleCardSeasonsForShow(tvdbId) {
     const raw = localStorage.getItem('sonarrTitleCards_' + tvdbId);
@@ -539,8 +735,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Call style on dashboard load
   addTitleCardStyles();
-  }
-  
+
+  // --- Sonarr Helper Functions (moved inside IIFE) ---
+
   // Handle selecting a show from Sonarr
   async function selectSonarrShow(tvdbId, title) {
     console.log(`Selected show: ${title} (TVDB ID: ${tvdbId})`);
@@ -625,7 +822,6 @@ document.addEventListener("DOMContentLoaded", () => {
       alert("Unable to load show details. Please try searching manually.");
     }
   }
-  
   // Check for title cards in the filesystem
   async function checkTitleCardsForShow(showTitle) {
     // This would need to be implemented in a different way since browser JS
@@ -638,7 +834,112 @@ document.addEventListener("DOMContentLoaded", () => {
       count: null
     };
   }
-    // Add CSS styles for Sonarr dashboard
+  // Filter shows based on search term
+  function filterShows(searchTerm) {
+    if (!searchTerm) {
+      // If search term is empty, show all items
+      if (sonarrViewMode === 'grid') {
+        document.querySelectorAll('.sonarr-show-item').forEach(item => {
+          item.style.display = 'flex';
+        });
+      } else {
+        document.querySelectorAll('.sonarr-shows-table tbody tr').forEach(row => {
+          row.style.display = '';
+        });
+      }
+      return;
+    }
+    
+    // Convert search term to lowercase for case-insensitive matching
+    searchTerm = searchTerm.toLowerCase();
+    
+    if (sonarrViewMode === 'grid') {
+      // Filter grid view items
+      document.querySelectorAll('.sonarr-show-item').forEach(item => {
+        const title = item.dataset.title.toLowerCase();
+        if (title.includes(searchTerm)) {
+          item.style.display = 'flex';
+        } else {
+          item.style.display = 'none';
+        }
+      });
+    } else {
+      // Filter table rows
+      document.querySelectorAll('.sonarr-shows-table tbody tr').forEach(row => {
+        const title = row.dataset.title.toLowerCase();
+        if (title.includes(searchTerm)) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+    }
+  }
+  
+  // Sort the table by column
+  function sortTableByColumn(columnIndex, ascending = true) {
+    const table = document.querySelector('.sonarr-shows-table');
+    if (!table) return;
+    
+    const tbody = table.querySelector('tbody');
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    
+    // Add sort indicators to headers
+    const headers = table.querySelectorAll('th');
+    headers.forEach(header => header.classList.remove('sort-asc', 'sort-desc'));
+    
+    const header = headers[columnIndex];
+    if (header) {
+      header.classList.add(ascending ? 'sort-asc' : 'sort-desc');
+    }
+    
+    // Sort function
+    const sortFunction = (a, b) => {
+      let aValue = a.cells[columnIndex].textContent.trim();
+      let bValue = b.cells[columnIndex].textContent.trim();
+      
+      // For Title Cards column, extract the number values from parentheses if they exist
+      if (columnIndex === 5) { // Title Cards column
+        const aMatch = aValue.match(/\((\d+)\/(\d+)\)/);
+        const bMatch = bValue.match(/\((\d+)\/(\d+)\)/);
+        
+        if (aMatch && bMatch) {
+          // Compare by completion ratio
+          const aRatio = parseInt(aMatch[1]) / parseInt(aMatch[2]);
+          const bRatio = parseInt(bMatch[1]) / parseInt(bMatch[2]);
+          return ascending ? aRatio - bRatio : bRatio - aRatio;
+        } else if (aMatch) {
+          return ascending ? 1 : -1;
+        } else if (bMatch) {
+          return ascending ? -1 : 1;
+        }
+        
+        // If no numbers in parentheses, fall back to text comparison
+        if (aValue.includes("None")) aValue = "0";
+        if (aValue.includes("Partial")) aValue = "1";
+        if (aValue.includes("Complete")) aValue = "2";
+        if (bValue.includes("None")) bValue = "0";
+        if (bValue.includes("Partial")) bValue = "1";
+        if (bValue.includes("Complete")) bValue = "2";
+      }
+      
+      // For numeric columns like Year, Seasons, Episodes (can be detected)
+      if (!isNaN(parseInt(aValue)) && !isNaN(parseInt(bValue))) {
+        return ascending 
+          ? parseInt(aValue) - parseInt(bValue)
+          : parseInt(bValue) - parseInt(aValue);
+      }
+      
+      // For string columns
+      return ascending 
+        ? aValue.localeCompare(bValue)
+        : bValue.localeCompare(aValue);
+    };
+    
+    // Sort rows and re-append to table
+    rows.sort(sortFunction).forEach(row => tbody.appendChild(row));
+  }
+  // Add CSS styles for Sonarr dashboard
   function addSonarrDashboardStyles() {
     // Import external CSS file instead of inline styles
     const linkEl = document.createElement('link');
@@ -649,12 +950,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Initialize the dashboard when DOM is ready
   addSonarrDashboardStyles();
-  
+
   // Execute init as an async function with proper error handling
   (async () => {
     try {
       await initSonarrDashboard();
-      
       // Check if we have saved credentials and try to auto-connect
       if (sonarrConfig.url && sonarrConfig.apiKey) {
         try {
@@ -674,4 +974,5 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error("Error initializing Sonarr dashboard:", error);
     }
   })();
+
 });

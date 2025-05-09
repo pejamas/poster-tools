@@ -1098,7 +1098,7 @@ input:checked + .toggle-slider:before {
   align-items: center;
 }
 
-.search-container input {
+.main-search input {
   flex: 1;
   margin-bottom: 0;
   background: rgba(0, 0, 0, 0.2);
@@ -1108,6 +1108,7 @@ input:checked + .toggle-slider:before {
   padding: 0.5rem;
   height: 36px;
   box-sizing: border-box;
+  margin-left: 0;
 }
 
 .search-button {
