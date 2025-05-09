@@ -1395,9 +1395,11 @@ input:checked + .toggle-slider:before {
   min-width: 20px;
   min-height: 20px;
   margin-right: 10px;
-  filter: invert(1);
+  filter: brightness(0) invert(1); /* Better for SVG icons */
   display: inline-block;
   vertical-align: middle;
+  color: white; /* For SVG currentColor */
+  stroke: white; /* For SVG stroke */
 }
 
 .custom-overlay {

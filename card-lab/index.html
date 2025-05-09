@@ -31,9 +31,16 @@
           Load Config
         </button>
       </div>
-    </header>
-    <div class="layout">      <div class="sidebar">        <div class="collapsible active">          <div class="collapsible-header" id="header-tmdb" data-tooltip="Search for TV shows and episodes from TMDB. Select language, find shows, and customize episodes individually or in grid view.">
-            <h3>Search</h3>
+    </header>    <div class="layout">      <div class="sidebar">        <div class="collapsible active">          <div class="collapsible-header" id="header-sonarr" data-tooltip="Connect to Sonarr to browse and manage your TV library directly within Card Lab">
+            <h3>Sonarr Integration</h3>
+            <span class="toggle-icon"></span>
+          </div>          <div class="collapsible-content">
+            <button id="sonarr-button" class="action-button" style="width: 92%; margin: 10px auto;">
+              <img src="../assets/poster-overlay-icons/connect.svg" class="action-icon" alt="Sonarr" />
+              Open Sonarr Browser
+            </button>
+          </div></div><div class="collapsible active">          <div class="collapsible-header" id="header-tmdb" data-tooltip="Search for TV shows and episodes from TMDB. Select language, find shows, and customize episodes individually or in grid view.">
+            <h3>TMDB Search</h3>
             <span class="toggle-icon"></span>
           </div>
           <div class="collapsible-content">
@@ -53,12 +60,11 @@
                   <option value="tr">Türkçe</option>
                   <option value="ru">Русский</option>
                   <option value="ja">日本語</option>
-                  <option value="zh">中文</option>
-                </select>
+                  <option value="zh">中文</option>                </select>
                 <div class="search-container">
                   <input type="text" id="show-search-input" placeholder="Search TV shows..." />
                   <button type="submit" class="search-button">Search</button>
-                </div>
+                </div>                
               </div>
             </form>
             <div id="search-results" class="search-results"></div>
@@ -469,9 +475,8 @@
           <button id="confirmYes" class="custom-btn custom-btn-red">Reset</button>
         </div>
       </div>
-    </div>
-
-    <script src="app.js"></script>
+    </div>    <script src="app.js"></script>
     <script src="tooltip.js"></script>
+    <script src="sonarr-dashboard.js"></script>
   </body>
 </html>

@@ -70,7 +70,7 @@ if (languageSelect) {
       updateBothViews();
     }
   });
-}
+}  
   // =====================================================
   // CONFIGURATION CONSTANTS
   // =====================================================
@@ -78,7 +78,10 @@ if (languageSelect) {
   const TMDB_API_KEY = "96c821c9e98fab6a43bff8021d508d1d";
   const TMDB_BASE_URL = "https://api.themoviedb.org/3";
   const TMDB_IMG_BASE_URL = "https://image.tmdb.org/t/p/";
-  const LOCAL_STORAGE_KEY = "cardLabShowConfigs"; // Key for storing show configurations
+  const LOCAL_STORAGE_KEY = "cardLabShowConfigs";
+  
+  // Expose TMDB API key for sonarr-dashboard.js
+  window.TMDB_API_KEY = TMDB_API_KEY;// Key for storing show configurations
 
   // =====================================================
   // GLOBAL COLOR STATE VARIABLES
@@ -1927,7 +1930,6 @@ if (spoilerToggle) {
       return null;
     }
   }
-
   // =====================================================
   // SEARCH & SHOW SELECTION UI
   // =====================================================
@@ -1974,7 +1976,6 @@ if (spoilerToggle) {
       resultsContainer.appendChild(showEl);
     });
   }
-
   // Handle show selection from search results
   async function selectShow(showId) {
     const showDetails = await getShowDetails(showId, currentLang);
@@ -1990,6 +1991,45 @@ if (spoilerToggle) {
     await selectSeason(firstSeasonNumber);
     showGridView();
   }
+    // Expose the show selection handler for the Sonarr dashboard
+  window.handleShowSelection = async function(show) {
+    if (!show || !show.id) {
+      console.error("Invalid show data provided to handleShowSelection");
+      return;
+    }
+    
+    try {
+      // Clear search results
+      const resultsContainer = document.getElementById("search-results");
+      if (resultsContainer) {
+        resultsContainer.innerHTML = "";
+      }
+      
+      // Set loading indicator with appropriate source message
+      const seasonSelector = document.getElementById("season-selector");
+      if (seasonSelector) {
+        const sourceText = show.source === 'sonarr' ? 'Sonarr' : 'TMDB';
+        seasonSelector.innerHTML = `<div class="loading">Loading show details from ${sourceText}...</div>`;
+      }
+      
+      // Update search input if it exists
+      const searchInput = document.getElementById("show-search-input");
+      if (searchInput) {
+        // Add a Sonarr badge if the show is from Sonarr
+        if (show.source === 'sonarr') {
+          searchInput.value = `${show.name} [Sonarr]`;
+        } else {
+          searchInput.value = show.name;
+        }
+      }
+      
+      // Process the selected show
+      await selectShow(show.id);
+    } catch (error) {
+      console.error("Error in handleShowSelection:", error);
+      alert("Could not load the selected show. Please try again.");
+    }
+  };
 
   // Display season selector dropdown for a show
   function displaySeasonSelector(show) {
