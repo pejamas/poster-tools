@@ -51,11 +51,24 @@ document.addEventListener("DOMContentLoaded", () => {
               </div>
             </div>
             <div class="form-group full-width">
+              <label for="sonarr-username">Username (if required)</label>
+              <div class="input-with-icon">
+                <input type="text" id="sonarr-username" placeholder="Sonarr username">
+              </div>
+            </div>
+            <div class="form-group full-width">
+              <label for="sonarr-password">Password (if required)</label>
+              <div class="input-with-icon">
+                <input type="password" id="sonarr-password" placeholder="Sonarr password">
+              </div>
+            </div>
+            <div class="form-group full-width">
               <label for="sonarr-api-key">API Key</label>
               <div class="input-with-icon">
                 <input type="password" id="sonarr-api-key" placeholder="Your Sonarr API key" value="${sonarrConfig.apiKey}">
               </div>
-            </div>            <div class="form-group full-width">
+            </div>
+            <div class="form-group full-width">
               <button id="sonarr-connect-btn" class="action-button connect-btn full-width">
                 <img class="action-icon" src="../assets/poster-overlay-icons/power.png" alt="Power Icon" style="width:24px;height:24px;object-fit:contain;">
                 Connect to Sonarr
@@ -290,23 +303,30 @@ document.addEventListener("DOMContentLoaded", () => {
   async function connectToSonarr() {
     const urlInput = document.getElementById("sonarr-url");
     const apiKeyInput = document.getElementById("sonarr-api-key");
+    const usernameInput = document.getElementById("sonarr-username");
+    const passwordInput = document.getElementById("sonarr-password");
     const statusEl = document.getElementById("sonarr-status");
-    
+
     // Get values and trim whitespace
     sonarrConfig.url = urlInput.value.trim();
     sonarrConfig.apiKey = apiKeyInput.value.trim();
-    
+    const username = usernameInput ? usernameInput.value.trim() : "";
+    const password = passwordInput ? passwordInput.value.trim() : "";
+    sonarrConfig.username = username;
+    // Do NOT store password in config/localStorage for security
+
     // Basic validation
     if (!sonarrConfig.url || !sonarrConfig.apiKey) {
       statusEl.textContent = "Please enter both URL and API key";
       statusEl.className = "status-text error";
       return;
     }
-    
+
     // Remove trailing slash from URL if present
     if (sonarrConfig.url.endsWith("/")) {
       sonarrConfig.url = sonarrConfig.url.slice(0, -1);
-    }      // Update button state
+    }
+    // Update button state
     sonarrConnectBtn.disabled = true;
     sonarrConnectBtn.innerHTML = `
       <img class="action-icon spinning" src="../assets/poster-overlay-icons/power.png" alt="Power Icon" style="width:24px;height:24px;object-fit:contain;opacity:0.7;animation:spin 1s linear infinite;">
@@ -347,24 +367,36 @@ document.addEventListener("DOMContentLoaded", () => {
     // Test connection to Sonarr API
   async function testSonarrConnection() {
     try {
+      // Get username/password from the form (do not store password)
+      const usernameInput = document.getElementById("sonarr-username");
+      const passwordInput = document.getElementById("sonarr-password");
+      const username = usernameInput ? usernameInput.value.trim() : "";
+      const password = passwordInput ? passwordInput.value.trim() : "";
+
+      const headers = {
+        'X-Api-Key': sonarrConfig.apiKey,
+        'Content-Type': 'application/json'
+      };
+      if (username && password) {
+        const basicAuth = btoa(`${username}:${password}`);
+        headers['Authorization'] = `Basic ${basicAuth}`;
+      }
+
       const response = await fetch(`${sonarrConfig.url}/api/v3/system/status`, {
         method: 'GET',
-        headers: {
-          'X-Api-Key': sonarrConfig.apiKey,
-          'Content-Type': 'application/json'
-        }
+        headers
       });
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error ${response.status}`);
       }
-      
+
       const data = await response.json();
       console.log("Sonarr connection successful:", data);
-      
+
       // Set connected state and hide the connection form
       sonarrConfig.connected = true;
-      
+
       return true;
     } catch (error) {
       console.error("Failed to connect to Sonarr:", error);
@@ -387,19 +419,31 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
     
     try {
+      // Get username/password from the form (do not store password)
+      const usernameInput = document.getElementById("sonarr-username");
+      const passwordInput = document.getElementById("sonarr-password");
+      const username = usernameInput ? usernameInput.value.trim() : "";
+      const password = passwordInput ? passwordInput.value.trim() : "";
+
+      const headers = {
+        'X-Api-Key': sonarrConfig.apiKey,
+        'Content-Type': 'application/json'
+      };
+      if (username && password) {
+        const basicAuth = btoa(`${username}:${password}`);
+        headers['Authorization'] = `Basic ${basicAuth}`;
+      }
+
       // Fetch series from Sonarr
       const response = await fetch(`${sonarrConfig.url}/api/v3/series`, {
         method: 'GET',
-        headers: {
-          'X-Api-Key': sonarrConfig.apiKey,
-          'Content-Type': 'application/json'
-        }
+        headers
       });
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error ${response.status}`);
       }
-        const shows = await response.json();
+      const shows = await response.json();
       // Log the first show to console for debugging
       if (shows && shows.length > 0) {
         console.log("Sample show data from Sonarr:", shows[0]);
@@ -415,7 +459,7 @@ document.addEventListener("DOMContentLoaded", () => {
           </button>
         </div>
       `;
-      
+
       // Add retry button event listener
       document.getElementById("retry-loading-shows")?.addEventListener("click", loadSonarrShows);
     }
