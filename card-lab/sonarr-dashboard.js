@@ -7,6 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let sonarrConfig = {
     url: localStorage.getItem("sonarrUrl") || "",
     apiKey: localStorage.getItem("sonarrApiKey") || "",
+    useProxy: localStorage.getItem("sonarrUseProxy") === "true" || false,
     connected: false
   };
 
@@ -67,6 +68,16 @@ document.addEventListener("DOMContentLoaded", () => {
               <div class="input-with-icon">
                 <input type="password" id="sonarr-api-key" placeholder="Your Sonarr API key" value="${sonarrConfig.apiKey}">
               </div>
+            </div>
+            <div class="form-group full-width">
+              <div class="toggle-container">
+                <span class="toggle-label">Use CORS Proxy (for HTTP/HTTPS mixing issues)</span>
+                <div class="toggle-switch">
+                  <input type="checkbox" id="sonarr-use-proxy" ${sonarrConfig.useProxy ? 'checked' : ''}>
+                  <span class="toggle-slider"></span>
+                </div>
+              </div>
+              <p class="helper-text">Enable this if you're getting mixed content errors when connecting to HTTP Sonarr from HTTPS site</p>
             </div>
             <div class="form-group full-width">
               <button id="sonarr-connect-btn" class="action-button connect-btn full-width">
@@ -305,6 +316,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const apiKeyInput = document.getElementById("sonarr-api-key");
     const usernameInput = document.getElementById("sonarr-username");
     const passwordInput = document.getElementById("sonarr-password");
+    const useProxyInput = document.getElementById("sonarr-use-proxy");
     const statusEl = document.getElementById("sonarr-status");
 
     // Get values and trim whitespace
@@ -313,7 +325,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const username = usernameInput ? usernameInput.value.trim() : "";
     const password = passwordInput ? passwordInput.value.trim() : "";
     sonarrConfig.username = username;
+    sonarrConfig.useProxy = useProxyInput ? useProxyInput.checked : false;
     // Do NOT store password in config/localStorage for security
+
+    // Save proxy setting to localStorage
+    localStorage.setItem("sonarrUseProxy", sonarrConfig.useProxy ? "true" : "false");
 
     // Basic validation
     if (!sonarrConfig.url || !sonarrConfig.apiKey) {
@@ -364,7 +380,7 @@ document.addEventListener("DOMContentLoaded", () => {
       `;
     }
   }
-    // Test connection to Sonarr API
+  // Test connection to Sonarr API
   async function testSonarrConnection() {
     try {
       // Get username/password from the form (do not store password)
@@ -382,7 +398,16 @@ document.addEventListener("DOMContentLoaded", () => {
         headers['Authorization'] = `Basic ${basicAuth}`;
       }
 
-      const response = await fetch(`${sonarrConfig.url}/api/v3/system/status`, {
+      // Choose URL based on proxy setting
+      let requestURL;
+      if (sonarrConfig.useProxy) {
+        // Use Cloudflare Worker proxy
+        requestURL = `https://sonarr-helper.pejamas.workers.dev/?url=${encodeURIComponent(sonarrConfig.url)}&path=${encodeURIComponent('/api/v3/system/status')}`;
+      } else {
+        requestURL = `${sonarrConfig.url}/api/v3/system/status`;
+      }
+
+      const response = await fetch(requestURL, {
         method: 'GET',
         headers
       });
@@ -432,10 +457,17 @@ document.addEventListener("DOMContentLoaded", () => {
       if (username && password) {
         const basicAuth = btoa(`${username}:${password}`);
         headers['Authorization'] = `Basic ${basicAuth}`;
+      }      // Choose URL based on proxy setting
+      let requestURL;
+      if (sonarrConfig.useProxy) {
+        // Use Cloudflare Worker proxy
+        requestURL = `https://sonarr-helper.pejamas.workers.dev/?url=${encodeURIComponent(sonarrConfig.url)}&path=${encodeURIComponent('/api/v3/series')}`;
+      } else {
+        requestURL = `${sonarrConfig.url}/api/v3/series`;
       }
 
       // Fetch series from Sonarr
-      const response = await fetch(`${sonarrConfig.url}/api/v3/series`, {
+      const response = await fetch(requestURL, {
         method: 'GET',
         headers
       });
