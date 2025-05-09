@@ -1044,7 +1044,7 @@ canvas {
 }
 
 input:checked + .toggle-slider {
-    background-color: #0088cc;
+    background: linear-gradient(90deg, #00bfa5 0%, #8e24aa 100%);
 }
 
 input:checked + .toggle-slider:before {
