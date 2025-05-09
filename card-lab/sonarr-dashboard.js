@@ -68,14 +68,13 @@ document.addEventListener("DOMContentLoaded", () => {
               <div class="input-with-icon">
                 <input type="password" id="sonarr-api-key" placeholder="Your Sonarr API key" value="${sonarrConfig.apiKey}">
               </div>
-            </div>
-            <div class="form-group full-width">
+            </div>            <div class="form-group full-width">
               <div class="toggle-container">
                 <span class="toggle-label">Use CORS Proxy (for HTTP/HTTPS mixing issues)</span>
-                <div class="toggle-switch">
+                <label class="toggle-switch">
                   <input type="checkbox" id="sonarr-use-proxy" ${sonarrConfig.useProxy ? 'checked' : ''}>
                   <span class="toggle-slider"></span>
-                </div>
+                </label>
               </div>
               <p class="helper-text">Enable this if you're getting mixed content errors when connecting to HTTP Sonarr from HTTPS site</p>
             </div>
