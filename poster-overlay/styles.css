@@ -210,7 +210,7 @@ header {
 /* ==========================================
    BUTTON STYLES
    ========================================== */
-.nav-button, .action-button {
+.nav-button {
     background: linear-gradient(135deg, rgba(0, 255, 240, 0.1), rgba(166, 0, 255, 0.1));
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 20px;
@@ -224,27 +224,65 @@ header {
     padding: 0.5rem 1.2rem;
 }
 
-.nav-button:hover, .action-button:hover {
+.nav-button:hover {
     background: linear-gradient(135deg, rgba(0, 255, 240, 0.2), rgba(166, 0, 255, 0.2));
     transform: translateY(-3px);
     box-shadow: 0 5px 15px rgba(0, 255, 255, 0.2);
 }
 
-.action-button {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.45rem 0.9rem;
-    cursor: pointer;
-    font-size: 0.9rem;
-    height: 36px;
+button.action-button,
+.sidebar button.action-button {
+  background: linear-gradient(
+    135deg,
+    rgba(0, 255, 240, 0.1),
+    rgba(166, 0, 255, 0.1)
+  ) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 0.5rem 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  font-weight: 500;
+  color: white !important;
+  font-family: "Gabarito", sans-serif;
+  margin-left: 0.5rem;
 }
 
 .action-icon {
-    width: 16px;
-    height: 16px;
-    filter: invert(100%);
+    width: 22px;
+    height: 22px;
+    min-width: 22px;
+    min-height: 22px;
+    margin-right: 8px;
+    filter: invert(1);
+    display: inline-block;
+    vertical-align: middle;
 }
+
+button.action-button:hover,
+.sidebar button.action-button:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(0, 255, 240, 0.2),
+    rgba(166, 0, 255, 0.2)
+  ) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 255, 255, 0.15);
+}
+
+/* Removed shine animation to match Card Lab styling */
+
+@keyframes shine {
+    0% { left: -100%; }
+    20% { left: 100%; }
+    100% { left: 100%; }
+}
+
+/* Removed duplicate action-icon class */
 
 .dialog-btn {
     padding: 0.7rem 1.5rem;
@@ -510,7 +548,7 @@ header {
     outline: 1px solid rgba(0, 255, 255, 0.5);
 }
 
-.sidebar button {
+.sidebar button:not(.action-button):not(.media-type-btn) {
     width: 100%;
     padding: 0.6rem;
     font-size: 0.95rem;
@@ -552,39 +590,7 @@ header {
 /* ==========================================
    FILE UPLOAD ZONE
    ========================================== */
-.drop-zone-label {
-    border: 1.5px dashed rgba(255, 255, 255, 0.3);
-    background: rgba(0, 0, 0, 0.2);
-    padding: 0.6rem;
-    font-size: 0.85rem;
-    height: 40px !important;
-    text-align: center !important;
-    font-weight: 500;
-    color: white;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    line-height: 1;
-    width: 100%;
-    box-sizing: border-box;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 0.25rem;
-    margin-top: 0;
-}
 
-.drop-zone-label:hover {
-    background: rgba(255, 255, 255, 0.07);
-    border-color: rgba(0, 255, 255, 0.4);
-}
-
-.drop-zone-label span {
-    width: auto;
-    text-align: center !important;
-    line-height: 1;
-    display: inline-block;
-}
 /* ==========================================
    CANVAS AND DISPLAY CONTAINERS
    ========================================== */
@@ -1316,13 +1322,14 @@ input:checked + .toggle-slider:before {
     margin-top: 1rem;
 }
 
-.media-type-btn {
+.sidebar button.media-type-btn {
     flex: 1;
+    width: auto;
     padding: 10px;
     padding-right: 24px !important;
     text-align: center;
-    background: transparent;
-    color: white;
+    background: transparent !important;
+    color: white !important;
     font-weight: 200;
     cursor: pointer;
     transition: all 0.25s ease;
@@ -1330,19 +1337,22 @@ input:checked + .toggle-slider:before {
     border-radius: 0;
     position: relative;
     z-index: 1;
+    margin-top: 0;
 }
 
-.media-type-btn.active {
-    background: linear-gradient(to right, #00bfa5, #8e24aa);
-    color: white;
+.sidebar button.media-type-btn.active {
+    background: linear-gradient(to right, #00bfa5, #8e24aa) !important;
+    color: white !important;
     box-shadow: inset 0 0 8px rgba(0, 255, 255, 0.4);
     z-index: 2;
     opacity: 1 !important;
     filter: none !important;
 }
 
-.media-type-btn:hover:not(.active) {
-    background: rgba(255, 255, 255, 0.15);
+.sidebar button.media-type-btn:hover:not(.active) {
+    background: rgba(255, 255, 255, 0.15) !important;
+    transform: none;
+    box-shadow: none;
 }
 
 .media-type-btn:first-child {

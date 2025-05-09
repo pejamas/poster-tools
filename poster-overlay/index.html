@@ -98,10 +98,12 @@
           </div>
           </div>
         </div>
-        <div class="section-separator"></div>
-        <div class="sidebar-section">
-          <label for="poster-upload" class="drop-zone-label"><span>Upload Poster</span></label>
-          <input type="file" id="poster-upload" accept="image/*" />
+        <div class="section-separator"></div>        <div class="sidebar-section">
+          <button id="upload-poster-btn" class="action-button" type="button" style="width: 92%; margin-bottom: 6px;">
+            <img src="../assets/poster-overlay-icons/upload.svg" class="action-icon" alt="Upload" />
+            Upload Poster
+          </button>
+          <input type="file" id="poster-upload" accept="image/*" style="display: none;" />
         </div>
         <div class="sidebar-action-row">
           <button id="download-btn" class="icon-button teal" title="Download">

@@ -1,6 +1,13 @@
 // Logo scale state
 let logoScale = 1;
 const posterUpload = document.getElementById("poster-upload");
+const uploadPosterBtn = document.getElementById("upload-poster-btn");
+
+if (uploadPosterBtn && posterUpload) {
+  uploadPosterBtn.addEventListener("click", () => {
+    posterUpload.click();
+  });
+}
 const overlaySelect = document.getElementById("overlay-select");
 const canvas = document.getElementById("overlay-canvas");
 const ctx = canvas.getContext("2d");
