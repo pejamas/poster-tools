@@ -223,7 +223,7 @@
 
 .sonarr-form-header {
   margin-bottom: 20px;
-  text-align: left;
+  text-align: center;
 }
 
 .sonarr-form-header h3 {
@@ -240,7 +240,7 @@
   margin: 0;
   color: #aaaaaa;
   font-size: 0.95rem;
-  text-align: left;
+  text-align: center;
 }
 
 .sonarr-form-content {
