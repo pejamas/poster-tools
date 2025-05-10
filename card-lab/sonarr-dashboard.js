@@ -1,3 +1,32 @@
+  // Show HTTPS/mixed content advice for Sonarr connection
+  function showSonarrHttpsAdvice(url) {
+    // Only show if the dashboard is HTTPS and the Sonarr URL is HTTP
+    if (window.location.protocol === "https:" && url.startsWith("http://")) {
+      const adviceHtml = `
+        <div class="sonarr-https-advice" style="background:#fff3cd;color:#856404;padding:12px 16px;border-radius:8px;margin-bottom:12px;border:1px solid #ffeeba;">
+          <strong>Connection Issue:</strong> Your Sonarr URL uses <b>HTTP</b>, but this dashboard is <b>HTTPS</b>.<br>
+          Modern browsers block this for security.<br>
+          <br>
+          <b>Recommended:</b> 
+          <ul style="margin:8px 0 0 18px;">
+            <li>Use <a href="https://tailscale.com/funnel/" target="_blank">Tailscale Funnel</a> to expose Sonarr securely over HTTPS.<br>
+              <span style="font-size:0.95em;">(Run <code>tailscale funnel 8989</code> on your Sonarr server, then use the provided HTTPS URL here.)</span>
+            </li>
+            <li>Or, set up a <a href="https://wiki.servarr.com/sonarr/https" target="_blank">reverse proxy with HTTPS</a>.</li>
+          </ul>
+          <span style="font-size:0.95em;">If you need help, <a href="https://tailscale.com/kb/1223/funnel/" target="_blank">see the Tailscale Funnel guide</a>.</span>
+        </div>
+      `;
+      // Insert above the status element
+      const formContent = document.querySelector('.sonarr-form-content');
+      if (formContent && !document.querySelector('.sonarr-https-advice')) {
+        formContent.insertAdjacentHTML('afterbegin', adviceHtml);
+      }
+    } else {
+      // Remove advice if present
+      document.querySelector('.sonarr-https-advice')?.remove();
+    }
+  }
 document.addEventListener("DOMContentLoaded", () => {
   // =====================================================
   // SONARR DASHBOARD INTEGRATION
@@ -109,11 +138,11 @@ document.addEventListener("DOMContentLoaded", () => {
     sonarrDashboardElement = sonarrContainer;
     sonarrConnectBtn = document.getElementById("sonarr-connect-btn");
     sonarrShowsContainer = document.getElementById("sonarr-shows-container");
-    
+
     // Initialize view toggle buttons
     const gridViewBtn = document.getElementById("grid-view-btn");
     const tableViewBtn = document.getElementById("table-view-btn");
-    
+
     // Set initial active state based on saved preference
     if (sonarrViewMode === "table") {
       gridViewBtn.classList.remove("active");
@@ -122,7 +151,7 @@ document.addEventListener("DOMContentLoaded", () => {
       gridViewBtn.classList.add("active");
       tableViewBtn.classList.remove("active");
     }
-    
+
     // Add view toggle events
     gridViewBtn.addEventListener("click", () => {
       sonarrViewMode = "grid";
@@ -133,7 +162,7 @@ document.addEventListener("DOMContentLoaded", () => {
         loadSonarrShows();
       }
     });
-    
+
     tableViewBtn.addEventListener("click", () => {
       sonarrViewMode = "table";
       localStorage.setItem("sonarrViewMode", "table");
@@ -143,23 +172,33 @@ document.addEventListener("DOMContentLoaded", () => {
         loadSonarrShows();
       }
     });
-    
+
     // Initialize search functionality
     const searchInput = document.getElementById("show-search");
     searchInput.addEventListener("input", (e) => {
       const searchTerm = e.target.value.toLowerCase();
       filterShows(searchTerm);
     });
-    
+
+    // Add Sonarr HTTPS advice on URL input
+    const urlInput = document.getElementById("sonarr-url");
+    if (urlInput) {
+      urlInput.addEventListener("input", (e) => {
+        showSonarrHttpsAdvice(e.target.value.trim());
+      });
+      // Show advice on initial load if value is present
+      showSonarrHttpsAdvice(urlInput.value.trim());
+    }
+
     // Add event listeners
     sonarrConnectBtn.addEventListener("click", connectToSonarr);
-    
+
     // Add close button listener
     const closeBtn = document.getElementById("sonarr-close-btn");
     if (closeBtn) {
       closeBtn.addEventListener("click", hideSonarrDashboard);
     }
-      // Set up the button in the sidebar - now it just shows/hides the dashboard
+    // Set up the button in the sidebar - now it just shows/hides the dashboard
     const sonarrButton = document.getElementById("sonarr-button");
     if (sonarrButton) {
       // Add button click event listener - shows the dashboard
@@ -167,14 +206,13 @@ document.addEventListener("DOMContentLoaded", () => {
         showSonarrDashboard();
         localStorage.setItem("sonarrEnabled", "true");
       });
-      
       // Don't auto-open the dashboard on page load, just restore the toggle state
       // We keep the checkbox state, but don't actually show the dashboard
       // This way users need to explicitly click to open it
     }
-      // Make sure the dashboard is initially hidden, regardless of previous state
+    // Make sure the dashboard is initially hidden, regardless of previous state
     hideSonarrDashboard();
-      // Check if we have saved credentials and try to auto-connect
+    // Check if we have saved credentials and try to auto-connect
     // but don't show the dashboard unless the user clicks the toggle
     if (sonarrConfig.url && sonarrConfig.apiKey) {
       try {
@@ -309,6 +347,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Get values and trim whitespace
     sonarrConfig.url = urlInput.value.trim();
+    // Show HTTPS advice if needed
+    showSonarrHttpsAdvice(sonarrConfig.url);
     sonarrConfig.apiKey = apiKeyInput.value.trim();
     const username = usernameInput ? usernameInput.value.trim() : "";
     const password = passwordInput ? passwordInput.value.trim() : "";
