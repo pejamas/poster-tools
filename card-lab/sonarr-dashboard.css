@@ -204,6 +204,7 @@
 }
 
 /* Improved Connection Form Styles */
+/* Allow the connection form to expand to fit the advisory message and form side-by-side */
 .sonarr-connection-form {
   margin-bottom: 30px;
   background-color: rgba(30, 30, 30, 0.5);
@@ -213,10 +214,11 @@
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
   text-align: left;
   width: 100%;
-  max-width: 420px;
+  max-width: 800px;
   margin: 0 auto 30px;
   align-self: center;
   box-sizing: border-box;
+  transition: max-width 0.2s;
 }
 
 .sonarr-form-header {
@@ -259,6 +261,7 @@
   align-items: flex-end;
 }
 
+/* Prevent the form column from stretching too wide on desktop */
 .connection-stack {
   display: flex;
   flex-direction: column;
@@ -268,6 +271,13 @@
   margin: 0 auto;
   text-align: left;
   box-sizing: border-box;
+}
+@media (max-width: 900px) {
+  .sonarr-connection-form {
+    max-width: 100%;
+    min-width: 0;
+    padding: 12px;
+  }
 }
 
 .form-group {
