@@ -35,7 +35,16 @@ document.addEventListener("DOMContentLoaded", () => {
   // Configuration variables
   let sonarrConfig = {
     url: localStorage.getItem("sonarrUrl") || "",
-    apiKey: localStorage.getItem("sonarrApiKey") || "",
+    apiKey: (() => {
+      const stored = localStorage.getItem("sonarrApiKey");
+      if (!stored) return "";
+      try {
+        // Try to decode base64, fallback to raw if not encoded
+        return atob(stored);
+      } catch {
+        return stored;
+      }
+    })(),
     connected: false
   };
 
@@ -361,10 +370,10 @@ document.addEventListener("DOMContentLoaded", () => {
       // Test connection with Sonarr
       const success = await testSonarrConnection();
       if (success) {
-        // Save credentials to localStorage
+        // Save credentials to localStorage (API key base64-encoded for obfuscation)
         localStorage.setItem("sonarrUrl", sonarrConfig.url);
-        localStorage.setItem("sonarrApiKey", sonarrConfig.apiKey);
-            // Update UI
+        localStorage.setItem("sonarrApiKey", btoa(sonarrConfig.apiKey));
+        // Update UI
         sonarrConfig.connected = true;
         statusEl.textContent = "Connected successfully!";
         statusEl.className = "status-text success";
