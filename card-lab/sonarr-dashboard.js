@@ -80,18 +80,6 @@ document.addEventListener("DOMContentLoaded", () => {
               </div>
             </div>
             <div class="form-group full-width">
-              <label for="sonarr-username">Username (if required)</label>
-              <div class="input-with-icon">
-                <input type="text" id="sonarr-username" placeholder="Sonarr username">
-              </div>
-            </div>
-            <div class="form-group full-width">
-              <label for="sonarr-password">Password (if required)</label>
-              <div class="input-with-icon">
-                <input type="password" id="sonarr-password" placeholder="Sonarr password">
-              </div>
-            </div>
-            <div class="form-group full-width">
               <label for="sonarr-api-key">API Key</label>
               <div class="input-with-icon">
                 <input type="password" id="sonarr-api-key" placeholder="Your Sonarr API key" value="${sonarrConfig.apiKey}">
@@ -341,8 +329,6 @@ document.addEventListener("DOMContentLoaded", () => {
   async function connectToSonarr() {
     const urlInput = document.getElementById("sonarr-url");
     const apiKeyInput = document.getElementById("sonarr-api-key");
-    const usernameInput = document.getElementById("sonarr-username");
-    const passwordInput = document.getElementById("sonarr-password");
     const statusEl = document.getElementById("sonarr-status");
 
     // Get values and trim whitespace
@@ -350,10 +336,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // Show HTTPS advice if needed
     showSonarrHttpsAdvice(sonarrConfig.url);
     sonarrConfig.apiKey = apiKeyInput.value.trim();
-    const username = usernameInput ? usernameInput.value.trim() : "";
-    const password = passwordInput ? passwordInput.value.trim() : "";
-    sonarrConfig.username = username;
-    // Do NOT store password in config/localStorage for security
 
     // Basic validation
     if (!sonarrConfig.url || !sonarrConfig.apiKey) {
