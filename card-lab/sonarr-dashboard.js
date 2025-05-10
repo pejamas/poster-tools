@@ -3,12 +3,12 @@
     // Only show if the dashboard is HTTPS and the Sonarr URL is HTTP
     if (window.location.protocol === "https:" && url.startsWith("http://")) {
       const adviceHtml = `
-        <div class="sonarr-https-advice" style="background:#fff3cd;color:#856404;padding:12px 16px;border-radius:8px;margin-bottom:12px;border:1px solid #ffeeba;">
+        <div class="sonarr-https-advice">
           <strong>Connection Issue:</strong> Your Sonarr URL uses <b>HTTP</b>, but this dashboard is <b>HTTPS</b>.<br>
           Modern browsers block this for security.<br>
           <br>
           <b>Recommended:</b> 
-          <ul style="margin:8px 0 0 18px;">
+          <ul>
             <li>Use <a href="https://tailscale.com/funnel/" target="_blank">Tailscale Funnel</a> to expose Sonarr securely over HTTPS.<br>
               <span style="font-size:0.95em;">(Run <code>tailscale funnel 8989</code> on your Sonarr server, then use the provided HTTPS URL here.)</span>
             </li>

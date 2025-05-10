@@ -1,3 +1,39 @@
+/* Sonarr HTTPS Advice Styling */
+.sonarr-https-advice {
+  background: #fff3cd;
+  color: #856404;
+  padding: 16px 20px;
+  border-radius: 10px;
+  margin-bottom: 18px;
+  border: 1px solid #ffeeba;
+  font-size: 1rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  max-width: 370px;
+  line-height: 1.6;
+}
+.sonarr-https-advice strong {
+  font-weight: 700;
+  color: #856404;
+}
+.sonarr-https-advice a {
+  color: #0056b3;
+  text-decoration: underline;
+  font-weight: 500;
+}
+.sonarr-https-advice ul {
+  margin: 8px 0 0 18px;
+  padding: 0;
+}
+.sonarr-https-advice li {
+  margin-bottom: 6px;
+}
+@media (max-width: 480px) {
+  .sonarr-https-advice {
+    font-size: 0.95rem;
+    padding: 12px 8px;
+    max-width: 100%;
+  }
+}
 /* Sonarr Dashboard Styles */
 
 .sonarr-dashboard-fullscreen {
