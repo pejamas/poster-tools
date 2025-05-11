@@ -678,9 +678,10 @@ header {
 #titlecard-canvas {
   border-radius: 8px;
   box-shadow: 0 0 30px rgba(0, 0, 0, 0.4);
+  width: 1280px;      /* Display size */
+  height: 720px;     /* Display size, keep 16:9 ratio */
   max-width: 100%;
-  max-height: calc(100vh - 130px); /* Reduced to accommodate the frame below */
-  height: auto;
+  max-height: calc(100vh - 130px);
 }
 
 /* Modular frame that appears below the canvas */

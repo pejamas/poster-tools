@@ -3569,8 +3569,13 @@ if (spoilerToggle) {
       filename += ".png";
     }
 
-    // Get data URL and create download link
-    const dataURL = canvas.toDataURL("image/png");
+    // Export at 1920x1080 regardless of current canvas size
+    const exportCanvas = document.createElement("canvas");
+    exportCanvas.width = 1920;
+    exportCanvas.height = 1080;
+    const exportCtx = exportCanvas.getContext("2d");
+    drawCardToContext(exportCtx, 1920, 1080);
+    const dataURL = exportCanvas.toDataURL("image/png");
     const link = document.createElement("a");
     link.download = filename;
     link.href = dataURL;
@@ -3635,10 +3640,10 @@ if (spoilerToggle) {
     const promises = episodeTitleCards.map((card, index) => {
       return new Promise((resolve) => {
         const episodeCanvas = document.createElement("canvas");
-        episodeCanvas.width = 1280;
-        episodeCanvas.height = 720;
+        episodeCanvas.width = 1920;
+        episodeCanvas.height = 1080;
 
-        drawCardToTempContext(episodeCanvas.getContext("2d"), card, 1280, 720);
+        drawCardToTempContext(episodeCanvas.getContext("2d"), card, 1920, 1080);
 
         episodeCanvas.toBlob((blob) => {
           const filename = `S${card.seasonNumber}E${
@@ -4730,9 +4735,9 @@ resetBtn.addEventListener("click", () => {
   initializeTextOptionsUI();
   initializePickrs();
 
-  // Set canvas dimensions
-  canvas.width = 1280;
-  canvas.height = 720;
+  // Set canvas dimensions to 1920x1080 for main view
+  canvas.width = 1920;
+  canvas.height = 1080;
 
   // Hide return to grid button initially
   returnToGridBtn.style.display = "none";
