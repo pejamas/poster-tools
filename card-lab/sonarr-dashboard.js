@@ -94,6 +94,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 <input type="password" id="sonarr-api-key" placeholder="Your Sonarr API key" value="${sonarrConfig.apiKey}">
               </div>
             </div>
+            <div class="form-group full-width" style="margin-top: -8px;">
+              <label style="display: flex; align-items: center; gap: 8px; font-weight: 400; font-size: 0.98em;">
+                <input type="checkbox" id="sonarr-store-api-key" style="margin-right: 8px;" />
+                Store API key in this browser
+              </label>
+              <div id="sonarr-store-disclaimer" style="display:none; margin-top: 6px; font-size: 0.93em; color: #ff9800; background: rgba(255,152,0,0.08); border-radius: 5px; padding: 7px 10px;">
+                <b>Warning:</b> Your API key will be saved (obfuscated) in this browser's local storage. Anyone with access to this browser profile can retrieve it. Only use this on private, secure devices.
+              </div>
+            </div>
+
             <div class="form-group full-width">
               <button id="sonarr-connect-btn" class="action-button connect-btn full-width">
                 <img class="action-icon" src="../assets/poster-overlay-icons/power.png" alt="Power Icon" style="width:24px;height:24px;object-fit:contain;">
@@ -127,6 +137,20 @@ document.addEventListener("DOMContentLoaded", () => {
         <!-- Shows will be populated here -->
       </div>
     `;
+
+        // Set up store API key checkbox and disclaimer (run after HTML is in DOM)
+    setTimeout(() => {
+      const storeApiKeyCheckbox = sonarrContainer.querySelector('#sonarr-store-api-key');
+      const disclaimerDiv = sonarrContainer.querySelector('#sonarr-store-disclaimer');
+      if (!storeApiKeyCheckbox || !disclaimerDiv) return;
+      if (localStorage.getItem("sonarrApiKey")) {
+        storeApiKeyCheckbox.checked = true;
+        disclaimerDiv.style.display = '';
+      }
+      storeApiKeyCheckbox.addEventListener('change', () => {
+        disclaimerDiv.style.display = storeApiKeyCheckbox.checked ? '' : 'none';
+      });
+    }, 0);
   
     // Add to the body so it overlays everything
     document.body.appendChild(sonarrContainer);
@@ -370,9 +394,15 @@ document.addEventListener("DOMContentLoaded", () => {
       // Test connection with Sonarr
       const success = await testSonarrConnection();
       if (success) {
-        // Save credentials to localStorage (API key base64-encoded for obfuscation)
-        localStorage.setItem("sonarrUrl", sonarrConfig.url);
-        localStorage.setItem("sonarrApiKey", btoa(sonarrConfig.apiKey));
+        // Store API key only if opted in
+        const storeApiKeyCheckbox = document.getElementById("sonarr-store-api-key");
+        if (storeApiKeyCheckbox && storeApiKeyCheckbox.checked) {
+          localStorage.setItem("sonarrUrl", sonarrConfig.url);
+          localStorage.setItem("sonarrApiKey", btoa(sonarrConfig.apiKey));
+        } else {
+          localStorage.removeItem("sonarrApiKey");
+          localStorage.setItem("sonarrUrl", sonarrConfig.url);
+        }
         // Update UI
         sonarrConfig.connected = true;
         statusEl.textContent = "Connected successfully!";
