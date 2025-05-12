@@ -216,12 +216,23 @@ if (spoilerToggle) {
     infoOutlineColor: "#000000",
     preset: "leftMiddle",
     titleUppercase: false,
+    titleLowercase: false,
     titleBold: false,
     infoSeasonUppercase: false,
+    infoSeasonLowercase: false,
     infoSeasonBold: false,
     infoEpisodeUppercase: false,
+    infoEpisodeLowercase: false,
     infoEpisodeBold: false
   };
+  // ===============================
+  // TEXT CASE TRANSFORM HELPERS
+  // ===============================
+  function applyCaseTransform(text, uppercase, lowercase) {
+    if (lowercase) return text.toLocaleLowerCase();
+    if (uppercase) return text.toLocaleUpperCase();
+    return text;
+  }
 
   // =====================================================
   // PRESET LAYOUT CONFIGURATIONS
@@ -358,17 +369,25 @@ if (spoilerToggle) {
       });
       customTextSize.addEventListener("input", updateBothViews);
     }
-    // Set default state for new checkboxes
+    // Set default state for new checkboxes (including new lowercase options)
     document.getElementById("title-uppercase").checked = defaultValues.titleUppercase;
+    document.getElementById("title-lowercase").checked = defaultValues.titleLowercase || false;
     document.getElementById("title-bold").checked = defaultValues.titleBold;
     document.getElementById("info-season-uppercase").checked = defaultValues.infoSeasonUppercase;
+    document.getElementById("info-season-lowercase").checked = defaultValues.infoSeasonLowercase || false;
     document.getElementById("info-season-bold").checked = defaultValues.infoSeasonBold;
     document.getElementById("info-episode-uppercase").checked = defaultValues.infoEpisodeUppercase;
+    document.getElementById("info-episode-lowercase").checked = defaultValues.infoEpisodeLowercase || false;
     document.getElementById("info-episode-bold").checked = defaultValues.infoEpisodeBold;
 
-    // Add event listeners to update views
-    ["title-uppercase","title-bold","info-season-uppercase","info-season-bold","info-episode-uppercase","info-episode-bold"].forEach(id => {
-      document.getElementById(id).addEventListener("change", updateBothViews);
+    // Add event listeners to update views (including new lowercase options)
+    [
+      "title-uppercase","title-lowercase","title-bold",
+      "info-season-uppercase","info-season-lowercase","info-season-bold",
+      "info-episode-uppercase","info-episode-lowercase","info-episode-bold"
+    ].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener("change", updateBothViews);
     });
     const customFontUploadContainer = document.querySelector(
       ".custom-font-upload-container"
@@ -1195,8 +1214,9 @@ if (spoilerToggle) {
     // Get title text
     let titleText = titleInput.value || "";
     const titleUppercase = document.getElementById("title-uppercase").checked;
+    const titleLowercase = document.getElementById("title-lowercase").checked;
     const titleBold = document.getElementById("title-bold").checked;
-    if (titleUppercase) titleText = titleText.toUpperCase();
+    titleText = applyCaseTransform(titleText, titleUppercase, titleLowercase);
 
     // Info text parts (i18n)
     let infoText = "";
@@ -1204,8 +1224,10 @@ if (spoilerToggle) {
     let seasonText = "";
     let episodeText = "";
     const infoSeasonUppercase = document.getElementById("info-season-uppercase").checked;
+    const infoSeasonLowercase = document.getElementById("info-season-lowercase").checked;
     const infoSeasonBold = document.getElementById("info-season-bold").checked;
     const infoEpisodeUppercase = document.getElementById("info-episode-uppercase").checked;
+    const infoEpisodeLowercase = document.getElementById("info-episode-lowercase").checked;
     const infoEpisodeBold = document.getElementById("info-episode-bold").checked;
 
     // Get language map
@@ -1257,13 +1279,13 @@ if (spoilerToggle) {
               seasonText = langMap.season + " " + seasonNumDisplay;
           }
         }
-        if (infoSeasonUppercase) seasonText = seasonText.toUpperCase();
+        seasonText = applyCaseTransform(seasonText, infoSeasonUppercase, infoSeasonLowercase);
       }
 
       if (episodeNumberInput.value && episodeNumberDisplay.checked) {
         const episodeNumDisplay = formatNumber(episodeNumberInput.value);
         episodeText = langMap.episode + " " + episodeNumDisplay;
-        if (infoEpisodeUppercase) episodeText = episodeText.toUpperCase();
+        episodeText = applyCaseTransform(episodeText, infoEpisodeUppercase, infoEpisodeLowercase);
       }
 
       if (seasonText && episodeText) {
@@ -3759,10 +3781,13 @@ if (spoilerToggle) {
         showEpisodeNumber: episodeNumberDisplay.checked,
         preset: presetSelect.value,
         titleUppercase: document.getElementById("title-uppercase").checked,
+        titleLowercase: document.getElementById("title-lowercase").checked,
         titleBold: document.getElementById("title-bold").checked,
         infoSeasonUppercase: document.getElementById("info-season-uppercase").checked,
+        infoSeasonLowercase: document.getElementById("info-season-lowercase").checked, // <-- add this
         infoSeasonBold: document.getElementById("info-season-bold").checked,
         infoEpisodeUppercase: document.getElementById("info-episode-uppercase").checked,
+        infoEpisodeLowercase: document.getElementById("info-episode-lowercase").checked, // <-- add this
         infoEpisodeBold: document.getElementById("info-episode-bold").checked,
         customFontName,
         infoCustomFontName
@@ -4034,6 +4059,9 @@ if (spoilerToggle) {
     if (typeof settings.infoSeasonBold !== 'undefined') document.getElementById("info-season-bold").checked = settings.infoSeasonBold;
     if (typeof settings.infoEpisodeUppercase !== 'undefined') document.getElementById("info-episode-uppercase").checked = settings.infoEpisodeUppercase;
     if (typeof settings.infoEpisodeBold !== 'undefined') document.getElementById("info-episode-bold").checked = settings.infoEpisodeBold;
+    if (typeof settings.titleLowercase !== 'undefined') document.getElementById("title-lowercase").checked = settings.titleLowercase;
+    if (typeof settings.infoSeasonLowercase !== 'undefined') document.getElementById("info-season-lowercase").checked = settings.infoSeasonLowercase;
+    if (typeof settings.infoEpisodeLowercase !== 'undefined') document.getElementById("info-episode-lowercase").checked = settings.infoEpisodeLowercase;
     
     // Apply color settings
     if (settings.textColor) window["text-color"] = settings.textColor;
@@ -4314,10 +4342,13 @@ resetBtn.addEventListener("click", () => {
 
         // Reset new text style checkboxes
         document.getElementById("title-uppercase").checked = defaultValues.titleUppercase;
+        document.getElementById("title-lowercase").checked = defaultValues.titleLowercase; // <-- add this
         document.getElementById("title-bold").checked = defaultValues.titleBold;
         document.getElementById("info-season-uppercase").checked = defaultValues.infoSeasonUppercase;
+        document.getElementById("info-season-lowercase").checked = defaultValues.infoSeasonLowercase; // <-- add this
         document.getElementById("info-season-bold").checked = defaultValues.infoSeasonBold;
         document.getElementById("info-episode-uppercase").checked = defaultValues.infoEpisodeUppercase;
+        document.getElementById("info-episode-lowercase").checked = defaultValues.infoEpisodeLowercase; // <-- add this
         document.getElementById("info-episode-bold").checked = defaultValues.infoEpisodeBold;
 
         if (textShadowBlur) textShadowBlur.value = defaultValues.textShadowBlur;
