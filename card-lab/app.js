@@ -1097,9 +1097,7 @@ if (spoilerToggle) {
       const color = window["gradient-color"] || "#000000";
       const opacity = parseFloat(gradientOpacity.value);
       const alphaColor = hexToRGBA(color, opacity);
-      const transparentColor = hexToRGBA(color, 0);
-
-      // Create the appropriate gradient based on effect type
+      const transparentColor = hexToRGBA(color, 0);      // Create the appropriate gradient based on effect type
       switch (effectType.value) {
         case "leftToRight":
           gradient = effectCtx.createLinearGradient(0, 0, width, 0);
@@ -1111,6 +1109,16 @@ if (spoilerToggle) {
           gradient.addColorStop(0, transparentColor);
           gradient.addColorStop(1, alphaColor);
           break;
+        case "leftHalf":
+          gradient = effectCtx.createLinearGradient(0, 0, width/2, 0);
+          gradient.addColorStop(0, alphaColor);
+          gradient.addColorStop(1, transparentColor);
+          break;
+        case "rightHalf":  
+          gradient = effectCtx.createLinearGradient(width/2, 0, width, 0);
+          gradient.addColorStop(0, transparentColor);
+          gradient.addColorStop(1, alphaColor);
+          break;
         case "topToBottom":
           gradient = effectCtx.createLinearGradient(0, 0, 0, height);
           gradient.addColorStop(0, alphaColor);
@@ -1118,6 +1126,16 @@ if (spoilerToggle) {
           break;
         case "bottomToTop":
           gradient = effectCtx.createLinearGradient(0, 0, 0, height);
+          gradient.addColorStop(0, transparentColor);
+          gradient.addColorStop(1, alphaColor);
+          break;
+        case "topHalf":
+          gradient = effectCtx.createLinearGradient(0, 0, 0, height/2);
+          gradient.addColorStop(0, alphaColor);
+          gradient.addColorStop(1, transparentColor);
+          break;
+        case "bottomHalf":
+          gradient = effectCtx.createLinearGradient(0, height/2, 0, height);
           gradient.addColorStop(0, transparentColor);
           gradient.addColorStop(1, alphaColor);
           break;
@@ -3222,13 +3240,17 @@ if (spoilerToggle) {
     effectTypeSelect.style.paddingRight = "30px";
     effectTypeSelect.style.cursor = "pointer";
     
-    // Add effect type options
+    // Add effect type options (including half gradients)
     const effectOptions = [
       { value: "none", text: "None" },
       { value: "leftToRight", text: "Gradient (Left to Right)" },
       { value: "rightToLeft", text: "Gradient (Right to Left)" },
+      { value: "leftHalf", text: "Gradient (Left Half)" },
+      { value: "rightHalf", text: "Gradient (Right Half)" },
       { value: "topToBottom", text: "Gradient (Top to Bottom)" },
       { value: "bottomToTop", text: "Gradient (Bottom to Top)" },
+      { value: "topHalf", text: "Gradient (Top Half)" },
+      { value: "bottomHalf", text: "Gradient (Bottom Half)" },
       { value: "radial", text: "Radial Gradient" }
     ];
     
