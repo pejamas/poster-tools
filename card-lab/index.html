@@ -18,10 +18,13 @@
       <div class="header-left">
         <a href="../index.html"><img src="../assets/favicon.png" alt="Mediux Logo" height="30" /></a>
         <h1>Card Lab</h1>
-      </div>
-      <div class="header-actions">
+      </div>      <div class="header-actions">
         <a href="../poster-showcase/" class="nav-link">Poster Showcase</a>
         <a href="../poster-overlay/" class="nav-link">Poster Overlay</a>
+        <button id="sonarr-button" class="action-button">
+          <img src="../assets/poster-overlay-icons/connect.svg" class="action-icon" alt="Sonarr" />
+          Open Sonarr
+        </button>
         <button id="saveConfigBtn" class="action-button">
           <img src="../assets/poster-showcase icons/save.svg" class="action-icon" />
           Save Config
@@ -31,15 +34,7 @@
           Load Config
         </button>
       </div>
-    </header>    <div class="layout">      <div class="sidebar">        <div class="collapsible active">          <div class="collapsible-header" id="header-sonarr" data-tooltip="Connect to Sonarr to browse and manage your TV library directly within Card Lab">
-            <h3>Sonarr Integration</h3>
-            <span class="toggle-icon"></span>
-          </div>          <div class="collapsible-content">
-            <button id="sonarr-button" class="action-button" style="width: 92%; margin: 10px auto;">
-              <img src="../assets/poster-overlay-icons/connect.svg" class="action-icon" alt="Sonarr" />
-              Open Sonarr Browser
-            </button>
-          </div></div><div class="collapsible active">          <div class="collapsible-header" id="header-tmdb" data-tooltip="Search for TV shows and episodes from TMDB. Select language, find shows, and customize episodes individually or in grid view.">
+    </header>    <div class="layout">      <div class="sidebar">        <div class="collapsible active">          <div class="collapsible-header" id="header-tmdb" data-tooltip="Search for TV shows and episodes from TMDB. Select language, find shows, and customize episodes individually or in grid view.">
             <h3>TMDB Search</h3>
             <span class="toggle-icon"></span>
           </div>
