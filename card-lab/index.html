@@ -12,6 +12,7 @@
     />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/monolith.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
   </head>
   <body>
     <header>
@@ -278,21 +279,25 @@
                 <option value="custom-font" id="custom-font-option" style="display: none">Custom Font</option>
               </select>
             </div>            <div class="segment-group">
-              <div class="segment-label">Text Style</div>
-              <div class="segmented-control">
-                <label>
-                  <input type="checkbox" id="title-uppercase" />
-                  <span>CAPS</span>
+              <div class="segment-label">Text Style</div>              <div class="segmented-control">
+                <label>                  <input type="checkbox" id="title-uppercase" />
+                  <span>
+                    <i data-lucide="case-upper" width="20" height="20"></i>
+                  </span>
                   <div class="segment-background"></div>
                 </label>
                 <label>
                   <input type="checkbox" id="title-lowercase" />
-                  <span>lower</span>
+                  <span>
+                    <i data-lucide="case-lower" width="20" height="20"></i>
+                  </span>
                   <div class="segment-background"></div>
                 </label>
                 <label>
                   <input type="checkbox" id="title-bold" />
-                  <span>Bold</span>
+                  <span>
+                    <i data-lucide="bold" width="20" height="20"></i>
+                  </span>
                   <div class="segment-background"></div>
                 </label>
               </div>
@@ -343,41 +348,49 @@
                 <option value="Lato">Lato</option>
               </select>
             </div>            <div class="segment-group">
-              <div class="segment-label">Season Style</div>
-              <div class="segmented-control">
-                <label>
-                  <input type="checkbox" id="info-season-uppercase" />
-                  <span>CAPS</span>
+              <div class="segment-label">Season Style</div>              <div class="segmented-control">
+                <label>                  <input type="checkbox" id="info-season-uppercase" />
+                  <span>
+                    <i data-lucide="case-upper" width="20" height="20"></i>
+                  </span>
                   <div class="segment-background"></div>
                 </label>
                 <label>
                   <input type="checkbox" id="info-season-lowercase" />
-                  <span>lower</span>
+                  <span>
+                    <i data-lucide="case-lower" width="20" height="20"></i>
+                  </span>
                   <div class="segment-background"></div>
                 </label>
                 <label>
                   <input type="checkbox" id="info-season-bold" />
-                  <span>Bold</span>
+                  <span>
+                    <i data-lucide="bold" width="20" height="20"></i>
+                  </span>
                   <div class="segment-background"></div>
                 </label>
               </div>
             </div>
             <div class="segment-group">
-              <div class="segment-label">Episode Style</div>
-              <div class="segmented-control">
-                <label>
-                  <input type="checkbox" id="info-episode-uppercase" />
-                  <span>CAPS</span>
+              <div class="segment-label">Episode Style</div>              <div class="segmented-control">
+                <label>                  <input type="checkbox" id="info-episode-uppercase" />
+                  <span>
+                    <i data-lucide="case-upper" width="20" height="20"></i>
+                  </span>
                   <div class="segment-background"></div>
                 </label>
                 <label>
                   <input type="checkbox" id="info-episode-lowercase" />
-                  <span>lower</span>
+                  <span>
+                    <i data-lucide="case-lower" width="20" height="20"></i>
+                  </span>
                   <div class="segment-background"></div>
                 </label>
                 <label>
                   <input type="checkbox" id="info-episode-bold" />
-                  <span>Bold</span>
+                  <span>
+                    <i data-lucide="bold" width="20" height="20"></i>
+                  </span>
                   <div class="segment-background"></div>
                 </label>
               </div>
@@ -515,5 +528,8 @@
     </div>    <script src="app.js"></script>
     <script src="tooltip.js"></script>
     <script src="sonarr-dashboard.js"></script>
+    <script>
+      lucide.createIcons();
+    </script>
   </body>
 </html>

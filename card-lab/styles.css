@@ -2015,3 +2015,26 @@ box-shadow: 0 4px 12px rgba(0, 255, 255, 0.15);
 .toggle-label-small {
   display: none;
 }
+
+.segmented-control span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px;
+}
+
+.segmented-control svg {
+  stroke: rgba(255, 255, 255, 0.7);
+  transition: all 0.2s ease;
+  width: 20px;  /* Increased from 16px */
+  height: 20px; /* Increased from 16px */
+}
+
+.segmented-control label:hover svg {
+  stroke: white;
+}
+
+.segmented-control input[type="checkbox"]:checked + span svg {
+  stroke: white;
+  stroke-width: 2.5;
+}
