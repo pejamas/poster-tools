@@ -1087,6 +1087,7 @@ if (spoilerToggle) {
 
     // Apply gradient effects if selected
     if (effectType.value !== "none") {
+
       // Create a separate canvas for the effect
       const effectCanvas = document.createElement("canvas");
       effectCanvas.width = width;
@@ -3243,15 +3244,15 @@ if (spoilerToggle) {
     // Add effect type options (including half gradients)
     const effectOptions = [
       { value: "none", text: "None" },
-      { value: "leftToRight", text: "Gradient (Left to Right)" },
-      { value: "rightToLeft", text: "Gradient (Right to Left)" },
-      { value: "leftHalf", text: "Gradient (Left Half)" },
-      { value: "rightHalf", text: "Gradient (Right Half)" },
-      { value: "topToBottom", text: "Gradient (Top to Bottom)" },
-      { value: "bottomToTop", text: "Gradient (Bottom to Top)" },
-      { value: "topHalf", text: "Gradient (Top Half)" },
-      { value: "bottomHalf", text: "Gradient (Bottom Half)" },
-      { value: "radial", text: "Radial Gradient" }
+      { value: "leftToRight", text: "Left → Right" },
+      { value: "rightToLeft", text: "Right → Left" },
+      { value: "topToBottom", text: "Top → Bottom" },
+      { value: "bottomToTop", text: "Bottom → Top" },
+      { value: "leftHalf", text: "Left Half Only" },
+      { value: "rightHalf", text: "Right Half Only" },
+      { value: "topHalf", text: "Top Half Only" },
+      { value: "bottomHalf", text: "Bottom Half Only" },
+      { value: "radial", text: "Radial (Center Out)" }
     ];
     
     effectOptions.forEach(option => {
