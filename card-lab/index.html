@@ -539,10 +539,13 @@
           <button id="confirmYes" class="custom-btn custom-btn-red">Reset</button>
         </div>
       </div>
-    </div>    <script src="app.js"></script>
+    </div>
+    <script src="editor-bar.js"></script>
+    <script src="app.js"></script>
     <script src="tooltip.js"></script>
     <script src="sonarr-dashboard.js"></script>
     <script>
+      if (window.createEditorBar) createEditorBar();
       lucide.createIcons();
     </script>
   </body>
