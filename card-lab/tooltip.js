@@ -1,9 +1,66 @@
 // Tooltip functionality with enhanced user experience
 document.addEventListener('DOMContentLoaded', function() {
-  // Create tooltip element
+  // Create tooltip element FIRST so it exists before attaching events
   const tooltip = document.createElement('div');
   tooltip.className = 'tooltip';
+  tooltip.setAttribute('role', 'tooltip');
   document.body.appendChild(tooltip);
+
+  // --- Edit Bar tooltips for buttons with data-tooltip ---
+  function showEditBarTooltip(btn) {
+    const tooltipText = btn.getAttribute('data-tooltip');
+    if (!tooltipText) return;
+    tooltip.textContent = tooltipText;
+    tooltip.style.opacity = 1;
+    tooltip.style.visibility = 'visible';
+    tooltip.dataset.currentButton = 'edit-bar-' + (btn.id || btn.className || Math.random());
+    // Position tooltip above the button
+    const rect = btn.getBoundingClientRect();
+    const tooltipWidth = tooltip.offsetWidth;
+    const tooltipHeight = tooltip.offsetHeight;
+    const buttonCenterX = rect.left + (rect.width / 2);
+    let leftPos = buttonCenterX - (tooltipWidth / 2);
+    leftPos = Math.max(10, Math.min(leftPos, window.innerWidth - tooltipWidth - 10));
+    const spaceAbove = rect.top > tooltipHeight + 15;
+    let topPos;
+    if (spaceAbove) {
+      topPos = rect.top - tooltipHeight - 10;
+      tooltip.classList.remove('tooltip-bottom');
+      tooltip.classList.add('tooltip-top');
+    } else {
+      topPos = rect.bottom + 10;
+      tooltip.classList.remove('tooltip-top');
+      tooltip.classList.add('tooltip-bottom');
+    }
+    if (topPos < 10) topPos = 10;
+    if (topPos + tooltipHeight > window.innerHeight - 10) {
+      topPos = window.innerHeight - tooltipHeight - 10;
+    }
+    tooltip.style.left = `${leftPos}px`;
+    tooltip.style.top = `${topPos}px`;
+  }
+
+  function hideEditBarTooltip() {
+    tooltip.style.opacity = 0;
+    setTimeout(() => {
+      tooltip.style.visibility = 'hidden';
+    }, 200);
+  }
+
+  function attachEditBarTooltips() {
+    document.querySelectorAll('.edit-bar [data-tooltip]').forEach(btn => {
+      btn.addEventListener('mouseenter', function() { showEditBarTooltip(btn); });
+      btn.addEventListener('mouseleave', hideEditBarTooltip);
+      btn.addEventListener('focus', function() { showEditBarTooltip(btn); });
+      btn.addEventListener('blur', hideEditBarTooltip);
+    });
+  }
+
+  // Attach tooltips on DOMContentLoaded (may need to be called again after edit bar is created)
+  attachEditBarTooltips();
+
+  // Expose for dynamic edit bar creation
+  window.attachEditBarTooltips = attachEditBarTooltips;
   
   // Track tooltip visibility timer
   let tooltipTimer = null;

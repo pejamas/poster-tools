@@ -24,6 +24,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const tabSwitcher = document.createElement("div");
     tabSwitcher.className = "edit-bar-tabs";
     tabSwitcher.innerHTML = `
+      <button class="edit-bar-settings-btn" data-tooltip="Edit Bar Settings" style="margin-right:16px;display:flex;align-items:center;background:transparent;border:none;cursor:pointer;padding:4px 8px;">
+        <i data-lucide="settings" width="18" height="18"></i>
+      </button>
       <button class="edit-bar-tab active" data-tab="title">Title</button>
       <button class="edit-bar-tab" data-tab="info">Info</button>
     `;
@@ -64,7 +67,8 @@ document.addEventListener("DOMContentLoaded", () => {
     toggleButton.style.boxShadow = "0 6px 24px rgba(0,0,0,0.22)";
     toggleButton.style.border = "1px solid #fff";
     toggleButton.style.cursor = "pointer";
-    toggleButton.title = "Show/Hide Edit Bar";
+    // Use data-tooltip instead of title for custom tooltip system
+    toggleButton.setAttribute('data-tooltip', 'Show/Hide Edit Bar');
     
     // Create the edit bar itself
     const editBar = document.createElement("div");
@@ -94,13 +98,13 @@ document.addEventListener("DOMContentLoaded", () => {
     formatGroup.className = "edit-bar-group";
     formatGroup.innerHTML = `
       <span class="edit-bar-group-label">Format</span>
-      <button id="edit-bar-bold" class="format-btn" title="Bold">
+      <button id="edit-bar-bold" class="format-btn" data-tooltip="Bold">
         <i data-lucide="bold" width="16" height="16"></i>
       </button>
-      <button id="edit-bar-uppercase" class="format-btn" title="Uppercase">
+      <button id="edit-bar-uppercase" class="format-btn" data-tooltip="Uppercase">
         <i data-lucide="case-upper" width="16" height="16"></i>
       </button>
-      <button id="edit-bar-lowercase" class="format-btn" title="Lowercase">
+      <button id="edit-bar-lowercase" class="format-btn" data-tooltip="Lowercase">
         <i data-lucide="case-lower" width="16" height="16"></i>
       </button>
     `;
@@ -137,20 +141,32 @@ document.addEventListener("DOMContentLoaded", () => {
       </select>
     `;
     
+
     // --- Title Controls ---
     const titleControls = document.createElement("div");
     titleControls.className = "edit-bar-tab-content edit-bar-tab-title";
     titleControls.style.display = "flex";
+    titleControls.style.background = "linear-gradient(90deg, #1e1e1e 80%, #00bfa5 120%)";
+    titleControls.style.borderRadius = "8px 8px 0 0";
+    titleControls.style.boxShadow = "0 2px 12px rgba(0,191,165,0.08)";
+    titleControls.style.borderBottom = "2px solid #00bfa5";
+    titleControls.style.marginBottom = "-2px";
+    titleControls.style.padding = "8px 0 8px 0";
     titleControls.appendChild(fontGroup);
     titleControls.appendChild(formatGroup);
     titleControls.appendChild(effectsGroup);
     titleControls.appendChild(positionGroup);
 
-
     // --- Info Controls (No Effects/Position, Expanded Format) ---
     const infoControls = document.createElement("div");
     infoControls.className = "edit-bar-tab-content edit-bar-tab-info";
     infoControls.style.display = "none";
+    infoControls.style.background = "linear-gradient(90deg, #232323 80%, #8e24aa 120%)";
+    infoControls.style.borderRadius = "0 0 8px 8px";
+    infoControls.style.boxShadow = "0 2px 12px rgba(142,36,170,0.10)";
+    infoControls.style.borderTop = "2px solid #8e24aa";
+    infoControls.style.marginTop = "-2px";
+    infoControls.style.padding = "8px 0 8px 0";
 
     // Font group for info
     const infoFontGroup = fontGroup.cloneNode(true);
@@ -173,29 +189,110 @@ document.addEventListener("DOMContentLoaded", () => {
     // Expanded Format group for Info: Season and Episode
     const infoFormatGroup = document.createElement("div");
     infoFormatGroup.className = "edit-bar-group info-format-group";
+    infoFormatGroup.style.background = "rgba(142,36,170,0.13)";
+    infoFormatGroup.style.border = "1px solid #8e24aa";
+    infoFormatGroup.style.boxShadow = "0 1px 6px rgba(142,36,170,0.10)";
     infoFormatGroup.innerHTML = `
       <span class="edit-bar-group-label">Format</span>
       <span class="info-format-label">Season</span>
-      <button id="edit-bar-info-season-bold" class="format-btn" title="Season Bold">
+      <button id="edit-bar-info-season-bold" class="format-btn" data-tooltip="Season Bold">
         <i data-lucide="bold" width="16" height="16"></i>
       </button>
-      <button id="edit-bar-info-season-uppercase" class="format-btn" title="Season Uppercase">
+      <button id="edit-bar-info-season-uppercase" class="format-btn" data-tooltip="Season Uppercase">
         <i data-lucide="case-upper" width="16" height="16"></i>
       </button>
-      <button id="edit-bar-info-season-lowercase" class="format-btn" title="Season Lowercase">
+      <button id="edit-bar-info-season-lowercase" class="format-btn" data-tooltip="Season Lowercase">
         <i data-lucide="case-lower" width="16" height="16"></i>
       </button>
       <span class="info-format-label">Episode</span>
-      <button id="edit-bar-info-episode-bold" class="format-btn" title="Episode Bold">
+      <button id="edit-bar-info-episode-bold" class="format-btn" data-tooltip="Episode Bold">
         <i data-lucide="bold" width="16" height="16"></i>
       </button>
-      <button id="edit-bar-info-episode-uppercase" class="format-btn" title="Episode Uppercase">
+      <button id="edit-bar-info-episode-uppercase" class="format-btn" data-tooltip="Episode Uppercase">
         <i data-lucide="case-upper" width="16" height="16"></i>
       </button>
-      <button id="edit-bar-info-episode-lowercase" class="format-btn" title="Episode Lowercase">
+      <button id="edit-bar-info-episode-lowercase" class="format-btn" data-tooltip="Episode Lowercase">
         <i data-lucide="case-lower" width="16" height="16"></i>
       </button>
     `;
+
+    // --- Info X/Y Offset Group ---
+    // Move Offset group to Title tab
+    const infoOffsetGroup = document.createElement("div");
+    infoOffsetGroup.className = "edit-bar-group";
+    infoOffsetGroup.innerHTML = `
+      <span class="edit-bar-group-label">Offset</span>
+      <div class="edit-bar-range" style="gap:14px;">
+        <label style="display:flex;align-items:center;gap:6px;">
+          <span style="min-width:18px;">X</span>
+          <input id="edit-bar-info-x-offset" type="range" min="-100" max="100" value="0" style="width:90px;">
+          <span id="edit-bar-info-x-offset-value" class="range-value">0</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;">
+          <span style="min-width:18px;">Y</span>
+          <input id="edit-bar-info-y-offset" type="range" min="-100" max="100" value="0" style="width:90px;">
+          <span id="edit-bar-info-y-offset-value" class="range-value">0</span>
+        </label>
+      </div>
+    `;
+
+    // --- Info Spoiler Blur Group ---
+    // Move Spoiler Blur group to Title tab
+    const infoBlurGroup = document.createElement("div");
+    infoBlurGroup.className = "edit-bar-group";
+    infoBlurGroup.innerHTML = `
+      <span class="edit-bar-group-label">Spoiler Blur</span>
+      <label style="display:flex;align-items:center;gap:8px;">
+        <input id="edit-bar-info-spoiler-blur" type="checkbox" style="accent-color:#00bfa5;width:18px;height:18px;">
+        <span style="color:#ccc;font-size:13px;">Enable</span>
+      </label>
+    `;
+
+    // --- Info Text Spacing ---
+    const infoSpacingGroupInfo = document.createElement("div");
+    infoSpacingGroupInfo.className = "edit-bar-group";
+    infoSpacingGroupInfo.innerHTML = `
+      <span class="edit-bar-group-label">Info Spacing</span>
+      <input id="edit-bar-info-info-spacing" type="range" min="0" max="40" value="10" style="width:60px;">
+      <span id="edit-bar-info-info-spacing-value" class="range-value">10</span>
+    `;
+
+    // --- Info Number Style & Separator Style ---
+    const infoNumberStyleGroup = document.createElement("div");
+    infoNumberStyleGroup.className = "edit-bar-group";
+    infoNumberStyleGroup.innerHTML = `
+      <span class="edit-bar-group-label">Number Style</span>
+      <select id="edit-bar-info-number-style" class="edit-bar-select">
+        ${document.getElementById("number-theme-select").innerHTML}
+      </select>
+      <div class="edit-bar-divider"></div>
+      <span class="edit-bar-group-label">Separator</span>
+      <select id="edit-bar-info-separator-style" class="edit-bar-select">
+        ${document.getElementById("separator-type").innerHTML}
+      </select>
+    `;
+
+    // --- Info Season/Episode Toggles ---
+    const infoSeasonEpisodeToggleGroup = document.createElement("div");
+    infoSeasonEpisodeToggleGroup.className = "edit-bar-group";
+    infoSeasonEpisodeToggleGroup.innerHTML = `
+      <span class="edit-bar-group-label">Show</span>
+      <label style="display:flex;align-items:center;gap:4px;">
+        <input type="checkbox" id="edit-bar-info-toggle-season"> Season
+      </label>
+      <label style="display:flex;align-items:center;gap:4px;">
+        <input type="checkbox" id="edit-bar-info-toggle-episode"> Episode
+      </label>
+    `;
+
+    // Add to Info tab (hidden by default, toggled by settings)
+    // Offset and Blur now go in Title tab, not Info tab
+    // Add Offset and Blur to Title tab (after positionGroup)
+    titleControls.appendChild(infoOffsetGroup);
+    titleControls.appendChild(infoBlurGroup);
+    infoControls.appendChild(infoSpacingGroupInfo);
+    infoControls.appendChild(infoNumberStyleGroup);
+    infoControls.appendChild(infoSeasonEpisodeToggleGroup);
 
     infoControls.appendChild(infoFontGroup);
     infoControls.appendChild(infoFormatGroup);
@@ -204,6 +301,16 @@ document.addEventListener("DOMContentLoaded", () => {
     editBar.appendChild(tabSwitcher);
     editBar.appendChild(titleControls);
     editBar.appendChild(infoControls);
+
+    // Enable horizontal scroll with mouse wheel (vertical wheel scrolls horizontally)
+    setTimeout(() => {
+      editBar.addEventListener('wheel', function(e) {
+        if (e.deltaY !== 0) {
+          e.preventDefault();
+          editBar.scrollLeft += e.deltaY;
+        }
+      }, { passive: false });
+    }, 0);
     
     // Append the edit bar to the container
     editBarContainer.appendChild(editBar);
@@ -229,7 +336,287 @@ document.addEventListener("DOMContentLoaded", () => {
           icon.firstElementChild.style.stroke = '#fff';
         }
       });
+      // Make settings icon white
+      const settingsIcon = tabSwitcher.querySelector('.edit-bar-settings-btn i');
+      if (settingsIcon) {
+        settingsIcon.style.color = '#fff';
+        if (settingsIcon.firstElementChild && settingsIcon.firstElementChild.tagName === 'svg') {
+          settingsIcon.firstElementChild.style.stroke = '#fff';
+        }
+      }
     }
+
+    // --- Modal for settings ---
+    const settingsModal = document.createElement('div');
+    settingsModal.className = 'edit-bar-settings-modal';
+    settingsModal.style.display = 'none';
+    settingsModal.innerHTML = `
+      <div class="edit-bar-settings-backdrop"></div>
+      <div class="edit-bar-settings-frame" style="max-width:400px;width:96vw;min-width:0;">
+        <div class="edit-bar-settings-header">
+          <span>Edit Bar Settings</span>
+          <button class="edit-bar-settings-close" data-tooltip="Close Settings"><i data-lucide="x" width="20" height="20"></i></button>
+        </div>
+        <form id="edit-bar-settings-form" autocomplete="off">
+        <div class="edit-bar-settings-content" style="padding:0 0 8px 0;">
+          <div style="margin-bottom:18px;">
+            <div style="background:linear-gradient(90deg,#1e1e1e 80%,#00bfa5 120%);border-radius:7px 7px 0 0;padding:8px 18px 6px 18px;border-bottom:2px solid #00bfa5;box-shadow:0 2px 8px rgba(0,191,165,0.08);font-weight:700;font-size:1.08em;color:#fff;letter-spacing:.01em;">Title Controls</div>
+            <div style="background:#18181a;border-radius:0 0 7px 7px;padding:12px 18px 8px 18px;display:flex;flex-wrap:wrap;gap:10px 18px;border-bottom:1.5px solid #222;">
+              <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;min-width:180px;">
+                <input type="checkbox" id="toggle-title-font" checked style="accent-color:#00bfa5;">
+                <span>Show Font Controls</span>
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;min-width:180px;">
+                <input type="checkbox" id="toggle-title-format" checked style="accent-color:#00bfa5;">
+                <span>Show Format Controls</span>
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;min-width:180px;">
+                <input type="checkbox" id="toggle-title-effects" checked style="accent-color:#00bfa5;">
+                <span>Show Effects Controls</span>
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;min-width:180px;">
+                <input type="checkbox" id="toggle-title-position" checked style="accent-color:#00bfa5;">
+                <span>Show Position Controls</span>
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;min-width:180px;">
+                <input type="checkbox" id="toggle-info-offset" style="accent-color:#00bfa5;">
+                <span>Show X/Y Offset Controls</span>
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;min-width:180px;">
+                <input type="checkbox" id="toggle-info-blur" style="accent-color:#00bfa5;">
+                <span>Show Spoiler Blur Control</span>
+              </label>
+            </div>
+          </div>
+          <div style="margin-bottom:0;">
+            <div style="background:linear-gradient(90deg,#232323 80%,#8e24aa 120%);border-radius:7px 7px 0 0;padding:8px 18px 6px 18px;border-bottom:2px solid #8e24aa;box-shadow:0 2px 8px rgba(142,36,170,0.10);font-weight:700;font-size:1.08em;color:#fff;letter-spacing:.01em;">Info Controls</div>
+            <div style="background:#19181c;border-radius:0 0 7px 7px;padding:12px 18px 8px 18px;display:flex;flex-wrap:wrap;gap:10px 18px;">
+              <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;min-width:180px;">
+                <input type="checkbox" id="toggle-info-font" checked style="accent-color:#8e24aa;">
+                <span>Show Font Controls</span>
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;min-width:180px;">
+                <input type="checkbox" id="toggle-info-format" checked style="accent-color:#8e24aa;">
+                <span>Show Format Controls</span>
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;min-width:180px;">
+                <input type="checkbox" id="toggle-info-effects" checked style="accent-color:#8e24aa;">
+                <span>Show Effects Controls</span>
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;min-width:180px;">
+                <input type="checkbox" id="toggle-info-position" checked style="accent-color:#8e24aa;">
+                <span>Show Position Controls</span>
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;min-width:180px;">
+                <input type="checkbox" id="toggle-info-spacing" style="accent-color:#8e24aa;">
+                <span>Show Info Text Spacing</span>
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;min-width:180px;">
+                <input type="checkbox" id="toggle-info-number-style" style="accent-color:#8e24aa;">
+                <span>Show Number/Separator Style Controls</span>
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;min-width:180px;">
+                <input type="checkbox" id="toggle-info-season-episode" style="accent-color:#8e24aa;">
+                <span>Show Season/Episode Toggles</span>
+              </label>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:10px;padding:0 24px 18px 24px;">
+          <button type="button" class="edit-bar-settings-reset" style="background:#232323;color:#fff;border:1px solid #00bfa5;border-radius:6px;padding:7px 18px;font-weight:600;cursor:pointer;">Reset</button>
+          <button type="submit" class="edit-bar-settings-save" style="background:linear-gradient(135deg,#00bfa5,#8e24aa);color:#fff;border:none;border-radius:6px;padding:7px 18px;font-weight:600;cursor:pointer;">Save</button>
+        </div>
+        </form>
+      </div>
+    `;
+    document.body.appendChild(settingsModal);
+
+    // Open modal on settings button click
+    const settingsBtn = tabSwitcher.querySelector('.edit-bar-settings-btn');
+    settingsBtn.addEventListener('click', () => {
+      settingsModal.style.display = 'block';
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
+      }
+    });
+    // Close modal on close button or backdrop click
+    settingsModal.querySelector('.edit-bar-settings-close').addEventListener('click', () => {
+      settingsModal.style.display = 'none';
+    });
+    settingsModal.querySelector('.edit-bar-settings-backdrop').addEventListener('click', () => {
+      settingsModal.style.display = 'none';
+    });
+
+    // --- Settings persistence logic ---
+    const SETTINGS_KEY = 'editBarSettingsV2';
+    const settingsForm = settingsModal.querySelector('#edit-bar-settings-form');
+    const allToggles = [
+      'toggle-title-font',
+      'toggle-title-format',
+      'toggle-title-effects',
+      'toggle-title-position',
+      'toggle-info-font',
+      'toggle-info-format',
+      'toggle-info-effects',
+      'toggle-info-position',
+      'toggle-info-offset',
+      'toggle-info-blur',
+      'toggle-info-spacing',
+      'toggle-info-number-style',
+      'toggle-info-season-episode',
+    ];
+
+    // Save settings to localStorage
+    function saveSettings() {
+      const obj = {};
+      allToggles.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) obj[id] = el.checked;
+      });
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify(obj));
+    }
+    // Load settings from localStorage
+    function loadSettings() {
+      const raw = localStorage.getItem(SETTINGS_KEY);
+      if (!raw) return;
+      try {
+        const obj = JSON.parse(raw);
+        allToggles.forEach(id => {
+          const el = document.getElementById(id);
+          if (el && typeof obj[id] === 'boolean') {
+            el.checked = obj[id];
+            // Also update group visibility
+            updateGroupVisibility(id);
+          }
+        });
+      } catch {}
+    }
+    // Reset settings to default
+    function resetSettings() {
+      allToggles.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          // Default: all title/info main groups ON, new info groups OFF
+          if ([
+            'toggle-title-font',
+            'toggle-title-format',
+            'toggle-title-effects',
+            'toggle-title-position',
+            'toggle-info-font',
+            'toggle-info-format',
+            'toggle-info-effects',
+            'toggle-info-position',
+          ].includes(id)) {
+            el.checked = true;
+          } else {
+            el.checked = false;
+          }
+          updateGroupVisibility(id);
+        }
+      });
+      localStorage.removeItem(SETTINGS_KEY);
+    }
+
+    // Save on submit
+    settingsForm.addEventListener('submit', e => {
+      e.preventDefault();
+      saveSettings();
+      settingsModal.style.display = 'none';
+    });
+    // Reset button
+    settingsForm.querySelector('.edit-bar-settings-reset').addEventListener('click', e => {
+      e.preventDefault();
+      resetSettings();
+    });
+
+    // Load settings on open
+    settingsBtn.addEventListener('click', loadSettings);
+
+    // --- Load settings on page load (after DOM ready) ---
+    // Wait for toggles to exist, then apply
+    setTimeout(loadSettings, 0);
+
+    // --- Settings toggles logic ---
+    // Map: settings checkbox id -> [array of control group DOM elements]
+    const controlGroups = {
+      'toggle-title-font': [fontGroup],
+      'toggle-title-format': [formatGroup],
+      'toggle-title-effects': [effectsGroup],
+      'toggle-title-position': [positionGroup],
+      'toggle-info-offset': [infoOffsetGroup],
+      'toggle-info-blur': [infoBlurGroup],
+      'toggle-info-font': [infoFontGroup],
+      'toggle-info-format': [infoFormatGroup],
+      // For Info tab, effects and position controls are not present by default, so we create and add them for toggling
+      'toggle-info-effects': [],
+      'toggle-info-position': [],
+      'toggle-info-spacing': [infoSpacingGroupInfo],
+      'toggle-info-number-style': [infoNumberStyleGroup],
+      'toggle-info-season-episode': [infoSeasonEpisodeToggleGroup],
+    };
+
+    // Helper: show/hide group(s) based on checkbox
+    function updateGroupVisibility(checkboxId) {
+      const checkbox = document.getElementById(checkboxId);
+      const groups = controlGroups[checkboxId];
+      if (!checkbox || !groups) return;
+      groups.forEach(group => {
+        group.style.display = checkbox.checked ? '' : 'none';
+      });
+    }
+
+    // Initial state: set all group visibility from checkboxes
+    // Add effects and position groups to Info tab for toggling
+    // Clone and insert after infoFormatGroup
+    const infoTab = infoControls;
+    // Effects group for Info
+    const infoEffectsGroup = effectsGroup.cloneNode(true);
+    infoEffectsGroup.querySelector('.edit-bar-group-label').textContent = 'Effects';
+    // Change IDs to avoid conflicts
+    const infoEffectSelect = infoEffectsGroup.querySelector('select');
+    if (infoEffectSelect) infoEffectSelect.id = 'edit-bar-info-effect-type';
+    const infoGradientRange = infoEffectsGroup.querySelector('input[type="range"]');
+    if (infoGradientRange) infoGradientRange.id = 'edit-bar-info-gradient-opacity';
+    const infoGradientValue = infoEffectsGroup.querySelector('.range-value');
+    if (infoGradientValue) infoGradientValue.id = 'edit-bar-info-gradient-opacity-value';
+    // Position group for Info
+    const infoPositionGroup = positionGroup.cloneNode(true);
+    infoPositionGroup.querySelector('.edit-bar-group-label').textContent = 'Position';
+    const infoPresetSelect = infoPositionGroup.querySelector('select');
+    if (infoPresetSelect) infoPresetSelect.id = 'edit-bar-info-preset-select';
+    const infoInfoPositionSelect = infoPositionGroup.querySelectorAll('select')[1];
+    if (infoInfoPositionSelect) infoInfoPositionSelect.id = 'edit-bar-info-info-position';
+    // Insert into Info tab
+    infoControls.appendChild(infoEffectsGroup);
+    infoControls.appendChild(infoPositionGroup);
+    // Add to controlGroups for toggling
+    controlGroups['toggle-info-effects'] = [infoEffectsGroup];
+    controlGroups['toggle-info-position'] = [infoPositionGroup];
+
+    Object.keys(controlGroups).forEach(checkboxId => {
+      updateGroupVisibility(checkboxId);
+      // Listen for changes
+      const checkbox = document.getElementById(checkboxId);
+      if (checkbox) {
+        checkbox.addEventListener('change', () => {
+          updateGroupVisibility(checkboxId);
+        });
+        // Set new Info controls to off by default
+        if ([
+          'toggle-info-offset',
+          'toggle-info-blur',
+          'toggle-info-spacing',
+          'toggle-info-number-style',
+          'toggle-info-season-episode'
+        ].includes(checkboxId)) {
+          checkbox.checked = false;
+          updateGroupVisibility(checkboxId);
+        }
+      }
+    });
+
+    // Attach tooltips to edit bar controls after creation
+    if (window.attachEditBarTooltips) window.attachEditBarTooltips();
   }
 
   // Initialize color pickers in the edit bar
@@ -272,6 +659,36 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Setup all event listeners for edit bar elements
   function setupEventListeners() {
+    // --- Info tab new controls sync ---
+    // Info X Offset
+    syncRangeElements('edit-bar-info-x-offset', 'horizontal-position', 'edit-bar-info-x-offset-value', 'position-value', '');
+    // Info Y Offset
+    syncRangeElements('edit-bar-info-y-offset', 'vertical-position', 'edit-bar-info-y-offset-value', 'position-y-value', '');
+    // Info Spoiler Blur (sync checkbox with sidebar's 'spoiler-toggle')
+    const editBarSpoiler = document.getElementById('edit-bar-info-spoiler-blur');
+    const sidebarSpoiler = document.getElementById('spoiler-toggle');
+    if (editBarSpoiler && sidebarSpoiler) {
+      // Set initial state
+      editBarSpoiler.checked = sidebarSpoiler.checked;
+      // When edit bar changes
+      editBarSpoiler.addEventListener('change', () => {
+        sidebarSpoiler.checked = editBarSpoiler.checked;
+        sidebarSpoiler.dispatchEvent(new Event('change'));
+      });
+      // When sidebar changes
+      sidebarSpoiler.addEventListener('change', () => {
+        editBarSpoiler.checked = sidebarSpoiler.checked;
+      });
+    }
+    // Info Text Spacing
+    syncRangeElements('edit-bar-info-info-spacing', 'title-info-spacing', 'edit-bar-info-info-spacing-value', 'spacing-value', 'px');
+    // Info Number Style
+    syncSelectElements('edit-bar-info-number-style', 'number-theme-select');
+    // Info Separator Style
+    syncSelectElements('edit-bar-info-separator-style', 'separator-type');
+    // Info Season/Episode Toggles
+    syncButtonWithCheckbox('edit-bar-info-toggle-season', 'season-number-display');
+    syncButtonWithCheckbox('edit-bar-info-toggle-episode', 'episode-number-display');
     // --- Info tab event listeners ---
     // Font family sync (info)
     syncSelectElements('edit-bar-info-font-family', 'info-font-family');
