@@ -1,0 +1,246 @@
+/* Make Lucide icons in the edit bar formatting buttons white */
+.edit-bar .format-btn i,
+.edit-bar .format-btn svg {
+  color: #fff !important;
+  stroke: #fff !important;
+}
+
+/* Style for Title/Info tab buttons */
+.edit-bar-tabs {
+  display: flex;
+  gap: 8px;
+  margin-right: 16px;
+}
+.edit-bar-tab {
+  background: #232323;
+  color: #fff;
+  border: none;
+  border-radius: 6px 6px 0 0;
+  padding: 6px 18px 6px 18px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s;
+  outline: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  letter-spacing: 0.01em;
+  position: relative;
+  z-index: 2;
+}
+.edit-bar-tab.active {
+  background: linear-gradient(135deg, #00bfa5, #8e24aa);
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.13);
+}
+.edit-bar-tab:not(.active):hover {
+  background: #292929;
+  color: #fff;
+}
+/* Edit Bar - Word Style Toolbar */
+.edit-bar-container {
+  display: flex;
+  flex-direction: row;
+  width: auto;
+  min-width: 0;
+  max-width: 98vw;
+  background-color: #1e1e1e;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+  margin: 18px auto 10px auto;
+  transition: all 0.3s cubic-bezier(.4,1.4,.6,1);
+  overflow-x: auto;
+  overflow-y: visible;
+  max-height: 0; /* Initially collapsed */
+  position: relative;
+  left: 0;
+  right: 0;
+  z-index: 20;
+}
+
+.edit-bar-container.visible {
+  max-height: 80px; /* Just enough for a single line */
+  margin-bottom: 20px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.22);
+}
+
+.edit-bar-toggle {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 10;
+  background: linear-gradient(135deg, #00bfa5, #8e24aa);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.edit-bar-toggle i {
+  transition: transform 0.3s ease;
+}
+
+.edit-bar-toggle.active i {
+  transform: rotate(180deg);
+}
+
+.edit-bar {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 10px;
+  padding: 10px 16px 8px 16px;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  overflow-x: auto;
+  min-width: 0;
+}
+
+.edit-bar-group {
+  display: flex;
+  align-items: center;
+  background-color: #232323;
+  border-radius: 6px;
+  padding: 4px 8px;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.edit-bar-group-label {
+  color: #00bfa5;
+  font-weight: 500;
+  font-size: 13px;
+  margin-right: 5px;
+}
+
+.edit-bar-divider {
+  height: 24px;
+  width: 1px;
+  background-color: rgba(255, 255, 255, 0.15);
+  margin: 0 6px;
+}
+
+/* Controls styling */
+.edit-bar select {
+  background-color: #222;
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 13px;
+  min-width: 80px;
+}
+
+.edit-bar .edit-bar-button {
+  background-color: #333;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  transition: background 0.2s;
+}
+
+.edit-bar .edit-bar-button:hover {
+  background-color: #444;
+}
+
+.edit-bar .edit-bar-button i {
+  width: 16px;
+  height: 16px;
+}
+
+/* For text formatting buttons */
+.edit-bar .format-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.edit-bar .format-btn:hover {
+  background-color: #333;
+}
+
+.edit-bar .format-btn.active {
+  background-color: #00bfa5;
+  border-color: #00bfa5;
+}
+
+/* Color picker styles */
+.edit-bar .color-box {
+  width: 26px;
+  height: 26px;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Range slider styles */
+.edit-bar-range {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.edit-bar-range input[type="range"] {
+  width: 80px;
+  height: 4px;
+  -webkit-appearance: none;
+  background: #444;
+  border-radius: 2px;
+  outline: none;
+}
+
+.edit-bar-range input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  background: #00bfa5;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.edit-bar-range input[type="range"]::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  background: #00bfa5;
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+}
+
+.edit-bar-range .range-value {
+  color: #ccc;
+  font-size: 12px;
+  min-width: 30px;
+}
+
+/* Responsive styles */
+@media screen and (max-width: 1200px) {
+  .edit-bar {
+    gap: 8px;
+  }
+  
+  .edit-bar-group {
+    padding: 4px 6px;
+  }
+}

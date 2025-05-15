@@ -673,6 +673,7 @@ header {
   padding: 0.5rem;
   background: rgba(0, 0, 0, 0.1);
   min-height: 0;
+  position: relative; /* Ensure absolutely positioned children (like the toggle) are placed correctly */
 }
 
 #titlecard-canvas {
