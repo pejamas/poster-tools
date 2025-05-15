@@ -462,9 +462,6 @@
               label.style.color = opt.hide ? 'rgba(255, 255, 255, 0.4)' : '#ffffff';
               toggleSwitch.style.background = opt.hide ? 'rgba(255, 255, 255, 0.15)' : 'linear-gradient(135deg, #00fff0, #6a11cb)';
               toggleSlider.style.left = opt.hide ? '2px' : '12px';
-              // Immediately save and update bar
-              saveEditorBarOptions(editorOptions);
-              rebuildBar();
             });
             
             optionGrid.appendChild(optionItem);
@@ -601,8 +598,6 @@
         // Save options to localStorage before closing
         saveEditorBarOptions(editorOptions);
         rebuildBar();
-        // Also force updateBothViews to refresh info text etc
-        if (window.updateBothViews) window.updateBothViews();
         modal.remove();
       };
       
@@ -669,235 +664,83 @@
     const sections = {};
     
     ['title', 'info'].forEach((section) => {
-      const group = createEl('div', {
+      const group = createEl('div', { 
         class: 'editor-section',
-        style: {
+        style: { 
           display: section === activeSection ? 'flex' : 'none'
         }
       });
+      // Store section element for later reference
       sections[section] = group;
 
+      // Remove duplicate group label (Title/Info) here
+
+      // Container for all controls in this section
       const controlsContainer = document.createElement('div');
       controlsContainer.className = 'section-controls';
       controlsContainer.style.display = 'flex';
       controlsContainer.style.alignItems = 'center';
       group.appendChild(controlsContainer);
 
-      // For info section, group S/E toggles as segmented controls, keep order
-      if (section === 'info') {
-        // Find indices for S/E toggles
-        const opts = editorOptions.filter(opt => opt.section === section && !opt.hide);
-        // Find indices for S/E toggles
-        const sStart = opts.findIndex(opt => opt.id === 'info-season-bold');
-        const sEnd = opts.findIndex(opt => opt.id === 'info-season-lowercase');
-        const eStart = opts.findIndex(opt => opt.id === 'info-episode-bold');
-        const eEnd = opts.findIndex(opt => opt.id === 'info-episode-lowercase');
-
-        // Render controls before S toggles
-        for (let i = 0; i < sStart; ++i) {
-          addControl(opts[i]);
-        }
-
-        // Render Season segmented control
-        if (sStart !== -1 && sEnd !== -1) {
-          const seg = createEl('div', { class: 'segmented-control', style: { display: 'flex', alignItems: 'center', margin: '0 12px 0 0' } });
-          seg.appendChild(createEl('span', {
-            style: {
-              display: 'flex',
-              alignItems: 'center',
-              fontWeight: 700,
-              marginRight: '10px',
-              fontSize: '13px',
-              color: '#fff',
-              background: 'linear-gradient(90deg, #6a11cb 0%, #00fff0 100%)',
-              padding: '2px 14px 2px 8px',
-              borderRadius: '20px',
-              letterSpacing: '1px',
-              textTransform: 'capitalize',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.10)',
-              border: '1.5px solid #00fff0',
-              fontFamily: 'Gabarito, sans-serif',
-              textShadow: '0 1px 2px #000, 0 0 2px #00fff0'
-            }
-          }, 'Season'));
-          const sOpts = opts.slice(sStart, sEnd + 1);
-          sOpts.forEach(opt => seg.appendChild(makeSegBtn(opt)));
-          controlsContainer.appendChild(seg);
-        }
-
-        // Render controls between S and E toggles
-        for (let i = sEnd + 1; i < eStart; ++i) {
-          addControl(opts[i]);
-        }
-
-        // Render Episode segmented control
-        if (eStart !== -1 && eEnd !== -1) {
-          const seg = createEl('div', { class: 'segmented-control', style: { display: 'flex', alignItems: 'center', margin: '0 12px 0 0' } });
-          seg.appendChild(createEl('span', {
-            style: {
-              display: 'flex',
-              alignItems: 'center',
-              fontWeight: 700,
-              marginRight: '10px',
-              fontSize: '13px',
-              color: '#fff',
-              background: 'linear-gradient(90deg, #00fff0 0%, #6a11cb 100%)',
-              padding: '2px 14px 2px 8px',
-              borderRadius: '20px',
-              letterSpacing: '1px',
-              textTransform: 'capitalize',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.10)',
-              border: '1.5px solid #6a11cb',
-              fontFamily: 'Gabarito, sans-serif',
-              textShadow: '0 1px 2px #000, 0 0 2px #6a11cb'
-            }
-          }, 'Episode'));
-          const eOpts = opts.slice(eStart, eEnd + 1);
-          eOpts.forEach(opt => seg.appendChild(makeSegBtn(opt)));
-          controlsContainer.appendChild(seg);
-        }
-
-        // Render controls after E toggles
-        for (let i = eEnd + 1; i < opts.length; ++i) {
-          addControl(opts[i]);
-        }
-
-        function makeSegBtn(opt) {
+      editorOptions.filter(opt => opt.section === section && !opt.hide).forEach(opt => {
+        let input;
+        if (opt.type === 'select') {
+          input = document.getElementById(opt.id)?.cloneNode(true);
+          if (!input) return;
+          input.id = 'editor-bar-' + opt.id;
+          input.onchange = e => {
+            syncSidebar(opt.id, e.target.value);
+            if (window.updateBothViews) window.updateBothViews();
+          };
+          input.value = document.getElementById(opt.id)?.value;
+        } else if (opt.type === 'pickr') {
+          input = addPickr('editor-bar-' + opt.id, opt.id === 'text-color' ? 'text-color' : 'info-color');
+        } else if (opt.type === 'checkbox') {
           // Use Lucide icons for Bold/case-upper/case-lower
           const iconMap = {
-            'S Bold': '<i data-lucide="bold" style="width:16px;height:16px;vertical-align:middle;"></i>',
-            'S Up': '<i data-lucide="case-upper" style="width:16px;height:16px;vertical-align:middle;"></i>',
-            'S Low': '<i data-lucide="case-lower" style="width:16px;height:16px;vertical-align:middle;"></i>',
-            'E Bold': '<i data-lucide="bold" style="width:16px;height:16px;vertical-align:middle;"></i>',
-            'E Up': '<i data-lucide="case-upper" style="width:16px;height:16px;vertical-align:middle;"></i>',
-            'E Low': '<i data-lucide="case-lower" style="width:16px;height:16px;vertical-align:middle;"></i>'
+            'Bold': '<i data-lucide="bold" style="width:16px;height:16px;vertical-align:middle;"></i>',
+            'Upper': '<i data-lucide="case-upper" style="width:16px;height:16px;vertical-align:middle;"></i>',
+            'Lower': '<i data-lucide="case-lower" style="width:16px;height:16px;vertical-align:middle;"></i>',
+            'S Bold': '<span style="font-weight:bold;font-size:13px;">S</span>',
+            'S Up': '<span style="font-size:13px;">S&#8593;</span>',
+            'S Low': '<span style="font-size:13px;">S&#8595;</span>',
+            'E Bold': '<span style="font-weight:bold;font-size:13px;">E</span>',
+            'E Up': '<span style="font-size:13px;">E&#8593;</span>',
+            'E Low': '<span style="font-size:13px;">E&#8595;</span>'
           };
-          const btn = createEl('button', {
+          input = createEl('button', {
             class: 'editor-btn',
             id: 'editor-bar-' + opt.id,
             'aria-pressed': !!document.getElementById(opt.id)?.checked,
             title: opt.label,
             style: { margin: '0 2px' }
           });
-          btn.innerHTML = iconMap[opt.label] || opt.label;
-          btn.onclick = e => {
+          input.innerHTML = iconMap[opt.label] || opt.label;
+          input.onclick = e => {
             const checked = !document.getElementById(opt.id)?.checked;
             syncSidebar(opt.id, checked);
-            btn.setAttribute('aria-pressed', checked);
+            input.setAttribute('aria-pressed', checked);
             if (window.updateBothViews) window.updateBothViews();
-            if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
           };
-          return btn;
+        } else if (opt.type === 'range') {
+          input = createEl('input', { type: 'range', id: 'editor-bar-' + opt.id, min: opt.min, max: opt.max, step: opt.step, value: document.getElementById(opt.id)?.value });
+          input.oninput = e => {
+            syncSidebar(opt.id, e.target.value);
+            if (window.updateBothViews) window.updateBothViews();
+          };
         }
-
-        function addControl(opt) {
-          let input;
-          if (opt.type === 'select') {
-            input = document.getElementById(opt.id)?.cloneNode(true);
-            if (!input) return;
-            input.id = 'editor-bar-' + opt.id;
-            input.onchange = e => {
-              syncSidebar(opt.id, e.target.value);
-              if (window.updateBothViews) window.updateBothViews();
-            };
-            input.value = document.getElementById(opt.id)?.value;
-          } else if (opt.type === 'pickr') {
-            input = addPickr('editor-bar-' + opt.id, opt.id === 'text-color' ? 'text-color' : 'info-color');
-          } else if (opt.type === 'checkbox') {
-            // Only for non S/E toggles
-            const iconMap = {
-              'Bold': '<i data-lucide="bold" style="width:16px;height:16px;vertical-align:middle;"></i>',
-              'Upper': '<i data-lucide="case-upper" style="width:16px;height:16px;vertical-align:middle;"></i>',
-              'Lower': '<i data-lucide="case-lower" style="width:16px;height:16px;vertical-align:middle;"></i>'
-            };
-            input = createEl('button', {
-              class: 'editor-btn',
-              id: 'editor-bar-' + opt.id,
-              'aria-pressed': !!document.getElementById(opt.id)?.checked,
-              title: opt.label,
-              style: { margin: '0 2px' }
-            });
-            input.innerHTML = iconMap[opt.label] || opt.label;
-            input.onclick = e => {
-              const checked = !document.getElementById(opt.id)?.checked;
-              syncSidebar(opt.id, checked);
-              input.setAttribute('aria-pressed', checked);
-              if (window.updateBothViews) window.updateBothViews();
-              if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
-            };
-          } else if (opt.type === 'range') {
-            input = createEl('input', { type: 'range', id: 'editor-bar-' + opt.id, min: opt.min, max: opt.max, step: opt.step, value: document.getElementById(opt.id)?.value });
-            input.oninput = e => {
-              syncSidebar(opt.id, e.target.value);
-              if (window.updateBothViews) window.updateBothViews();
-            };
-          }
-          if (input) {
-            if (opt.type !== 'checkbox') {
-              const label = createEl('label', { for: input.id }, opt.label);
-              const wrap = createEl('div', { class: 'control-group' }, label, input);
-              controlsContainer.appendChild(wrap);
-            } else {
-              const wrap = createEl('div', { class: 'control-group' }, input);
-              controlsContainer.appendChild(wrap);
-            }
+        if (input) {
+          if (opt.type !== 'checkbox') {
+            const label = createEl('label', { for: input.id }, opt.label);
+            // Create control group with divider between different controls
+            const wrap = createEl('div', { class: 'control-group' }, label, input);
+            controlsContainer.appendChild(wrap);
+          } else {
+            const wrap = createEl('div', { class: 'control-group' }, input);
+            controlsContainer.appendChild(wrap);
           }
         }
-      } else {
-        // Title section: render as before, but use Lucide icons for Bold/Upper/Lower
-        editorOptions.filter(opt => opt.section === section && !opt.hide).forEach(opt => {
-          let input;
-          if (opt.type === 'select') {
-            input = document.getElementById(opt.id)?.cloneNode(true);
-            if (!input) return;
-            input.id = 'editor-bar-' + opt.id;
-            input.onchange = e => {
-              syncSidebar(opt.id, e.target.value);
-              if (window.updateBothViews) window.updateBothViews();
-            };
-            input.value = document.getElementById(opt.id)?.value;
-          } else if (opt.type === 'pickr') {
-            input = addPickr('editor-bar-' + opt.id, opt.id === 'text-color' ? 'text-color' : 'info-color');
-          } else if (opt.type === 'checkbox') {
-            const iconMap = {
-              'Bold': '<i data-lucide="bold" style="width:16px;height:16px;vertical-align:middle;"></i>',
-              'Upper': '<i data-lucide="case-upper" style="width:16px;height:16px;vertical-align:middle;"></i>',
-              'Lower': '<i data-lucide="case-lower" style="width:16px;height:16px;vertical-align:middle;"></i>'
-            };
-            input = createEl('button', {
-              class: 'editor-btn',
-              id: 'editor-bar-' + opt.id,
-              'aria-pressed': !!document.getElementById(opt.id)?.checked,
-              title: opt.label,
-              style: { margin: '0 2px' }
-            });
-            input.innerHTML = iconMap[opt.label] || opt.label;
-            input.onclick = e => {
-              const checked = !document.getElementById(opt.id)?.checked;
-              syncSidebar(opt.id, checked);
-              input.setAttribute('aria-pressed', checked);
-              if (window.updateBothViews) window.updateBothViews();
-              if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
-            };
-          } else if (opt.type === 'range') {
-            input = createEl('input', { type: 'range', id: 'editor-bar-' + opt.id, min: opt.min, max: opt.max, step: opt.step, value: document.getElementById(opt.id)?.value });
-            input.oninput = e => {
-              syncSidebar(opt.id, e.target.value);
-              if (window.updateBothViews) window.updateBothViews();
-            };
-          }
-          if (input) {
-            if (opt.type !== 'checkbox') {
-              const label = createEl('label', { for: input.id }, opt.label);
-              const wrap = createEl('div', { class: 'control-group' }, label, input);
-              controlsContainer.appendChild(wrap);
-            } else {
-              const wrap = createEl('div', { class: 'control-group' }, input);
-              controlsContainer.appendChild(wrap);
-            }
-          }
-        });
-      }
+      });
 
       bar.appendChild(group);
     });
