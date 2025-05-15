@@ -108,23 +108,36 @@ select option[value^="custom-"] {
   white-space: nowrap;
 }
 
+
+/* Match sidebar select styling for editor bar */
 #editor-bar select {
-  background-color: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
+  background: #333;
   color: white;
-  font-size: 0.75rem;
-  padding: 3px 5px;
-  height: 24px;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  padding: 3px 8px 3px 8px;
+  box-sizing: border-box;
+  margin-bottom: 0.3rem;
+  width: 100%;
+  max-width: 90px;
+  min-width: 60px;
+  height: 26px;
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
   background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2012%2012%22%3E%3Cpath%20fill%3D%22%2300bfa5%22%20d%3D%22M10.293%203.293%206%207.586%201.707%203.293%200.293%204.707%206%2010.414%2011.707%204.707z%22%2F%3E%3C%2Fsvg%3E");
   background-size: 8px;
-  background-position: calc(100% - 7px) center;
+  background-position: calc(100% - 10px) center;
   background-repeat: no-repeat;
-  padding-right: 20px;
-  max-width: 85px;
+  padding-right: 22px;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+
+#editor-bar select:focus {
+  outline: none;
+  border: 1.5px solid #00bfa5;
+  box-shadow: 0 0 0 2px rgba(0,191,165,0.15);
 }
 
 #editor-bar input[type="range"] {
