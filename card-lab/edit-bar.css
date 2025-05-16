@@ -338,45 +338,6 @@
   min-width: 30px;
 }
 
-/* Tooltip styles for edit bar buttons (match app-wide custom tooltips) */
-.edit-bar [data-tooltip] {
-  position: relative;
-}
-
-.edit-bar [data-tooltip]:hover::after,
-.edit-bar [data-tooltip]:focus::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  left: 50%;
-  bottom: calc(100% + 8px);
-  transform: translateX(-50%);
-  background: rgba(30, 30, 40, 0.98);
-  color: #fff;
-  padding: 7px 14px;
-  border-radius: 7px;
-  font-size: 13px;
-  font-weight: 500;
-  white-space: pre-line;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.18);
-  pointer-events: none;
-  z-index: 100;
-  opacity: 1;
-  transition: opacity 0.18s;
-}
-
-.edit-bar [data-tooltip]:hover::before,
-.edit-bar [data-tooltip]:focus::before {
-  content: '';
-  position: absolute;
-  left: 50%;
-  bottom: calc(100% + 2px);
-  transform: translateX(-50%);
-  border-width: 6px 6px 0 6px;
-  border-style: solid;
-  border-color: rgba(30, 30, 40, 0.98) transparent transparent transparent;
-  z-index: 101;
-}
-
 /* Hide native title attribute for edit bar buttons */
 .edit-bar [title] {
   pointer-events: none;

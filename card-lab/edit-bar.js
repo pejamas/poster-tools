@@ -344,6 +344,12 @@ document.addEventListener("DOMContentLoaded", () => {
           settingsIcon.firstElementChild.style.stroke = '#fff';
         }
       }
+      // Remove native title attributes from all edit bar buttons/icons to prevent native tooltips
+      editBar.querySelectorAll('[data-tooltip][title]').forEach(el => el.removeAttribute('title'));
+      editBar.querySelectorAll('.format-btn [title]').forEach(el => el.removeAttribute('title'));
+      // Remove <title> elements from Lucide SVGs to prevent native SVG tooltips
+      editBar.querySelectorAll('.format-btn svg title').forEach(el => el.remove());
+      editBar.querySelectorAll('.info-format-group .format-btn svg title').forEach(el => el.remove());
     }
 
     // --- Modal for settings ---
