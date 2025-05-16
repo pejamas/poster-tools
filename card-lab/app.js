@@ -958,6 +958,7 @@ if (spoilerToggle) {
       if (card.customPlacement.blendMode) {
         blendMode.value = card.customPlacement.blendMode;
       }
+      // Do NOT set horizontalPosition.value or verticalPosition.value here!
     }    // Apply card's saved settings if available
     if (card.currentSettings) {
       fontFamily.value = card.currentSettings.fontFamily;
@@ -1007,8 +1008,8 @@ if (spoilerToggle) {
         card.currentSettings.gradientColor || "#000000";
     }
 
-    // Draw the card
-    drawCardToContext(tempCtx, width, height);    // Restore original values
+    // Draw the card, passing the card object for per-episode overrides
+    drawCardToContext(tempCtx, width, height, card);    // Restore original values
     titleInput.value = originalTitle;
     seasonNumberInput.value = originalSeason;
     episodeNumberInput.value = originalEpisode;
@@ -1035,7 +1036,7 @@ if (spoilerToggle) {
     }
   }
 
-  function drawCardToContext(targetCtx, width, height) {
+function drawCardToContext(targetCtx, width, height, card) {
     // Format season/episode numbers for display
     const formatNumber = (n) => {
       if (numberTheme === 'plain') return String(Number(n));
@@ -1423,9 +1424,17 @@ if (spoilerToggle) {
     // Get info position setting
     const infoPositionSetting = infoPosition ? infoPosition.value : "below";
 
-    // Calculate horizontal and vertical offsets
-    const rawHorizontalOffset = parseInt(horizontalPosition.value);
-    const rawVerticalOffset = parseInt(verticalPosition.value);
+
+    // --- Custom Placement Per-Episode Offset Override ---
+    let rawHorizontalOffset, rawVerticalOffset;
+    if (typeof card !== 'undefined' && card.hasCustomPlacement && card.customPlacement) {
+      // Use per-episode offsets if present
+      rawHorizontalOffset = parseInt(card.customPlacement.textXOffset || 0);
+      rawVerticalOffset = parseInt(card.customPlacement.textYOffset || 0);
+    } else {
+      rawHorizontalOffset = parseInt(horizontalPosition.value);
+      rawVerticalOffset = parseInt(verticalPosition.value);
+    }
     // Scale the offsets based on screen size
     const scaledOffset = rawHorizontalOffset * (width / 1280);
     const scaledYOffset = rawVerticalOffset * (height / 720);
@@ -3151,13 +3160,13 @@ if (spoilerToggle) {
     formWrapper.style.flexDirection = "column";
     formWrapper.style.gap = "22px";
     formWrapper.style.marginBottom = "25px";
-    
+
     // Add Text Position setting with improved styling
     const positionGroup = document.createElement("div");
     positionGroup.style.display = "flex";
     positionGroup.style.flexDirection = "column";
     positionGroup.style.gap = "10px";
-    
+
     const positionLabel = document.createElement("div");
     positionLabel.textContent = "Text Position";
     positionLabel.style.color = "#00bfa5";
@@ -3165,7 +3174,7 @@ if (spoilerToggle) {
     positionLabel.style.fontWeight = "600";
     positionLabel.style.marginLeft = "2px";
     positionGroup.appendChild(positionLabel);
-    
+
     const placementSelect = document.createElement("select");
     placementSelect.className = "dialog-select";
     placementSelect.style.width = "100%";
@@ -3182,7 +3191,7 @@ if (spoilerToggle) {
     placementSelect.style.backgroundSize = "12px auto";
     placementSelect.style.paddingRight = "30px";
     placementSelect.style.cursor = "pointer";
-    
+
     // Add placement options
     const placementOptions = [
       { value: "leftMiddle", text: "Left Middle" },
@@ -3192,23 +3201,118 @@ if (spoilerToggle) {
       { value: "manhunt", text: "Left Bottom" },
       { value: "centerTop", text: "Center Top" }
     ];
-    
+
     placementOptions.forEach(option => {
       const optionEl = document.createElement("option");
       optionEl.value = option.value;
       optionEl.textContent = option.text;
       placementSelect.appendChild(optionEl);
     });
-    
+
     // Set initial value if previously set
     if (card.customPlacement && card.customPlacement.placement) {
       placementSelect.value = card.customPlacement.placement;
     } else {
       placementSelect.value = presetSelect.value;
     }
-    
+
     positionGroup.appendChild(placementSelect);
     formWrapper.appendChild(positionGroup);
+
+    // --- X and Y Offset Sliders ---
+    // X Offset
+    const xOffsetGroup = document.createElement("div");
+    xOffsetGroup.style.display = "flex";
+    xOffsetGroup.style.flexDirection = "column";
+    xOffsetGroup.style.gap = "6px";
+    const xOffsetLabel = document.createElement("div");
+    xOffsetLabel.textContent = "Text X Offset";
+    xOffsetLabel.style.color = "#00bfa5";
+    xOffsetLabel.style.fontSize = "14px";
+    xOffsetLabel.style.fontWeight = "600";
+    xOffsetLabel.style.marginLeft = "2px";
+    xOffsetGroup.appendChild(xOffsetLabel);
+    const xOffsetSlider = document.createElement("input");
+    xOffsetSlider.type = "range";
+    xOffsetSlider.min = "-350";
+    xOffsetSlider.max = "350";
+    xOffsetSlider.step = "1";
+    xOffsetSlider.value = (card.customPlacement && typeof card.customPlacement.textXOffset === 'number')
+      ? card.customPlacement.textXOffset
+      : (typeof horizontalPosition.value === 'string' ? parseInt(horizontalPosition.value) : (horizontalPosition.value || 0));
+    xOffsetSlider.style.width = "100%";
+    xOffsetSlider.style.margin = "0";
+    xOffsetSlider.style.background = "#222";
+    xOffsetSlider.style.borderRadius = "4px";
+    xOffsetSlider.style.height = "4px";
+    xOffsetSlider.style.appearance = "none";
+    xOffsetSlider.style.outline = "none";
+    // Value display
+    const xOffsetValue = document.createElement("span");
+    xOffsetValue.textContent = xOffsetSlider.value;
+    xOffsetValue.style.marginLeft = "8px";
+    xOffsetValue.style.color = "#fff";
+    xOffsetSlider.addEventListener("input", () => {
+      xOffsetValue.textContent = xOffsetSlider.value;
+      // Live update customPlacement and preview
+      if (!card.customPlacement) card.customPlacement = {};
+      card.customPlacement.textXOffset = parseInt(xOffsetSlider.value, 10);
+      renderEpisodeGrid();
+    });
+    const xOffsetRow = document.createElement("div");
+    xOffsetRow.style.display = "flex";
+    xOffsetRow.style.alignItems = "center";
+    xOffsetRow.appendChild(xOffsetSlider);
+    xOffsetRow.appendChild(xOffsetValue);
+    xOffsetGroup.appendChild(xOffsetRow);
+    formWrapper.appendChild(xOffsetGroup);
+
+    // Y Offset
+    const yOffsetGroup = document.createElement("div");
+    yOffsetGroup.style.display = "flex";
+    yOffsetGroup.style.flexDirection = "column";
+    yOffsetGroup.style.gap = "6px";
+    const yOffsetLabel = document.createElement("div");
+    yOffsetLabel.textContent = "Text Y Offset";
+    yOffsetLabel.style.color = "#00bfa5";
+    yOffsetLabel.style.fontSize = "14px";
+    yOffsetLabel.style.fontWeight = "600";
+    yOffsetLabel.style.marginLeft = "2px";
+    yOffsetGroup.appendChild(yOffsetLabel);
+    const yOffsetSlider = document.createElement("input");
+    yOffsetSlider.type = "range";
+    yOffsetSlider.min = "-350";
+    yOffsetSlider.max = "350";
+    yOffsetSlider.step = "1";
+    yOffsetSlider.value = (card.customPlacement && typeof card.customPlacement.textYOffset === 'number')
+      ? card.customPlacement.textYOffset
+      : (typeof verticalPosition.value === 'string' ? parseInt(verticalPosition.value) : (verticalPosition.value || 0));
+    yOffsetSlider.style.width = "100%";
+    yOffsetSlider.style.margin = "0";
+    yOffsetSlider.style.background = "#222";
+    yOffsetSlider.style.borderRadius = "4px";
+    yOffsetSlider.style.height = "4px";
+    yOffsetSlider.style.appearance = "none";
+    yOffsetSlider.style.outline = "none";
+    // Value display
+    const yOffsetValue = document.createElement("span");
+    yOffsetValue.textContent = yOffsetSlider.value;
+    yOffsetValue.style.marginLeft = "8px";
+    yOffsetValue.style.color = "#fff";
+    yOffsetSlider.addEventListener("input", () => {
+      yOffsetValue.textContent = yOffsetSlider.value;
+      // Live update customPlacement and preview
+      if (!card.customPlacement) card.customPlacement = {};
+      card.customPlacement.textYOffset = parseInt(yOffsetSlider.value, 10);
+      renderEpisodeGrid();
+    });
+    const yOffsetRow = document.createElement("div");
+    yOffsetRow.style.display = "flex";
+    yOffsetRow.style.alignItems = "center";
+    yOffsetRow.appendChild(yOffsetSlider);
+    yOffsetRow.appendChild(yOffsetValue);
+    yOffsetGroup.appendChild(yOffsetRow);
+    formWrapper.appendChild(yOffsetGroup);
     
     // Add Effect Type setting with improved styling
     const effectGroup = document.createElement("div");
@@ -3410,12 +3514,14 @@ if (spoilerToggle) {
       card.customPlacement = {
         placement: placementSelect.value,
         effectType: effectTypeSelect.value,
-        blendMode: blendSelect.value
+        blendMode: blendSelect.value,
+        textXOffset: parseInt(xOffsetSlider.value, 10),
+        textYOffset: parseInt(yOffsetSlider.value, 10)
       };
-      
+
       // Close dialog
       document.body.removeChild(overlay);
-      
+
       // Update preview
       renderEpisodeGrid();
       showToast(`Custom placement applied to Episode ${card.episodeNumber}`);
