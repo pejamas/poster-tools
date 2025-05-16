@@ -225,12 +225,12 @@ document.addEventListener("DOMContentLoaded", () => {
       <div class="edit-bar-range" style="gap:14px;">
         <label style="display:flex;align-items:center;gap:6px;">
           <span style="min-width:18px;">X</span>
-          <input id="edit-bar-info-x-offset" type="range" min="-100" max="100" value="0" style="width:90px;">
+          <input id="edit-bar-info-x-offset" type="range" min="-350" max="350" value="0" style="width:90px;">
           <span id="edit-bar-info-x-offset-value" class="range-value">0</span>
         </label>
         <label style="display:flex;align-items:center;gap:6px;">
           <span style="min-width:18px;">Y</span>
-          <input id="edit-bar-info-y-offset" type="range" min="-100" max="100" value="0" style="width:90px;">
+          <input id="edit-bar-info-y-offset" type="range" min="-350" max="350" value="0" style="width:90px;">
           <span id="edit-bar-info-y-offset-value" class="range-value">0</span>
         </label>
       </div>
@@ -253,8 +253,10 @@ document.addEventListener("DOMContentLoaded", () => {
     infoSpacingGroupInfo.className = "edit-bar-group";
     infoSpacingGroupInfo.innerHTML = `
       <span class="edit-bar-group-label">Info Spacing</span>
-      <input id="edit-bar-info-info-spacing" type="range" min="0" max="40" value="10" style="width:60px;">
-      <span id="edit-bar-info-info-spacing-value" class="range-value">10</span>
+      <div class="edit-bar-range">
+        <input id="edit-bar-info-info-spacing" type="range" min="0" max="40" value="10" style="width:60px;">
+        <span id="edit-bar-info-info-spacing-value" class="range-value">10</span>
+      </div>
     `;
 
     // --- Info Number Style & Separator Style ---
@@ -406,14 +408,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 <span>Show Format Controls</span>
               </label>
               <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;min-width:180px;">
-                <input type="checkbox" id="toggle-info-effects" checked style="accent-color:#8e24aa;">
-                <span>Show Effects Controls</span>
-              </label>
-              <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;min-width:180px;">
-                <input type="checkbox" id="toggle-info-position" checked style="accent-color:#8e24aa;">
-                <span>Show Position Controls</span>
-              </label>
-              <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;min-width:180px;">
                 <input type="checkbox" id="toggle-info-spacing" style="accent-color:#8e24aa;">
                 <span>Show Info Text Spacing</span>
               </label>
@@ -463,13 +457,11 @@ document.addEventListener("DOMContentLoaded", () => {
       'toggle-title-position',
       'toggle-info-font',
       'toggle-info-format',
-      'toggle-info-effects',
-      'toggle-info-position',
-      'toggle-info-offset',
-      'toggle-info-blur',
       'toggle-info-spacing',
       'toggle-info-number-style',
       'toggle-info-season-episode',
+      'toggle-info-offset',
+      'toggle-info-blur',
     ];
 
     // Save settings to localStorage
@@ -553,9 +545,6 @@ document.addEventListener("DOMContentLoaded", () => {
       'toggle-info-blur': [infoBlurGroup],
       'toggle-info-font': [infoFontGroup],
       'toggle-info-format': [infoFormatGroup],
-      // For Info tab, effects and position controls are not present by default, so we create and add them for toggling
-      'toggle-info-effects': [],
-      'toggle-info-position': [],
       'toggle-info-spacing': [infoSpacingGroupInfo],
       'toggle-info-number-style': [infoNumberStyleGroup],
       'toggle-info-season-episode': [infoSeasonEpisodeToggleGroup],
@@ -572,32 +561,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Initial state: set all group visibility from checkboxes
-    // Add effects and position groups to Info tab for toggling
-    // Clone and insert after infoFormatGroup
-    const infoTab = infoControls;
-    // Effects group for Info
-    const infoEffectsGroup = effectsGroup.cloneNode(true);
-    infoEffectsGroup.querySelector('.edit-bar-group-label').textContent = 'Effects';
-    // Change IDs to avoid conflicts
-    const infoEffectSelect = infoEffectsGroup.querySelector('select');
-    if (infoEffectSelect) infoEffectSelect.id = 'edit-bar-info-effect-type';
-    const infoGradientRange = infoEffectsGroup.querySelector('input[type="range"]');
-    if (infoGradientRange) infoGradientRange.id = 'edit-bar-info-gradient-opacity';
-    const infoGradientValue = infoEffectsGroup.querySelector('.range-value');
-    if (infoGradientValue) infoGradientValue.id = 'edit-bar-info-gradient-opacity-value';
-    // Position group for Info
-    const infoPositionGroup = positionGroup.cloneNode(true);
-    infoPositionGroup.querySelector('.edit-bar-group-label').textContent = 'Position';
-    const infoPresetSelect = infoPositionGroup.querySelector('select');
-    if (infoPresetSelect) infoPresetSelect.id = 'edit-bar-info-preset-select';
-    const infoInfoPositionSelect = infoPositionGroup.querySelectorAll('select')[1];
-    if (infoInfoPositionSelect) infoInfoPositionSelect.id = 'edit-bar-info-info-position';
-    // Insert into Info tab
-    infoControls.appendChild(infoEffectsGroup);
-    infoControls.appendChild(infoPositionGroup);
-    // Add to controlGroups for toggling
-    controlGroups['toggle-info-effects'] = [infoEffectsGroup];
-    controlGroups['toggle-info-position'] = [infoPositionGroup];
+
 
     Object.keys(controlGroups).forEach(checkboxId => {
       updateGroupVisibility(checkboxId);
