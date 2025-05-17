@@ -171,19 +171,27 @@
               <option value="centerTop">Center Top</option>
             </select>
               <div class="horizontal-position">
-              <div class="position-label">
-                <span class="label-text">Text X Offset</span>
-                <span class="position-value" id="position-value">0px</span>
+                <div class="position-label">
+                  <span class="label-text">Text X Offset</span>
+                  <span class="position-value" id="position-value">0px</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:4px;">
+                  <button type="button" class="sidebar-range-btn" id="horizontal-position-decrement" tabindex="-1">-</button>
+                  <input type="range" id="horizontal-position" min="-350" max="350" value="0" step="5" />
+                  <button type="button" class="sidebar-range-btn" id="horizontal-position-increment" tabindex="-1">+</button>
+                </div>
               </div>
-              <input type="range" id="horizontal-position" min="-350" max="350" value="0" />
-            </div>
-            <div class="vertical-position">
-              <div class="position-label">
-                <span class="label-text">Text Y Offset</span>
-                <span class="position-value" id="position-y-value">0px</span>
+              <div class="vertical-position">
+                <div class="position-label">
+                  <span class="label-text">Text Y Offset</span>
+                  <span class="position-value" id="position-y-value">0px</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:4px;">
+                  <button type="button" class="sidebar-range-btn" id="vertical-position-decrement" tabindex="-1">-</button>
+                  <input type="range" id="vertical-position" min="-350" max="350" value="0" step="5" />
+                  <button type="button" class="sidebar-range-btn" id="vertical-position-increment" tabindex="-1">+</button>
+                </div>
               </div>
-              <input type="range" id="vertical-position" min="-350" max="350" value="0" />
-            </div>
             <label for="info-position">Info Text Position</label>
             <select id="info-position">
               <option value="above">Above Title</option>
@@ -195,7 +203,11 @@
                 <span class="label-text">Info Text Spacing</span>
                 <span class="gap-value" id="spacing-value">15px</span>
               </div>
-              <input type="range" id="title-info-spacing" min="-50" max="50" value="10" />
+              <div style="display:flex;align-items:center;gap:4px;">
+                <button type="button" class="sidebar-range-btn" id="title-info-spacing-decrement" tabindex="-1">-</button>
+                <input type="range" id="title-info-spacing" min="-50" max="50" value="10" step="5" />
+                <button type="button" class="sidebar-range-btn" id="title-info-spacing-increment" tabindex="-1">+</button>
+              </div>
             </div>
             
             <label for="option-label">Title Wrapping</label>
