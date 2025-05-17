@@ -24,11 +24,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const tabSwitcher = document.createElement("div");
     tabSwitcher.className = "edit-bar-tabs";
     tabSwitcher.innerHTML = `
-      <button class="edit-bar-settings-btn" data-tooltip="Edit Bar Settings" style="margin-right:16px;display:flex;align-items:center;background:transparent;border:none;cursor:pointer;padding:4px 8px;">
-        <i data-lucide="settings" width="18" height="18"></i>
+      <button class="edit-bar-settings-btn" data-tooltip="Edit Bar Settings" style="margin-right:6px;display:flex;align-items:center;background:transparent;border:none;cursor:pointer;padding:4px 8px;min-width:32px;min-height:32px;">
+        <i data-lucide="settings" width="20" height="20"></i>
       </button>
-      <button class="edit-bar-tab active" data-tab="title">Title</button>
-      <button class="edit-bar-tab" data-tab="info">Info</button>
+      <button class="edit-bar-tab active" data-tab="title" data-tooltip="Title Controls" style="padding:4px 8px;min-width:32px;min-height:32px;display:flex;align-items:center;justify-content:center;">
+        <i data-lucide="type" class="lucide" width="20" height="20"></i>
+      </button>
+      <button class="edit-bar-tab" data-tab="info" data-tooltip="Info Controls" style="padding:4px 8px;min-width:32px;min-height:32px;display:flex;align-items:center;justify-content:center;">
+        <i data-lucide="info" class="lucide" width="20" height="20"></i>
+      </button>
     `;
 
     // Create container elements
@@ -115,16 +119,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const effectsGroup = document.createElement("div");
     effectsGroup.className = "edit-bar-group";
     effectsGroup.innerHTML = `
-      <span class="edit-bar-group-label">Effects</span>
+      <span class="edit-bar-group-label">Gradient</span>
       <select id="edit-bar-effect-type">
         ${document.getElementById("effect-type").innerHTML}
       </select>
-      <div class="edit-bar-divider"></div>
       <div class="edit-bar-range">
-        <span>Gradient</span>
-        <input type="range" id="edit-bar-gradient-opacity" min="0" max="1" step="0.01" value="0.7">
+        <input type="range" id="edit-bar-gradient-opacity" min="0" max="1" step="0.01" value="0.7" style="width:80px;height:4px;vertical-align:middle;">
         <span class="range-value" id="edit-bar-gradient-opacity-value">0.70</span>
       </div>
+      <div class="edit-bar-divider"></div>
     `;
     
     // Position group
@@ -167,9 +170,12 @@ document.addEventListener("DOMContentLoaded", () => {
     infoControls.style.borderTop = "2px solid #8e24aa";
     infoControls.style.marginTop = "-2px";
     infoControls.style.padding = "8px 0 8px 0";
+    // Add a class for info theme styling
+    infoControls.classList.add('info-theme');
 
     // Font group for info
     const infoFontGroup = fontGroup.cloneNode(true);
+    infoFontGroup.classList.add('info-theme');
     infoFontGroup.querySelector('.edit-bar-group-label').textContent = 'Font';
     const infoFontSelect = infoFontGroup.querySelector('select');
     if (document.getElementById("info-font-family")) {
@@ -188,30 +194,33 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Expanded Format group for Info: Season and Episode
     const infoFormatGroup = document.createElement("div");
-    infoFormatGroup.className = "edit-bar-group info-format-group";
-    infoFormatGroup.style.background = "rgba(142,36,170,0.13)";
-    infoFormatGroup.style.border = "1px solid #8e24aa";
+    infoFormatGroup.className = "edit-bar-group info-format-group info-theme";
+    // Match the Title tab's group background, but keep purple accents for labels/buttons
+    infoFormatGroup.style.background = "#232323";
+    infoFormatGroup.style.border = "1px solid rgba(142,36,170,0.13)";
     infoFormatGroup.style.boxShadow = "0 1px 6px rgba(142,36,170,0.10)";
     infoFormatGroup.innerHTML = `
       <span class="edit-bar-group-label">Format</span>
-      <span class="info-format-label">Season</span>
-      <button id="edit-bar-info-season-bold" class="format-btn" data-tooltip="Season Bold">
+      <span class="edit-bar-divider" style="height:18px;width:1.5px;background:rgba(255,255,255,0.15);margin:0 8px 0 8px;"></span>
+      <i data-lucide="layers" class="info-format-label" width="18" height="18" data-tooltip="Season"></i>
+      <button id="edit-bar-info-season-bold" class="format-btn info-theme" data-tooltip="Season Bold">
         <i data-lucide="bold" width="16" height="16"></i>
       </button>
-      <button id="edit-bar-info-season-uppercase" class="format-btn" data-tooltip="Season Uppercase">
+      <button id="edit-bar-info-season-uppercase" class="format-btn info-theme" data-tooltip="Season Uppercase">
         <i data-lucide="case-upper" width="16" height="16"></i>
       </button>
-      <button id="edit-bar-info-season-lowercase" class="format-btn" data-tooltip="Season Lowercase">
+      <button id="edit-bar-info-season-lowercase" class="format-btn info-theme" data-tooltip="Season Lowercase">
         <i data-lucide="case-lower" width="16" height="16"></i>
       </button>
-      <span class="info-format-label">Episode</span>
-      <button id="edit-bar-info-episode-bold" class="format-btn" data-tooltip="Episode Bold">
+      <span class="edit-bar-divider" style="height:18px;width:1.5px;background:rgba(255,255,255,0.15);margin:0 8px 0 8px;"></span>
+      <i data-lucide="hash" class="info-format-label" width="18" height="18" data-tooltip="Episode"></i>
+      <button id="edit-bar-info-episode-bold" class="format-btn info-theme" data-tooltip="Episode Bold">
         <i data-lucide="bold" width="16" height="16"></i>
       </button>
-      <button id="edit-bar-info-episode-uppercase" class="format-btn" data-tooltip="Episode Uppercase">
+      <button id="edit-bar-info-episode-uppercase" class="format-btn info-theme" data-tooltip="Episode Uppercase">
         <i data-lucide="case-upper" width="16" height="16"></i>
       </button>
-      <button id="edit-bar-info-episode-lowercase" class="format-btn" data-tooltip="Episode Lowercase">
+      <button id="edit-bar-info-episode-lowercase" class="format-btn info-theme" data-tooltip="Episode Lowercase">
         <i data-lucide="case-lower" width="16" height="16"></i>
       </button>
     `;
@@ -248,26 +257,25 @@ document.addEventListener("DOMContentLoaded", () => {
       <span class="edit-bar-group-label">Spoiler Blur</span>
       <label style="display:flex;align-items:center;gap:8px;">
         <input id="edit-bar-info-spoiler-blur" type="checkbox" style="accent-color:#00bfa5;width:18px;height:18px;">
-        <span style="color:#ccc;font-size:13px;">Enable</span>
       </label>
     `;
 
     // --- Info Text Spacing ---
     const infoSpacingGroupInfo = document.createElement("div");
-    infoSpacingGroupInfo.className = "edit-bar-group";
+    infoSpacingGroupInfo.className = "edit-bar-group info-theme";
     infoSpacingGroupInfo.innerHTML = `
       <span class="edit-bar-group-label">Info Spacing</span>
-      <div class="edit-bar-range">
-        <button type="button" class="edit-bar-range-btn" id="edit-bar-info-info-spacing-decrement" tabindex="-1">-</button>
+      <div class="edit-bar-range info-theme">
+        <button type="button" class="edit-bar-range-btn info-theme" id="edit-bar-info-info-spacing-decrement" tabindex="-1">-</button>
         <input id="edit-bar-info-info-spacing" type="range" min="0" max="40" value="10" style="width:60px;">
-        <button type="button" class="edit-bar-range-btn" id="edit-bar-info-info-spacing-increment" tabindex="-1">+</button>
+        <button type="button" class="edit-bar-range-btn info-theme" id="edit-bar-info-info-spacing-increment" tabindex="-1">+</button>
         <span id="edit-bar-info-info-spacing-value" class="range-value">10</span>
       </div>
     `;
 
     // --- Info Number Style & Separator Style ---
     const infoNumberStyleGroup = document.createElement("div");
-    infoNumberStyleGroup.className = "edit-bar-group";
+    infoNumberStyleGroup.className = "edit-bar-group info-theme";
     infoNumberStyleGroup.innerHTML = `
       <span class="edit-bar-group-label">Number Style</span>
       <select id="edit-bar-info-number-style" class="edit-bar-select">
@@ -282,16 +290,40 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- Info Season/Episode Toggles ---
     const infoSeasonEpisodeToggleGroup = document.createElement("div");
-    infoSeasonEpisodeToggleGroup.className = "edit-bar-group";
+    infoSeasonEpisodeToggleGroup.className = "edit-bar-group info-theme";
     infoSeasonEpisodeToggleGroup.innerHTML = `
       <span class="edit-bar-group-label">Show</span>
-      <label style="display:flex;align-items:center;gap:4px;">
-        <input type="checkbox" id="edit-bar-info-toggle-season"> Season
-      </label>
-      <label style="display:flex;align-items:center;gap:4px;">
-        <input type="checkbox" id="edit-bar-info-toggle-episode"> Episode
-      </label>
+      <button type="button" id="edit-bar-info-toggle-season" class="toggle-pill info-theme" aria-pressed="false" tabindex="0">Season</button>
+      <button type="button" id="edit-bar-info-toggle-episode" class="toggle-pill info-theme" aria-pressed="false" tabindex="0">Episode</button>
     `;
+    // --- Add purple theme styles for Info tab controls ---
+    // Only add once
+    if (!document.getElementById('edit-bar-info-theme-style')) {
+      const style = document.createElement('style');
+      style.id = 'edit-bar-info-theme-style';
+      style.textContent = `
+        /* Info tab group labels */
+        .edit-bar-tab-info .info-theme .edit-bar-group-label,
+        .edit-bar-tab-info .info-theme .info-format-label {
+          color: #8e24aa !important;
+        }
+        /* Info tab range slider thumb only (track is handled in CSS) */
+        .edit-bar-tab-info .info-theme input[type="range"]::-webkit-slider-thumb {
+          background: #8e24aa;
+        }
+        .edit-bar-tab-info .info-theme input[type="range"]::-ms-fill-lower,
+        .edit-bar-tab-info .info-theme input[type="range"]::-ms-fill-upper {
+          background: #8e24aa;
+        }
+        .edit-bar-tab-info .info-theme input[type="range"]::-moz-range-thumb {
+          background: #8e24aa;
+        }
+        .edit-bar-tab-info .info-theme input[type="range"] {
+          accent-color: #8e24aa;
+        }
+      `;
+      document.head.appendChild(style);
+    }
 
     // Add to Info tab (hidden by default, toggled by settings)
     // Offset and Blur now go in Title tab, not Info tab
