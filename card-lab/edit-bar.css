@@ -1,28 +1,187 @@
-/* Increment/Decrement Buttons for Range Inputs */
+/* Title tab: Spoiler Blur pill toggle (green theme) */
+.edit-bar-tab-title .green-theme.toggle-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #1e1e1e;
+  color: #00bfa5;
+  border: 2px solid #00bfa5;
+  border-radius: 7px;
+  padding: 2px 16px 2px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  margin-right: 8px;
+  margin-left: 0;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s, border 0.18s, box-shadow 0.18s;
+  outline: none;
+  min-width: 0;
+  min-height: 0;
+  box-shadow: 0 1px 4px rgba(0,191,165,0.10);
+  opacity: 0.85;
+  letter-spacing: 0.01em;
+}
+.edit-bar-tab-title .green-theme.toggle-pill[aria-pressed="true"],
+.edit-bar-tab-title .green-theme.toggle-pill.active {
+  background: linear-gradient(90deg, #00bfa5 60%, #1de9b6 100%);
+  color: #fff;
+  border-color: #fff;
+  box-shadow: 0 2px 8px rgba(0,191,165,0.18);
+  opacity: 1;
+}
+.edit-bar-tab-title .green-theme.toggle-pill:focus {
+  outline: 2px solid #00fff0;
+  outline-offset: 1px;
+}
+.edit-bar-tab-title .green-theme.toggle-pill:not([aria-pressed="true"]):hover {
+  border-color: #00fff0;
+  color: #00fff0;
+  opacity: 1;
+}
+/* Info tab: Show season/episode pill toggles - less rounded */
+.edit-bar-tab-info .info-theme .toggle-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #232323;
+  color: #bda6d9;
+  border: 2px solid #bda6d9;
+  border-radius: 5px !important;
+  padding: 2px 16px 2px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  margin-right: 8px;
+  margin-left: 0;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s, border 0.18s, box-shadow 0.18s;
+  outline: none;
+  min-width: 0;
+  min-height: 0;
+  box-shadow: 0 1px 4px rgba(193,88,220,0.10);
+  opacity: 0.85;
+  letter-spacing: 0.01em;
+}
+.edit-bar-tab-info .info-theme .toggle-pill[aria-pressed="true"],
+.edit-bar-tab-info .info-theme .toggle-pill.active {
+  background: linear-gradient(90deg, #8e24aa 60%, #c158dc 100%);
+  color: #fff;
+  border-color: #fff;
+  box-shadow: 0 2px 8px rgba(193,88,220,0.18);
+  opacity: 1;
+}
+.edit-bar-tab-info .info-theme .toggle-pill:focus {
+  outline: 2px solid #e1b6fa;
+  outline-offset: 1px;
+}
+.edit-bar-tab-info .info-theme .toggle-pill:not([aria-pressed="true"]):hover {
+  border-color: #c158dc;
+  color: #c158dc;
+  opacity: 1;
+}
+/* Info tab: Show season/episode pill toggles */
+.edit-bar-tab-info .info-theme .toggle-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #232323;
+  color: #e1b6fa;
+  border: 1.5px solid #c158dc;
+  border-radius: 999px;
+  padding: 2px 14px 2px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  margin-right: 8px;
+  margin-left: 0;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s, border 0.18s, box-shadow 0.18s;
+  outline: none;
+  min-width: 0;
+  min-height: 0;
+  box-shadow: 0 1px 4px rgba(193,88,220,0.10);
+}
+.edit-bar-tab-info .info-theme .toggle-pill[aria-pressed="true"] {
+  background: linear-gradient(90deg, #8e24aa 60%, #c158dc 100%);
+  color: #fff;
+  border-color: #c158dc;
+  box-shadow: 0 2px 8px rgba(193,88,220,0.18);
+}
+.edit-bar-tab-info .info-theme .toggle-pill:focus {
+  outline: 2px solid #e1b6fa;
+  outline-offset: 1px;
+}
+/* Info tab: Season/Episode icons in Format group - match normal divider color */
+.edit-bar-tab-info .info-format-group .info-format-label[data-lucide] {
+  color: rgba(255,255,255,0.15) !important;
+  stroke: rgba(255,255,255,0.15) !important;
+  opacity: 1;
+  vertical-align: middle;
+  margin: 0 2px;
+  transition: color 0.18s, stroke 0.18s;
+}
+/* Increment/Decrement Buttons for Range Inputs - Title tab (default/green theme) */
 .edit-bar-range-btn {
-  background: #f3f3f3;
-  border: 1px solid #bbb;
-  border-radius: 4px;
+  background: linear-gradient(135deg, #232323 70%, #2e0e3a 100%);
+  border: 1.5px solid #222;
+  border-radius: 6px;
   width: 22px;
   height: 22px;
-  font-size: 16px;
-  color: #333;
+  font-size: 15px;
+  color: #00fff0;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 0 2px;
-  transition: background 0.15s, border 0.15s;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.13);
+  transition: background 0.18s, border 0.18s, color 0.13s, transform 0.13s, box-shadow 0.13s;
+  outline: none;
 }
 
 .edit-bar-range-btn:active {
-  background: #e0e0e0;
-  border-color: #888;
+  background: linear-gradient(135deg, #181828 70%, #302b63 100%);
+  border-color: #00bfa5;
+  color: #00bfa5;
+  transform: scale(0.95);
+  box-shadow: 0 0px 2px rgba(0,255,255,0.10);
 }
 
 .edit-bar-range-btn:focus {
-  outline: 2px solid #0078d4;
+  outline: 2px solid #00fff0;
   outline-offset: 1px;
+}
+/* Edit bar range button hover effect */
+.edit-bar-range-btn:hover {
+  background: linear-gradient(135deg, #302b63 60%, #00bfa5 100%);
+  color: #fff;
+  border-color: #00bfa5;
+  transform: scale(1.08);
+  box-shadow: 0 4px 12px rgba(0,255,255,0.13);
+}
+
+/* Increment/Decrement Buttons for Range Inputs - Info tab (purple theme) */
+.edit-bar-tab-info .info-theme .edit-bar-range-btn {
+  background: linear-gradient(135deg, #3a1850 70%, #8e24aa 100%) !important;
+  border: 1.5px solid #8e24aa !important;
+  color: #e1b6fa !important;
+  box-shadow: 0 2px 8px rgba(142,36,170,0.13) !important;
+}
+.edit-bar-tab-info .info-theme .edit-bar-range-btn:active {
+  background: linear-gradient(135deg, #2a0e3a 70%, #c158dc 100%) !important;
+  border-color: #c158dc !important;
+  color: #fff !important;
+  transform: scale(0.95);
+  box-shadow: 0 0px 2px rgba(142,36,170,0.10) !important;
+}
+.edit-bar-tab-info .info-theme .edit-bar-range-btn:focus {
+  outline: 2px solid #c158dc !important;
+  outline-offset: 1px;
+}
+.edit-bar-tab-info .info-theme .edit-bar-range-btn:hover {
+  background: linear-gradient(135deg, #8e24aa 60%, #c158dc 100%) !important;
+  color: #fff !important;
+  border-color: #c158dc !important;
+  transform: scale(1.08);
+  box-shadow: 0 4px 12px rgba(142,36,170,0.13) !important;
 }
 /* Edit Bar Settings Modal */
 .edit-bar-settings-modal {
@@ -128,33 +287,47 @@
 /* Style for Title/Info tab buttons */
 .edit-bar-tabs {
   display: flex;
-  gap: 8px;
-  margin-right: 16px;
+  gap: 4px;
+  margin-right: 8px;
+  align-items: center;
 }
 .edit-bar-tab {
   background: #232323;
   color: #fff;
   border: none;
-  border-radius: 6px 6px 0 0;
-  padding: 6px 18px 6px 18px;
+  border-radius: 5px 5px 0 0;
+  padding: 4px 8px;
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.18s, color 0.18s;
   outline: none;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
   letter-spacing: 0.01em;
   position: relative;
   z-index: 2;
+  min-width: 32px;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .edit-bar-tab.active {
   background: linear-gradient(135deg, #00bfa5, #8e24aa);
   color: #fff;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.13);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.13);
 }
 .edit-bar-tab:not(.active):hover {
   background: #292929;
   color: #fff;
+}
+/* Lucide icon style for edit bar tabs */
+.edit-bar-tab .lucide {
+  width: 20px;
+  height: 20px;
+  margin-right: 0;
+  display: block;
+  stroke-width: 2.2px;
 }
 /* Edit Bar - Word Style Toolbar */
 .edit-bar-container {
@@ -310,9 +483,17 @@
   background-color: #333;
 }
 
-.edit-bar .format-btn.active {
+/* Title tab (default/green) active formatting button */
+.edit-bar-tab-title .format-btn.active {
   background-color: #00bfa5;
   border-color: #00bfa5;
+}
+
+/* Info tab (purple) active formatting button */
+.edit-bar-tab-info .info-format-group .format-btn.active,
+.edit-bar-tab-info .info-theme .format-btn.active {
+  background-color: #8e24aa !important;
+  border-color: #8e24aa !important;
 }
 
 /* Color picker styles */
@@ -338,6 +519,11 @@
   background: #444;
   border-radius: 2px;
   outline: none;
+}
+
+/* Info tab: match Title tab slider bar color */
+.edit-bar-tab-info .info-theme .edit-bar-range input[type="range"] {
+  background: #444 !important;
 }
 
 .edit-bar-range input[type="range"]::-webkit-slider-thumb {

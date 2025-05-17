@@ -1,28 +1,41 @@
 /* Increment/Decrement Buttons for Sidebar Sliders */
 .sidebar .sidebar-range-btn {
-  background: #f3f3f3;
-  border: 1px solid #bbb;
-  border-radius: 4px;
+  background: linear-gradient(135deg, #232323 70%, #2e0e3a 100%);
+  border: 1.5px solid #222;
+  border-radius: 6px;
   width: 22px;
   height: 22px;
-  font-size: 16px;
-  color: #333;
+  font-size: 15px;
+  color: #00fff0;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 0 2px;
-  transition: background 0.15s, border 0.15s;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.13);
+  transition: background 0.18s, border 0.18s, color 0.13s, transform 0.13s, box-shadow 0.13s;
+  outline: none;
 }
 
 .sidebar .sidebar-range-btn:active {
-  background: #e0e0e0;
-  border-color: #888;
+  background: linear-gradient(135deg, #181828 70%, #302b63 100%);
+  border-color: #00bfa5;
+  color: #00bfa5;
+  transform: scale(0.95);
+  box-shadow: 0 0px 2px rgba(0,255,255,0.10);
 }
 
 .sidebar .sidebar-range-btn:focus {
-  outline: 2px solid #0078d4;
+  outline: 2px solid #00fff0;
   outline-offset: 1px;
+}
+/* Sidebar range button hover effect */
+.sidebar .sidebar-range-btn:hover {
+  background: linear-gradient(135deg, #302b63 60%, #00bfa5 100%);
+  color: #fff;
+  border-color: #00bfa5;
+  transform: scale(1.08);
+  box-shadow: 0 4px 12px rgba(0,255,255,0.13);
 }
 /* Style custom font options in dropdowns with a teal color */
 select option[value^="custom-"] {
