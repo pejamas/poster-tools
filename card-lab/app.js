@@ -540,6 +540,32 @@ if (spoilerToggle) {
     updateSliderValueDisplay("horizontal-position", "position-value", "px");
     updateSliderValueDisplay("vertical-position", "position-y-value", "px");
 
+    // Add increment/decrement logic for sidebar sliders
+    function setupSidebarRangeButton(id, step, min, max) {
+      const input = document.getElementById(id);
+      const decBtn = document.getElementById(id + "-decrement");
+      const incBtn = document.getElementById(id + "-increment");
+      if (!input || !decBtn || !incBtn) return;
+      decBtn.addEventListener("click", () => {
+        let value = parseFloat(input.value);
+        value = Math.max(min, value - step);
+        input.value = value;
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+      });
+      incBtn.addEventListener("click", () => {
+        let value = parseFloat(input.value);
+        value = Math.min(max, value + step);
+        input.value = value;
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+      });
+    }
+    // Wait for DOM to update (sliders/buttons are in HTML)
+    setTimeout(() => {
+      setupSidebarRangeButton("horizontal-position", 5, -350, 350);
+      setupSidebarRangeButton("vertical-position", 5, -350, 350);
+      setupSidebarRangeButton("title-info-spacing", 5, -50, 50);
+    }, 0);
+
     // Set default values for sliders
     document.getElementById("text-shadow-blur").value = 0;
     document.getElementById("text-outline-width").value = 0;

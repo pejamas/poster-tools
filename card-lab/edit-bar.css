@@ -1,3 +1,29 @@
+/* Increment/Decrement Buttons for Range Inputs */
+.edit-bar-range-btn {
+  background: #f3f3f3;
+  border: 1px solid #bbb;
+  border-radius: 4px;
+  width: 22px;
+  height: 22px;
+  font-size: 16px;
+  color: #333;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 2px;
+  transition: background 0.15s, border 0.15s;
+}
+
+.edit-bar-range-btn:active {
+  background: #e0e0e0;
+  border-color: #888;
+}
+
+.edit-bar-range-btn:focus {
+  outline: 2px solid #0078d4;
+  outline-offset: 1px;
+}
 /* Edit Bar Settings Modal */
 .edit-bar-settings-modal {
   position: fixed;

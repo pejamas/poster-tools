@@ -225,12 +225,16 @@ document.addEventListener("DOMContentLoaded", () => {
       <div class="edit-bar-range" style="gap:14px;">
         <label style="display:flex;align-items:center;gap:6px;">
           <span style="min-width:18px;">X</span>
-          <input id="edit-bar-info-x-offset" type="range" min="-350" max="350" value="0" style="width:90px;">
+          <button type="button" class="edit-bar-range-btn" id="edit-bar-info-x-offset-decrement" tabindex="-1">-</button>
+          <input id="edit-bar-info-x-offset" type="range" min="-350" max="350" value="0" step="5" style="width:90px;">
+          <button type="button" class="edit-bar-range-btn" id="edit-bar-info-x-offset-increment" tabindex="-1">+</button>
           <span id="edit-bar-info-x-offset-value" class="range-value">0</span>
         </label>
         <label style="display:flex;align-items:center;gap:6px;">
           <span style="min-width:18px;">Y</span>
-          <input id="edit-bar-info-y-offset" type="range" min="-350" max="350" value="0" style="width:90px;">
+          <button type="button" class="edit-bar-range-btn" id="edit-bar-info-y-offset-decrement" tabindex="-1">-</button>
+          <input id="edit-bar-info-y-offset" type="range" min="-350" max="350" value="0" step="5" style="width:90px;">
+          <button type="button" class="edit-bar-range-btn" id="edit-bar-info-y-offset-increment" tabindex="-1">+</button>
           <span id="edit-bar-info-y-offset-value" class="range-value">0</span>
         </label>
       </div>
@@ -254,7 +258,9 @@ document.addEventListener("DOMContentLoaded", () => {
     infoSpacingGroupInfo.innerHTML = `
       <span class="edit-bar-group-label">Info Spacing</span>
       <div class="edit-bar-range">
+        <button type="button" class="edit-bar-range-btn" id="edit-bar-info-info-spacing-decrement" tabindex="-1">-</button>
         <input id="edit-bar-info-info-spacing" type="range" min="0" max="40" value="10" style="width:60px;">
+        <button type="button" class="edit-bar-range-btn" id="edit-bar-info-info-spacing-increment" tabindex="-1">+</button>
         <span id="edit-bar-info-info-spacing-value" class="range-value">10</span>
       </div>
     `;
@@ -303,6 +309,33 @@ document.addEventListener("DOMContentLoaded", () => {
     editBar.appendChild(tabSwitcher);
     editBar.appendChild(titleControls);
     editBar.appendChild(infoControls);
+
+    // --- Increment/Decrement Button Logic for Info Sliders ---
+    function setupRangeButton(id, step, min, max) {
+      const input = document.getElementById(id);
+      const decBtn = document.getElementById(id + "-decrement");
+      const incBtn = document.getElementById(id + "-increment");
+      if (!input || !decBtn || !incBtn) return;
+      decBtn.addEventListener("click", () => {
+        let value = parseFloat(input.value);
+        value = Math.max(min, value - step);
+        input.value = value;
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+      });
+      incBtn.addEventListener("click", () => {
+        let value = parseFloat(input.value);
+        value = Math.min(max, value + step);
+        input.value = value;
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+      });
+    }
+
+    // Wait for DOM to update (sliders are in innerHTML)
+    setTimeout(() => {
+      setupRangeButton("edit-bar-info-x-offset", 5, -350, 350);
+      setupRangeButton("edit-bar-info-y-offset", 5, -350, 350);
+      setupRangeButton("edit-bar-info-info-spacing", 5, -50, 50);
+    }, 0);
 
     // Enable horizontal scroll with mouse wheel (vertical wheel scrolls horizontally)
     setTimeout(() => {
