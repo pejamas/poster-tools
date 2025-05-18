@@ -383,7 +383,7 @@ const logoNames = [
   "HBO",
   "History",
   "Hulu",
-  "ITV",
+  "Itv",
   "Max",
   "MGM+",
   "National Geographic",
