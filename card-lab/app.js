@@ -3204,6 +3204,20 @@ function drawCardToContext(targetCtx, width, height, card) {
       placementSelect.appendChild(optionEl);
     });
 
+
+
+
+
+    // --- X and Y Offset Sliders (with step=5 and increment/decrement buttons) ---
+    // Use a temporary object for live preview, only commit on Apply
+    let tempPlacement = card.customPlacement ? { ...card.customPlacement } : {
+      placement: placementSelect.value,
+      effectType: effectType.value,
+      blendMode: blendMode.value,
+      textXOffset: typeof horizontalPosition.value === 'string' ? parseInt(horizontalPosition.value) : (horizontalPosition.value || 0),
+      textYOffset: typeof verticalPosition.value === 'string' ? parseInt(verticalPosition.value) : (verticalPosition.value || 0)
+    };
+
     // Set initial value if previously set
     if (card.customPlacement && card.customPlacement.placement) {
       placementSelect.value = card.customPlacement.placement;
@@ -3211,20 +3225,22 @@ function drawCardToContext(targetCtx, width, height, card) {
       placementSelect.value = presetSelect.value;
     }
 
+    // Listen for changes to update tempPlacement and preview
+    placementSelect.addEventListener('change', function() {
+      tempPlacement.placement = placementSelect.value;
+      if (typeof drawPreviewCanvas === 'function') drawPreviewCanvas();
+      if (typeof updatePreview === 'function') updatePreview();
+    });
+
     positionGroup.appendChild(placementSelect);
     formWrapper.appendChild(positionGroup);
 
+    // REMOVE duplicate initialPlacement/tempPlacement block below (if present)
+    // (This is a fix for the double declaration error)
+
 
     // --- X and Y Offset Sliders (with step=5 and increment/decrement buttons) ---
-    // Use a temporary object for live preview, only commit on Apply
-    const initialPlacement = card.customPlacement || {
-      placement: presetSelect.value,
-      effectType: effectType.value,
-      blendMode: blendMode.value,
-      textXOffset: typeof horizontalPosition.value === 'string' ? parseInt(horizontalPosition.value) : (horizontalPosition.value || 0),
-      textYOffset: typeof verticalPosition.value === 'string' ? parseInt(verticalPosition.value) : (verticalPosition.value || 0)
-    };
-    let tempPlacement = { ...initialPlacement };
+    // (Removed duplicate tempPlacement declaration)
 
     // Add episode thumbnail with improved styling (PREVIEW CANVAS)
     if (card.thumbnailImg) {
