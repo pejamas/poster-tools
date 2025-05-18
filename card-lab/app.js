@@ -3014,30 +3014,34 @@ function drawCardToContext(targetCtx, width, height, card) {
     const card = episodeTitleCards[cardIndex];
     if (!card) return;
     
-    // Toggle the custom placement flag
-    card.hasCustomPlacement = !card.hasCustomPlacement;
-    
+    // If currently enabled, disable and remove settings
     if (card.hasCustomPlacement) {
-      // If enabling custom placement, save current settings
-      if (!card.customPlacement) {
-        card.customPlacement = {
-          placement: presetSelect.value,
-          effectType: effectType.value,
-          blendMode: blendMode.value
-        };
-      }
-      
-      // Show custom placement dialog for this episode
-      showCustomPlacementDialog(cardIndex);
-    } else {
-      // If disabling custom placement, remove custom settings
+      card.hasCustomPlacement = false;
       card.customPlacement = null;
       showToast(`Removed custom placement for Episode ${card.episodeNumber}`);
+      renderEpisodeGrid();
+      return;
     }
+
+    // Show dialog for custom placement, only apply if confirmed
+    showCustomPlacementDialog(cardIndex, {
+      onConfirm: (customPlacement) => {
+        card.hasCustomPlacement = true;
+        card.customPlacement = customPlacement;
+        renderEpisodeGrid();
+        showToast(`Custom placement applied to Episode ${card.episodeNumber}`);
+      },
+      onCancel: () => {
+        // Do nothing, don't enable custom placement
+        card.hasCustomPlacement = false;
+        card.customPlacement = null;
+        renderEpisodeGrid();
+      }
+    });
   }
 
   // Show dialog for custom placement settings
-  function showCustomPlacementDialog(cardIndex) {
+  function showCustomPlacementDialog(cardIndex, callbacks = {}) {
     const card = episodeTitleCards[cardIndex];
     if (!card) return;
     
@@ -3120,42 +3124,7 @@ function drawCardToContext(targetCtx, width, height, card) {
     episodeInfo.style.fontWeight = "500";
     headerWrapper.appendChild(episodeInfo);
 
-    // Add episode thumbnail with improved styling
-    if (card.thumbnailImg) {
-      const thumbnailContainer = document.createElement("div");
-      thumbnailContainer.style.width = "220px";
-      thumbnailContainer.style.height = "124px";
-      thumbnailContainer.style.marginTop = "20px";
-      thumbnailContainer.style.overflow = "hidden";
-      thumbnailContainer.style.borderRadius = "8px";
-      thumbnailContainer.style.boxShadow = "0 8px 20px rgba(0, 0, 0, 0.5)";
-      thumbnailContainer.style.border = "2px solid rgba(255, 255, 255, 0.1)";
-      thumbnailContainer.style.position = "relative";
-
-      // Add shimmer effect to thumbnail container
-      thumbnailContainer.style.background = "linear-gradient(45deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0) 100%)";
-      thumbnailContainer.style.backgroundSize = "200% 200%";
-      thumbnailContainer.style.animation = "shimmer 1.5s infinite";
-      
-      // Add shimmer animation
-      const shimmerStyle = document.createElement('style');
-      shimmerStyle.textContent = `
-        @keyframes shimmer {
-          0% { background-position: 0% 0%; }
-          100% { background-position: 200% 200%; }
-        }
-      `;
-      document.head.appendChild(shimmerStyle);
-
-      const thumbnail = document.createElement("img");
-      thumbnail.src = card.thumbnailImg.src;
-      thumbnail.style.width = "100%";
-      thumbnail.style.height = "100%";
-      thumbnail.style.objectFit = "cover";
-      
-      thumbnailContainer.appendChild(thumbnail);
-      headerWrapper.appendChild(thumbnailContainer);
-    }
+    // (Preview container and canvas will be created after tempPlacement is initialized)
     
     dialog.appendChild(headerWrapper);
     
@@ -3245,7 +3214,90 @@ function drawCardToContext(targetCtx, width, height, card) {
     positionGroup.appendChild(placementSelect);
     formWrapper.appendChild(positionGroup);
 
-    // --- X and Y Offset Sliders ---
+
+    // --- X and Y Offset Sliders (with step=5 and increment/decrement buttons) ---
+    // Use a temporary object for live preview, only commit on Apply
+    const initialPlacement = card.customPlacement || {
+      placement: presetSelect.value,
+      effectType: effectType.value,
+      blendMode: blendMode.value,
+      textXOffset: typeof horizontalPosition.value === 'string' ? parseInt(horizontalPosition.value) : (horizontalPosition.value || 0),
+      textYOffset: typeof verticalPosition.value === 'string' ? parseInt(verticalPosition.value) : (verticalPosition.value || 0)
+    };
+    let tempPlacement = { ...initialPlacement };
+
+    // Add episode thumbnail with improved styling (PREVIEW CANVAS)
+    if (card.thumbnailImg) {
+      const previewContainer = document.createElement("div");
+      previewContainer.style.width = "220px";
+      previewContainer.style.height = "124px";
+      previewContainer.style.marginTop = "20px";
+      previewContainer.style.overflow = "hidden";
+      previewContainer.style.borderRadius = "8px";
+      previewContainer.style.boxShadow = "0 8px 20px rgba(0, 0, 0, 0.5)";
+      previewContainer.style.border = "2px solid rgba(255, 255, 255, 0.1)";
+      previewContainer.style.position = "relative";
+
+      // Add shimmer effect to preview container
+      previewContainer.style.background = "linear-gradient(45deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0) 100%)";
+      previewContainer.style.backgroundSize = "200% 200%";
+      previewContainer.style.animation = "shimmer 1.5s infinite";
+
+      // Add shimmer animation
+      const shimmerStyle = document.createElement('style');
+      shimmerStyle.textContent = `
+        @keyframes shimmer {
+          0% { background-position: 0% 0%; }
+          100% { background-position: 200% 200%; }
+        }
+      `;
+      document.head.appendChild(shimmerStyle);
+
+      // Create a canvas for live preview
+      const previewCanvas = document.createElement("canvas");
+      previewCanvas.width = 440; // 2x for HiDPI
+      previewCanvas.height = 248;
+      previewCanvas.style.width = "220px";
+      previewCanvas.style.height = "124px";
+      previewCanvas.style.display = "block";
+      previewCanvas.style.borderRadius = "8px";
+      previewCanvas.style.background = "#111";
+      previewContainer.appendChild(previewCanvas);
+      headerWrapper.appendChild(previewContainer);
+
+      // Helper to draw the preview
+      function drawPreviewCanvas() {
+        // Create a temp card object with tempPlacement for preview
+        const previewCard = { ...card, hasCustomPlacement: true, customPlacement: { ...tempPlacement } };
+        // Draw using the same function as grid, but at 1280x720 then scale
+        const refWidth = 1280, refHeight = 720;
+        const tempCanvas = document.createElement("canvas");
+        tempCanvas.width = refWidth;
+        tempCanvas.height = refHeight;
+        const tempCtx = tempCanvas.getContext("2d");
+        drawCardToTempContext(tempCtx, previewCard, refWidth, refHeight);
+        // Draw scaled to previewCanvas
+        const ctx = previewCanvas.getContext("2d");
+        ctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+        ctx.drawImage(tempCanvas, 0, 0, previewCanvas.width, previewCanvas.height);
+      }
+
+      // Initial draw
+      drawPreviewCanvas();
+
+      // Redraw preview on any placement change
+      const updatePreview = () => drawPreviewCanvas();
+
+      // Attach to slider/select events after they are created
+      setTimeout(() => {
+        [xOffsetSlider, yOffsetSlider, placementSelect].forEach(el => {
+          if (el) el.addEventListener('input', updatePreview);
+        });
+        if (effectTypeSelect) effectTypeSelect.addEventListener('change', updatePreview);
+        if (blendSelect) blendSelect.addEventListener('change', updatePreview);
+      }, 0);
+    }
+
     // X Offset
     const xOffsetGroup = document.createElement("div");
     xOffsetGroup.style.display = "flex";
@@ -3262,10 +3314,8 @@ function drawCardToContext(targetCtx, width, height, card) {
     xOffsetSlider.type = "range";
     xOffsetSlider.min = "-350";
     xOffsetSlider.max = "350";
-    xOffsetSlider.step = "1";
-    xOffsetSlider.value = (card.customPlacement && typeof card.customPlacement.textXOffset === 'number')
-      ? card.customPlacement.textXOffset
-      : (typeof horizontalPosition.value === 'string' ? parseInt(horizontalPosition.value) : (horizontalPosition.value || 0));
+    xOffsetSlider.step = "5";
+    xOffsetSlider.value = tempPlacement.textXOffset;
     xOffsetSlider.style.width = "100%";
     xOffsetSlider.style.margin = "0";
     xOffsetSlider.style.background = "#222";
@@ -3278,17 +3328,44 @@ function drawCardToContext(targetCtx, width, height, card) {
     xOffsetValue.textContent = xOffsetSlider.value;
     xOffsetValue.style.marginLeft = "8px";
     xOffsetValue.style.color = "#fff";
+    // - button
+    const xOffsetDecBtn = document.createElement("button");
+    xOffsetDecBtn.type = "button";
+    xOffsetDecBtn.textContent = "-";
+    xOffsetDecBtn.className = "edit-bar-range-btn";
+    xOffsetDecBtn.style.marginRight = "4px";
+    xOffsetDecBtn.tabIndex = -1;
+    // + button
+    const xOffsetIncBtn = document.createElement("button");
+    xOffsetIncBtn.type = "button";
+    xOffsetIncBtn.textContent = "+";
+    xOffsetIncBtn.className = "edit-bar-range-btn";
+    xOffsetIncBtn.style.marginLeft = "4px";
+    xOffsetIncBtn.tabIndex = -1;
+    // Button logic
+    xOffsetDecBtn.addEventListener("click", () => {
+      let value = parseInt(xOffsetSlider.value, 10);
+      value = Math.max(-350, value - 5);
+      xOffsetSlider.value = value;
+      xOffsetSlider.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    xOffsetIncBtn.addEventListener("click", () => {
+      let value = parseInt(xOffsetSlider.value, 10);
+      value = Math.min(350, value + 5);
+      xOffsetSlider.value = value;
+      xOffsetSlider.dispatchEvent(new Event("input", { bubbles: true }));
+    });
     xOffsetSlider.addEventListener("input", () => {
       xOffsetValue.textContent = xOffsetSlider.value;
-      // Live update customPlacement and preview
-      if (!card.customPlacement) card.customPlacement = {};
-      card.customPlacement.textXOffset = parseInt(xOffsetSlider.value, 10);
-      renderEpisodeGrid();
+      tempPlacement.textXOffset = parseInt(xOffsetSlider.value, 10);
+      // No live preview to grid
     });
     const xOffsetRow = document.createElement("div");
     xOffsetRow.style.display = "flex";
     xOffsetRow.style.alignItems = "center";
+    xOffsetRow.appendChild(xOffsetDecBtn);
     xOffsetRow.appendChild(xOffsetSlider);
+    xOffsetRow.appendChild(xOffsetIncBtn);
     xOffsetRow.appendChild(xOffsetValue);
     xOffsetGroup.appendChild(xOffsetRow);
     formWrapper.appendChild(xOffsetGroup);
@@ -3309,10 +3386,8 @@ function drawCardToContext(targetCtx, width, height, card) {
     yOffsetSlider.type = "range";
     yOffsetSlider.min = "-350";
     yOffsetSlider.max = "350";
-    yOffsetSlider.step = "1";
-    yOffsetSlider.value = (card.customPlacement && typeof card.customPlacement.textYOffset === 'number')
-      ? card.customPlacement.textYOffset
-      : (typeof verticalPosition.value === 'string' ? parseInt(verticalPosition.value) : (verticalPosition.value || 0));
+    yOffsetSlider.step = "5";
+    yOffsetSlider.value = tempPlacement.textYOffset;
     yOffsetSlider.style.width = "100%";
     yOffsetSlider.style.margin = "0";
     yOffsetSlider.style.background = "#222";
@@ -3325,17 +3400,44 @@ function drawCardToContext(targetCtx, width, height, card) {
     yOffsetValue.textContent = yOffsetSlider.value;
     yOffsetValue.style.marginLeft = "8px";
     yOffsetValue.style.color = "#fff";
+    // - button
+    const yOffsetDecBtn = document.createElement("button");
+    yOffsetDecBtn.type = "button";
+    yOffsetDecBtn.textContent = "-";
+    yOffsetDecBtn.className = "edit-bar-range-btn";
+    yOffsetDecBtn.style.marginRight = "4px";
+    yOffsetDecBtn.tabIndex = -1;
+    // + button
+    const yOffsetIncBtn = document.createElement("button");
+    yOffsetIncBtn.type = "button";
+    yOffsetIncBtn.textContent = "+";
+    yOffsetIncBtn.className = "edit-bar-range-btn";
+    yOffsetIncBtn.style.marginLeft = "4px";
+    yOffsetIncBtn.tabIndex = -1;
+    // Button logic
+    yOffsetDecBtn.addEventListener("click", () => {
+      let value = parseInt(yOffsetSlider.value, 10);
+      value = Math.max(-350, value - 5);
+      yOffsetSlider.value = value;
+      yOffsetSlider.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    yOffsetIncBtn.addEventListener("click", () => {
+      let value = parseInt(yOffsetSlider.value, 10);
+      value = Math.min(350, value + 5);
+      yOffsetSlider.value = value;
+      yOffsetSlider.dispatchEvent(new Event("input", { bubbles: true }));
+    });
     yOffsetSlider.addEventListener("input", () => {
       yOffsetValue.textContent = yOffsetSlider.value;
-      // Live update customPlacement and preview
-      if (!card.customPlacement) card.customPlacement = {};
-      card.customPlacement.textYOffset = parseInt(yOffsetSlider.value, 10);
-      renderEpisodeGrid();
+      tempPlacement.textYOffset = parseInt(yOffsetSlider.value, 10);
+      // No live preview to grid
     });
     const yOffsetRow = document.createElement("div");
     yOffsetRow.style.display = "flex";
     yOffsetRow.style.alignItems = "center";
+    yOffsetRow.appendChild(yOffsetDecBtn);
     yOffsetRow.appendChild(yOffsetSlider);
+    yOffsetRow.appendChild(yOffsetIncBtn);
     yOffsetRow.appendChild(yOffsetValue);
     yOffsetGroup.appendChild(yOffsetRow);
     formWrapper.appendChild(yOffsetGroup);
@@ -3393,12 +3495,11 @@ function drawCardToContext(targetCtx, width, height, card) {
     });
     
     // Set initial value if previously set
-    if (card.customPlacement && card.customPlacement.effectType) {
-      effectTypeSelect.value = card.customPlacement.effectType;
-    } else {
-      effectTypeSelect.value = effectType.value;
-    }
-    
+    effectTypeSelect.value = tempPlacement.effectType;
+    effectTypeSelect.addEventListener('change', () => {
+      tempPlacement.effectType = effectTypeSelect.value;
+      // No live preview to grid
+    });
     effectGroup.appendChild(effectTypeSelect);
     formWrapper.appendChild(effectGroup);
     
@@ -3455,12 +3556,11 @@ function drawCardToContext(targetCtx, width, height, card) {
     });
     
     // Set initial value if previously set
-    if (card.customPlacement && card.customPlacement.blendMode) {
-      blendSelect.value = card.customPlacement.blendMode;
-    } else {
-      blendSelect.value = blendMode.value;
-    }
-    
+    blendSelect.value = tempPlacement.blendMode;
+    blendSelect.addEventListener('change', () => {
+      tempPlacement.blendMode = blendSelect.value;
+      // No live preview to grid
+    });
     blendGroup.appendChild(blendSelect);
     formWrapper.appendChild(blendGroup);
     
@@ -3497,70 +3597,44 @@ function drawCardToContext(targetCtx, width, height, card) {
     });
     
     cancelButton.addEventListener("click", () => {
-      // If canceling and no existing settings, untoggle
-      if (!card.customPlacement || Object.keys(card.customPlacement).length === 0) {
-        card.hasCustomPlacement = false;
-      }
-      
-      // Close dialog
+      // On cancel, just close dialog, do not update card or grid
       document.body.removeChild(overlay);
-      
-      // Update preview
-      renderEpisodeGrid();
+      if (callbacks && callbacks.onCancel) callbacks.onCancel();
     });
-    
-    const saveButton = document.createElement("button");
-    saveButton.textContent = "Apply Custom Settings";
-    saveButton.style.background = "linear-gradient(135deg, #00bfa5, #8e24aa)";
-    saveButton.style.color = "white";
-    saveButton.style.border = "none";
-    saveButton.style.borderRadius = "6px";
-    saveButton.style.padding = "10px 20px";
-    saveButton.style.fontSize = "14px";
-    saveButton.style.fontWeight = "500";
-    saveButton.style.cursor = "pointer";
-    saveButton.style.minWidth = "180px";
-    saveButton.style.transition = "filter 0.2s ease";
-    saveButton.style.boxShadow = "0 2px 8px rgba(0, 191, 165, 0.25)";
-    
-    saveButton.addEventListener("mouseenter", () => {
-      saveButton.style.background = "linear-gradient(135deg, #1de9b6, #a600ff)";
-      saveButton.style.transform = "translateY(-2px)";
-      saveButton.style.boxShadow = "0 6px 12px rgba(0, 191, 165, 0.3)";
-    });
-    
-    saveButton.addEventListener("mouseleave", () => {
-      saveButton.style.background = "linear-gradient(135deg, #00bfa5, #8e24aa)";
-      saveButton.style.transform = "translateY(0)";
-      saveButton.style.boxShadow = "0 4px 10px rgba(0, 191, 165, 0.2)";
-    });
-    
-    saveButton.addEventListener("click", () => {
-      // Save custom placement settings
-      card.customPlacement = {
-        placement: placementSelect.value,
-        effectType: effectTypeSelect.value,
-        blendMode: blendSelect.value,
-        textXOffset: parseInt(xOffsetSlider.value, 10),
-        textYOffset: parseInt(yOffsetSlider.value, 10)
-      };
 
-      // Close dialog
+    const applyButton = document.createElement("button");
+    applyButton.textContent = "Apply Custom Settings";
+    applyButton.style.background = "linear-gradient(135deg, #00bfa5, #8e24aa)";
+    applyButton.style.color = "white";
+    applyButton.style.border = "none";
+    applyButton.style.borderRadius = "6px";
+    applyButton.style.padding = "10px 20px";
+    applyButton.style.fontSize = "14px";
+    applyButton.style.fontWeight = "500";
+    applyButton.style.cursor = "pointer";
+    applyButton.style.minWidth = "180px";
+    applyButton.style.transition = "filter 0.2s ease";
+    applyButton.style.boxShadow = "0 2px 8px rgba(0, 191, 165, 0.25)";
+    applyButton.addEventListener("mouseenter", () => {
+      applyButton.style.background = "linear-gradient(135deg, #1de9b6, #a600ff)";
+      applyButton.style.transform = "translateY(-2px)";
+      applyButton.style.boxShadow = "0 6px 12px rgba(0, 191, 165, 0.3)";
+    });
+    applyButton.addEventListener("mouseleave", () => {
+      applyButton.style.background = "linear-gradient(135deg, #00bfa5, #8e24aa)";
+      applyButton.style.transform = "translateY(0)";
+      applyButton.style.boxShadow = "0 4px 10px rgba(0, 191, 165, 0.2)";
+    });
+    applyButton.addEventListener("click", () => {
+      // Commit custom placement settings
       document.body.removeChild(overlay);
-
-      // Update preview
-      renderEpisodeGrid();
-      showToast(`Custom placement applied to Episode ${card.episodeNumber}`);
+      if (callbacks && callbacks.onConfirm) callbacks.onConfirm({ ...tempPlacement });
     });
-    
+
     buttonsContainer.appendChild(cancelButton);
-    buttonsContainer.appendChild(saveButton);
+    buttonsContainer.appendChild(applyButton);
     dialog.appendChild(buttonsContainer);
-    
-    // Add dialog to overlay
     overlay.appendChild(dialog);
-    
-    // Add overlay to body
     document.body.appendChild(overlay);
   }
 
