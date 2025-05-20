@@ -157,7 +157,7 @@ document.addEventListener("DOMContentLoaded", () => {
     titleControls.style.padding = "8px 0 8px 0";
     titleControls.appendChild(fontGroup);
     titleControls.appendChild(formatGroup);
-    titleControls.appendChild(effectsGroup);
+    // titleControls.appendChild(effectsGroup); // Moved to the end of Title tab controls
     titleControls.appendChild(positionGroup);
 
     // --- Info Controls (No Effects/Position, Expanded Format) ---
@@ -190,6 +190,25 @@ document.addEventListener("DOMContentLoaded", () => {
       infoTextSizeSelect.id = "edit-bar-info-text-size";
     } else {
       infoTextSizeSelect.id = "edit-bar-info-text-size";
+    }
+
+    // Remove Wrap controls from the cloned infoFontGroup as they are not needed in the Info tab
+    const allSelectsInInfoFontGroup = infoFontGroup.querySelectorAll('select');
+    if (allSelectsInInfoFontGroup.length > 2) {
+      const wrapSelectInInfo = allSelectsInInfoFontGroup[2]; // This is the "Wrap" select element
+      const wrapLabelInInfo = wrapSelectInInfo.previousElementSibling; // This should be the "Wrap" label
+      const wrapDividerInInfo = wrapLabelInInfo ? wrapLabelInInfo.previousElementSibling : null; // This should be the divider before the label
+
+      // Remove the select element for "Wrap"
+      wrapSelectInInfo.remove();
+      // Remove the "Wrap" label if it exists and is a span with the correct class
+      if (wrapLabelInInfo && wrapLabelInInfo.tagName === 'SPAN' && wrapLabelInInfo.classList.contains('edit-bar-group-label')) {
+        wrapLabelInInfo.remove();
+      }
+      // Remove the divider before the "Wrap" label if it exists and is a div with the correct class
+      if (wrapDividerInInfo && wrapDividerInInfo.tagName === 'DIV' && wrapDividerInInfo.classList.contains('edit-bar-divider')) {
+        wrapDividerInInfo.remove();
+      }
     }
 
     // Expanded Format group for Info: Season and Episode
@@ -330,12 +349,14 @@ document.addEventListener("DOMContentLoaded", () => {
     // Add Offset and Blur to Title tab (after positionGroup)
     titleControls.appendChild(infoOffsetGroup);
     titleControls.appendChild(infoBlurGroup);
+    titleControls.appendChild(effectsGroup); // effectsGroup moved here
+
+    // Append groups to infoControls in the new specified order
+    infoControls.appendChild(infoFontGroup);
+    infoControls.appendChild(infoFormatGroup);
     infoControls.appendChild(infoSpacingGroupInfo);
     infoControls.appendChild(infoNumberStyleGroup);
     infoControls.appendChild(infoSeasonEpisodeToggleGroup);
-
-    infoControls.appendChild(infoFontGroup);
-    infoControls.appendChild(infoFormatGroup);
 
     // Add tab switcher and tab contents to the bar
     editBar.appendChild(tabSwitcher);
