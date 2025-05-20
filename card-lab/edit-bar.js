@@ -174,23 +174,19 @@ document.addEventListener("DOMContentLoaded", () => {
     infoControls.classList.add('info-theme');
 
     // Font group for info
-    const infoFontGroup = fontGroup.cloneNode(true);
-    infoFontGroup.classList.add('info-theme');
-    infoFontGroup.querySelector('.edit-bar-group-label').textContent = 'Font';
-    const infoFontSelect = infoFontGroup.querySelector('select');
-    if (document.getElementById("info-font-family")) {
-      infoFontSelect.innerHTML = document.getElementById("info-font-family").innerHTML;
-      infoFontSelect.id = "edit-bar-info-font-family";
-    } else {
-      infoFontSelect.id = "edit-bar-info-font-family";
-    }
-    const infoTextSizeSelect = infoFontGroup.querySelectorAll('select')[1];
-    if (document.getElementById("info-text-size")) {
-      infoTextSizeSelect.innerHTML = document.getElementById("info-text-size").innerHTML;
-      infoTextSizeSelect.id = "edit-bar-info-text-size";
-    } else {
-      infoTextSizeSelect.id = "edit-bar-info-text-size";
-    }
+    // Create a new infoFontGroup without the Wrap control
+    const infoFontGroup = document.createElement("div");
+    infoFontGroup.className = "edit-bar-group info-theme";
+    infoFontGroup.innerHTML = `
+      <span class="edit-bar-group-label">Font</span>
+      <select id="edit-bar-info-font-family" class="edit-bar-select">
+        ${document.getElementById("info-font-family") ? document.getElementById("info-font-family").innerHTML : document.getElementById("font-family").innerHTML}
+      </select>
+      <div class="edit-bar-divider"></div>
+      <select id="edit-bar-info-text-size" class="edit-bar-select">
+        ${document.getElementById("info-text-size") ? document.getElementById("info-text-size").innerHTML : document.getElementById("text-size").innerHTML}
+      </select>
+    `;
 
     // Expanded Format group for Info: Season and Episode
     const infoFormatGroup = document.createElement("div");
