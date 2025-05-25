@@ -394,6 +394,7 @@ const logoNames = [
   "PBS",
   "Peacock",
   "Prime Video",
+  "S4C",
   "Showcase",
   "Showtime",
   "Sky",
