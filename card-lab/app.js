@@ -179,7 +179,6 @@ if (spoilerToggle) {
   let gridCardHeight = 135;
   let gridGap = 10;
   let gridColumns = 4;
-
   // =====================================================
   // DEFAULT CONFIGURATION VALUES
   // =====================================================
@@ -202,6 +201,7 @@ if (spoilerToggle) {
     textShadowBlur: 0,
     textOutlineWidth: 0,
     horizontalPosition: 0,
+    verticalPosition: 0,
     infoShadowBlur: 0,
     infoOutlineWidth: 0,
     titleInfoSpacing: 15,
@@ -3842,13 +3842,14 @@ function drawCardToContext(targetCtx, width, height, card) {
     exportCanvas.height = 1080;
     const exportCtx = exportCanvas.getContext("2d");
     drawCardToContext(exportCtx, 1920, 1080);
-    const dataURL = exportCanvas.toDataURL("image/png");
-    const link = document.createElement("a");
-    link.download = filename;
-    link.href = dataURL;
-    link.click();
-
-    showToast("Title card downloaded successfully");
+    // Use toBlob for smaller PNG (lower compression quality)
+    exportCanvas.toBlob(function(blob) {
+      const link = document.createElement("a");
+      link.download = filename;
+      link.href = URL.createObjectURL(blob);
+      link.click();
+      showToast("Title card downloaded successfully");
+    }, "image/png", 0.7); // 0.7 = slightly lower quality, smaller file
   }
 
   // Dynamically load JSZip library
@@ -3918,7 +3919,7 @@ function drawCardToContext(targetCtx, width, height, card) {
           } - ${card.title.replace(/[/\\?%*:|"<>]/g, "-")}.png`;
           seasonFolder.file(filename, blob);
           resolve();
-        }, "image/png");
+        }, "image/png", 0.7); // 0.7 = slightly lower quality, smaller file
       });
     });
 
@@ -4278,21 +4279,20 @@ function drawCardToContext(targetCtx, width, height, card) {
       infoFontFamilyEl.value = settings.infoFontFamily;
     }
     if (settings.textSize) textSize.value = settings.textSize;
-    if (settings.infoTextSize) document.getElementById("info-text-size").value = settings.infoTextSize;
-    if (settings.textShadowBlur) textShadowBlur.value = settings.textShadowBlur;
-    if (settings.textOutlineWidth) textOutlineWidth.value = settings.textOutlineWidth;
-    if (settings.infoShadowBlur) document.getElementById("info-shadow-blur").value = settings.infoShadowBlur;
-    if (settings.infoOutlineWidth) document.getElementById("info-outline-width").value = settings.infoOutlineWidth;
-    if (settings.titleInfoSpacing) titleInfoSpacing.value = settings.titleInfoSpacing;
-    if (settings.horizontalPosition) horizontalPosition.value = settings.horizontalPosition;
+    if (settings.infoTextSize) document.getElementById("info-text-size").value = settings.infoTextSize;    if (typeof settings.textShadowBlur !== 'undefined') textShadowBlur.value = settings.textShadowBlur;
+    if (typeof settings.textOutlineWidth !== 'undefined') textOutlineWidth.value = settings.textOutlineWidth;
+    if (typeof settings.infoShadowBlur !== 'undefined') document.getElementById("info-shadow-blur").value = settings.infoShadowBlur;
+    if (typeof settings.infoOutlineWidth !== 'undefined') document.getElementById("info-outline-width").value = settings.infoOutlineWidth;
+    if (typeof settings.titleInfoSpacing !== 'undefined') titleInfoSpacing.value = settings.titleInfoSpacing;
+    if (typeof settings.horizontalPosition !== 'undefined') horizontalPosition.value = settings.horizontalPosition;
     if (typeof settings.verticalPosition !== 'undefined') verticalPosition.value = settings.verticalPosition;
     if (settings.infoPosition) infoPosition.value = settings.infoPosition;
     if (settings.titleWrapping && document.getElementById("title-wrapping")) {
       document.getElementById("title-wrapping").value = settings.titleWrapping;
-    }
-    if (settings.effectType) effectType.value = settings.effectType;
-    if (settings.gradientOpacity) gradientOpacity.value = settings.gradientOpacity;
-    if (settings.blendMode) blendMode.value = settings.blendMode;    if (settings.separator) separatorType.value = settings.separator;
+    }    if (settings.effectType) effectType.value = settings.effectType;
+    if (typeof settings.gradientOpacity !== 'undefined') gradientOpacity.value = settings.gradientOpacity;
+    if (settings.blendMode) blendMode.value = settings.blendMode;
+    if (settings.separator) separatorType.value = settings.separator;
     if (settings.seriesType) seriesType.value = settings.seriesType;
     if (typeof settings.thumbnailFullsize !== 'undefined') thumbnailFullsize.checked = settings.thumbnailFullsize;
     if (typeof settings.showSeasonNumber !== 'undefined') seasonNumberDisplay.checked = settings.showSeasonNumber;
