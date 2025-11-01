@@ -1,6 +1,16 @@
 // Changelog Configuration
-const CURRENT_VERSION = '1.5.0';
+const CURRENT_VERSION = '1.6.0';
 const CHANGELOG = [
+    {
+        version: '1.6.0',
+        date: 'November 2025',
+        changes: [
+            { type: 'feature', text: 'Instant season switching with pre-rendered card caching' },
+            { type: 'improvement', text: 'Parallel background caching loads all seasons simultaneously' },
+            { type: 'improvement', text: 'Cached seasons restore instantly without re-rendering' },
+            { type: 'fix', text: 'Resolved race conditions in parallel caching system' }
+        ]
+    },
     {
         version: '1.5.0',
         date: 'November 2025',
@@ -2345,41 +2355,53 @@ function drawCardToContext(targetCtx, width, height, card) {
 
   // Background cache all seasons for a show
   async function cacheAllSeasonArtwork(show) {
-    if (isCachingInProgress) return;
+    console.log('[cacheAllSeasonArtwork] Starting...', { isCachingInProgress });
+    if (isCachingInProgress) {
+      console.log('[cacheAllSeasonArtwork] Already caching, skipping');
+      return;
+    }
     isCachingInProgress = true;
 
-    const totalSeasons = show.seasons.filter(s => s.episode_count > 0).length;
+    const seasonsToCache = show.seasons.filter(s => s.episode_count > 0);
+    const totalSeasons = seasonsToCache.length;
+    console.log(`[cacheAllSeasonArtwork] Caching ${totalSeasons} seasons`);
     let cachedSeasons = 0;
 
-    for (const season of show.seasons) {
-      if (season.episode_count === 0) continue;
-
+    // Cache all seasons in parallel for faster loading
+    const cachePromises = seasonsToCache.map(async (season) => {
       const cacheKey = `${show.id}-${season.season_number}`;
+      
+      console.log(`[cacheAllSeasonArtwork] Processing season ${season.season_number}...`);
+      
+      // Skip if already cached
       if (artworkCache.has(cacheKey)) {
+        console.log(`[cacheAllSeasonArtwork] Season ${season.season_number} already cached`);
         cachedSeasons++;
         updateBackgroundCacheNotification(
           Math.floor((cachedSeasons / totalSeasons) * 100),
           `${cachedSeasons}/${totalSeasons} seasons cached`
         );
-        continue;
+        return;
       }
 
       try {
         updateBackgroundCacheNotification(
           Math.floor((cachedSeasons / totalSeasons) * 100),
-          `Caching Season ${season.season_number} (${cachedSeasons + 1}/${totalSeasons})...`
+          `Caching Season ${season.season_number}...`
         );
 
+        console.log(`[cacheAllSeasonArtwork] Fetching season ${season.season_number} details...`);
         const seasonData = await getSeasonDetails(show.id, season.season_number, currentLang);
+        console.log(`[cacheAllSeasonArtwork] Got season ${season.season_number} data, ${seasonData?.episodes?.length} episodes`);
+        
         if (seasonData && seasonData.episodes) {
-          // Store season data in cache immediately
-          artworkCache.set(cacheKey, {
-            seasonData,
-            timestamp: Date.now()
-          });
-
-          // Pre-cache images in background (don't wait for them)
-          seasonData.episodes.forEach(async (episode) => {
+          // Pre-load all episode images BEFORE marking as cached
+          const episodeImageData = [];
+          
+          console.log(`[cacheAllSeasonArtwork] Loading images for ${seasonData.episodes.length} episodes in season ${season.season_number}...`);
+          
+          for (const episode of seasonData.episodes) {
+            let episodeImages = null;
             if (episode.still_path) {
               try {
                 const additionalImages = await getEpisodeImages(
@@ -2389,27 +2411,62 @@ function drawCardToContext(targetCtx, width, height, card) {
                 );
                 
                 if (additionalImages && additionalImages.length > 0) {
+                  // Sort by resolution
                   additionalImages.sort((a, b) => {
                     const aRes = (a.width || 0) * (a.height || 0);
                     const bRes = (b.width || 0) * (b.height || 0);
                     return bRes - aRes;
                   });
                   
-                  const highestResImage = additionalImages[0].file_path;
-                  await getEpisodeThumbnail(highestResImage);
+                  // Store image metadata but DON'T pre-load the actual images
+                  // This makes caching much faster
+                  episodeImages = additionalImages;
                 }
               } catch (err) {
-                // Silently fail for individual images
+                console.error(`[cacheAllSeasonArtwork] Error loading images for S${season.season_number}E${episode.episode_number}:`, err);
               }
             }
+            
+            // Store the image data for this episode
+            episodeImageData.push({
+              episodeNumber: episode.episode_number,
+              images: episodeImages
+            });
+          }
+          
+          console.log(`[cacheAllSeasonArtwork] Season ${season.season_number} fully loaded, saving to cache`);
+          console.log(`[cacheAllSeasonArtwork] Rendering episode cards for season ${season.season_number}...`);
+          
+          // Render the episode cards now and capture the returned array (using local array to avoid race conditions)
+          const renderedCards = await createEpisodeTitleCards(seasonData.episodes, true, episodeImageData, true);
+          console.log(`[cacheAllSeasonArtwork] Captured ${renderedCards.length} rendered cards for season ${season.season_number}`);
+          
+          // NOW store season data in cache with pre-rendered cards
+          artworkCache.set(cacheKey, {
+            seasonData,
+            episodeImageData,
+            renderedCards: renderedCards, // Use the returned cards array
+            timestamp: Date.now()
           });
-        }
 
-        cachedSeasons++;
+          cachedSeasons++;
+          updateBackgroundCacheNotification(
+            Math.floor((cachedSeasons / totalSeasons) * 100),
+            `${cachedSeasons}/${totalSeasons} seasons cached`
+          );
+          
+          console.log(`[cacheAllSeasonArtwork] Season ${season.season_number} cached successfully (${cachedSeasons}/${totalSeasons})`);
+        }
       } catch (err) {
-        console.error(`Failed to cache season ${season.season_number}:`, err);
+        console.error(`[cacheAllSeasonArtwork] Failed to cache season ${season.season_number}:`, err);
+        cachedSeasons++;
       }
-    }
+    });
+
+    // Wait for all seasons to finish caching
+    console.log('[cacheAllSeasonArtwork] Waiting for all seasons to cache...');
+    await Promise.all(cachePromises);
+    console.log('[cacheAllSeasonArtwork] All seasons cached!');
 
     updateBackgroundCacheNotification(100, `All ${totalSeasons} seasons cached!`);
     
@@ -2476,13 +2533,20 @@ function drawCardToContext(targetCtx, width, height, card) {
 
     displaySeasonSelector(showDetails);
     
-    // Load the first (lowest) season number, which will be 0 if specials exist
+    // Start background caching IMMEDIATELY (don't await - let it run in background)
+    console.log('[selectShow] Starting background cache...');
+    cacheAllSeasonArtwork(showDetails).then(() => {
+      console.log('[selectShow] Background caching complete!');
+    }).catch(err => {
+      console.error('[selectShow] Background caching error:', err);
+    });
+    
+    // Load the first season in parallel with caching
+    console.log('[selectShow] Loading first season...');
     const firstSeasonNumber = Math.min(...(showDetails.seasons.map(s => s.season_number)));
     await selectSeason(firstSeasonNumber);
     showGridView();
-    
-    // Start background caching of all season artwork AFTER first season loads
-    cacheAllSeasonArtwork(showDetails);
+    console.log('[selectShow] First season loaded, cache running in background');
   }
     // Expose the show selection handler for the Sonarr dashboard
   window.handleShowSelection = async function(show) {
@@ -2610,7 +2674,11 @@ function drawCardToContext(targetCtx, width, height, card) {
     let seasonData;
     let tempOverlay = null;
     
+    console.log(`[selectSeason] Checking cache for season ${seasonNumber}, cacheKey: ${cacheKey}`);
+    console.log(`[selectSeason] Cache has key: ${artworkCache.has(cacheKey)}`);
+    
     if (artworkCache.has(cacheKey)) {
+      console.log(`[selectSeason] Season ${seasonNumber} found in cache!`);
       // Use cached data - show brief loading indicator matching theme
       tempOverlay = document.createElement('div');
       tempOverlay.style.position = 'fixed';
@@ -2678,16 +2746,24 @@ function drawCardToContext(targetCtx, width, height, card) {
       setTimeout(() => progressBar.style.width = '30%', 50);
       setTimeout(() => progressBar.style.width = '70%', 150);
       setTimeout(() => progressBar.style.width = '100%', 250);
-      
-      // Small delay to ensure the indicator is visible
-      await new Promise(resolve => setTimeout(resolve, 50));
-      
       const cached = artworkCache.get(cacheKey);
       seasonData = cached.seasonData;
       currentSeasonData = seasonData.episodes;
       
-      // Process cards from cache quickly (without progress updates)
-      await createEpisodeTitleCards(seasonData.episodes, true);
+      console.log(`[selectSeason] Using cached season data with ${seasonData.episodes.length} episodes`);
+      console.log(`[selectSeason] Cached rendered cards available: ${!!cached.renderedCards}`);
+      console.log(`[selectSeason] Rendered cards count: ${cached.renderedCards?.length}`);
+      
+      // Use cached rendered cards directly - no need to recreate!
+      if (cached.renderedCards && cached.renderedCards.length > 0) {
+        console.log(`[selectSeason] Restoring ${cached.renderedCards.length} pre-rendered cards`);
+        episodeTitleCards = [...cached.renderedCards]; // Restore the cached cards to the global array
+      } else {
+        // Fallback: render from scratch if no cached cards
+        console.log(`[selectSeason] No cached cards, rendering from scratch`);
+        await createEpisodeTitleCards(seasonData.episodes, true, cached.episodeImageData);
+      }
+      
       renderEpisodeGrid();
       
       // Remove loading indicator
@@ -2736,9 +2812,11 @@ function drawCardToContext(targetCtx, width, height, card) {
   // EPISODE TITLE CARD CREATION
   // =====================================================
   // Create title cards for all episodes in a season
-  async function createEpisodeTitleCards(episodes, skipProgressUpdates = false) {
-    console.log(`[createEpisodeTitleCards] Starting with ${episodes.length} episodes, skipProgressUpdates=${skipProgressUpdates}`);
-    episodeTitleCards = [];
+  async function createEpisodeTitleCards(episodes, skipProgressUpdates = false, cachedEpisodeImageData = null, useLocalArray = false) {
+    console.log(`[createEpisodeTitleCards] Starting with ${episodes.length} episodes, skipProgressUpdates=${skipProgressUpdates}, hasCachedData=${!!cachedEpisodeImageData}, useLocalArray=${useLocalArray}`);
+    
+    // Use a local array when caching (to avoid race conditions), or the global array for actual UI display
+    const cardsArray = useLocalArray ? [] : (episodeTitleCards = []);
 
     if (!skipProgressUpdates) {
       updateProgressOverlay(20, `Processing ${episodes.length} episodes...`);
@@ -2852,31 +2930,37 @@ function drawCardToContext(targetCtx, width, height, card) {
           blendMode: blendMode.value,
           titleWrapping: document.getElementById("title-wrapping") ? 
             document.getElementById("title-wrapping").value : 'singleLine',
-          placement: presetSelect.value, // Store current placement
-        },
+        }
       };
-
+      
       // Load episode thumbnail and alternative images
       if (episode.still_path) {
         try {
-          if (!skipProgressUpdates) {
-            updateProgressOverlay(
-              progress,
-              `Loading thumbnail for episode ${episode.episode_number}...`
-            );
-          }
+          // Check if we have cached image data for this episode
+          const cachedData = cachedEpisodeImageData?.find(
+            data => data.episodeNumber === episode.episode_number
+          );
           
-          // Fetch additional images first to find highest resolution
+          console.log(`[createEpisodeTitleCards] Episode ${episode.episode_number}: cachedData found: ${!!cachedData}, has images: ${!!cachedData?.images}`);
+          
           let highestResImage = episode.still_path;
           let allAvailableImages = [{ file_path: episode.still_path, width: 0, height: 0 }];
           
-          if (currentShowData && currentShowData.id) {
+          if (cachedData && cachedData.images) {
+            // Use cached image data - no need to fetch!
+            console.log(`[createEpisodeTitleCards] Episode ${episode.episode_number}: Using ${cachedData.images.length} cached images`);
+            allAvailableImages = cachedData.images;
+            highestResImage = allAvailableImages[0].file_path;
+          } else if (currentShowData && currentShowData.id) {
+            // Fetch images (non-cached path)
+            console.log(`[createEpisodeTitleCards] Episode ${episode.episode_number}: No cached data, fetching images...`);
             if (!skipProgressUpdates) {
               updateProgressOverlay(
                 progress,
                 `Checking for alternative images for episode ${episode.episode_number}...`
               );
             }
+            
             const additionalImages = await getEpisodeImages(
               currentShowData.id,
               episode.season_number,
@@ -2965,7 +3049,7 @@ function drawCardToContext(targetCtx, width, height, card) {
         }
       }
 
-      episodeTitleCards.push(card);
+      cardsArray.push(card);
       completedOperations++;
     }
 
@@ -2975,6 +3059,9 @@ function drawCardToContext(targetCtx, width, height, card) {
         "All episodes processed successfully! Preparing grid view..."
       );
     }
+    
+    // If using local array, return it; otherwise the global episodeTitleCards is already updated
+    return useLocalArray ? cardsArray : episodeTitleCards;
   }
 
   // Select a specific episode from the grid
