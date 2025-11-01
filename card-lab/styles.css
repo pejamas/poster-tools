@@ -810,6 +810,28 @@ header {
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 2;
+}
+
+/* Resolution badge to show image dimensions */
+.resolution-badge {
+  position: absolute;
+  bottom: 3px;
+  right: 3px;
+  background: rgba(142, 36, 170, 0.9);
+  color: white;
+  font-size: 9px;
+  font-weight: 600;
+  padding: 2px 4px;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  font-family: 'Gabarito', sans-serif;
+  white-space: nowrap;
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .modular-frame .alt-image-item {
@@ -1421,6 +1443,54 @@ input:checked + .toggle-slider:before {
   margin-left: 0.5rem;
 }
 
+.action-button-icon {
+  padding: 0.5rem;
+  min-width: 40px;
+  min-height: 40px;
+}
+
+.action-button-icon .action-icon {
+  margin-right: 0;
+}
+
+.whats-new-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px !important;
+  background: linear-gradient(135deg, rgba(0, 191, 165, 0.15), rgba(142, 36, 170, 0.15)) !important;
+  border: 1px solid rgba(0, 191, 165, 0.3) !important;
+}
+
+.whats-new-btn:hover {
+  background: linear-gradient(135deg, rgba(0, 191, 165, 0.25), rgba(142, 36, 170, 0.25)) !important;
+  border-color: rgba(0, 191, 165, 0.5) !important;
+  transform: translateY(-1px) !important;
+}
+
+.whats-new-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: linear-gradient(135deg, #00bfa5, #00897b);
+  color: white;
+  letter-spacing: 0.5px;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(0.95);
+  }
+}
+
 .action-button:hover {
   background: linear-gradient(
     135deg,
@@ -1429,6 +1499,157 @@ input:checked + .toggle-slider:before {
   );
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 255, 255, 0.15);
+}
+
+/* Config Dropdown */
+.config-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.config-dropdown-menu {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  background: rgba(22, 24, 48, 0.98);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  min-width: 200px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 20px rgba(0, 255, 240, 0.1);
+  backdrop-filter: blur(12px);
+  z-index: 1000;
+  padding: 8px 0;
+  animation: dropdownFadeIn 0.2s ease-out;
+}
+
+/* Add invisible bridge to prevent menu from closing */
+.config-dropdown-menu::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: 0;
+  right: 0;
+  height: 4px;
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.config-dropdown:hover .config-dropdown-menu,
+.config-dropdown-menu:hover {
+  display: block;
+}
+
+.config-menu-item {
+  width: 100%;
+  padding: 10px 16px;
+  background: transparent;
+  border: none;
+  color: white;
+  font-family: "Gabarito", sans-serif;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.config-menu-item:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(0, 255, 240, 0.15),
+    rgba(166, 0, 255, 0.15)
+  );
+}
+
+.menu-icon {
+  width: 16px;
+  height: 16px;
+  filter: brightness(0) invert(1);
+}
+
+.menu-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 6px 12px;
+}
+
+/* Download dropdown styling */
+.download-dropdown {
+  position: relative;
+  display: inline-block;
+  flex: 1;
+}
+
+.download-dropdown-menu {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: rgba(22, 24, 48, 0.98);
+  border: 1px solid rgba(0, 255, 240, 0.3);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 20px rgba(0, 255, 240, 0.15);
+  backdrop-filter: blur(12px);
+  z-index: 1000;
+  padding: 6px 0;
+  animation: dropdownSlideUp 0.2s ease-out;
+}
+
+@keyframes dropdownSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.download-dropdown:hover .download-dropdown-menu,
+.download-dropdown-menu:hover {
+  display: block;
+}
+
+.download-menu-item {
+  width: 100%;
+  padding: 10px 14px;
+  background: transparent;
+  border: none;
+  color: white;
+  font-family: "Gabarito", sans-serif;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.download-menu-item:hover {
+  background: linear-gradient(135deg, rgba(0, 255, 240, 0.2), rgba(106, 17, 203, 0.2));
+}
+
+.download-menu-item .menu-icon {
+  width: 16px;
+  height: 16px;
+  filter: brightness(0) invert(1);
 }
 
 .action-icon {
@@ -1530,6 +1751,95 @@ input:checked + .toggle-slider:before {
 .custom-btn-gray:hover {
   background: rgba(255, 255, 255, 0.3);
   transform: translateY(-2px);
+}
+
+/* Download options modal */
+.download-options-modal {
+  width: 500px;
+  max-width: 90%;
+  background: linear-gradient(135deg, #161830 0%, #0F1020 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+  border-radius: 16px;
+  padding: 28px 24px;
+  animation: modalFadeIn 0.3s ease-out forwards;
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.download-options-modal h3 {
+  color: white;
+  margin: 0 0 12px 0;
+  font-size: 24px;
+  font-weight: 600;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  text-align: center;
+  background: linear-gradient(90deg, #00bfa5, #8e24aa);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.download-options-modal p {
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: 25px;
+  font-size: 15px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.download-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 25px;
+}
+
+.download-option-btn {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  width: 100%;
+}
+
+.download-option-btn:hover {
+  background: rgba(0, 191, 165, 0.1);
+  border-color: #00bfa5;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 191, 165, 0.15);
+}
+
+.download-option-btn .option-icon {
+  width: 32px;
+  height: 32px;
+  filter: brightness(0) invert(1);
+  opacity: 0.9;
+}
+
+.option-content {
+  flex: 1;
+}
+
+.option-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 4px;
+}
+
+.option-description {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.65);
 }
 
 .pickr .pcr-button {
@@ -2077,4 +2387,205 @@ box-shadow: 0 4px 12px rgba(0, 255, 255, 0.15);
 .segmented-control input[type="checkbox"]:checked + span svg {
   stroke: white;
   stroke-width: 2.5;
+}
+
+/* Changelog Modal */
+.changelog-overlay {
+    display: none;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    background: rgba(0, 0, 0, 0.95) !important;
+    backdrop-filter: blur(8px);
+    z-index: 999999 !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.changelog-modal {
+    background: linear-gradient(135deg, #161830 0%, #0F1020 100%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 32px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+    position: relative;
+    z-index: 1000000;
+    animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.changelog-modal h3 {
+    margin: 0 0 24px 0;
+    font-size: 28px;
+    font-weight: 600;
+    background: linear-gradient(90deg, #00bfa5, #8e24aa);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.changelog-content {
+    flex: 1;
+    overflow-y: auto;
+    margin-bottom: 24px;
+    padding-right: 8px;
+}
+
+.changelog-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.changelog-content::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 3px;
+}
+
+.changelog-content::-webkit-scrollbar-thumb {
+    background: rgba(142, 36, 170, 0.5);
+    border-radius: 3px;
+}
+
+.changelog-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(142, 36, 170, 0.7);
+}
+
+.changelog-release {
+    margin-bottom: 32px;
+}
+
+.changelog-release:last-child {
+    margin-bottom: 0;
+}
+
+.changelog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.changelog-header h4 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: #00bfa5;
+}
+
+.changelog-date {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.5);
+    font-style: italic;
+}
+
+.changelog-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.changelog-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 0;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.changelog-badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.changelog-feature .changelog-badge {
+    background: linear-gradient(135deg, #00bfa5, #00897b);
+    color: #fff;
+}
+
+.changelog-improvement .changelog-badge {
+    background: linear-gradient(135deg, #8e24aa, #6a1b9a);
+    color: #fff;
+}
+
+.changelog-fix .changelog-badge {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+    color: #fff;
+}
+
+.changelog-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.changelog-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    user-select: none;
+}
+
+.changelog-checkbox input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: #8e24aa;
+}
+
+.changelog-checkbox:hover {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+@media (max-width: 768px) {
+    .changelog-modal {
+        padding: 24px;
+        max-height: 90vh;
+    }
+    
+    .changelog-modal h3 {
+        font-size: 24px;
+    }
+    
+    .changelog-footer {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .changelog-footer .custom-btn {
+        width: 100%;
+    }
 }

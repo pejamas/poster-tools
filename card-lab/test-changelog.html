@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Changelog</title>
+    <style>
+        .changelog-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 10001;
+            align-items: center;
+            justify-content: center;
+        }
+        .changelog-modal {
+            background: #1a1a2e;
+            padding: 32px;
+            max-width: 600px;
+            border-radius: 12px;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <button onclick="testFunction()">Test Button</button>
+    <button onclick="window.showChangelogModal()">Test Changelog</button>
+    
+    <div id="changelogOverlay" class="changelog-overlay">
+        <div class="changelog-modal">
+            <h3>What's New</h3>
+            <div id="changelogContent" class="changelog-content">
+                <p>Test content</p>
+            </div>
+            <button onclick="window.closeChangelogModal()">Close</button>
+        </div>
+    </div>
+
+    <script>
+        function testFunction() {
+            alert('Test function works!');
+        }
+
+        const CURRENT_VERSION = '1.5.0';
+        const CHANGELOG = [
+            {
+                version: '1.5.0',
+                date: 'November 2025',
+                changes: [
+                    { type: 'feature', text: 'Test feature' }
+                ]
+            }
+        ];
+
+        window.showChangelogModal = function() {
+            console.log('Function called!');
+            const modal = document.getElementById('changelogOverlay');
+            console.log('Modal element:', modal);
+            if (modal) {
+                modal.style.display = 'flex';
+            } else {
+                alert('Modal not found!');
+            }
+        }
+
+        window.closeChangelogModal = function() {
+            const modal = document.getElementById('changelogOverlay');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+        
+        console.log('Script loaded, showChangelogModal defined:', typeof window.showChangelogModal);
+    </script>
+</body>
+</html>

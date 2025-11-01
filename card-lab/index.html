@@ -22,18 +22,45 @@
       </div>      <div class="header-actions">
         <a href="../poster-showcase/" class="nav-link">Poster Showcase</a>
         <a href="../poster-overlay/" class="nav-link">Poster Overlay</a>
-        <button id="sonarr-button" class="action-button">
+        <button onclick="showChangelogModal()" class="action-button whats-new-btn" data-tooltip="See what's new in Card Lab">
+          <span class="whats-new-badge">NEW</span>
+          <span>What's New</span>
+        </button>
+        <button id="sonarr-button" class="action-button action-button-icon" data-tooltip="Connect to Sonarr">
           <img src="../assets/poster-overlay-icons/connect.svg" class="action-icon" alt="Sonarr" />
-          Open Sonarr
         </button>
-        <button id="saveConfigBtn" class="action-button">
-          <img src="../assets/poster-showcase icons/save.svg" class="action-icon" />
-          Save Config
-        </button>
-        <button id="loadConfigBtn" class="action-button">
-          <img src="../assets/poster-showcase icons/upload.svg" class="action-icon" />
-          Load Config
-        </button>
+        <div class="config-dropdown">
+          <button class="action-button action-button-icon">
+            <svg class="action-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+          </button>
+          <div class="config-dropdown-menu">
+            <button id="saveConfigBtn" class="config-menu-item">
+              <img src="../assets/poster-showcase icons/save.svg" class="menu-icon" />
+              <span>Save Config</span>
+            </button>
+            <button id="loadConfigBtn" class="config-menu-item">
+              <img src="../assets/poster-showcase icons/upload.svg" class="menu-icon" />
+              <span>Load Config</span>
+            </button>
+            <div class="menu-divider"></div>
+            <button id="exportConfigBtn" class="config-menu-item">
+              <img src="../assets/poster-showcase icons/download.svg" class="menu-icon" />
+              <span>Export Configs</span>
+            </button>
+            <button id="importConfigBtn" class="config-menu-item">
+              <img src="../assets/poster-showcase icons/upload.svg" class="menu-icon" />
+              <span>Import Configs</span>
+            </button>
+            <div class="menu-divider"></div>
+            <button onclick="showChangelogModal()" class="config-menu-item">
+              <img src="../assets/poster-showcase icons/save.svg" class="menu-icon" />
+              <span>What's New</span>
+            </button>
+          </div>
+        </div>
       </div>
     </header>    <div class="layout">      <div class="sidebar">        <div class="collapsible active">          <div class="collapsible-header" id="header-tmdb" data-tooltip="Search for TV shows and episodes from TMDB. Select language, find shows, and customize episodes individually or in grid view.">
             <h3>TMDB Search</h3>
@@ -492,10 +519,10 @@
         </div>
 
         <div class="sidebar-action-row">
-          <button id="downloadBtn" class="icon-button teal" title="Download">
+          <button id="downloadBtn" class="icon-button teal" data-tooltip="Download title cards">
             <img src="../assets/poster-overlay-icons/download.svg" class="icon" />
           </button>
-          <button id="resetBtn" class="icon-button red" title="Reset">
+          <button id="resetBtn" class="icon-button red" data-tooltip="Reset to default settings">
             <img src="../assets/poster-overlay-icons/refresh-cw.svg" class="icon" />
           </button>
         </div>
@@ -551,7 +578,45 @@
           <button id="confirmYes" class="custom-btn custom-btn-red">Reset</button>
         </div>
       </div>
-    </div>    <script src="app.js"></script>
+    </div>
+
+    <div id="download-options-overlay" class="custom-overlay">
+      <div class="custom-modal download-options-modal">
+        <h3>Download Title Cards</h3>
+        <p>Choose what you'd like to download:</p>
+        <div class="download-options">
+          <button id="downloadCurrentOption" class="download-option-btn">
+            <img src="../assets/poster-overlay-icons/download.svg" class="option-icon" />
+            <div class="option-content">
+              <div class="option-title">Current Season</div>
+              <div class="option-description">Download all episodes from the current season</div>
+            </div>
+          </button>
+          <button id="downloadAllSeasonsOption" class="download-option-btn" style="display: none;">
+            <img src="../assets/poster-overlay-icons/download.svg" class="option-icon" />
+            <div class="option-content">
+              <div class="option-title">All Seasons</div>
+              <div class="option-description">Download all cached seasons at once</div>
+            </div>
+          </button>
+    </div>
+
+    <!-- Changelog Overlay -->
+    <div id="changelogOverlay" class="changelog-overlay">
+      <div class="changelog-modal">
+        <h3>What's New</h3>
+        <div id="changelogContent" class="changelog-content"></div>
+        <div class="changelog-footer">
+          <label class="changelog-checkbox">
+            <input type="checkbox" id="dontShowChangelogAgain">
+            <span>Don't show this again for this version</span>
+          </label>
+          <button onclick="closeChangelogModal()" class="custom-btn">Got it!</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
     <script src="tooltip.js"></script>
     <script src="sonarr-dashboard.js"></script>
     <script src="edit-bar.js"></script>

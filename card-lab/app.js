@@ -1,4 +1,172 @@
+// Changelog Configuration
+const CURRENT_VERSION = '1.5.0';
+const CHANGELOG = [
+    {
+        version: '1.5.0',
+        date: 'November 2025',
+        changes: [
+            { type: 'feature', text: 'Download all seasons at once with organized folders' },
+            { type: 'feature', text: 'Background caching for all seasons improves performance' },
+            { type: 'feature', text: 'Episode edits (title, numbers) now persist across navigation' },
+            { type: 'improvement', text: 'Non-blocking corner notifications allow continued work' },
+            { type: 'improvement', text: 'Fast loading for cached seasons with progress indicators' },
+            { type: 'improvement', text: 'Unified purple/cyan theme across all UI elements' }
+        ]
+    },
+    {
+        version: '1.4.0',
+        date: 'October 2025',
+        changes: [
+            { type: 'feature', text: 'Resolution badges on episode thumbnails' },
+            { type: 'feature', text: 'Config export/import for browser switching' },
+            { type: 'improvement', text: 'Prioritized highest resolution TMDB images' },
+            { type: 'improvement', text: 'Optimized file sizes with JPEG export at 95% quality' },
+            { type: 'fix', text: 'Streamlined header UI with dropdown menu' }
+        ]
+    }
+];
+
+// Changelog Modal Functions (defined before DOMContentLoaded)
+function checkAndShowChangelog() {
+    const lastSeenVersion = localStorage.getItem('lastSeenVersion');
+    const dontShowAgain = localStorage.getItem(`dontShowChangelog_${CURRENT_VERSION}`);
+    
+    // Show if it's a new version and user hasn't opted out
+    if (lastSeenVersion !== CURRENT_VERSION && dontShowAgain !== 'true') {
+        setTimeout(() => {
+            showChangelogModal();
+        }, 1000); // Increased delay to ensure DOM is fully loaded
+    }
+    
+    // Show badge if there are new updates
+    updateWhatsNewBadge(lastSeenVersion !== CURRENT_VERSION && dontShowAgain !== 'true');
+}
+
+function updateWhatsNewBadge(showBadge) {
+    // Called after DOM is loaded to show/hide the NEW badge
+    setTimeout(() => {
+        const badge = document.querySelector('.whats-new-badge');
+        if (badge) {
+            badge.style.display = showBadge ? 'inline-block' : 'none';
+        }
+    }, 100);
+}
+
+window.showChangelogModal = function() {
+    let modal = document.getElementById('changelogOverlay');
+    
+    // If modal doesn't exist or isn't at body level, recreate it at body level
+    if (!modal || modal.parentElement !== document.body) {
+        if (modal) modal.remove();
+        
+        modal = document.createElement('div');
+        modal.id = 'changelogOverlay';
+        modal.className = 'changelog-overlay';
+        modal.innerHTML = `
+            <div class="changelog-modal">
+                <h3>What's New</h3>
+                <div id="changelogContent" class="changelog-content"></div>
+                <div class="changelog-footer">
+                    <label class="changelog-checkbox">
+                        <input type="checkbox" id="dontShowChangelogAgain">
+                        <span>Don't show this again for this version</span>
+                    </label>
+                    <button onclick="closeChangelogModal()" class="custom-btn">Got it!</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+    
+    if (!modal) {
+        console.error('Changelog modal element not found!');
+        return;
+    }
+    
+    // Populate changelog content
+    const content = document.getElementById('changelogContent');
+    if (!content) {
+        console.error('Changelog content element not found!');
+        return;
+    }
+    
+    content.innerHTML = '';
+    
+    CHANGELOG.forEach(release => {
+        const releaseDiv = document.createElement('div');
+        releaseDiv.className = 'changelog-release';
+        
+        const header = document.createElement('div');
+        header.className = 'changelog-header';
+        header.innerHTML = `
+            <h4>Version ${release.version}</h4>
+            <span class="changelog-date">${release.date}</span>
+        `;
+        releaseDiv.appendChild(header);
+        
+        const changesList = document.createElement('ul');
+        changesList.className = 'changelog-list';
+        
+        release.changes.forEach(change => {
+            const item = document.createElement('li');
+            item.className = `changelog-item changelog-${change.type}`;
+            
+            const badge = document.createElement('span');
+            badge.className = 'changelog-badge';
+            badge.textContent = change.type === 'feature' ? 'NEW' : 
+                               change.type === 'improvement' ? 'IMPROVED' : 'FIXED';
+            
+            const text = document.createElement('span');
+            text.textContent = change.text;
+            
+            item.appendChild(badge);
+            item.appendChild(text);
+            changesList.appendChild(item);
+        });
+        
+        releaseDiv.appendChild(changesList);
+        content.appendChild(releaseDiv);
+    });
+    
+    // Reset checkbox
+    const dontShowCheckbox = document.getElementById('dontShowChangelogAgain');
+    if (dontShowCheckbox) {
+        dontShowCheckbox.checked = false;
+    }
+    
+    // Show modal
+    modal.style.setProperty('display', 'flex', 'important');
+    localStorage.setItem('lastSeenVersion', CURRENT_VERSION);
+    
+    // Hide the badge after viewing
+    updateWhatsNewBadge(false);
+}
+
+window.closeChangelogModal = function() {
+    const modal = document.getElementById('changelogOverlay');
+    const dontShowCheckbox = document.getElementById('dontShowChangelogAgain');
+    
+    if (dontShowCheckbox && dontShowCheckbox.checked) {
+        localStorage.setItem(`dontShowChangelog_${CURRENT_VERSION}`, 'true');
+    }
+    
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// Close changelog modal when clicking outside
+document.addEventListener('click', function(e) {
+    const modal = document.getElementById('changelogOverlay');
+    if (modal && e.target === modal) {
+        closeChangelogModal();
+    }
+});
+
 document.addEventListener("DOMContentLoaded", () => {
+  // Check and show changelog on version updates
+  checkAndShowChangelog();
+
   // SPOILER/BLUR OPTION LOGIC (single instance)
 
   // =====================================================
@@ -158,7 +326,8 @@ if (spoilerToggle) {
 
   const saveConfigBtn = document.getElementById("saveConfigBtn");
   const loadConfigBtn = document.getElementById("loadConfigBtn");
-  const downloadBtn = document.getElementById("downloadBtn");
+  const exportConfigBtn = document.getElementById("exportConfigBtn");
+  const importConfigBtn = document.getElementById("importConfigBtn");
   const returnToGridBtn = document.getElementById("returnToGridBtn");
 
   // =====================================================
@@ -790,6 +959,22 @@ if (spoilerToggle) {
 
   // Update both single card and grid views
   function updateBothViews() {
+    // Save current episode's specific data if we're editing a card
+    if (isTMDBMode && selectedCardIndex >= 0 && selectedCardIndex < episodeTitleCards.length) {
+      const currentCard = episodeTitleCards[selectedCardIndex];
+      
+      // Format the numbers based on numberTheme
+      const formatNumber = (n) => {
+        if (numberTheme === 'plain') return String(Number(n));
+        return String(n).padStart(2, "0");
+      };
+      
+      // Update the card's specific properties
+      currentCard.title = titleInput.value;
+      currentCard.seasonNumber = formatNumber(seasonNumberInput.value);
+      currentCard.episodeNumber = formatNumber(episodeNumberInput.value);
+    }
+    
     drawCard();
     if (isTMDBMode && episodeTitleCards.length > 0) {
       updateEpisodeCardSettings();
@@ -902,6 +1087,22 @@ if (spoilerToggle) {
 
   // Switch to grid view
   function showGridView() {
+    // Save the current episode's data before switching to grid view
+    if (selectedCardIndex >= 0 && selectedCardIndex < episodeTitleCards.length) {
+      const currentCard = episodeTitleCards[selectedCardIndex];
+      
+      // Format the numbers based on numberTheme
+      const formatNumber = (n) => {
+        if (numberTheme === 'plain') return String(Number(n));
+        return String(n).padStart(2, "0");
+      };
+      
+      // Update the card's specific properties
+      currentCard.title = titleInput.value;
+      currentCard.seasonNumber = formatNumber(seasonNumberInput.value);
+      currentCard.episodeNumber = formatNumber(episodeNumberInput.value);
+    }
+    
     canvas.style.display = "none";
     gridCanvas.style.display = "block";
     returnToGridBtn.style.display = "none";
@@ -1997,8 +2198,21 @@ function drawCardToContext(targetCtx, width, height, card) {
       img.crossOrigin = "Anonymous";
 
       return new Promise((resolve, reject) => {
-        img.onload = () => resolve(img);
-        img.onerror = () => reject(new Error("Failed to load image"));
+        // Set a 10-second timeout to prevent hanging
+        const timeout = setTimeout(() => {
+          console.warn(`[getEpisodeThumbnail] Timeout loading image: ${path}`);
+          reject(new Error("Image load timeout"));
+        }, 10000);
+
+        img.onload = () => {
+          clearTimeout(timeout);
+          resolve(img);
+        };
+        img.onerror = () => {
+          clearTimeout(timeout);
+          console.error(`[getEpisodeThumbnail] Failed to load image: ${path}`);
+          reject(new Error("Failed to load image"));
+        };
         img.src = `${TMDB_IMG_BASE_URL}original${path}`;
       });
     } catch (err) {
@@ -2009,6 +2223,205 @@ function drawCardToContext(targetCtx, width, height, card) {
   // =====================================================
   // SEARCH & SHOW SELECTION UI
   // =====================================================
+
+  // Background cache for all season artwork
+  const artworkCache = new Map();
+  let isCachingInProgress = false;
+
+  // Create/update background cache notification (separate from main progress)
+  function updateBackgroundCacheNotification(progress, message) {
+    let notification = document.getElementById("background-cache-notification");
+
+    if (!notification) {
+      notification = document.createElement("div");
+      notification.id = "background-cache-notification";
+      notification.style.position = "fixed";
+      notification.style.bottom = "20px";
+      notification.style.right = "20px";
+      notification.style.width = "320px";
+      notification.style.backgroundColor = "rgba(22, 24, 48, 0.95)";
+      notification.style.borderRadius = "12px";
+      notification.style.padding = "16px 20px";
+      notification.style.zIndex = "10000"; // Higher than regular progress
+      notification.style.backdropFilter = "blur(8px)";
+      notification.style.boxShadow = "0 8px 24px rgba(0, 0, 0, 0.4), 0 0 20px rgba(142, 36, 170, 0.3)";
+      notification.style.border = "1px solid rgba(142, 36, 170, 0.4)";
+      notification.style.transition = "all 0.3s ease";
+      notification.style.opacity = "0";
+      notification.style.transform = "translateY(20px)";
+      document.body.appendChild(notification);
+
+      setTimeout(() => {
+        notification.style.opacity = "1";
+        notification.style.transform = "translateY(0)";
+      }, 10);
+
+      // Create spinner
+      const spinner = document.createElement("div");
+      spinner.className = "background-cache-spinner";
+      spinner.style.border = "2px solid rgba(255, 255, 255, 0.1)";
+      spinner.style.borderTop = "2px solid #8e24aa";
+      spinner.style.borderRadius = "50%";
+      spinner.style.width = "20px";
+      spinner.style.height = "20px";
+      spinner.style.animation = "spin 1s linear infinite";
+      spinner.style.display = "inline-block";
+      spinner.style.marginRight = "12px";
+      spinner.style.verticalAlign = "middle";
+
+      // Create header with spinner and message
+      const headerEl = document.createElement("div");
+      headerEl.style.display = "flex";
+      headerEl.style.alignItems = "center";
+      headerEl.style.marginBottom = "12px";
+      headerEl.appendChild(spinner);
+
+      const messageEl = document.createElement("div");
+      messageEl.id = "background-cache-message";
+      messageEl.style.color = "white";
+      messageEl.style.fontSize = "14px";
+      messageEl.style.fontWeight = "600";
+      messageEl.style.fontFamily = "Gabarito, sans-serif";
+      messageEl.style.flex = "1";
+      messageEl.textContent = "Caching seasons...";
+      headerEl.appendChild(messageEl);
+      notification.appendChild(headerEl);
+
+      // Create progress container
+      const progressContainer = document.createElement("div");
+      progressContainer.id = "background-cache-progress-container";
+      progressContainer.style.width = "100%";
+      progressContainer.style.height = "4px";
+      progressContainer.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+      progressContainer.style.borderRadius = "2px";
+      progressContainer.style.marginBottom = "8px";
+      progressContainer.style.overflow = "hidden";
+
+      const progressBar = document.createElement("div");
+      progressBar.id = "background-cache-progress-bar";
+      progressBar.style.width = "0%";
+      progressBar.style.height = "100%";
+      progressBar.style.background = "linear-gradient(90deg, #8e24aa, #00bfa5)";
+      progressBar.style.transition = "width 0.3s ease";
+      progressBar.style.borderRadius = "2px";
+
+      progressContainer.appendChild(progressBar);
+      notification.appendChild(progressContainer);
+
+      // Create details element
+      const detailsEl = document.createElement("div");
+      detailsEl.id = "background-cache-details";
+      detailsEl.style.color = "rgba(255, 255, 255, 0.6)";
+      detailsEl.style.fontSize = "12px";
+      detailsEl.style.fontFamily = "Gabarito, sans-serif";
+      notification.appendChild(detailsEl);
+    }
+
+    // Update progress bar and message
+    const progressBar = document.getElementById("background-cache-progress-bar");
+    const detailsEl = document.getElementById("background-cache-details");
+    
+    if (progressBar) {
+      progressBar.style.width = `${Math.max(0, Math.min(100, progress))}%`;
+    }
+    
+    if (detailsEl && message) {
+      detailsEl.textContent = message;
+    }
+  }
+
+  function hideBackgroundCacheNotification() {
+    const notification = document.getElementById("background-cache-notification");
+    if (notification) {
+      notification.style.opacity = "0";
+      notification.style.transform = "translateY(20px)";
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.parentNode.removeChild(notification);
+        }
+      }, 300);
+    }
+  }
+
+  // Background cache all seasons for a show
+  async function cacheAllSeasonArtwork(show) {
+    if (isCachingInProgress) return;
+    isCachingInProgress = true;
+
+    const totalSeasons = show.seasons.filter(s => s.episode_count > 0).length;
+    let cachedSeasons = 0;
+
+    for (const season of show.seasons) {
+      if (season.episode_count === 0) continue;
+
+      const cacheKey = `${show.id}-${season.season_number}`;
+      if (artworkCache.has(cacheKey)) {
+        cachedSeasons++;
+        updateBackgroundCacheNotification(
+          Math.floor((cachedSeasons / totalSeasons) * 100),
+          `${cachedSeasons}/${totalSeasons} seasons cached`
+        );
+        continue;
+      }
+
+      try {
+        updateBackgroundCacheNotification(
+          Math.floor((cachedSeasons / totalSeasons) * 100),
+          `Caching Season ${season.season_number} (${cachedSeasons + 1}/${totalSeasons})...`
+        );
+
+        const seasonData = await getSeasonDetails(show.id, season.season_number, currentLang);
+        if (seasonData && seasonData.episodes) {
+          // Store season data in cache immediately
+          artworkCache.set(cacheKey, {
+            seasonData,
+            timestamp: Date.now()
+          });
+
+          // Pre-cache images in background (don't wait for them)
+          seasonData.episodes.forEach(async (episode) => {
+            if (episode.still_path) {
+              try {
+                const additionalImages = await getEpisodeImages(
+                  show.id,
+                  episode.season_number,
+                  episode.episode_number
+                );
+                
+                if (additionalImages && additionalImages.length > 0) {
+                  additionalImages.sort((a, b) => {
+                    const aRes = (a.width || 0) * (a.height || 0);
+                    const bRes = (b.width || 0) * (b.height || 0);
+                    return bRes - aRes;
+                  });
+                  
+                  const highestResImage = additionalImages[0].file_path;
+                  await getEpisodeThumbnail(highestResImage);
+                }
+              } catch (err) {
+                // Silently fail for individual images
+              }
+            }
+          });
+        }
+
+        cachedSeasons++;
+      } catch (err) {
+        console.error(`Failed to cache season ${season.season_number}:`, err);
+      }
+    }
+
+    updateBackgroundCacheNotification(100, `All ${totalSeasons} seasons cached!`);
+    
+    // Show the download all seasons option in the modal
+    const downloadAllSeasonsOption = document.getElementById("downloadAllSeasonsOption");
+    if (downloadAllSeasonsOption) {
+      downloadAllSeasonsOption.style.display = "flex";
+    }
+    
+    setTimeout(hideBackgroundCacheNotification, 2000);
+    isCachingInProgress = false;
+  }
 
   // Display search results in the UI
   function displaySearchResults(results) {
@@ -2062,10 +2475,14 @@ function drawCardToContext(targetCtx, width, height, card) {
     hasSearchResults = true;
 
     displaySeasonSelector(showDetails);
+    
     // Load the first (lowest) season number, which will be 0 if specials exist
     const firstSeasonNumber = Math.min(...(showDetails.seasons.map(s => s.season_number)));
     await selectSeason(firstSeasonNumber);
     showGridView();
+    
+    // Start background caching of all season artwork AFTER first season loads
+    cacheAllSeasonArtwork(showDetails);
   }
     // Expose the show selection handler for the Sonarr dashboard
   window.handleShowSelection = async function(show) {
@@ -2188,32 +2605,130 @@ function drawCardToContext(targetCtx, width, height, card) {
       gradientColor: window["gradient-color"]
     });
 
-    showProgressOverlay(`Loading Season ${seasonNumber}...`, true);
-    updateProgressOverlay(5, "Fetching season details");
-
-    const seasonData = await getSeasonDetails(currentShowData.id, seasonNumber, currentLang);
-    if (!seasonData) {
-      hideProgressOverlay();
-      return;
-    }
-
-    currentSeasonData = seasonData.episodes;
-    updateProgressOverlay(15, `Found ${seasonData.episodes.length} episodes`);
-
-    await createEpisodeTitleCards(seasonData.episodes);
-
-    if (isTMDBMode) {
-      updateProgressOverlay(95, "Rendering episode grid");
+    // Check if season data is already cached
+    const cacheKey = `${currentShowData.id}-${seasonNumber}`;
+    let seasonData;
+    let tempOverlay = null;
+    
+    if (artworkCache.has(cacheKey)) {
+      // Use cached data - show brief loading indicator matching theme
+      tempOverlay = document.createElement('div');
+      tempOverlay.style.position = 'fixed';
+      tempOverlay.style.bottom = '20px';
+      tempOverlay.style.right = '20px';
+      tempOverlay.style.width = '320px';
+      tempOverlay.style.backgroundColor = 'rgba(22, 24, 48, 0.95)';
+      tempOverlay.style.borderRadius = '12px';
+      tempOverlay.style.padding = '16px 20px';
+      tempOverlay.style.fontFamily = 'Gabarito, sans-serif';
+      tempOverlay.style.zIndex = '10001';
+      tempOverlay.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.4), 0 0 20px rgba(142, 36, 170, 0.3)';
+      tempOverlay.style.border = '1px solid rgba(142, 36, 170, 0.4)';
+      tempOverlay.style.backdropFilter = 'blur(8px)';
+      
+      // Create header with spinner
+      const headerEl = document.createElement('div');
+      headerEl.style.display = 'flex';
+      headerEl.style.alignItems = 'center';
+      headerEl.style.marginBottom = '12px';
+      
+      // Create spinner
+      const spinner = document.createElement('div');
+      spinner.style.border = '2px solid rgba(255, 255, 255, 0.1)';
+      spinner.style.borderTop = '2px solid #8e24aa';
+      spinner.style.borderRadius = '50%';
+      spinner.style.width = '20px';
+      spinner.style.height = '20px';
+      spinner.style.animation = 'spin 1s linear infinite';
+      spinner.style.display = 'inline-block';
+      spinner.style.marginRight = '12px';
+      headerEl.appendChild(spinner);
+      
+      // Create message
+      const message = document.createElement('div');
+      message.style.color = 'white';
+      message.style.fontSize = '14px';
+      message.style.fontWeight = '600';
+      message.style.flex = '1';
+      message.textContent = `Loading Season ${seasonNumber}...`;
+      headerEl.appendChild(message);
+      tempOverlay.appendChild(headerEl);
+      
+      // Create progress bar container
+      const progressContainer = document.createElement('div');
+      progressContainer.style.width = '100%';
+      progressContainer.style.height = '4px';
+      progressContainer.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+      progressContainer.style.borderRadius = '2px';
+      progressContainer.style.overflow = 'hidden';
+      
+      // Create animated progress bar
+      const progressBar = document.createElement('div');
+      progressBar.style.width = '0%';
+      progressBar.style.height = '100%';
+      progressBar.style.background = 'linear-gradient(90deg, #8e24aa, #00bfa5)';
+      progressBar.style.borderRadius = '2px';
+      progressBar.style.transition = 'width 0.2s ease';
+      
+      progressContainer.appendChild(progressBar);
+      tempOverlay.appendChild(progressContainer);
+      document.body.appendChild(tempOverlay);
+      
+      // Animate progress bar
+      setTimeout(() => progressBar.style.width = '30%', 50);
+      setTimeout(() => progressBar.style.width = '70%', 150);
+      setTimeout(() => progressBar.style.width = '100%', 250);
+      
+      // Small delay to ensure the indicator is visible
+      await new Promise(resolve => setTimeout(resolve, 50));
+      
+      const cached = artworkCache.get(cacheKey);
+      seasonData = cached.seasonData;
+      currentSeasonData = seasonData.episodes;
+      
+      // Process cards from cache quickly (without progress updates)
+      await createEpisodeTitleCards(seasonData.episodes, true);
       renderEpisodeGrid();
-      updateProgressOverlay(100, "Complete!");
-      setTimeout(() => {
-        hideProgressOverlay();
-        showGridView();
-      }, 500);
+      
+      // Remove loading indicator
+      if (tempOverlay && tempOverlay.parentNode) {
+        document.body.removeChild(tempOverlay);
+      }
+      showGridView();
     } else {
-      hideProgressOverlay();
-      selectEpisode(0);
-      showSingleCardView();
+      // Fetch fresh data with progress indicator
+      console.log(`[selectSeason] Loading uncached season ${seasonNumber}`);
+      showProgressOverlay(`Loading Season ${seasonNumber}...`, true);
+      updateProgressOverlay(5, "Fetching season details");
+
+      seasonData = await getSeasonDetails(currentShowData.id, seasonNumber, currentLang);
+      console.log(`[selectSeason] Got season data:`, seasonData);
+      if (!seasonData) {
+        console.error(`[selectSeason] No season data returned`);
+        hideProgressOverlay();
+        return;
+      }
+      
+      updateProgressOverlay(15, `Found ${seasonData.episodes.length} episodes`);
+      currentSeasonData = seasonData.episodes;
+
+      console.log(`[selectSeason] Starting createEpisodeTitleCards for ${seasonData.episodes.length} episodes`);
+      await createEpisodeTitleCards(seasonData.episodes, false);
+      console.log(`[selectSeason] Finished createEpisodeTitleCards`);
+
+      if (isTMDBMode) {
+        updateProgressOverlay(95, "Rendering episode grid");
+        renderEpisodeGrid();
+        updateProgressOverlay(100, "Complete!");
+        setTimeout(() => {
+          hideProgressOverlay();
+          showGridView();
+        }, 500);
+      } else {
+        hideProgressOverlay();
+        selectEpisode(0);
+        showSingleCardView();
+      }
     }
   }
 
@@ -2221,10 +2736,13 @@ function drawCardToContext(targetCtx, width, height, card) {
   // EPISODE TITLE CARD CREATION
   // =====================================================
   // Create title cards for all episodes in a season
-  async function createEpisodeTitleCards(episodes) {
+  async function createEpisodeTitleCards(episodes, skipProgressUpdates = false) {
+    console.log(`[createEpisodeTitleCards] Starting with ${episodes.length} episodes, skipProgressUpdates=${skipProgressUpdates}`);
     episodeTitleCards = [];
 
-    updateProgressOverlay(20, `Processing ${episodes.length} episodes...`);
+    if (!skipProgressUpdates) {
+      updateProgressOverlay(20, `Processing ${episodes.length} episodes...`);
+    }
 
     // Prioritize the global window color values that persist between seasons
     // This ensures custom colors are maintained when switching seasons
@@ -2279,10 +2797,13 @@ function drawCardToContext(targetCtx, width, height, card) {
     for (const episode of episodes) {
       const progress =
         20 + Math.floor((completedOperations / totalOperations) * 75);
-      updateProgressOverlay(
-        progress,
-        `Loading episode ${episode.episode_number}: ${episode.name}`
-      );
+      
+      if (!skipProgressUpdates) {
+        updateProgressOverlay(
+          progress,
+          `Loading episode ${episode.episode_number}: ${episode.name}`
+        );
+      }
 
       // Create base card object
       // Use numberTheme for season/episode numbers
@@ -2299,6 +2820,7 @@ function drawCardToContext(targetCtx, width, height, card) {
         canvasData: null,
         allImages: [],
         allImagePaths: [],
+        imageMetadata: [], // Store width/height for each image
         hasCustomPlacement: false, // Flag to indicate if this episode has custom placement
         customPlacement: null, // Store custom placement settings
 
@@ -2337,60 +2859,89 @@ function drawCardToContext(targetCtx, width, height, card) {
       // Load episode thumbnail and alternative images
       if (episode.still_path) {
         try {
-          updateProgressOverlay(
-            progress,
-            `Loading thumbnail for episode ${episode.episode_number}...`
-          );
-          card.thumbnailImg = await getEpisodeThumbnail(episode.still_path);
-          card.originalThumbnail = card.thumbnailImg; // Store original for revert
-          card.allImagePaths.push(episode.still_path);
-
-          // Fetch additional images if possible
-          if (currentShowData && currentShowData.id) {
+          if (!skipProgressUpdates) {
             updateProgressOverlay(
               progress,
-              `Checking for alternative images for episode ${episode.episode_number}...`
+              `Loading thumbnail for episode ${episode.episode_number}...`
             );
+          }
+          
+          // Fetch additional images first to find highest resolution
+          let highestResImage = episode.still_path;
+          let allAvailableImages = [{ file_path: episode.still_path, width: 0, height: 0 }];
+          
+          if (currentShowData && currentShowData.id) {
+            if (!skipProgressUpdates) {
+              updateProgressOverlay(
+                progress,
+                `Checking for alternative images for episode ${episode.episode_number}...`
+              );
+            }
             const additionalImages = await getEpisodeImages(
               currentShowData.id,
               episode.season_number,
               episode.episode_number
             );
-
-            // Add additional image paths excluding the main still
-            for (const img of additionalImages) {
-              if (img.file_path && img.file_path !== episode.still_path) {
-                card.allImagePaths.push(img.file_path);
+            
+            if (additionalImages && additionalImages.length > 0) {
+              allAvailableImages = additionalImages;
+              
+              // Sort by resolution (width * height) to find highest quality
+              allAvailableImages.sort((a, b) => {
+                const aRes = (a.width || 0) * (a.height || 0);
+                const bRes = (b.width || 0) * (b.height || 0);
+                return bRes - aRes; // Descending order
+              });
+              
+              // Use highest resolution image as default
+              highestResImage = allAvailableImages[0].file_path;
+              
+              if (!skipProgressUpdates) {
+                updateProgressOverlay(
+                  progress,
+                  `Found ${allAvailableImages.length} images for episode ${episode.episode_number}...`
+                );
               }
             }
-
-            if (card.allImagePaths.length > 1) {
-              updateProgressOverlay(
-                progress,
-                `Found ${card.allImagePaths.length} images for episode ${episode.episode_number}...`
-              );
+          }
+          
+          // Load the highest resolution image as the default thumbnail
+          card.thumbnailImg = await getEpisodeThumbnail(highestResImage);
+          card.originalThumbnail = card.thumbnailImg; // Store original for revert
+          
+          // Store all image paths and metadata
+          for (const img of allAvailableImages) {
+            if (img.file_path) {
+              card.allImagePaths.push(img.file_path);
+              card.imageMetadata.push({
+                width: img.width || 0,
+                height: img.height || 0,
+                path: img.file_path
+              });
             }
+          }
 
-            // Load up to 5 images for each episode
-            const imagesToLoad = card.allImagePaths.slice(0, 5);
-            for (let i = 0; i < imagesToLoad.length; i++) {
-              if (i === 0) {
-                card.allImages.push(card.thumbnailImg);
-              } else {
-                try {
+          // Load up to 5 images for each episode
+          const imagesToLoad = card.allImagePaths.slice(0, 5);
+          for (let i = 0; i < imagesToLoad.length; i++) {
+            if (i === 0) {
+              card.allImages.push(card.thumbnailImg);
+            } else {
+              try {
+                if (!skipProgressUpdates) {
                   updateProgressOverlay(
                     progress,
                     `Loading alternative image ${i}/${
                       imagesToLoad.length - 1
                     } for episode ${episode.episode_number}...`
                   );
-                  const img = await getEpisodeThumbnail(imagesToLoad[i]);
-                  card.allImages.push(img);
-                } catch (err) {
-                  console.log(
-                    `Could not load additional image ${i} for episode ${episode.episode_number}`
-                  );
                 }
+                const img = await getEpisodeThumbnail(imagesToLoad[i]);
+                card.allImages.push(img);
+              } catch (err) {
+                console.log(
+                  `Could not load additional image ${i} for episode ${episode.episode_number}`
+                );
               }
             }
           }
@@ -2398,31 +2949,53 @@ function drawCardToContext(targetCtx, width, height, card) {
           console.log(
             `Could not load thumbnail for episode ${episode.episode_number}`
           );
-          updateProgressOverlay(
-            progress,
-            `Failed to load thumbnail for episode ${episode.episode_number}...`
-          );
+          if (!skipProgressUpdates) {
+            updateProgressOverlay(
+              progress,
+              `Failed to load thumbnail for episode ${episode.episode_number}...`
+            );
+          }
         }
       } else {
-        updateProgressOverlay(
-          progress,
-          `No thumbnail available for episode ${episode.episode_number}...`
-        );
+        if (!skipProgressUpdates) {
+          updateProgressOverlay(
+            progress,
+            `No thumbnail available for episode ${episode.episode_number}...`
+          );
+        }
       }
 
       episodeTitleCards.push(card);
       completedOperations++;
     }
 
-    updateProgressOverlay(
-      95,
-      "All episodes processed successfully! Preparing grid view..."
-    );
+    if (!skipProgressUpdates) {
+      updateProgressOverlay(
+        95,
+        "All episodes processed successfully! Preparing grid view..."
+      );
+    }
   }
 
   // Select a specific episode from the grid
   function selectEpisode(index) {
     if (index < 0 || index >= episodeTitleCards.length) return;
+
+    // Save the current episode's data before switching
+    if (selectedCardIndex >= 0 && selectedCardIndex < episodeTitleCards.length) {
+      const previousCard = episodeTitleCards[selectedCardIndex];
+      
+      // Format the numbers based on numberTheme
+      const formatNumber = (n) => {
+        if (numberTheme === 'plain') return String(Number(n));
+        return String(n).padStart(2, "0");
+      };
+      
+      // Update the card's specific properties
+      previousCard.title = titleInput.value;
+      previousCard.seasonNumber = formatNumber(seasonNumberInput.value);
+      previousCard.episodeNumber = formatNumber(episodeNumberInput.value);
+    }
 
     selectedCardIndex = index;
     const card = episodeTitleCards[index];
@@ -2547,6 +3120,15 @@ function drawCardToContext(targetCtx, width, height, card) {
       modularBadge.className = "image-badge";
       modularBadge.textContent = index + 1;
       modularImageItem.appendChild(modularBadge);
+
+      // Add resolution badge if metadata is available
+      if (card.imageMetadata && card.imageMetadata[index]) {
+        const resBadge = document.createElement("span");
+        resBadge.className = "resolution-badge";
+        const meta = card.imageMetadata[index];
+        resBadge.textContent = `${meta.width}×${meta.height}`;
+        modularImageItem.appendChild(resBadge);
+      }
 
       modularImageItem.addEventListener("click", () => {
         thumbnailImg = img;
@@ -2843,6 +3425,39 @@ function drawCardToContext(targetCtx, width, height, card) {
         gridCtx.lineTo(toggleX + 8, toggleY + 13);
         gridCtx.lineTo(toggleX + 14, toggleY + 5);
         gridCtx.stroke();
+      }
+
+      // Draw resolution badge if metadata is available
+      if (card.imageMetadata && card.imageMetadata[0]) {
+        const meta = card.imageMetadata[0];
+        const resBadgeText = `${meta.width}×${meta.height}`;
+        
+        // Measure text to determine badge size
+        gridCtx.font = "bold 9px Gabarito, sans-serif";
+        const textWidth = gridCtx.measureText(resBadgeText).width;
+        const badgeWidth = textWidth + 8;
+        const badgeHeight = 16;
+        const badgeX = x + 5;
+        const badgeY = y + gridCardHeight - badgeHeight - 5;
+        
+        // Draw badge background
+        gridCtx.fillStyle = "rgba(142, 36, 170, 0.9)";
+        gridCtx.beginPath();
+        gridCtx.roundRect(badgeX, badgeY, badgeWidth, badgeHeight, 3);
+        gridCtx.fill();
+        
+        // Draw badge border
+        gridCtx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+        gridCtx.lineWidth = 1;
+        gridCtx.beginPath();
+        gridCtx.roundRect(badgeX, badgeY, badgeWidth, badgeHeight, 3);
+        gridCtx.stroke();
+        
+        // Draw text
+        gridCtx.fillStyle = "#ffffff";
+        gridCtx.textAlign = "center";
+        gridCtx.textBaseline = "middle";
+        gridCtx.fillText(resBadgeText, badgeX + badgeWidth / 2, badgeY + badgeHeight / 2);
       }
 
       // Add indicator for custom placement
@@ -3663,49 +4278,35 @@ function drawCardToContext(targetCtx, width, height, card) {
     let overlay = document.getElementById("progress-overlay");
 
     if (!overlay) {
-      // Create overlay if it doesn't exist
+      // Create corner notification matching background cache theme
       overlay = document.createElement("div");
       overlay.id = "progress-overlay";
       overlay.style.position = "fixed";
-      overlay.style.top = "0";
-      overlay.style.left = "0";
-      overlay.style.width = "100%";
-      overlay.style.height = "100%";
-      overlay.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
-      overlay.style.display = "flex";
-      overlay.style.flexDirection = "column";
-      overlay.style.alignItems = "center";
-      overlay.style.justifyContent = "center";
+      overlay.style.bottom = "20px";
+      overlay.style.right = "20px";
+      overlay.style.width = "320px";
+      overlay.style.backgroundColor = "rgba(22, 24, 48, 0.95)";
+      overlay.style.borderRadius = "12px";
+      overlay.style.boxShadow = "0 8px 24px rgba(0, 0, 0, 0.4), 0 0 20px rgba(142, 36, 170, 0.3)";
+      overlay.style.border = "1px solid rgba(142, 36, 170, 0.4)";
+      overlay.style.padding = "16px 20px";
       overlay.style.zIndex = "9999";
-      overlay.style.backdropFilter = "blur(4px)";
-      overlay.style.boxShadow = "0 4px 20px rgba(0, 255, 255, 0.2)";
+      overlay.style.backdropFilter = "blur(8px)";
+      overlay.style.fontFamily = "Gabarito, sans-serif";
       document.body.appendChild(overlay);
 
-      // Create modal container to match poster-showcase style
-      const modalContainer = document.createElement("div");
-      modalContainer.className = "custom-modal loading-modal";
-      modalContainer.style.background = "#1a1a1a";
-      modalContainer.style.borderRadius = "12px";
-      modalContainer.style.boxShadow = "0 0 20px rgba(0, 0, 0, 0.5)";
-      modalContainer.style.padding = "25px 30px";
-      modalContainer.style.display = "flex";
-      modalContainer.style.flexDirection = "column";
-      modalContainer.style.alignItems = "center";
-      modalContainer.style.textAlign = "center";
-      overlay.appendChild(modalContainer);
-
-      // Create spinner using the same style as poster-showcase
-      
+      // Create spinner
       const spinner = document.createElement("div");
-      spinner.className = "loading-spinner-large";
-      spinner.style.border = "3px solid rgba(255, 255, 255, 0.1)";
-      spinner.style.borderTop = "3px solid #00bfa5";
+      spinner.className = "loading-spinner-small";
+      spinner.style.border = "2px solid rgba(255, 255, 255, 0.1)";
+      spinner.style.borderTop = "2px solid #8e24aa";
       spinner.style.borderRadius = "50%";
-      spinner.style.width = "50px";
-      spinner.style.height = "50px";
+      spinner.style.width = "20px";
+      spinner.style.height = "20px";
       spinner.style.animation = "spin 1s linear infinite";
-      spinner.style.marginBottom = "15px";
-      modalContainer.appendChild(spinner);
+      spinner.style.display = "inline-block";
+      spinner.style.marginRight = "12px";
+      spinner.style.verticalAlign = "middle";
 
       // Add spinner animation
       if (!document.getElementById("spinner-style")) {
@@ -3716,50 +4317,53 @@ function drawCardToContext(targetCtx, width, height, card) {
         document.head.appendChild(style);
       }
 
+      // Create header with spinner and message
+      const headerEl = document.createElement("div");
+      headerEl.style.display = "flex";
+      headerEl.style.alignItems = "center";
+      headerEl.style.marginBottom = "12px";
+      headerEl.appendChild(spinner);
+
       // Create message element
       const messageEl = document.createElement("div");
       messageEl.id = "progress-message";
       messageEl.style.color = "white";
-      messageEl.style.fontSize = "16px";
-      messageEl.style.fontFamily = "Gabarito, sans-serif";
-      messageEl.style.textAlign = "center";
-      messageEl.style.maxWidth = "80%";
-      messageEl.style.margin = "0 0 15px 0";
-      modalContainer.appendChild(messageEl);
+      messageEl.style.fontSize = "14px";
+      messageEl.style.fontWeight = "600";
+      messageEl.style.flex = "1";
+      headerEl.appendChild(messageEl);
+      overlay.appendChild(headerEl);
 
-      // Create progress container matching poster-showcase style
+      // Create progress container
       const progressContainer = document.createElement("div");
       progressContainer.id = "progress-container";
       progressContainer.style.width = "100%";
-      progressContainer.style.height = "6px";
+      progressContainer.style.height = "4px";
       progressContainer.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
-      progressContainer.style.borderRadius = "3px";
-      progressContainer.style.margin = "15px 0";
+      progressContainer.style.borderRadius = "2px";
+      progressContainer.style.marginBottom = "8px";
       progressContainer.style.overflow = "hidden";
       progressContainer.style.display = showProgressBar ? "block" : "none";
 
-      // Create progress bar with gradient like in poster-showcase
+      // Create progress bar
       const progressBar = document.createElement("div");
       progressBar.id = "progress-bar";
       progressBar.style.width = "0%";
       progressBar.style.height = "100%";
-      progressBar.style.background = "linear-gradient(90deg, #00bfa5, #6a11cb)";
+      progressBar.style.background = "linear-gradient(90deg, #8e24aa, #00bfa5)";
       progressBar.style.transition = "width 0.3s ease";
-      progressBar.style.borderRadius = "3px";
+      progressBar.style.borderRadius = "2px";
 
       progressContainer.appendChild(progressBar);
-      modalContainer.appendChild(progressContainer);
+      overlay.appendChild(progressContainer);
 
       // Create details element
       const detailsEl = document.createElement("div");
       detailsEl.id = "progress-details";
-      detailsEl.style.color = "rgba(255, 255, 255, 0.7)";
-      detailsEl.style.fontSize = "14px";
-      detailsEl.style.fontFamily = "Gabarito, sans-serif";
-      detailsEl.style.textAlign = "center";
-      detailsEl.style.maxWidth = "80%";
-      detailsEl.style.marginTop = "10px";
-      modalContainer.appendChild(detailsEl);
+      detailsEl.style.color = "rgba(255, 255, 255, 0.6)";
+      detailsEl.style.fontSize = "12px";
+      detailsEl.style.lineHeight = "1.4";
+      overlay.appendChild(detailsEl);
     }
 
     // Update message
@@ -3827,13 +4431,13 @@ function drawCardToContext(targetCtx, width, height, card) {
   // Download a single title card
   function downloadSingleCard() {
     // Create filename based on title card content
-    let filename = "title-card.png";
+    let filename = "title-card.jpg";
     if (titleInput.value) {
       filename = titleInput.value.replace(/[/\\?%*:|"<>]/g, "-");
       if (seasonNumberInput.value && episodeNumberInput.value) {
         filename = `S${seasonNumberInput.value}E${episodeNumberInput.value} - ${filename}`;
       }
-      filename += ".png";
+      filename += ".jpg";
     }
 
     // Export at 1920x1080 regardless of current canvas size
@@ -3842,14 +4446,14 @@ function drawCardToContext(targetCtx, width, height, card) {
     exportCanvas.height = 1080;
     const exportCtx = exportCanvas.getContext("2d");
     drawCardToContext(exportCtx, 1920, 1080);
-    // Use toBlob for smaller PNG (lower compression quality)
+    // Use toBlob with JPEG format for smaller file size
     exportCanvas.toBlob(function(blob) {
       const link = document.createElement("a");
       link.download = filename;
       link.href = URL.createObjectURL(blob);
       link.click();
       showToast("Title card downloaded successfully");
-    }, "image/png", 0.7); // 0.7 = slightly lower quality, smaller file
+    }, "image/jpeg", 0.95); // 0.95 = high quality JPEG, much smaller than PNG
   }
 
   // Dynamically load JSZip library
@@ -3878,8 +4482,9 @@ function drawCardToContext(targetCtx, width, height, card) {
   async function batchDownloadTitleCards() {
     // Ensure JSZip is loaded
     if (!window.JSZip) {
-      alert("Loading required library for batch download...");
+      showProgressOverlay("Loading required library...", false);
       await loadJSZip();
+      hideProgressOverlay();
     }
 
     const zip = new JSZip();
@@ -3916,10 +4521,10 @@ function drawCardToContext(targetCtx, width, height, card) {
         episodeCanvas.toBlob((blob) => {
           const filename = `S${card.seasonNumber}E${
             card.episodeNumber
-          } - ${card.title.replace(/[/\\?%*:|"<>]/g, "-")}.png`;
+          } - ${card.title.replace(/[/\\?%*:|"<>]/g, "-")}.jpg`;
           seasonFolder.file(filename, blob);
           resolve();
-        }, "image/png", 0.7); // 0.7 = slightly lower quality, smaller file
+        }, "image/jpeg", 0.95); // 0.95 = high quality JPEG, much smaller than PNG
       });
     });
 
@@ -3965,6 +4570,164 @@ function drawCardToContext(targetCtx, width, height, card) {
       console.error("Error creating zip file:", error);
       document.body.removeChild(loadingMsg);
       alert("Failed to create zip file. Please try again.");
+    }
+  }
+
+  // Download title cards for all cached seasons
+  async function downloadAllSeasonsTitleCards() {
+    // Ensure JSZip is loaded
+    if (!window.JSZip) {
+      showProgressOverlay("Loading required library...", false);
+      await loadJSZip();
+      hideProgressOverlay();
+    }
+
+    if (!currentShowData) {
+      alert("Please select a show first!");
+      return;
+    }
+
+    // Check if we have cached seasons
+    if (artworkCache.size === 0) {
+      alert("No seasons are cached yet. Please wait for caching to complete.");
+      return;
+    }
+
+    const zip = new JSZip();
+    const showName = currentShowData.name.replace(/[^\w\s]/gi, "");
+    
+    // Show progress notification
+    updateBackgroundCacheNotification(0, `Preparing download for all seasons...`);
+
+    try {
+      // Get all cached season numbers for this show
+      const cachedSeasons = [];
+      for (const [key, value] of artworkCache.entries()) {
+        if (key.startsWith(`${currentShowData.id}-`)) {
+          const seasonNum = key.split('-')[1];
+          cachedSeasons.push({ key, seasonNum, data: value.seasonData });
+        }
+      }
+
+      if (cachedSeasons.length === 0) {
+        hideBackgroundCacheNotification();
+        alert("No seasons are cached for this show.");
+        return;
+      }
+
+      // Sort seasons by number
+      cachedSeasons.sort((a, b) => parseInt(a.seasonNum) - parseInt(b.seasonNum));
+
+      let totalEpisodes = 0;
+      let processedEpisodes = 0;
+
+      // Count total episodes
+      cachedSeasons.forEach(season => {
+        totalEpisodes += season.data.episodes.length;
+      });
+
+      // Process each season
+      for (const season of cachedSeasons) {
+        const seasonData = season.data;
+        const seasonNum = season.seasonNum;
+        const seasonFolder = zip.folder(`Season ${seasonNum}`);
+
+        updateBackgroundCacheNotification(
+          Math.floor((processedEpisodes / totalEpisodes) * 100),
+          `Processing Season ${seasonNum}...`
+        );
+
+        // Create promises for each episode in this season
+        const episodePromises = seasonData.episodes.map((episode, index) => {
+          return new Promise(async (resolve) => {
+            try {
+              // Create a temporary card object similar to episodeTitleCards structure
+              const formatNumber = (n) => {
+                if (numberTheme === 'plain') return String(Number(n));
+                return String(n).padStart(2, "0");
+              };
+
+              const card = {
+                title: episode.name,
+                seasonNumber: formatNumber(episode.season_number),
+                episodeNumber: formatNumber(episode.episode_number),
+                thumbnailImg: null,
+                currentSettings: {
+                  fontFamily: fontFamily.value,
+                  infoFontFamily: document.getElementById("info-font-family").value,
+                  textSize: textSize.value,
+                  infoTextSize: document.getElementById("info-text-size").value,
+                  textShadowBlur: textShadowBlur.value,
+                  textOutlineWidth: textOutlineWidth.value,
+                  infoShadowBlur: document.getElementById("info-shadow-blur").value,
+                  infoOutlineWidth: document.getElementById("info-outline-width").value,
+                  titleInfoSpacing: titleInfoSpacing.value,
+                  textColor: window["text-color"] || "#ffffff",
+                  infoColor: window["info-color"] || "#ffffff",
+                  textShadowColor: window["text-shadow-color"] || "#000000",
+                  textOutlineColor: window["text-outline-color"] || "#000000",
+                  infoShadowColor: window["info-shadow-color"] || "#000000",
+                  infoOutlineColor: window["info-outline-color"] || "#000000",
+                  effectType: effectType.value,
+                  gradientColor: window["gradient-color"] || "#000000",
+                  gradientOpacity: gradientOpacity.value,
+                  blendMode: blendMode.value,
+                  titleWrapping: document.getElementById("title-wrapping") ? 
+                    document.getElementById("title-wrapping").value : 'singleLine',
+                  placement: presetSelect.value,
+                },
+              };
+
+              // Load thumbnail if available
+              if (episode.still_path) {
+                try {
+                  card.thumbnailImg = await getEpisodeThumbnail(episode.still_path);
+                } catch (err) {
+                  console.log(`Could not load thumbnail for S${seasonNum}E${episode.episode_number}`);
+                }
+              }
+
+              // Draw card to canvas
+              const episodeCanvas = document.createElement("canvas");
+              episodeCanvas.width = 1920;
+              episodeCanvas.height = 1080;
+              drawCardToTempContext(episodeCanvas.getContext("2d"), card, 1920, 1080);
+
+              // Convert to blob and add to zip
+              episodeCanvas.toBlob((blob) => {
+                const filename = `S${card.seasonNumber}E${card.episodeNumber} - ${card.title.replace(/[/\\?%*:|"<>]/g, "-")}.jpg`;
+                seasonFolder.file(filename, blob);
+                processedEpisodes++;
+                resolve();
+              }, "image/jpeg", 0.95);
+            } catch (err) {
+              console.error(`Error processing episode ${episode.episode_number}:`, err);
+              processedEpisodes++;
+              resolve();
+            }
+          });
+        });
+
+        await Promise.all(episodePromises);
+      }
+
+      // Generate and download zip
+      updateBackgroundCacheNotification(100, "Generating zip file...");
+      const content = await zip.generateAsync({ type: "blob" });
+      hideBackgroundCacheNotification();
+
+      // Trigger download
+      const link = document.createElement("a");
+      link.download = `${showName} - All Seasons Title Cards.zip`;
+      link.href = URL.createObjectURL(content);
+      link.click();
+
+      // Show success toast
+      showToast("All seasons downloaded successfully!", "success");
+    } catch (error) {
+      console.error("Error downloading all seasons:", error);
+      hideBackgroundCacheNotification();
+      alert("Failed to download all seasons. Please try again.");
     }
   }
 
@@ -4067,6 +4830,104 @@ function drawCardToContext(targetCtx, width, height, card) {
     };
     
     showToast(`Configuration saved for "${currentShowData.name}"`, 3000);
+  }
+
+  // Export all configs to a JSON file
+  function exportAllConfigs() {
+    const savedConfigs = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '[]');
+    
+    if (savedConfigs.length === 0) {
+      showToast("No saved configurations to export", 3000);
+      return;
+    }
+    
+    // Create export data with metadata
+    const exportData = {
+      version: "1.0",
+      exportDate: new Date().toISOString(),
+      configCount: savedConfigs.length,
+      configs: savedConfigs
+    };
+    
+    // Convert to JSON string
+    const jsonString = JSON.stringify(exportData, null, 2);
+    
+    // Create blob and download
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `card-lab-configs-${new Date().toISOString().split('T')[0]}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+    
+    showToast(`Exported ${savedConfigs.length} configuration(s)`, 3000);
+  }
+  
+  // Import configs from a JSON file
+  function importConfigs() {
+    // Create file input
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = '.json';
+    
+    fileInput.onchange = async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      try {
+        const text = await file.text();
+        const importData = JSON.parse(text);
+        
+        // Validate import data
+        if (!importData.configs || !Array.isArray(importData.configs)) {
+          showToast("Invalid config file format", 3000);
+          return;
+        }
+        
+        // Get existing configs
+        let existingConfigs = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '[]');
+        
+        // Merge configs - check for duplicates
+        let addedCount = 0;
+        let updatedCount = 0;
+        
+        importData.configs.forEach(importedConfig => {
+          const existingIndex = existingConfigs.findIndex(c => c.showId === importedConfig.showId);
+          
+          if (existingIndex >= 0) {
+            // Update existing
+            existingConfigs[existingIndex] = importedConfig;
+            updatedCount++;
+          } else {
+            // Add new
+            existingConfigs.push(importedConfig);
+            addedCount++;
+          }
+        });
+        
+        // Save merged configs
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(existingConfigs));
+        
+        // Show success message
+        let message = '';
+        if (addedCount > 0 && updatedCount > 0) {
+          message = `Imported ${addedCount} new and updated ${updatedCount} existing config(s)`;
+        } else if (addedCount > 0) {
+          message = `Imported ${addedCount} new config(s)`;
+        } else if (updatedCount > 0) {
+          message = `Updated ${updatedCount} existing config(s)`;
+        }
+        
+        showToast(message, 3000);
+        
+      } catch (error) {
+        console.error('Import error:', error);
+        showToast("Failed to import configs. Invalid file.", 3000);
+      }
+    };
+    
+    fileInput.click();
   }
 
   // Load configuration selection dialog
@@ -4744,16 +5605,53 @@ resetBtn.addEventListener("click", () => {
 });
 
   // Setup download button handler
-  downloadBtn.addEventListener("click", () => {
-    if (canvas.style.display === "block") {
-      // Download single card if in single card view
-      downloadSingleCard();
-    } else if (hasSearchResults && episodeTitleCards.length > 0) {
-      // Download all cards if in grid view
-      batchDownloadTitleCards();
-    } else {
-      // Fallback to single card
-      downloadSingleCard();
+  // Setup download button handlers
+  const downloadBtn = document.getElementById("downloadBtn");
+  const downloadOptionsOverlay = document.getElementById("download-options-overlay");
+  const downloadCurrentOption = document.getElementById("downloadCurrentOption");
+  const downloadAllSeasonsOption = document.getElementById("downloadAllSeasonsOption");
+  const downloadCancel = document.getElementById("downloadCancel");
+
+  if (downloadBtn) {
+    downloadBtn.addEventListener("click", () => {
+      // Show download options modal
+      downloadOptionsOverlay.style.display = "flex";
+    });
+  }
+
+  if (downloadCancel) {
+    downloadCancel.addEventListener("click", () => {
+      downloadOptionsOverlay.style.display = "none";
+    });
+  }
+
+  if (downloadCurrentOption) {
+    downloadCurrentOption.addEventListener("click", () => {
+      downloadOptionsOverlay.style.display = "none";
+      if (canvas.style.display === "block") {
+        // Download single card if in single card view
+        downloadSingleCard();
+      } else if (hasSearchResults && episodeTitleCards.length > 0) {
+        // Download all cards if in grid view
+        batchDownloadTitleCards();
+      } else {
+        // Fallback to single card
+        downloadSingleCard();
+      }
+    });
+  }
+
+  if (downloadAllSeasonsOption) {
+    downloadAllSeasonsOption.addEventListener("click", () => {
+      downloadOptionsOverlay.style.display = "none";
+      downloadAllSeasonsTitleCards();
+    });
+  }
+
+  // Close modal when clicking outside
+  downloadOptionsOverlay.addEventListener("click", (e) => {
+    if (e.target === downloadOptionsOverlay) {
+      downloadOptionsOverlay.style.display = "none";
     }
   });
 
@@ -4894,6 +5792,8 @@ resetBtn.addEventListener("click", () => {
   // Setup save/load configuration buttons
   saveConfigBtn.addEventListener("click", saveCurrentConfig);
   loadConfigBtn.addEventListener("click", showLoadConfigDialog);
+  exportConfigBtn.addEventListener("click", exportAllConfigs);
+  importConfigBtn.addEventListener("click", importConfigs);
 
   // Setup title wrapping and line spacing relationship
   titleWrapping.addEventListener("change", function() {
@@ -5017,6 +5917,50 @@ resetBtn.addEventListener("click", () => {
 
   // Hide return to grid button initially
   returnToGridBtn.style.display = "none";
+
+  // Setup tooltips for header action buttons
+  function attachHeaderTooltips() {
+    const tooltip = document.querySelector('.tooltip');
+    if (!tooltip) return;
+    
+    const headerButtons = document.querySelectorAll('.header-actions [data-tooltip]');
+    
+    headerButtons.forEach(btn => {
+      btn.addEventListener('mouseenter', function() {
+        const tooltipText = this.getAttribute('data-tooltip');
+        if (!tooltipText) return;
+        
+        tooltip.textContent = tooltipText;
+        tooltip.style.opacity = 1;
+        tooltip.style.visibility = 'visible';
+        
+        const rect = this.getBoundingClientRect();
+        const tooltipWidth = tooltip.offsetWidth;
+        const tooltipHeight = tooltip.offsetHeight;
+        const buttonCenterX = rect.left + (rect.width / 2);
+        
+        let leftPos = buttonCenterX - (tooltipWidth / 2);
+        leftPos = Math.max(10, Math.min(leftPos, window.innerWidth - tooltipWidth - 10));
+        
+        const topPos = rect.bottom + 10;
+        tooltip.classList.remove('tooltip-top');
+        tooltip.classList.add('tooltip-bottom');
+        
+        tooltip.style.left = `${leftPos}px`;
+        tooltip.style.top = `${topPos}px`;
+      });
+      
+      btn.addEventListener('mouseleave', function() {
+        tooltip.style.opacity = 0;
+        setTimeout(() => {
+          tooltip.style.visibility = 'hidden';
+        }, 200);
+      });
+    });
+  }
+  
+  // Wait for tooltip.js to create the tooltip element, then attach header tooltips
+  setTimeout(attachHeaderTooltips, 100);
 
   // Draw initial card
   drawCard();
