@@ -1,6 +1,21 @@
 // Changelog Configuration
-const CURRENT_VERSION = '1.6.0';
+const CURRENT_VERSION = '1.7.0';
 const CHANGELOG = [
+    {
+        version: '1.7.0',
+        date: 'November 2025',
+        changes: [
+            { type: 'feature', text: 'Roman numeral support for episode and season numbers' },
+            { type: 'feature', text: 'Drag-and-drop reordering of episodes in grid view' },
+            { type: 'feature', text: 'Auto-reordering when episode numbers are manually changed' },
+            { type: 'feature', text: 'Select specific seasons to download with checkbox modal' },
+            { type: 'improvement', text: 'Enhanced download options: Current View, All Cached, or Select Seasons' },
+            { type: 'improvement', text: 'Detailed caching progress shows current activity (fetching, loading, rendering)' },
+            { type: 'improvement', text: 'Episode reordering now persists when switching between seasons' },
+            { type: 'improvement', text: 'Settings dropdown changed from hover to click-based for better reliability' },
+            { type: 'fix', text: 'Drag operation no longer triggers single card view accidentally' }
+        ]
+    },
     {
         version: '1.6.0',
         date: 'November 2025',
@@ -996,6 +1011,7 @@ if (spoilerToggle) {
       // Format the numbers based on numberTheme
       const formatNumber = (n) => {
         if (numberTheme === 'plain') return String(Number(n));
+        if (numberTheme === 'roman') return toRomanNumeral(Number(n));
         return String(n).padStart(2, "0");
       };
       
@@ -1003,12 +1019,41 @@ if (spoilerToggle) {
       currentCard.title = titleInput.value;
       currentCard.seasonNumber = formatNumber(seasonNumberInput.value);
       currentCard.episodeNumber = formatNumber(episodeNumberInput.value);
+      
+      // Sort cards by episode number after updating
+      sortEpisodeCards();
     }
     
     drawCard();
     if (isTMDBMode && episodeTitleCards.length > 0) {
       updateEpisodeCardSettings();
       renderEpisodeGrid();
+    }
+  }
+  
+  // Sort episode cards by episode number
+  function sortEpisodeCards() {
+    episodeTitleCards.sort((a, b) => {
+      const aNum = parseInt(a.episodeNumber) || 0;
+      const bNum = parseInt(b.episodeNumber) || 0;
+      return aNum - bNum;
+    });
+    
+    // Update selectedCardIndex to maintain selection on the same card
+    if (selectedCardIndex >= 0 && selectedCardIndex < episodeTitleCards.length) {
+      const currentCard = episodeTitleCards[selectedCardIndex];
+      selectedCardIndex = episodeTitleCards.findIndex(card => card === currentCard);
+    }
+    
+    // Update the cache with the new sorted order
+    if (currentShowData && currentShowData.id) {
+      const cacheKey = `${currentShowData.id}-${currentSeasonNumber}`;
+      if (artworkCache.has(cacheKey)) {
+        const cached = artworkCache.get(cacheKey);
+        // Update the cached rendered cards with the new order
+        cached.renderedCards = [...episodeTitleCards];
+        artworkCache.set(cacheKey, cached);
+      }
     }
   }
 
@@ -3642,7 +3687,71 @@ function drawCardToContext(targetCtx, width, height, card) {
       gridCanvas.onclick = handleGridCanvasClick;
     }
     
-    // Add hover effects via mousemove event
+    // Setup drag-and-drop state
+    let dragState = {
+      isDragging: false,
+      draggedIndex: -1,
+      dragStartX: 0,
+      dragStartY: 0,
+      dragOffsetX: 0,
+      dragOffsetY: 0,
+      hasMoved: false,
+      preventClick: false
+    };
+    
+    // Helper function to determine drop index
+    function getDropIndex(x, y) {
+      for (let i = 0; i < episodeTitleCards.length; i++) {
+        const card = episodeTitleCards[i];
+        if (card.gridCoords) {
+          const { x: cardX, y: cardY, width: cardWidth, height: cardHeight } = card.gridCoords;
+          
+          if (x >= cardX && x <= cardX + cardWidth && y >= cardY && y <= cardY + cardHeight) {
+            return i;
+          }
+        }
+      }
+      return -1;
+    }
+    
+    // Add drag-and-drop event handlers
+    if (!gridCanvas.onmousedown) {
+      gridCanvas.onmousedown = function(event) {
+        const rect = gridCanvas.getBoundingClientRect();
+        const scaleX = gridCanvas.width / rect.width;
+        const scaleY = gridCanvas.height / rect.height;
+        const x = (event.clientX - rect.left) * scaleX;
+        const y = (event.clientY - rect.top) * scaleY;
+        
+        // Find clicked card
+        for (let i = 0; i < episodeTitleCards.length; i++) {
+          const card = episodeTitleCards[i];
+          if (card.gridCoords) {
+            const { x: cardX, y: cardY, width: cardWidth, height: cardHeight } = card.gridCoords;
+            
+            // Check if click is NOT on the checkbox
+            const checkboxRect = card.gridCoords.checkbox;
+            const isOnCheckbox = x >= checkboxRect.x && x <= checkboxRect.x + checkboxRect.width &&
+                                y >= checkboxRect.y && y <= checkboxRect.y + checkboxRect.height;
+            
+            if (!isOnCheckbox && x >= cardX && x <= cardX + cardWidth && y >= cardY && y <= cardY + cardHeight) {
+              dragState.isDragging = true;
+              dragState.draggedIndex = i;
+              dragState.dragStartX = x;
+              dragState.dragStartY = y;
+              dragState.dragOffsetX = x - cardX;
+              dragState.dragOffsetY = y - cardY;
+              dragState.hasMoved = false;
+              gridCanvas.style.cursor = 'grabbing';
+              event.preventDefault();
+              break;
+            }
+          }
+        }
+      };
+    }
+    
+    // Add hover effects and drag move handler
     if (!gridCanvas.onmousemove) {
       let lastHoveredIndex = -1;
       
@@ -3653,7 +3762,67 @@ function drawCardToContext(targetCtx, width, height, card) {
         const x = (event.clientX - rect.left) * scaleX;
         const y = (event.clientY - rect.top) * scaleY;
         
-        // Check if hover is on any card
+        // Handle dragging
+        if (dragState.isDragging) {
+          // Track if mouse has moved significantly (more than 5 pixels)
+          const dx = Math.abs(x - dragState.dragStartX);
+          const dy = Math.abs(y - dragState.dragStartY);
+          if (dx > 5 || dy > 5) {
+            dragState.hasMoved = true;
+          }
+          
+          renderEpisodeGrid();
+          
+          const draggedCard = episodeTitleCards[dragState.draggedIndex];
+          const cardX = x - dragState.dragOffsetX;
+          const cardY = y - dragState.dragOffsetY;
+          
+          // Draw semi-transparent dragged card
+          gridCtx.save();
+          gridCtx.globalAlpha = 0.8;
+          gridCtx.shadowColor = "rgba(0, 191, 165, 0.6)";
+          gridCtx.shadowBlur = 20;
+          
+          const refCanvas = document.createElement("canvas");
+          refCanvas.width = 1280;
+          refCanvas.height = 720;
+          const refCtx = refCanvas.getContext("2d");
+          drawCardToTempContext(refCtx, draggedCard, 1280, 720);
+          
+          gridCtx.beginPath();
+          gridCtx.roundRect(cardX, cardY, gridCardWidth, gridCardHeight, 6);
+          gridCtx.clip();
+          gridCtx.drawImage(refCanvas, cardX, cardY, gridCardWidth, gridCardHeight);
+          gridCtx.restore();
+          
+          // Draw insertion indicator
+          const dropIndex = getDropIndex(x, y);
+          if (dropIndex >= 0 && dropIndex !== dragState.draggedIndex) {
+            const targetCard = episodeTitleCards[dropIndex];
+            if (targetCard && targetCard.gridCoords) {
+              const { x: targetX, y: targetY, width: targetWidth, height: targetHeight } = targetCard.gridCoords;
+              
+              gridCtx.save();
+              gridCtx.strokeStyle = "#00bfa5";
+              gridCtx.lineWidth = 4;
+              
+              const insertBefore = dropIndex < dragState.draggedIndex;
+              gridCtx.beginPath();
+              if (insertBefore) {
+                gridCtx.moveTo(targetX - 5, targetY);
+                gridCtx.lineTo(targetX - 5, targetY + targetHeight);
+              } else {
+                gridCtx.moveTo(targetX + targetWidth + 5, targetY);
+                gridCtx.lineTo(targetX + targetWidth + 5, targetY + targetHeight);
+              }
+              gridCtx.stroke();
+              gridCtx.restore();
+            }
+          }
+          return;
+        }
+        
+        // Regular hover handling (when not dragging)
         let hoveredIndex = -1;
         for (let i = 0; i < episodeTitleCards.length; i++) {
           const card = episodeTitleCards[i];
@@ -3667,42 +3836,95 @@ function drawCardToContext(targetCtx, width, height, card) {
           }
         }
         
-        // Only redraw if the hover state changed
-        if (hoveredIndex !== lastHoveredIndex) {
-          lastHoveredIndex = hoveredIndex;
-          renderEpisodeGrid();
+        if (hoveredIndex >= 0) {
+          const card = episodeTitleCards[hoveredIndex];
+          const checkboxRect = card.gridCoords.checkbox;
+          const isOnCheckbox = x >= checkboxRect.x && x <= checkboxRect.x + checkboxRect.width &&
+                              y >= checkboxRect.y && y <= checkboxRect.y + checkboxRect.height;
           
-          // Draw hover effect if a card is hovered
-          if (hoveredIndex >= 0) {
-            const card = episodeTitleCards[hoveredIndex];
-            const { x, y, width, height } = card.gridCoords;
-            
-            // Draw highlight effect
-            gridCtx.save();
-            gridCtx.fillStyle = "rgba(0, 191, 165, 0.2)";
-            gridCtx.beginPath();
-            gridCtx.roundRect(x, y, width, height, 6);
-            gridCtx.fill();
-            
-            // Draw glow border
-            gridCtx.strokeStyle = "rgba(0, 191, 165, 0.6)";
-            gridCtx.lineWidth = 2;
-            gridCtx.beginPath();
-            gridCtx.roundRect(x, y, width, height, 6);
-            gridCtx.stroke();
-            gridCtx.restore();
-            
-            // Change cursor to pointer
-            gridCanvas.style.cursor = 'pointer';
-          } else {
-            gridCanvas.style.cursor = 'default';
-          }
+          gridCanvas.style.cursor = isOnCheckbox ? 'pointer' : 'grab';
+        } else {
+          gridCanvas.style.cursor = 'default';
         }
       };
-      
-      // Reset cursor when leaving canvas
+    }
+    
+    // Add mouse up handler for drag completion
+    if (!gridCanvas.onmouseup) {
+      gridCanvas.onmouseup = function(event) {
+        if (dragState.isDragging) {
+          const rect = gridCanvas.getBoundingClientRect();
+          const scaleX = gridCanvas.width / rect.width;
+          const scaleY = gridCanvas.height / rect.height;
+          const x = (event.clientX - rect.left) * scaleX;
+          const y = (event.clientY - rect.top) * scaleY;
+          
+          const dropIndex = getDropIndex(x, y);
+          
+          if (dropIndex >= 0 && dropIndex !== dragState.draggedIndex) {
+            const draggedCard = episodeTitleCards.splice(dragState.draggedIndex, 1)[0];
+            episodeTitleCards.splice(dropIndex, 0, draggedCard);
+            
+            // Renumber episodes
+            const formatNumber = (n) => {
+              if (numberTheme === 'plain') return String(n);
+              if (numberTheme === 'roman') return toRomanNumeral(n);
+              return String(n).padStart(2, "0");
+            };
+            
+            episodeTitleCards.forEach((card, index) => {
+              card.episodeNumber = formatNumber(index + 1);
+            });
+            
+            // Update the cache with the new order
+            if (currentShowData && currentShowData.id) {
+              const cacheKey = `${currentShowData.id}-${currentSeasonNumber}`;
+              if (artworkCache.has(cacheKey)) {
+                const cached = artworkCache.get(cacheKey);
+                // Update the cached rendered cards with the new order
+                cached.renderedCards = [...episodeTitleCards];
+                artworkCache.set(cacheKey, cached);
+              }
+            }
+            
+            // Update selected index
+            if (selectedCardIndex === dragState.draggedIndex) {
+              selectedCardIndex = dropIndex;
+            } else if (selectedCardIndex > dragState.draggedIndex && selectedCardIndex <= dropIndex) {
+              selectedCardIndex--;
+            } else if (selectedCardIndex < dragState.draggedIndex && selectedCardIndex >= dropIndex) {
+              selectedCardIndex++;
+            }
+            
+            showToast("Episode order updated", 2000);
+          }
+          
+          // Set flag to prevent click handler from firing if we actually moved the card
+          if (dragState.hasMoved) {
+            dragState.preventClick = true;
+            setTimeout(() => {
+              dragState.preventClick = false;
+            }, 100);
+          }
+          
+          dragState.isDragging = false;
+          dragState.draggedIndex = -1;
+          dragState.hasMoved = false;
+          gridCanvas.style.cursor = 'default';
+          renderEpisodeGrid();
+        }
+      };
+    }
+    
+    // Reset on mouse leave
+    if (!gridCanvas.onmouseleave) {
       gridCanvas.onmouseleave = function() {
-        lastHoveredIndex = -1;
+        if (dragState.isDragging) {
+          dragState.isDragging = false;
+          dragState.draggedIndex = -1;
+          dragState.hasMoved = false;
+          renderEpisodeGrid();
+        }
         gridCanvas.style.cursor = 'default';
       };
     }
@@ -3710,6 +3932,11 @@ function drawCardToContext(targetCtx, width, height, card) {
 
   // Handle clicks on the grid canvas
   function handleGridCanvasClick(event) {
+    // Ignore clicks if a drag just occurred
+    if (dragState && dragState.preventClick) {
+      return;
+    }
+    
     // Get mouse position relative to canvas
     const rect = gridCanvas.getBoundingClientRect();
     const scaleX = gridCanvas.width / rect.width;
