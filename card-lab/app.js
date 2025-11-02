@@ -3360,6 +3360,18 @@ function drawCardToContext(targetCtx, width, height, card) {
   // GRID VIEW RENDERING
   // =====================================================
 
+  // Drag-and-drop state (persistent across renders)
+  let dragState = {
+    isDragging: false,
+    draggedIndex: -1,
+    dragStartX: 0,
+    dragStartY: 0,
+    dragOffsetX: 0,
+    dragOffsetY: 0,
+    hasMoved: false,
+    preventClick: false
+  };
+
   // Render the episode grid
   function renderEpisodeGrid() {
     if (episodeTitleCards.length === 0) return;
@@ -3687,18 +3699,6 @@ function drawCardToContext(targetCtx, width, height, card) {
       gridCanvas.onclick = handleGridCanvasClick;
     }
     
-    // Setup drag-and-drop state
-    let dragState = {
-      isDragging: false,
-      draggedIndex: -1,
-      dragStartX: 0,
-      dragStartY: 0,
-      dragOffsetX: 0,
-      dragOffsetY: 0,
-      hasMoved: false,
-      preventClick: false
-    };
-    
     // Helper function to determine drop index
     function getDropIndex(x, y) {
       for (let i = 0; i < episodeTitleCards.length; i++) {
@@ -3861,7 +3861,8 @@ function drawCardToContext(targetCtx, width, height, card) {
           
           const dropIndex = getDropIndex(x, y);
           
-          if (dropIndex >= 0 && dropIndex !== dragState.draggedIndex) {
+          // Only reorder if we actually moved AND dropped on a different position
+          if (dragState.hasMoved && dropIndex >= 0 && dropIndex !== dragState.draggedIndex) {
             const draggedCard = episodeTitleCards.splice(dragState.draggedIndex, 1)[0];
             episodeTitleCards.splice(dropIndex, 0, draggedCard);
             
@@ -3899,17 +3900,15 @@ function drawCardToContext(targetCtx, width, height, card) {
             showToast("Episode order updated", 2000);
           }
           
+          dragState.isDragging = false;
+          dragState.draggedIndex = -1;
+          
           // Set flag to prevent click handler from firing if we actually moved the card
           if (dragState.hasMoved) {
             dragState.preventClick = true;
-            setTimeout(() => {
-              dragState.preventClick = false;
-            }, 100);
           }
-          
-          dragState.isDragging = false;
-          dragState.draggedIndex = -1;
           dragState.hasMoved = false;
+          
           gridCanvas.style.cursor = 'default';
           renderEpisodeGrid();
         }
@@ -3934,6 +3933,7 @@ function drawCardToContext(targetCtx, width, height, card) {
   function handleGridCanvasClick(event) {
     // Ignore clicks if a drag just occurred
     if (dragState && dragState.preventClick) {
+      dragState.preventClick = false; // Reset immediately after blocking
       return;
     }
     
