@@ -1,9 +1,20 @@
 // Changelog Configuration
-const CURRENT_VERSION = '1.7.0';
+const CURRENT_VERSION = '1.7.1';
 const CHANGELOG = [
     {
+        version: '1.7.1',
+        date: 'November 2, 2025',
+        changes: [
+            { type: 'feature', text: 'Visual indicator showing alternate image count on grid thumbnails' },
+            { type: 'feature', text: 'Tooltip on custom placement checkbox explaining its purpose' },
+            { type: 'improvement', text: 'Improved badge visibility with larger font and better contrast' },
+            { type: 'improvement', text: 'Custom badge moved to bottom-right to avoid hiding resolution info' },
+            { type: 'fix', text: 'Fixed click detection for episode cards and custom placement checkboxes' }
+        ]
+    },
+    {
         version: '1.7.0',
-        date: 'November 2025',
+        date: 'November 2, 2025',
         changes: [
             { type: 'feature', text: 'Roman numeral support for episode and season numbers' },
             { type: 'feature', text: 'Drag-and-drop reordering of episodes in grid view' },
@@ -18,7 +29,7 @@ const CHANGELOG = [
     },
     {
         version: '1.6.0',
-        date: 'November 2025',
+        date: 'November 1, 2025',
         changes: [
             { type: 'feature', text: 'Instant season switching with pre-rendered card caching' },
             { type: 'improvement', text: 'Parallel background caching loads all seasons simultaneously' },
@@ -28,7 +39,7 @@ const CHANGELOG = [
     },
     {
         version: '1.5.0',
-        date: 'November 2025',
+        date: 'October 31, 2025',
         changes: [
             { type: 'feature', text: 'Download all seasons at once with organized folders' },
             { type: 'feature', text: 'Background caching for all seasons improves performance' },
@@ -40,7 +51,7 @@ const CHANGELOG = [
     },
     {
         version: '1.4.0',
-        date: 'October 2025',
+        date: 'October 30, 2025',
         changes: [
             { type: 'feature', text: 'Resolution badges on episode thumbnails' },
             { type: 'feature', text: 'Config export/import for browser switching' },
@@ -117,15 +128,22 @@ window.showChangelogModal = function() {
     
     content.innerHTML = '';
     
-    CHANGELOG.forEach(release => {
+    CHANGELOG.forEach((release, index) => {
         const releaseDiv = document.createElement('div');
         releaseDiv.className = 'changelog-release';
         
         const header = document.createElement('div');
         header.className = 'changelog-header';
         header.innerHTML = `
-            <h4>Version ${release.version}</h4>
-            <span class="changelog-date">${release.date}</span>
+            <div class="changelog-header-left">
+                <h4>Version ${release.version}</h4>
+                <span class="changelog-date">${release.date}</span>
+            </div>
+            <button class="changelog-toggle" data-index="${index}">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+            </button>
         `;
         releaseDiv.appendChild(header);
         
@@ -151,6 +169,22 @@ window.showChangelogModal = function() {
         
         releaseDiv.appendChild(changesList);
         content.appendChild(releaseDiv);
+        
+        // Add collapse functionality
+        const toggleBtn = header.querySelector('.changelog-toggle');
+        if (toggleBtn) {
+            // Collapse older versions by default (keep first one expanded)
+            if (index > 0) {
+                changesList.style.display = 'none';
+                toggleBtn.classList.add('collapsed');
+            }
+            
+            toggleBtn.addEventListener('click', () => {
+                const isCollapsed = changesList.style.display === 'none';
+                changesList.style.display = isCollapsed ? 'block' : 'none';
+                toggleBtn.classList.toggle('collapsed');
+            });
+        }
     });
     
     // Reset checkbox
@@ -3628,21 +3662,21 @@ function drawCardToContext(targetCtx, width, height, card) {
         const resBadgeText = `${meta.width}×${meta.height}`;
         
         // Measure text to determine badge size
-        gridCtx.font = "bold 9px Gabarito, sans-serif";
+        gridCtx.font = "bold 10px Gabarito, sans-serif";
         const textWidth = gridCtx.measureText(resBadgeText).width;
-        const badgeWidth = textWidth + 8;
-        const badgeHeight = 16;
+        const badgeWidth = textWidth + 10;
+        const badgeHeight = 18;
         const badgeX = x + 5;
         const badgeY = y + gridCardHeight - badgeHeight - 5;
         
         // Draw badge background
-        gridCtx.fillStyle = "rgba(142, 36, 170, 0.9)";
+        gridCtx.fillStyle = "rgba(142, 36, 170, 0.95)";
         gridCtx.beginPath();
         gridCtx.roundRect(badgeX, badgeY, badgeWidth, badgeHeight, 3);
         gridCtx.fill();
         
         // Draw badge border
-        gridCtx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+        gridCtx.strokeStyle = "rgba(255, 255, 255, 0.3)";
         gridCtx.lineWidth = 1;
         gridCtx.beginPath();
         gridCtx.roundRect(badgeX, badgeY, badgeWidth, badgeHeight, 3);
@@ -3653,30 +3687,63 @@ function drawCardToContext(targetCtx, width, height, card) {
         gridCtx.textAlign = "center";
         gridCtx.textBaseline = "middle";
         gridCtx.fillText(resBadgeText, badgeX + badgeWidth / 2, badgeY + badgeHeight / 2);
+        
+        // Show alternate images count if more than 1 image available
+        if (card.imageMetadata.length > 1) {
+          const altCount = card.imageMetadata.length;
+          const altBadgeText = `${altCount} imgs`;
+          
+          gridCtx.font = "bold 10px Gabarito, sans-serif";
+          const altTextWidth = gridCtx.measureText(altBadgeText).width;
+          const altBadgeWidth = altTextWidth + 10;
+          const altBadgeX = badgeX + badgeWidth + 3;
+          
+          // Draw badge background with different color
+          gridCtx.fillStyle = "rgba(0, 191, 165, 0.95)";
+          gridCtx.beginPath();
+          gridCtx.roundRect(altBadgeX, badgeY, altBadgeWidth, badgeHeight, 3);
+          gridCtx.fill();
+          
+          // Draw badge border
+          gridCtx.strokeStyle = "rgba(255, 255, 255, 0.3)";
+          gridCtx.lineWidth = 1;
+          gridCtx.beginPath();
+          gridCtx.roundRect(altBadgeX, badgeY, altBadgeWidth, badgeHeight, 3);
+          gridCtx.stroke();
+          
+          // Draw text
+          gridCtx.fillStyle = "#ffffff";
+          gridCtx.textAlign = "center";
+          gridCtx.textBaseline = "middle";
+          gridCtx.fillText(altBadgeText, altBadgeX + altBadgeWidth / 2, badgeY + badgeHeight / 2);
+        }
       }
 
       // Add indicator for custom placement
       if (card.hasCustomPlacement) {
-        // Draw badge with pill shape
+        // Draw badge with pill shape on the right side
+        const customBadgeWidth = 60;
+        const customBadgeX = x + gridCardWidth - customBadgeWidth;
+        
         gridCtx.fillStyle = 'rgba(0, 191, 165, 0.9)';
         gridCtx.beginPath();
-        gridCtx.roundRect(x, y + gridCardHeight - 22, 60, 22, [0, 0, 0, 6]);
+        gridCtx.roundRect(customBadgeX, y + gridCardHeight - 22, customBadgeWidth, 22, [0, 0, 6, 0]);
         gridCtx.fill();
         
         // Add subtle gradient to badge
-        const badgeGradient = gridCtx.createLinearGradient(x, y + gridCardHeight - 22, x + 60, y + gridCardHeight);
+        const badgeGradient = gridCtx.createLinearGradient(customBadgeX, y + gridCardHeight - 22, customBadgeX + customBadgeWidth, y + gridCardHeight);
         badgeGradient.addColorStop(0, 'rgba(255, 255, 255, 0.1)');
         badgeGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
         gridCtx.fillStyle = badgeGradient;
         gridCtx.beginPath();
-        gridCtx.roundRect(x, y + gridCardHeight - 22, 60, 22, [0, 0, 0, 6]);
+        gridCtx.roundRect(customBadgeX, y + gridCardHeight - 22, customBadgeWidth, 22, [0, 0, 6, 0]);
         gridCtx.fill();
         
         // Draw "Custom" text with improved styling
         gridCtx.font = "bold 10px Gabarito, sans-serif";
         gridCtx.fillStyle = "#ffffff";
         gridCtx.textAlign = "center";
-        gridCtx.fillText("CUSTOM", x + 30, y + gridCardHeight - 8);
+        gridCtx.fillText("CUSTOM", customBadgeX + customBadgeWidth / 2, y + gridCardHeight - 8);
       }
 
       // Store card coordinates for click handling
@@ -3843,8 +3910,38 @@ function drawCardToContext(targetCtx, width, height, card) {
                               y >= checkboxRect.y && y <= checkboxRect.y + checkboxRect.height;
           
           gridCanvas.style.cursor = isOnCheckbox ? 'pointer' : 'grab';
+          
+          // Show tooltip on checkbox hover
+          const tooltip = document.querySelector('.tooltip');
+          if (tooltip && isOnCheckbox) {
+            tooltip.textContent = 'Custom Placement Override';
+            tooltip.style.opacity = 1;
+            tooltip.style.visibility = 'visible';
+            
+            // Position tooltip near the checkbox
+            const tooltipWidth = tooltip.offsetWidth;
+            const canvasRect = gridCanvas.getBoundingClientRect();
+            const checkboxScreenX = canvasRect.left + (checkboxRect.x / scaleX);
+            const checkboxScreenY = canvasRect.top + (checkboxRect.y / scaleY);
+            
+            tooltip.style.left = `${checkboxScreenX - tooltipWidth / 2 + 9}px`;
+            tooltip.style.top = `${checkboxScreenY - 30}px`;
+            tooltip.classList.add('tooltip-top');
+          } else if (tooltip) {
+            tooltip.style.opacity = 0;
+            tooltip.style.visibility = 'hidden';
+            tooltip.classList.remove('tooltip-top');
+          }
         } else {
           gridCanvas.style.cursor = 'default';
+          
+          // Hide tooltip when not hovering
+          const tooltip = document.querySelector('.tooltip');
+          if (tooltip) {
+            tooltip.style.opacity = 0;
+            tooltip.style.visibility = 'hidden';
+            tooltip.classList.remove('tooltip-top');
+          }
         }
       };
     }
