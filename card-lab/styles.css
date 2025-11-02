@@ -1544,8 +1544,7 @@ input:checked + .toggle-slider:before {
   }
 }
 
-.config-dropdown:hover .config-dropdown-menu,
-.config-dropdown-menu:hover {
+.config-dropdown-menu.show {
   display: block;
 }
 
@@ -1840,6 +1839,97 @@ input:checked + .toggle-slider:before {
 .option-description {
   font-size: 0.9rem;
   color: rgba(255, 255, 255, 0.65);
+}
+
+/* Season selection modal */
+.season-selection-modal {
+  width: 550px;
+  max-width: 90%;
+  background: linear-gradient(135deg, #161830 0%, #0F1020 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+  border-radius: 16px;
+  padding: 28px 24px;
+  animation: modalFadeIn 0.3s ease-out forwards;
+}
+
+.season-selection-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 400px;
+  overflow-y: auto;
+  margin-bottom: 20px;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+}
+
+.season-checkbox-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.season-checkbox-item:hover {
+  background: rgba(0, 191, 165, 0.1);
+  border-color: #00bfa5;
+}
+
+.season-checkbox-item input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin-right: 12px;
+  cursor: pointer;
+  accent-color: #00bfa5;
+}
+
+.season-info {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.season-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: white;
+}
+
+.season-episode-count {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.season-selection-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.mini-btn {
+  padding: 6px 14px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: "Gabarito", sans-serif;
+}
+
+.mini-btn:hover {
+  background: rgba(0, 191, 165, 0.2);
+  border-color: #00bfa5;
 }
 
 .pickr .pcr-button {

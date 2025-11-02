@@ -185,6 +185,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Add option for number theme: 'padded' (01,02) or 'plain' (1,2)
   let numberTheme = 'padded'; // default
+  
+  // Helper function to convert numbers to Roman numerals
+  function toRomanNumeral(num) {
+    if (isNaN(num) || num < 1) return String(num);
+    const romanNumerals = [
+      ['M', 1000], ['CM', 900], ['D', 500], ['CD', 400],
+      ['C', 100], ['XC', 90], ['L', 50], ['XL', 40],
+      ['X', 10], ['IX', 9], ['V', 5], ['IV', 4], ['I', 1]
+    ];
+    let result = '';
+    for (const [roman, value] of romanNumerals) {
+      while (num >= value) {
+        result += roman;
+        num -= value;
+      }
+    }
+    return result;
+  }
+  
   // Add UI: select box for number theme
   const numberThemeContainer = document.createElement('div');
   numberThemeContainer.id = 'number-theme-container';
@@ -194,6 +213,7 @@ document.addEventListener("DOMContentLoaded", () => {
     <select id="number-theme-select" style="padding: 6px 12px; border-radius: 5px; background: #222; color: white; border: 1px solid rgba(255,255,255,0.15); font-size: 1rem;">
       <option value="padded">Formatted (01)</option>
       <option value="plain">Simple (1)</option>
+      <option value="roman">Roman (I)</option>
     </select>
   `;
   // Insert into DOM near the season/episode number inputs
@@ -1104,6 +1124,7 @@ if (spoilerToggle) {
       // Format the numbers based on numberTheme
       const formatNumber = (n) => {
         if (numberTheme === 'plain') return String(Number(n));
+        if (numberTheme === 'roman') return toRomanNumeral(Number(n));
         return String(n).padStart(2, "0");
       };
       
@@ -1277,6 +1298,7 @@ function drawCardToContext(targetCtx, width, height, card) {
     // Format season/episode numbers for display
     const formatNumber = (n) => {
       if (numberTheme === 'plain') return String(Number(n));
+      if (numberTheme === 'roman') return toRomanNumeral(Number(n));
       return String(n).padStart(2, "0");
     };
     // Clear the canvas
@@ -2324,12 +2346,23 @@ function drawCardToContext(targetCtx, width, height, card) {
       detailsEl.style.color = "rgba(255, 255, 255, 0.6)";
       detailsEl.style.fontSize = "12px";
       detailsEl.style.fontFamily = "Gabarito, sans-serif";
+      detailsEl.style.marginBottom = "8px";
       notification.appendChild(detailsEl);
+      
+      // Create status element for current activity
+      const statusEl = document.createElement("div");
+      statusEl.id = "background-cache-status";
+      statusEl.style.color = "rgba(0, 191, 165, 0.9)";
+      statusEl.style.fontSize = "11px";
+      statusEl.style.fontFamily = "Gabarito, sans-serif";
+      statusEl.style.fontWeight = "500";
+      notification.appendChild(statusEl);
     }
 
     // Update progress bar and message
     const progressBar = document.getElementById("background-cache-progress-bar");
     const detailsEl = document.getElementById("background-cache-details");
+    const statusEl = document.getElementById("background-cache-status");
     
     if (progressBar) {
       progressBar.style.width = `${Math.max(0, Math.min(100, progress))}%`;
@@ -2337,6 +2370,13 @@ function drawCardToContext(targetCtx, width, height, card) {
     
     if (detailsEl && message) {
       detailsEl.textContent = message;
+    }
+  }
+  
+  function updateBackgroundCacheStatus(status) {
+    const statusEl = document.getElementById("background-cache-status");
+    if (statusEl) {
+      statusEl.textContent = status;
     }
   }
 
@@ -2387,8 +2427,9 @@ function drawCardToContext(targetCtx, width, height, card) {
       try {
         updateBackgroundCacheNotification(
           Math.floor((cachedSeasons / totalSeasons) * 100),
-          `Caching Season ${season.season_number}...`
+          `${cachedSeasons}/${totalSeasons} seasons cached`
         );
+        updateBackgroundCacheStatus(`Fetching ${season.name}...`);
 
         console.log(`[cacheAllSeasonArtwork] Fetching season ${season.season_number} details...`);
         const seasonData = await getSeasonDetails(show.id, season.season_number, currentLang);
@@ -2399,6 +2440,7 @@ function drawCardToContext(targetCtx, width, height, card) {
           const episodeImageData = [];
           
           console.log(`[cacheAllSeasonArtwork] Loading images for ${seasonData.episodes.length} episodes in season ${season.season_number}...`);
+          updateBackgroundCacheStatus(`Loading ${seasonData.episodes.length} episode images for ${season.name}...`);
           
           for (const episode of seasonData.episodes) {
             let episodeImages = null;
@@ -2436,6 +2478,7 @@ function drawCardToContext(targetCtx, width, height, card) {
           
           console.log(`[cacheAllSeasonArtwork] Season ${season.season_number} fully loaded, saving to cache`);
           console.log(`[cacheAllSeasonArtwork] Rendering episode cards for season ${season.season_number}...`);
+          updateBackgroundCacheStatus(`Rendering ${seasonData.episodes.length} cards for ${season.name}...`);
           
           // Render the episode cards now and capture the returned array (using local array to avoid race conditions)
           const renderedCards = await createEpisodeTitleCards(seasonData.episodes, true, episodeImageData, true);
@@ -2469,11 +2512,16 @@ function drawCardToContext(targetCtx, width, height, card) {
     console.log('[cacheAllSeasonArtwork] All seasons cached!');
 
     updateBackgroundCacheNotification(100, `All ${totalSeasons} seasons cached!`);
+    updateBackgroundCacheStatus('Caching complete ✓');
     
-    // Show the download all seasons option in the modal
+    // Show the download all seasons and select seasons options in the modal
     const downloadAllSeasonsOption = document.getElementById("downloadAllSeasonsOption");
+    const downloadSelectSeasonsOption = document.getElementById("downloadSelectSeasonsOption");
     if (downloadAllSeasonsOption) {
       downloadAllSeasonsOption.style.display = "flex";
+    }
+    if (downloadSelectSeasonsOption) {
+      downloadSelectSeasonsOption.style.display = "flex";
     }
     
     setTimeout(hideBackgroundCacheNotification, 2000);
@@ -2887,6 +2935,7 @@ function drawCardToContext(targetCtx, width, height, card) {
       // Use numberTheme for season/episode numbers
       const formatNumber = (n) => {
         if (numberTheme === 'plain') return String(Number(n));
+        if (numberTheme === 'roman') return toRomanNumeral(Number(n));
         return String(n).padStart(2, "0");
       };
       const card = {
@@ -3075,6 +3124,7 @@ function drawCardToContext(targetCtx, width, height, card) {
       // Format the numbers based on numberTheme
       const formatNumber = (n) => {
         if (numberTheme === 'plain') return String(Number(n));
+        if (numberTheme === 'roman') return toRomanNumeral(Number(n));
         return String(n).padStart(2, "0");
       };
       
@@ -3454,6 +3504,7 @@ function drawCardToContext(targetCtx, width, height, card) {
       // Use numberTheme for grid label
       const formatNumber = (n) => {
         if (numberTheme === 'plain') return String(Number(n));
+        if (numberTheme === 'roman') return toRomanNumeral(Number(n));
         return String(n).padStart(2, "0");
       };
       gridCtx.fillText(
@@ -4731,6 +4782,7 @@ function drawCardToContext(targetCtx, width, height, card) {
               // Create a temporary card object similar to episodeTitleCards structure
               const formatNumber = (n) => {
                 if (numberTheme === 'plain') return String(Number(n));
+                if (numberTheme === 'roman') return toRomanNumeral(Number(n));
                 return String(n).padStart(2, "0");
               };
 
@@ -5697,10 +5749,29 @@ resetBtn.addEventListener("click", () => {
   const downloadOptionsOverlay = document.getElementById("download-options-overlay");
   const downloadCurrentOption = document.getElementById("downloadCurrentOption");
   const downloadAllSeasonsOption = document.getElementById("downloadAllSeasonsOption");
+  const downloadSelectSeasonsOption = document.getElementById("downloadSelectSeasonsOption");
   const downloadCancel = document.getElementById("downloadCancel");
+  const seasonSelectionOverlay = document.getElementById("season-selection-overlay");
 
   if (downloadBtn) {
     downloadBtn.addEventListener("click", () => {
+      // Update the current view description dynamically
+      const currentViewDesc = document.getElementById("currentViewDescription");
+      if (canvas.style.display === "block") {
+        currentViewDesc.textContent = "Download the current episode card";
+      } else if (hasSearchResults && episodeTitleCards.length > 0) {
+        currentViewDesc.textContent = `Download all ${episodeTitleCards.length} episodes from Season ${currentSeasonNumber}`;
+      } else {
+        currentViewDesc.textContent = "Download current view";
+      }
+      
+      // Update all seasons description
+      const cachedSeasonCount = Array.from(artworkCache.keys()).length;
+      const allSeasonsDesc = document.getElementById("allSeasonsDescription");
+      if (allSeasonsDesc && cachedSeasonCount > 0) {
+        allSeasonsDesc.textContent = `Download ${cachedSeasonCount} cached season${cachedSeasonCount > 1 ? 's' : ''} at once`;
+      }
+      
       // Show download options modal
       downloadOptionsOverlay.style.display = "flex";
     });
@@ -5733,6 +5804,153 @@ resetBtn.addEventListener("click", () => {
       downloadOptionsOverlay.style.display = "none";
       downloadAllSeasonsTitleCards();
     });
+  }
+
+  if (downloadSelectSeasonsOption) {
+    downloadSelectSeasonsOption.addEventListener("click", () => {
+      downloadOptionsOverlay.style.display = "none";
+      showSeasonSelectionModal();
+    });
+  }
+
+  // Season selection modal handlers
+  function showSeasonSelectionModal() {
+    const seasonSelectionList = document.getElementById("seasonSelectionList");
+    seasonSelectionList.innerHTML = "";
+    
+    // Get all cached seasons
+    const cachedSeasons = [];
+    artworkCache.forEach((value, key) => {
+      const [showId, seasonNum] = key.split('-');
+      if (parseInt(showId) === currentShowData.id) {
+        cachedSeasons.push({
+          seasonNumber: parseInt(seasonNum),
+          episodeCount: value.seasonData.episodes.length,
+          seasonName: value.seasonData.name
+        });
+      }
+    });
+    
+    // Sort by season number
+    cachedSeasons.sort((a, b) => a.seasonNumber - b.seasonNumber);
+    
+    // Create checkbox for each season
+    cachedSeasons.forEach(season => {
+      const item = document.createElement("label");
+      item.className = "season-checkbox-item";
+      item.innerHTML = `
+        <input type="checkbox" class="season-checkbox" data-season="${season.seasonNumber}" checked>
+        <div class="season-info">
+          <span class="season-name">${season.seasonName}</span>
+          <span class="season-episode-count">${season.episodeCount} episode${season.episodeCount > 1 ? 's' : ''}</span>
+        </div>
+      `;
+      seasonSelectionList.appendChild(item);
+    });
+    
+    seasonSelectionOverlay.style.display = "flex";
+  }
+
+  const selectAllSeasons = document.getElementById("selectAllSeasons");
+  const deselectAllSeasons = document.getElementById("deselectAllSeasons");
+  const confirmSeasonDownload = document.getElementById("confirmSeasonDownload");
+  const cancelSeasonSelection = document.getElementById("cancelSeasonSelection");
+
+  if (selectAllSeasons) {
+    selectAllSeasons.addEventListener("click", () => {
+      document.querySelectorAll(".season-checkbox").forEach(cb => cb.checked = true);
+    });
+  }
+
+  if (deselectAllSeasons) {
+    deselectAllSeasons.addEventListener("click", () => {
+      document.querySelectorAll(".season-checkbox").forEach(cb => cb.checked = false);
+    });
+  }
+
+  if (confirmSeasonDownload) {
+    confirmSeasonDownload.addEventListener("click", () => {
+      const selectedSeasons = [];
+      document.querySelectorAll(".season-checkbox:checked").forEach(cb => {
+        selectedSeasons.push(parseInt(cb.dataset.season));
+      });
+      
+      if (selectedSeasons.length === 0) {
+        showToast("Please select at least one season", 3000);
+        return;
+      }
+      
+      seasonSelectionOverlay.style.display = "none";
+      downloadSelectedSeasons(selectedSeasons);
+    });
+  }
+
+  if (cancelSeasonSelection) {
+    cancelSeasonSelection.addEventListener("click", () => {
+      seasonSelectionOverlay.style.display = "none";
+    });
+  }
+
+  // Download selected seasons function
+  async function downloadSelectedSeasons(seasonNumbers) {
+    showToast(`Preparing ${seasonNumbers.length} season${seasonNumbers.length > 1 ? 's' : ''} for download...`, 2000);
+    
+    // Use the existing downloadAllSeasonsTitleCards logic but filter by selected seasons
+    const zip = new JSZip();
+    const showName = currentShowData.name.replace(/[<>:"/\\|?*]/g, "_");
+    
+    let totalProcessed = 0;
+    let totalCards = 0;
+    
+    // Calculate total cards
+    seasonNumbers.forEach(seasonNum => {
+      const cacheKey = `${currentShowData.id}-${seasonNum}`;
+      const cached = artworkCache.get(cacheKey);
+      if (cached && cached.renderedCards) {
+        totalCards += cached.renderedCards.length;
+      }
+    });
+    
+    // Show progress
+    showProgressOverlay("Preparing downloads...", true);
+    
+    for (const seasonNum of seasonNumbers) {
+      const cacheKey = `${currentShowData.id}-${seasonNum}`;
+      const cached = artworkCache.get(cacheKey);
+      
+      if (!cached || !cached.renderedCards) continue;
+      
+      const seasonFolder = zip.folder(`Season ${String(seasonNum).padStart(2, '0')}`);
+      
+      for (const card of cached.renderedCards) {
+        const tempCanvas = document.createElement("canvas");
+        tempCanvas.width = 1920;
+        tempCanvas.height = 1080;
+        const tempCtx = tempCanvas.getContext("2d");
+        
+        drawCardToTempContext(tempCtx, card, 1920, 1080);
+        
+        const blob = await new Promise(resolve => tempCanvas.toBlob(resolve, "image/jpeg", 0.95));
+        const filename = `S${card.seasonNumber}E${card.episodeNumber} - ${card.title.replace(/[<>:"/\\|?*]/g, "_")}.jpg`;
+        seasonFolder.file(filename, blob);
+        
+        totalProcessed++;
+        updateProgressOverlay(Math.floor((totalProcessed / totalCards) * 100), 
+          `Processing: ${totalProcessed}/${totalCards} cards`);
+      }
+    }
+    
+    updateProgressOverlay(95, "Generating ZIP file...");
+    const zipBlob = await zip.generateAsync({ type: "blob" });
+    
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(zipBlob);
+    link.download = `${showName} - Selected Seasons.zip`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+    
+    hideProgressOverlay();
+    showToast(`Successfully downloaded ${seasonNumbers.length} season${seasonNumbers.length > 1 ? 's' : ''}!`, 3000);
   }
 
   // Close modal when clicking outside
@@ -5881,6 +6099,30 @@ resetBtn.addEventListener("click", () => {
   loadConfigBtn.addEventListener("click", showLoadConfigDialog);
   exportConfigBtn.addEventListener("click", exportAllConfigs);
   importConfigBtn.addEventListener("click", importConfigs);
+
+  // Setup settings dropdown toggle
+  const configDropdown = document.querySelector('.config-dropdown');
+  const configDropdownBtn = configDropdown.querySelector('.action-button');
+  const configDropdownMenu = configDropdown.querySelector('.config-dropdown-menu');
+  
+  configDropdownBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    configDropdownMenu.classList.toggle('show');
+  });
+  
+  // Close dropdown when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!configDropdown.contains(e.target)) {
+      configDropdownMenu.classList.remove('show');
+    }
+  });
+  
+  // Close dropdown when clicking a menu item
+  document.querySelectorAll('.config-menu-item').forEach(item => {
+    item.addEventListener('click', () => {
+      configDropdownMenu.classList.remove('show');
+    });
+  });
 
   // Setup title wrapping and line spacing relationship
   titleWrapping.addEventListener("change", function() {

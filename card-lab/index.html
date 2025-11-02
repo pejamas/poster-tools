@@ -30,7 +30,7 @@
           <img src="../assets/poster-overlay-icons/connect.svg" class="action-icon" alt="Sonarr" />
         </button>
         <div class="config-dropdown">
-          <button class="action-button action-button-icon">
+          <button class="action-button action-button-icon" data-tooltip="Settings & Config">
             <svg class="action-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="3"></circle>
               <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
@@ -53,11 +53,6 @@
             <button id="importConfigBtn" class="config-menu-item">
               <img src="../assets/poster-showcase icons/upload.svg" class="menu-icon" />
               <span>Import Configs</span>
-            </button>
-            <div class="menu-divider"></div>
-            <button onclick="showChangelogModal()" class="config-menu-item">
-              <img src="../assets/poster-showcase icons/save.svg" class="menu-icon" />
-              <span>What's New</span>
             </button>
           </div>
         </div>
@@ -588,17 +583,46 @@
           <button id="downloadCurrentOption" class="download-option-btn">
             <img src="../assets/poster-overlay-icons/download.svg" class="option-icon" />
             <div class="option-content">
-              <div class="option-title">Current Season</div>
-              <div class="option-description">Download all episodes from the current season</div>
+              <div class="option-title">Current View</div>
+              <div class="option-description" id="currentViewDescription">Download current season or episode</div>
             </div>
           </button>
           <button id="downloadAllSeasonsOption" class="download-option-btn" style="display: none;">
             <img src="../assets/poster-overlay-icons/download.svg" class="option-icon" />
             <div class="option-content">
-              <div class="option-title">All Seasons</div>
-              <div class="option-description">Download all cached seasons at once</div>
+              <div class="option-title">All Cached Seasons</div>
+              <div class="option-description" id="allSeasonsDescription">Download all cached seasons at once</div>
             </div>
           </button>
+          <button id="downloadSelectSeasonsOption" class="download-option-btn" style="display: none;">
+            <img src="../assets/poster-overlay-icons/download.svg" class="option-icon" />
+            <div class="option-content">
+              <div class="option-title">Select Seasons</div>
+              <div class="option-description">Choose specific seasons to download</div>
+            </div>
+          </button>
+        </div>
+        <div class="custom-buttons">
+          <button id="downloadCancel" class="custom-btn custom-btn-gray">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Season Selection Modal -->
+    <div id="season-selection-overlay" class="custom-overlay" style="display: none;">
+      <div class="custom-modal season-selection-modal">
+        <h3>Select Seasons to Download</h3>
+        <p>Choose which seasons you want to download:</p>
+        <div id="seasonSelectionList" class="season-selection-list"></div>
+        <div class="season-selection-actions">
+          <button id="selectAllSeasons" class="mini-btn">Select All</button>
+          <button id="deselectAllSeasons" class="mini-btn">Deselect All</button>
+        </div>
+        <div class="custom-buttons">
+          <button id="confirmSeasonDownload" class="custom-btn custom-btn-blue">Download Selected</button>
+          <button id="cancelSeasonSelection" class="custom-btn custom-btn-gray">Cancel</button>
+        </div>
+      </div>
     </div>
 
     <!-- Changelog Overlay -->
