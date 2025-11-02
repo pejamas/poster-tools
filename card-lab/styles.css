@@ -1200,9 +1200,10 @@ input:checked + .toggle-slider:before {
 .search-results {
   max-height: 250px;
   overflow-y: auto;
-  margin-bottom: 0;
+  margin-bottom: 1rem;
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.3) rgba(0, 0, 0, 0.1);
+  transition: opacity 0.3s ease, max-height 0.3s ease;
 }
 
 .search-results::-webkit-scrollbar {
@@ -1265,6 +1266,9 @@ input:checked + .toggle-slider:before {
 .season-selector {
   margin: 0 0 0.5rem 0;
   padding: 0;
+  position: relative;
+  min-height: 0;
+  transition: min-height 0.3s ease;
 }
 
 .season-selector select {
@@ -1281,6 +1285,51 @@ input:checked + .toggle-slider:before {
   background-repeat: no-repeat;
   background-position: right 0.7rem top 50%;
   background-size: 0.65rem auto;
+  transition: all 0.3s ease;
+}
+
+/* Loading and empty state messages */
+.season-selector .loading,
+.season-selector .no-results,
+.search-results .no-results {
+  padding: 1rem;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  animation: fadeIn 0.3s ease;
+}
+
+.season-selector .loading {
+  background: rgba(0, 191, 165, 0.1);
+  border-color: rgba(0, 191, 165, 0.2);
+  color: #00bfa5;
+  position: relative;
+}
+
+.season-selector .loading::before {
+  content: '';
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(0, 191, 165, 0.3);
+  border-top-color: #00bfa5;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: translateY(-50%) rotate(360deg); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 #returnToGridBtn {

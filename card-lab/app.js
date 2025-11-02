@@ -5,11 +5,16 @@ const CHANGELOG = [
         version: '1.7.1',
         date: 'November 2, 2025',
         changes: [
+            { type: 'feature', text: 'Multi-episode support for releases spanning multiple episodes (e.g., "1 & 2")' },
+            { type: 'feature', text: 'Auto-renumbering of subsequent episodes when episode ranges are set' },
             { type: 'feature', text: 'Visual indicator showing alternate image count on grid thumbnails' },
             { type: 'feature', text: 'Tooltip on custom placement checkbox explaining its purpose' },
+            { type: 'improvement', text: 'Dynamic badge sizing automatically expands for longer episode numbers' },
             { type: 'improvement', text: 'Improved badge visibility with larger font and better contrast' },
+            { type: 'improvement', text: 'Enhanced search results layout with smooth transitions and loading states' },
             { type: 'improvement', text: 'Custom badge moved to bottom-right to avoid hiding resolution info' },
-            { type: 'fix', text: 'Fixed click detection for episode cards and custom placement checkboxes' }
+            { type: 'fix', text: 'Fixed click detection for episode cards and custom placement checkboxes' },
+            { type: 'fix', text: 'Prevented visual clashing between search results and season selector during loading' }
         ]
     },
     {
@@ -251,6 +256,20 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
     return result;
+  }
+  
+  // Helper function to format episode/season numbers
+  function formatNumber(n) {
+    const str = String(n).trim();
+    // Check if it's a multi-episode format (contains &, -, or other non-numeric characters besides spaces)
+    if (/[^\d\s]/.test(str) || str.includes(' ')) {
+      return str; // Return as-is for multi-episode entries like "1 & 2"
+    }
+    const num = Number(str);
+    if (isNaN(num)) return str; // Return original if not a number
+    if (numberTheme === 'plain') return String(num);
+    if (numberTheme === 'roman') return toRomanNumeral(num);
+    return String(num).padStart(2, "0");
   }
   
   // Add UI: select box for number theme
@@ -1036,23 +1055,55 @@ if (spoilerToggle) {
     drawCard();
   }
 
+  // Helper function to calculate episode span (e.g., "1 & 2" = 2 episodes, "5-7" = 3 episodes)
+  function getEpisodeSpan(episodeStr) {
+    const str = String(episodeStr).trim();
+    
+    // Check for range formats: "1 & 2", "1-2", "1, 2", etc.
+    const rangeMatch = str.match(/(\d+)\s*(?:&|-|,|to)\s*(\d+)/i);
+    if (rangeMatch) {
+      const start = parseInt(rangeMatch[1]);
+      const end = parseInt(rangeMatch[2]);
+      return Math.abs(end - start) + 1; // Number of episodes covered
+    }
+    
+    // Single episode
+    return 1;
+  }
+  
+  // Helper function to get the last episode number in a range
+  function getLastEpisodeNumber(episodeStr) {
+    const str = String(episodeStr).trim();
+    
+    // Check for range formats
+    const rangeMatch = str.match(/(\d+)\s*(?:&|-|,|to)\s*(\d+)/i);
+    if (rangeMatch) {
+      return Math.max(parseInt(rangeMatch[1]), parseInt(rangeMatch[2]));
+    }
+    
+    // Single episode
+    const num = parseInt(str);
+    return isNaN(num) ? 0 : num;
+  }
+
   // Update both single card and grid views
   function updateBothViews() {
     // Save current episode's specific data if we're editing a card
     if (isTMDBMode && selectedCardIndex >= 0 && selectedCardIndex < episodeTitleCards.length) {
       const currentCard = episodeTitleCards[selectedCardIndex];
       
-      // Format the numbers based on numberTheme
-      const formatNumber = (n) => {
-        if (numberTheme === 'plain') return String(Number(n));
-        if (numberTheme === 'roman') return toRomanNumeral(Number(n));
-        return String(n).padStart(2, "0");
-      };
+      // Store old episode number to detect changes
+      const oldEpisodeNumber = currentCard.episodeNumber;
       
       // Update the card's specific properties
       currentCard.title = titleInput.value;
       currentCard.seasonNumber = formatNumber(seasonNumberInput.value);
       currentCard.episodeNumber = formatNumber(episodeNumberInput.value);
+      
+      // If episode number changed, renumber subsequent episodes
+      if (oldEpisodeNumber !== currentCard.episodeNumber) {
+        renumberSubsequentEpisodes(selectedCardIndex);
+      }
       
       // Sort cards by episode number after updating
       sortEpisodeCards();
@@ -1062,6 +1113,47 @@ if (spoilerToggle) {
     if (isTMDBMode && episodeTitleCards.length > 0) {
       updateEpisodeCardSettings();
       renderEpisodeGrid();
+    }
+  }
+  
+  // Renumber episodes after the current one based on episode span
+  function renumberSubsequentEpisodes(startIndex) {
+    if (startIndex < 0 || startIndex >= episodeTitleCards.length - 1) return;
+    
+    // Calculate the next episode number based on current card's span
+    const currentCard = episodeTitleCards[startIndex];
+    const currentLastEpisode = getLastEpisodeNumber(currentCard.episodeNumber);
+    
+    if (currentLastEpisode === 0) return; // Invalid episode number
+    
+    let nextEpisodeNum = currentLastEpisode + 1;
+    
+    // Update all subsequent cards
+    for (let i = startIndex + 1; i < episodeTitleCards.length; i++) {
+      const card = episodeTitleCards[i];
+      const cardSpan = getEpisodeSpan(card.episodeNumber);
+      
+      // Only update if it's a simple number (not already a range)
+      const isSimpleNumber = /^\d+$/.test(String(card.episodeNumber).trim());
+      
+      if (isSimpleNumber) {
+        card.episodeNumber = formatNumber(nextEpisodeNum);
+        nextEpisodeNum += cardSpan;
+      } else {
+        // If it's already a range, update the start but preserve the span
+        const currentCardLastNum = getLastEpisodeNumber(card.episodeNumber);
+        const span = getEpisodeSpan(card.episodeNumber);
+        
+        if (span > 1) {
+          // Preserve range format
+          const endNum = nextEpisodeNum + span - 1;
+          card.episodeNumber = `${nextEpisodeNum} & ${endNum}`;
+          nextEpisodeNum = endNum + 1;
+        } else {
+          card.episodeNumber = formatNumber(nextEpisodeNum);
+          nextEpisodeNum++;
+        }
+      }
     }
   }
   
@@ -1199,13 +1291,6 @@ if (spoilerToggle) {
     // Save the current episode's data before switching to grid view
     if (selectedCardIndex >= 0 && selectedCardIndex < episodeTitleCards.length) {
       const currentCard = episodeTitleCards[selectedCardIndex];
-      
-      // Format the numbers based on numberTheme
-      const formatNumber = (n) => {
-        if (numberTheme === 'plain') return String(Number(n));
-        if (numberTheme === 'roman') return toRomanNumeral(Number(n));
-        return String(n).padStart(2, "0");
-      };
       
       // Update the card's specific properties
       currentCard.title = titleInput.value;
@@ -1375,10 +1460,17 @@ if (spoilerToggle) {
 
 function drawCardToContext(targetCtx, width, height, card) {
     // Format season/episode numbers for display
-    const formatNumber = (n) => {
-      if (numberTheme === 'plain') return String(Number(n));
-      if (numberTheme === 'roman') return toRomanNumeral(Number(n));
-      return String(n).padStart(2, "0");
+    const formatNumberForDisplay = (n) => {
+      const str = String(n).trim();
+      // For multi-episode format, return as-is
+      if (/[^\d\s]/.test(str) || str.includes(' ')) {
+        return str;
+      }
+      const num = Number(str);
+      if (isNaN(num)) return str;
+      if (numberTheme === 'plain') return String(num);
+      if (numberTheme === 'roman') return toRomanNumeral(num);
+      return String(num).padStart(2, "0");
     };
     // Clear the canvas
     targetCtx.clearRect(0, 0, width, height);
@@ -1614,7 +1706,7 @@ function drawCardToContext(targetCtx, width, height, card) {
 
       if (seasonNumberInput.value && seasonNumberDisplay.checked) {
         const seriesTypeValue = seriesType.value;
-        const seasonNumDisplay = formatNumber(seasonNumberInput.value);
+        const seasonNumDisplay = formatNumberForDisplay(seasonNumberInput.value);
         if (seriesTypeValue === 'regular' || !seriesTypeValue) {
           seasonText = langMap.season + " " + seasonNumDisplay;
         } else if (seriesTypeValue === 'series') {
@@ -1641,7 +1733,7 @@ function drawCardToContext(targetCtx, width, height, card) {
       }
 
       if (episodeNumberInput.value && episodeNumberDisplay.checked) {
-        const episodeNumDisplay = formatNumber(episodeNumberInput.value);
+        const episodeNumDisplay = formatNumberForDisplay(episodeNumberInput.value);
         episodeText = langMap.episode + " " + episodeNumDisplay;
         episodeText = applyCaseTransform(episodeText, infoEpisodeUppercase, infoEpisodeLowercase);
       }
@@ -2639,10 +2731,20 @@ function drawCardToContext(targetCtx, width, height, card) {
             `;
 
       showEl.addEventListener("click", async () => {
+        // Fade out and clear search results immediately
+        resultsContainer.style.opacity = '0';
+        resultsContainer.style.transition = 'opacity 0.2s ease';
+        
+        setTimeout(() => {
+          resultsContainer.innerHTML = "";
+          resultsContainer.style.opacity = '1';
+        }, 200);
+        
+        // Show loading state in season selector
         document.getElementById("season-selector").innerHTML =
           '<div class="loading">Loading show details...</div>';
+        
         await selectShow(show.id);
-        resultsContainer.innerHTML = "";
         searchInput.value = show.name;
       });
 
@@ -2683,10 +2785,15 @@ function drawCardToContext(targetCtx, width, height, card) {
     }
     
     try {
-      // Clear search results
+      // Clear search results with fade out
       const resultsContainer = document.getElementById("search-results");
       if (resultsContainer) {
-        resultsContainer.innerHTML = "";
+        resultsContainer.style.opacity = '0';
+        resultsContainer.style.transition = 'opacity 0.2s ease';
+        setTimeout(() => {
+          resultsContainer.innerHTML = "";
+          resultsContainer.style.opacity = '1';
+        }, 200);
       }
       
       // Set loading indicator with appropriate source message
@@ -3012,11 +3119,6 @@ function drawCardToContext(targetCtx, width, height, card) {
 
       // Create base card object
       // Use numberTheme for season/episode numbers
-      const formatNumber = (n) => {
-        if (numberTheme === 'plain') return String(Number(n));
-        if (numberTheme === 'roman') return toRomanNumeral(Number(n));
-        return String(n).padStart(2, "0");
-      };
       const card = {
         title: episode.name,
         seasonNumber: formatNumber(episode.season_number),
@@ -3199,13 +3301,6 @@ function drawCardToContext(targetCtx, width, height, card) {
     // Save the current episode's data before switching
     if (selectedCardIndex >= 0 && selectedCardIndex < episodeTitleCards.length) {
       const previousCard = episodeTitleCards[selectedCardIndex];
-      
-      // Format the numbers based on numberTheme
-      const formatNumber = (n) => {
-        if (numberTheme === 'plain') return String(Number(n));
-        if (numberTheme === 'roman') return toRomanNumeral(Number(n));
-        return String(n).padStart(2, "0");
-      };
       
       // Update the card's specific properties
       previousCard.title = titleInput.value;
@@ -3583,23 +3678,26 @@ function drawCardToContext(targetCtx, width, height, card) {
       gridCtx.roundRect(x, y, gridCardWidth, gridCardHeight, 6);
       gridCtx.fill();
 
-      // Draw episode label with modern styling
-      gridCtx.fillStyle = "rgba(0, 0, 0, 0.7)";
-      gridCtx.beginPath();
-      gridCtx.roundRect(x, y, 50, 22, [6, 0, 0, 0]);
-      gridCtx.fill();
-
+      // Draw episode label with modern styling and dynamic sizing
+      const episodeLabel = `S${card.seasonNumber}E${card.episodeNumber}`;
       gridCtx.font = "bold 10px Gabarito, sans-serif";
+      const labelWidth = Math.max(50, gridCtx.measureText(episodeLabel).width + 12);
+      const labelHeight = 22;
+      
+      // Draw badge background with gradient
+      const badgeGradient = gridCtx.createLinearGradient(x, y, x, y + labelHeight);
+      badgeGradient.addColorStop(0, "rgba(0, 0, 0, 0.85)");
+      badgeGradient.addColorStop(1, "rgba(0, 0, 0, 0.75)");
+      gridCtx.fillStyle = badgeGradient;
+      gridCtx.beginPath();
+      gridCtx.roundRect(x, y, labelWidth, labelHeight, [6, 0, 6, 0]);
+      gridCtx.fill();
+      
+      // Draw text with better positioning
       gridCtx.fillStyle = "#00bfa5";
       gridCtx.textAlign = "left";
-      // Use numberTheme for grid label
-      const formatNumber = (n) => {
-        if (numberTheme === 'plain') return String(Number(n));
-        if (numberTheme === 'roman') return toRomanNumeral(Number(n));
-        return String(n).padStart(2, "0");
-      };
       gridCtx.fillText(
-        `S${formatNumber(card.seasonNumber)}E${formatNumber(card.episodeNumber)}`,
+        episodeLabel,
         x + 6,
         y + 15
       );
@@ -3963,13 +4061,7 @@ function drawCardToContext(targetCtx, width, height, card) {
             const draggedCard = episodeTitleCards.splice(dragState.draggedIndex, 1)[0];
             episodeTitleCards.splice(dropIndex, 0, draggedCard);
             
-            // Renumber episodes
-            const formatNumber = (n) => {
-              if (numberTheme === 'plain') return String(n);
-              if (numberTheme === 'roman') return toRomanNumeral(n);
-              return String(n).padStart(2, "0");
-            };
-            
+            // Renumber episodes sequentially
             episodeTitleCards.forEach((card, index) => {
               card.episodeNumber = formatNumber(index + 1);
             });
@@ -5104,12 +5196,6 @@ function drawCardToContext(targetCtx, width, height, card) {
           return new Promise(async (resolve) => {
             try {
               // Create a temporary card object similar to episodeTitleCards structure
-              const formatNumber = (n) => {
-                if (numberTheme === 'plain') return String(Number(n));
-                if (numberTheme === 'roman') return toRomanNumeral(Number(n));
-                return String(n).padStart(2, "0");
-              };
-
               const card = {
                 title: episode.name,
                 seasonNumber: formatNumber(episode.season_number),
