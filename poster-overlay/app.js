@@ -398,6 +398,7 @@ const logoNames = [
   "S4C",
   "Showcase",
   "Showtime",
+  "Shudder",
   "Sky",
   "Spike",
   "Stan",
