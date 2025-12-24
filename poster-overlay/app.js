@@ -357,6 +357,7 @@ const networkLogoCheckbox = document.getElementById("network-logo-checkbox");
 
 const logoNames = [
   "ABC TV",
+  "Acorn TV",
   "ABC",
   "Adult Swim",
   "AMC",
