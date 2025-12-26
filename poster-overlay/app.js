@@ -366,6 +366,7 @@ const logoNames = [
   "BBC",
   "BET+",
   "BritBox",
+  "CBC Television",
   "CBS",
   "Channel 4",
   "Cinemax",
