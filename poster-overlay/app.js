@@ -363,6 +363,7 @@ const logoNames = [
   "AMC",
   "AMC+",
   "Apple TV+",
+  "Binge",
   "BBC",
   "BET+",
   "BritBox",
