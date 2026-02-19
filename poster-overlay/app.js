@@ -398,6 +398,7 @@ const logoNames = [
   "PBS",
   "Peacock",
   "Prime Video",
+  "RTE One",
   "S4C",
   "Showcase",
   "Showtime",
