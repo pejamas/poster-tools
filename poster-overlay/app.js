@@ -1893,6 +1893,56 @@ function displaySearchResults(results) {
   });
 }
 
+function getImageProxyCandidates(originalUrl) {
+  const urlWithoutScheme = originalUrl.replace(/^https?:\/\//i, "");
+
+  return [
+    // Some CDNs allow direct CORS fetch; try it first.
+    originalUrl,
+
+    // Public CORS proxies (best-effort; availability may vary)
+    `https://corsproxy.io/?${encodeURIComponent(originalUrl)}`,
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(originalUrl)}`,
+    `https://cors.isomorphic-git.org/${originalUrl}`,
+
+    // Image-specific proxy
+    `https://images.weserv.nl/?url=${encodeURIComponent(urlWithoutScheme)}`,
+  ];
+}
+
+function fetchImageAsObjectUrl(originalUrl) {
+  const candidates = getImageProxyCandidates(originalUrl);
+
+  return candidates.reduce((promiseChain, candidateUrl) => {
+    return promiseChain.catch((previousError) => {
+      return fetch(candidateUrl)
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status} ${response.statusText}`);
+          }
+
+          const contentType = response.headers.get("content-type") || "";
+          if (contentType && contentType.includes("text/html")) {
+            throw new Error(`Unexpected content-type: ${contentType}`);
+          }
+
+          return response.blob();
+        })
+        .then((blob) => {
+          if (!blob || blob.size === 0) {
+            throw new Error("Received empty image blob");
+          }
+
+          return URL.createObjectURL(blob);
+        })
+        .catch((err) => {
+          console.warn("Image fetch candidate failed:", candidateUrl, err);
+          throw err;
+        });
+    });
+  }, Promise.reject(new Error("No image fetch attempts yet")));
+}
+
 function fetchAndDisplayPostersById(id, title, type = "movie") {
   const container = document.getElementById("poster-results");
   container.innerHTML = "";
@@ -1911,9 +1961,6 @@ function fetchAndDisplayPostersById(id, title, type = "movie") {
       posters.forEach((poster) => {
         const img = document.createElement("img");
         const posterUrl = `https://image.tmdb.org/t/p/w500${poster.file_path}`;
-
-        // Use a proxy URL to avoid CORS issues
-        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(posterUrl)}`;
 
         img.src = posterUrl; // Keep the original URL for display
         img.alt = title;
@@ -1954,12 +2001,11 @@ function fetchAndDisplayPostersById(id, title, type = "movie") {
               console.warn("Canvas toDataURL failed, trying fetch method:", e);
 
               // Try using fetch API as alternative
-              fetch(proxyUrl)
-                .then((response) => response.blob())
-                .then((blob) => {
-                  const objectUrl = URL.createObjectURL(blob);
+              fetchImageAsObjectUrl(posterUrl)
+                .then((objectUrl) => {
                   baseImage = new Image();
                   baseImage.onload = () => {
+                    URL.revokeObjectURL(objectUrl);
                     drawCanvas();
                     fetchMetadataById(id, type);
                     document.getElementById("poster-modal").style.display = "none";
@@ -1984,12 +2030,11 @@ function fetchAndDisplayPostersById(id, title, type = "movie") {
             console.warn("Direct image load failed, trying fetch API with proxy");
 
             // Try using fetch API with proxy
-            fetch(proxyUrl)
-              .then((response) => response.blob())
-              .then((blob) => {
-                const objectUrl = URL.createObjectURL(blob);
+            fetchImageAsObjectUrl(posterUrl)
+              .then((objectUrl) => {
                 baseImage = new Image();
                 baseImage.onload = () => {
+                  URL.revokeObjectURL(objectUrl);
                   drawCanvas();
                   fetchMetadataById(id, type);
                   document.getElementById("poster-modal").style.display = "none";
@@ -2012,8 +2057,8 @@ function fetchAndDisplayPostersById(id, title, type = "movie") {
               });
           };
 
-          // Start loading with proxy URL
-          tempImage.src = proxyUrl;
+          // Start loading directly; fallback fetch uses proxy candidates if canvas export is blocked.
+          tempImage.src = posterUrl;
         });
 
         container.appendChild(img);
@@ -3375,7 +3420,7 @@ function setupResetButton() {
     const confirmOverlay = document.getElementById("custom-confirm-overlay");
     confirmOverlay.style.display = "flex";
     
-    // Setup confirmation button handlers
+    // Setup confirmation button handlers (one-shot to avoid accumulating listeners)
     document.getElementById("confirmYes").addEventListener("click", function() {
       confirmOverlay.style.display = "none";
       
@@ -3397,10 +3442,8 @@ function setupResetButton() {
       if (document.getElementById("mobile-network-checkbox")) {
         document.getElementById("mobile-network-checkbox").checked = false;
       }
-      
-      if (networkLogo) {
-        networkLogo = null;
-      }
+
+      networkLogoImage = null;
       
       // Clear search inputs
       document.getElementById("tmdb-search-input").value = "";
@@ -3424,11 +3467,11 @@ function setupResetButton() {
 
       // Display a message
       showToast("Reset complete");
-    });
+    }, { once: true });
     
     document.getElementById("confirmNo").addEventListener("click", function() {
       confirmOverlay.style.display = "none";
-    });
+    }, { once: true });
   };
 
   resetBtn.addEventListener("click", handleReset);

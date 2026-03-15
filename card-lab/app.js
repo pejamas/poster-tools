@@ -436,6 +436,7 @@ if (spoilerToggle) {
   let currentSeasonData = [];
   let currentSeasonNumber = 1;
   let episodeTitleCards = [];
+  let activeSeasonLoadId = 0;
   let selectedCardIndex = -1;
   let isTMDBMode = false;
   let thumbnailImg = null;
@@ -2861,6 +2862,35 @@ function drawCardToContext(targetCtx, width, height, card) {
   }  // Handle season selection from dropdown
   async function selectSeason(seasonNumber) {
     currentSeasonNumber = seasonNumber;
+    const seasonLoadId = ++activeSeasonLoadId;
+    const expectedShowId = currentShowData?.id;
+    const expectedSeasonNumber = seasonNumber;
+
+    const isStale = () =>
+      seasonLoadId !== activeSeasonLoadId ||
+      currentShowData?.id !== expectedShowId ||
+      currentSeasonNumber !== expectedSeasonNumber;
+
+    // Clear out any previous season's UI immediately to prevent carryover
+    episodeTitleCards = [];
+    currentSeasonData = [];
+    selectedCardIndex = -1;
+    try {
+      // Clear the grid canvas so old season cards don't linger while loading
+      gridCtx.clearRect(0, 0, gridCanvas.width, gridCanvas.height);
+      gridCtx.fillStyle = "#0b0c1b";
+      gridCtx.fillRect(0, 0, gridCanvas.width, gridCanvas.height);
+      gridCtx.font = "600 18px Gabarito, sans-serif";
+      gridCtx.fillStyle = "rgba(255,255,255,0.9)";
+      gridCtx.textAlign = "center";
+      gridCtx.fillText(
+        `Loading Season ${seasonNumber}...`,
+        Math.floor(gridCanvas.width / 2),
+        Math.floor(gridCanvas.height / 2)
+      );
+    } catch {
+      // Canvas might not be ready in edge cases; safe to ignore
+    }
 
     // Store and ensure color settings persist across season changes
     // This is crucial for maintaining user color selections
@@ -2982,6 +3012,12 @@ function drawCardToContext(targetCtx, width, height, card) {
       setTimeout(() => progressBar.style.width = '100%', 250);
       const cached = artworkCache.get(cacheKey);
       seasonData = cached.seasonData;
+      if (isStale()) {
+        if (tempOverlay && tempOverlay.parentNode) {
+          document.body.removeChild(tempOverlay);
+        }
+        return;
+      }
       currentSeasonData = seasonData.episodes;
       
       console.log(`[selectSeason] Using cached season data with ${seasonData.episodes.length} episodes`);
@@ -2995,7 +3031,26 @@ function drawCardToContext(targetCtx, width, height, card) {
       } else {
         // Fallback: render from scratch if no cached cards
         console.log(`[selectSeason] No cached cards, rendering from scratch`);
-        await createEpisodeTitleCards(seasonData.episodes, true, cached.episodeImageData);
+        const renderedCards = await createEpisodeTitleCards(
+          seasonData.episodes,
+          true,
+          cached.episodeImageData,
+          true
+        );
+        if (isStale()) {
+          if (tempOverlay && tempOverlay.parentNode) {
+            document.body.removeChild(tempOverlay);
+          }
+          return;
+        }
+        episodeTitleCards = renderedCards;
+      }
+
+      if (isStale()) {
+        if (tempOverlay && tempOverlay.parentNode) {
+          document.body.removeChild(tempOverlay);
+        }
+        return;
       }
       
       renderEpisodeGrid();
@@ -3015,7 +3070,11 @@ function drawCardToContext(targetCtx, width, height, card) {
       console.log(`[selectSeason] Got season data:`, seasonData);
       if (!seasonData) {
         console.error(`[selectSeason] No season data returned`);
-        hideProgressOverlay();
+        if (!isStale()) hideProgressOverlay();
+        return;
+      }
+
+      if (isStale()) {
         return;
       }
       
@@ -3023,7 +3082,17 @@ function drawCardToContext(targetCtx, width, height, card) {
       currentSeasonData = seasonData.episodes;
 
       console.log(`[selectSeason] Starting createEpisodeTitleCards for ${seasonData.episodes.length} episodes`);
-      await createEpisodeTitleCards(seasonData.episodes, false);
+      const renderedCards = await createEpisodeTitleCards(
+        seasonData.episodes,
+        false,
+        null,
+        true,
+        () => isStale()
+      );
+      if (isStale()) {
+        return;
+      }
+      episodeTitleCards = renderedCards;
       console.log(`[selectSeason] Finished createEpisodeTitleCards`);
 
       if (isTMDBMode) {
@@ -3031,13 +3100,17 @@ function drawCardToContext(targetCtx, width, height, card) {
         renderEpisodeGrid();
         updateProgressOverlay(100, "Complete!");
         setTimeout(() => {
-          hideProgressOverlay();
-          showGridView();
+          if (!isStale()) {
+            hideProgressOverlay();
+            showGridView();
+          }
         }, 500);
       } else {
-        hideProgressOverlay();
-        selectEpisode(0);
-        showSingleCardView();
+        if (!isStale()) {
+          hideProgressOverlay();
+          selectEpisode(0);
+          showSingleCardView();
+        }
       }
     }
   }
@@ -3046,13 +3119,15 @@ function drawCardToContext(targetCtx, width, height, card) {
   // EPISODE TITLE CARD CREATION
   // =====================================================
   // Create title cards for all episodes in a season
-  async function createEpisodeTitleCards(episodes, skipProgressUpdates = false, cachedEpisodeImageData = null, useLocalArray = false) {
+  async function createEpisodeTitleCards(episodes, skipProgressUpdates = false, cachedEpisodeImageData = null, useLocalArray = false, shouldAbort = null) {
     console.log(`[createEpisodeTitleCards] Starting with ${episodes.length} episodes, skipProgressUpdates=${skipProgressUpdates}, hasCachedData=${!!cachedEpisodeImageData}, useLocalArray=${useLocalArray}`);
+
+    const isAborted = typeof shouldAbort === "function" ? shouldAbort : () => false;
     
     // Use a local array when caching (to avoid race conditions), or the global array for actual UI display
     const cardsArray = useLocalArray ? [] : (episodeTitleCards = []);
 
-    if (!skipProgressUpdates) {
+    if (!skipProgressUpdates && !isAborted()) {
       updateProgressOverlay(20, `Processing ${episodes.length} episodes...`);
     }
 
@@ -3107,10 +3182,11 @@ function drawCardToContext(targetCtx, width, height, card) {
     let completedOperations = 0;
 
     for (const episode of episodes) {
+      if (isAborted()) break;
       const progress =
         20 + Math.floor((completedOperations / totalOperations) * 75);
       
-      if (!skipProgressUpdates) {
+      if (!skipProgressUpdates && !isAborted()) {
         updateProgressOverlay(
           progress,
           `Loading episode ${episode.episode_number}: ${episode.name}`
@@ -3184,7 +3260,7 @@ function drawCardToContext(targetCtx, width, height, card) {
           } else if (currentShowData && currentShowData.id) {
             // Fetch images (non-cached path)
             console.log(`[createEpisodeTitleCards] Episode ${episode.episode_number}: No cached data, fetching images...`);
-            if (!skipProgressUpdates) {
+            if (!skipProgressUpdates && !isAborted()) {
               updateProgressOverlay(
                 progress,
                 `Checking for alternative images for episode ${episode.episode_number}...`
@@ -3196,6 +3272,8 @@ function drawCardToContext(targetCtx, width, height, card) {
               episode.season_number,
               episode.episode_number
             );
+
+            if (isAborted()) break;
             
             if (additionalImages && additionalImages.length > 0) {
               allAvailableImages = additionalImages;
@@ -3210,7 +3288,7 @@ function drawCardToContext(targetCtx, width, height, card) {
               // Use highest resolution image as default
               highestResImage = allAvailableImages[0].file_path;
               
-              if (!skipProgressUpdates) {
+              if (!skipProgressUpdates && !isAborted()) {
                 updateProgressOverlay(
                   progress,
                   `Found ${allAvailableImages.length} images for episode ${episode.episode_number}...`
@@ -3221,6 +3299,7 @@ function drawCardToContext(targetCtx, width, height, card) {
           
           // Load the highest resolution image as the default thumbnail
           card.thumbnailImg = await getEpisodeThumbnail(highestResImage);
+          if (isAborted()) break;
           card.originalThumbnail = card.thumbnailImg; // Store original for revert
           
           // Store all image paths and metadata
@@ -3238,11 +3317,12 @@ function drawCardToContext(targetCtx, width, height, card) {
           // Load up to 5 images for each episode
           const imagesToLoad = card.allImagePaths.slice(0, 5);
           for (let i = 0; i < imagesToLoad.length; i++) {
+            if (isAborted()) break;
             if (i === 0) {
               card.allImages.push(card.thumbnailImg);
             } else {
               try {
-                if (!skipProgressUpdates) {
+                if (!skipProgressUpdates && !isAborted()) {
                   updateProgressOverlay(
                     progress,
                     `Loading alternative image ${i}/${
@@ -3251,6 +3331,7 @@ function drawCardToContext(targetCtx, width, height, card) {
                   );
                 }
                 const img = await getEpisodeThumbnail(imagesToLoad[i]);
+                if (isAborted()) break;
                 card.allImages.push(img);
               } catch (err) {
                 console.log(
@@ -3263,7 +3344,7 @@ function drawCardToContext(targetCtx, width, height, card) {
           console.log(
             `Could not load thumbnail for episode ${episode.episode_number}`
           );
-          if (!skipProgressUpdates) {
+          if (!skipProgressUpdates && !isAborted()) {
             updateProgressOverlay(
               progress,
               `Failed to load thumbnail for episode ${episode.episode_number}...`
@@ -3271,7 +3352,7 @@ function drawCardToContext(targetCtx, width, height, card) {
           }
         }
       } else {
-        if (!skipProgressUpdates) {
+        if (!skipProgressUpdates && !isAborted()) {
           updateProgressOverlay(
             progress,
             `No thumbnail available for episode ${episode.episode_number}...`
@@ -3283,7 +3364,7 @@ function drawCardToContext(targetCtx, width, height, card) {
       completedOperations++;
     }
 
-    if (!skipProgressUpdates) {
+    if (!skipProgressUpdates && !isAborted()) {
       updateProgressOverlay(
         95,
         "All episodes processed successfully! Preparing grid view..."
