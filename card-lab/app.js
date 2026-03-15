@@ -1,6 +1,13 @@
 // Changelog Configuration
-const CURRENT_VERSION = '1.7.1';
+const CURRENT_VERSION = '1.7.2';
 const CHANGELOG = [
+  {
+    version: '1.7.2',
+    date: 'March 16, 2026',
+    changes: [
+      { type: 'fix', text: 'Fixed a season-switching caching race condition that could mix episodes between seasons when changing seasons quickly' }
+    ]
+  },
     {
         version: '1.7.1',
         date: 'November 2, 2025',
