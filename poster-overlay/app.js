@@ -1,3 +1,183 @@
+// Changelog Configuration
+const CURRENT_VERSION = '1.1.0';
+const CHANGELOG = [
+  {
+    version: '1.1.0',
+    date: 'March 23, 2026',
+    changes: [
+      { type: 'feature',     text: 'Bottom Gradient overlay — toggle with adjustable opacity, height, and custom colour' },
+      { type: 'feature',     text: 'Title Logo / Poster Designer — pick a clearlogo, position it with X/Y sliders or drag it directly on the canvas, scale, and apply a drop shadow' },
+      { type: 'feature',     text: 'Logo tint colour — multiply-blend any colour onto your clearlogo while preserving transparency' },
+      { type: 'feature',     text: 'Season Suite — automated season grid for TV shows; click a season to load its poster and edit independently' },
+      { type: 'feature',     text: 'Season Label — add a text label (Season 1, etc.) with font picker, size, vertical position, letter-spacing, and colour' },
+      { type: 'feature',     text: 'Batch download all seasons — export every season poster as a ZIP in one click' },
+      { type: 'feature',     text: 'Browse Posters — new in-tool poster browser powered by TMDB and Mediux' },
+      { type: 'feature',     text: 'Drag-and-drop poster — drop an image file directly onto the canvas or drop zone' },
+      { type: 'feature',     text: 'Canvas composition guidelines — toggleable overlay to help with framing' },
+      { type: 'feature',     text: 'Auto thumbnail captures — Season Suite thumbnails update live as you make changes' },
+      { type: 'feature',     text: 'Fanart.tv API key — manage your key in the settings menu; smart connected/change state indicator' },
+      { type: 'feature',     text: 'Settings & Config dropdown — gear icon in the header for save/load/export/import and Fanart.tv key' },
+      { type: 'improvement', text: 'All colour pickers upgraded to themed Pickr (monolith dark UI) for Gradient, Network Logo, Designer Logo, and Season Label' },
+      { type: 'improvement', text: 'Network logo scale slider now uses ± buttons alongside the range input' }
+    ]
+  },
+  {
+    version: '1.0.0',
+    date: 'October 2025',
+    changes: [
+      { type: 'feature', text: 'Poster image upload' },
+      { type: 'feature', text: 'Banner overlay selector' },
+      { type: 'feature', text: 'Network logo selection with colour tinting and scale' },
+      { type: 'feature', text: 'TMDB & Mediux search integration' },
+      { type: 'feature', text: 'Canvas download (PNG)' },
+      { type: 'feature', text: 'Mobile-friendly layout with tabbed menu' }
+    ]
+  }
+];
+
+// Changelog Modal Functions (defined before DOMContentLoaded)
+function checkAndShowChangelog() {
+  const lastSeenVersion = localStorage.getItem('overlay_lastSeenVersion');
+  const dontShowAgain = localStorage.getItem(`overlay_dontShowChangelog_${CURRENT_VERSION}`);
+
+  if (lastSeenVersion !== CURRENT_VERSION && dontShowAgain !== 'true') {
+    setTimeout(() => {
+      showChangelogModal();
+    }, 1000);
+  }
+
+  updateWhatsNewBadge(lastSeenVersion !== CURRENT_VERSION && dontShowAgain !== 'true');
+}
+
+function updateWhatsNewBadge(showBadge) {
+  setTimeout(() => {
+    const badge = document.querySelector('.whats-new-badge');
+    if (badge) {
+      badge.style.display = showBadge ? 'inline-block' : 'none';
+    }
+  }, 100);
+}
+
+window.showChangelogModal = function() {
+  let modal = document.getElementById('changelogOverlay');
+
+  if (!modal || modal.parentElement !== document.body) {
+    if (modal) modal.remove();
+
+    modal = document.createElement('div');
+    modal.id = 'changelogOverlay';
+    modal.className = 'changelog-overlay';
+    modal.innerHTML = `
+      <div class="changelog-modal">
+        <h3>What's New</h3>
+        <div id="changelogContent" class="changelog-content"></div>
+        <div class="changelog-footer">
+          <label class="changelog-checkbox">
+            <input type="checkbox" id="dontShowChangelogAgain">
+            <span>Don't show this again for this version</span>
+          </label>
+          <button onclick="closeChangelogModal()" class="custom-btn">Got it!</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+  }
+
+  if (!modal) return;
+
+  const content = document.getElementById('changelogContent');
+  if (!content) return;
+
+  content.innerHTML = '';
+
+  CHANGELOG.forEach((release, index) => {
+    const releaseDiv = document.createElement('div');
+    releaseDiv.className = 'changelog-release';
+
+    const header = document.createElement('div');
+    header.className = 'changelog-header';
+    header.innerHTML = `
+      <div class="changelog-header-left">
+        <h4>Version ${release.version}</h4>
+        <span class="changelog-date">${release.date}</span>
+      </div>
+      <button class="changelog-toggle" data-index="${index}">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </button>
+    `;
+    releaseDiv.appendChild(header);
+
+    const changesList = document.createElement('ul');
+    changesList.className = 'changelog-list';
+
+    release.changes.forEach(change => {
+      const item = document.createElement('li');
+      item.className = `changelog-item changelog-${change.type}`;
+
+      const badge = document.createElement('span');
+      badge.className = 'changelog-badge';
+      badge.textContent = change.type === 'feature' ? 'NEW' :
+                          change.type === 'improvement' ? 'IMPROVED' : 'FIXED';
+
+      const text = document.createElement('span');
+      text.textContent = change.text;
+
+      item.appendChild(badge);
+      item.appendChild(text);
+      changesList.appendChild(item);
+    });
+
+    releaseDiv.appendChild(changesList);
+    content.appendChild(releaseDiv);
+
+    const toggleBtn = header.querySelector('.changelog-toggle');
+    if (toggleBtn) {
+      if (index > 0) {
+        changesList.style.display = 'none';
+        toggleBtn.classList.add('collapsed');
+      }
+
+      toggleBtn.addEventListener('click', () => {
+        const isCollapsed = changesList.style.display === 'none';
+        changesList.style.display = isCollapsed ? 'block' : 'none';
+        toggleBtn.classList.toggle('collapsed');
+      });
+    }
+  });
+
+  const dontShowCheckbox = document.getElementById('dontShowChangelogAgain');
+  if (dontShowCheckbox) {
+    dontShowCheckbox.checked = false;
+  }
+
+  modal.style.setProperty('display', 'flex', 'important');
+  localStorage.setItem('overlay_lastSeenVersion', CURRENT_VERSION);
+  updateWhatsNewBadge(false);
+};
+
+window.closeChangelogModal = function() {
+  const modal = document.getElementById('changelogOverlay');
+  const dontShowCheckbox = document.getElementById('dontShowChangelogAgain');
+
+  if (dontShowCheckbox && dontShowCheckbox.checked) {
+    localStorage.setItem(`overlay_dontShowChangelog_${CURRENT_VERSION}`, 'true');
+  }
+
+  if (modal) {
+    modal.style.display = 'none';
+  }
+};
+
+// Close changelog modal when clicking outside
+document.addEventListener('click', function(e) {
+  const modal = document.getElementById('changelogOverlay');
+  if (modal && e.target === modal) {
+    closeChangelogModal();
+  }
+});
+
 // Logo scale state
 let logoScale = 1;
 const posterUpload = document.getElementById("poster-upload");
@@ -27,7 +207,67 @@ let networkLogoImage = null;
 let currentLogoPath = "none";
 let selectedLogoColor = "#ffffff";
 
-// Create loading overlay function
+// ── Poster Designer state ──────────────────────────────────
+let designerLogoImage   = null;
+let designerLogoX       = 0;
+let designerLogoY       = 55;
+let designerLogoScale   = 1.0;
+let designerShadowEnabled = false;
+let designerShadowBlur  = 20;
+let currentDesignerId   = null;
+let currentDesignerType = 'movie';
+let currentDesignerTitle = '';
+let isDraggingLogo      = false;
+let dragStartMouseX = 0, dragStartMouseY = 0;
+let dragStartLogoX  = 0, dragStartLogoY  = 0;
+let fanartApiKey = localStorage.getItem('postertools_fanart_key') || '';
+
+// ── Season Suite state ────────────────────────────────────
+let seasonSuiteData   = null;   // { showId, seasons: [...] }
+let activeSeasonNum   = null;   // currently highlighted season number (null = base)
+let seasonLabelEnabled  = false;
+let seasonLabelText     = '';
+let seasonLabelFontSize = 60;
+let seasonLabelColor    = '#ffffff';
+let seasonLabelYPct     = 91;
+let seasonLabelFont     = 'Bebas Neue';
+let seasonLabelSpacing  = 0;   // % of canvas height
+let showBasePosterPath  = null; // TMDB poster_path for the base show
+let baseShowImage       = null; // stored Image for restoring base poster
+let seasonSavedImages   = new Map(); // key (seasonNum | 'base') → { img, labelText, labelColor, logoColor }
+
+// ── Gradient overlay state ────────────────────────
+let gradientEnabled  = false;
+let gradientOpacity  = 0.7;
+let gradientHeight   = 50;   // % of canvas height the gradient covers
+let gradientColor    = '#000000';
+
+// ── Designer logo tint state ───────────────────────
+let designerLogoColor = '#ffffff'; // '#ffffff' = no tint (draw as-is)
+
+// Pickr instances (initialized in DOMContentLoaded)
+let networkLogoColorPickr  = null;
+let gradientColorPickr     = null;
+let designerLogoColorPickr = null;
+let seasonLabelColorPickr  = null;
+
+// ── Thumbnail auto-update state ─────────────────────────
+let _capturingThumb    = false; // prevents drawCanvas auto-schedule from looping
+let _thumbDebounceTimer = null; // debounce handle for auto thumbnail updates
+
+// ── Guidelines overlay state ──────────────────────────────
+let guidelinesEnabled = true;
+const guidelinesImage = new Image();
+guidelinesImage.src = '../assets/guidelines_poster.jpg';
+guidelinesImage.onload = () => {
+  // Draw default backdrop if no poster loaded yet
+  if (!baseImage) drawGuidelinesBackdrop();
+};
+
+function drawGuidelinesBackdrop() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(guidelinesImage, 0, 0, canvas.width, canvas.height);
+}
 function showLoadingOverlay(title, message) {
   // Remove any existing overlay
   hideLoadingOverlay();
@@ -165,49 +405,6 @@ function hideLoadingOverlay() {
   }
 }
 
-const pickrElement = document.getElementById("pickr");
-const pickr = Pickr.create({
-  el: pickrElement,
-  theme: "monolith",
-  position: "right-middle",
-  padding: 40,
-  default: "#ffffff",
-  components: {
-    preview: true,
-    opacity: false,
-    hue: true,
-    interaction: {
-      hex: true,
-      input: true,
-      save: true,
-    },
-  },
-});
-
-pickr.on("change", (color) => {
-  const hex = color.toHEXA().toString();
-  selectedLogoColor = hex;
-
-  pickrElement.style.background = hex;
-
-  if (networkLogoImage && baseImage) {
-    drawCanvas();
-  }
-});
-
-pickr.on("save", (color) => {
-  const hex = color.toHEXA().toString();
-  selectedLogoColor = hex;
-
-  pickrElement.style.background = hex;
-
-  if (networkLogoImage && baseImage) {
-    drawCanvas();
-  }
-
-  pickr.hide();
-});
-
 const LOGO_WIDTH = 160;
 const LOGO_MARGIN_LEFT = 50;
 const LOGO_MARGIN_TOP = 50;
@@ -315,6 +512,17 @@ posterUpload.addEventListener("change", (e) => {
   reader.onload = function (evt) {
     baseImage = new Image();
     baseImage.onload = () => {
+      // If a TV show suite is already active, lock in the manual image right now
+      // so it survives any async buildSeasonGrid call that clears saved state
+      if (seasonSuiteData) {
+        baseShowImage = baseImage;
+        seasonSavedImages.set('base', {
+          img: baseImage,
+          labelText: seasonSavedImages.get('base')?.labelText ?? '',
+          labelColor: seasonSavedImages.get('base')?.labelColor ?? seasonLabelColor,
+          logoColor: seasonSavedImages.get('base')?.logoColor ?? designerLogoColor,
+        });
+      }
       drawCanvas();
 
       const suggestedType = advancedContentTypeDetection(file.name);
@@ -349,6 +557,7 @@ posterUpload.addEventListener("change", (e) => {
 overlaySelect.addEventListener("change", () => {
   if (!baseImage) return;
   drawCanvas();
+  deferredThumbUpdate();
 });
 
 const networkLogoSearch = document.getElementById("network-logo-search");
@@ -428,7 +637,6 @@ const logoNames = [
   "Disney Channel",
   "Dave",
   "CBC Gem",
-  "CBC",
   "Cartoon Network",
   "Apple TV+",
 ];
@@ -577,12 +785,66 @@ networkLogoCheckbox.addEventListener("change", () => {
   }
 });
 
-function drawCanvas() {
+// ── Canvas draw helpers ──────────────────────────────
+function hexToRgbArr(hex) {
+  return [
+    parseInt(hex.slice(1, 3), 16),
+    parseInt(hex.slice(3, 5), 16),
+    parseInt(hex.slice(5, 7), 16),
+  ];
+}
+
+// Multiply-blend tint: white logo + tint → tint color, preserves alpha & brightness
+function applyLogoTint(srcImage, w, h, hexColor) {
+  const tc = document.createElement('canvas');
+  tc.width  = Math.ceil(w);
+  tc.height = Math.ceil(h);
+  const tctx = tc.getContext('2d');
+  tctx.drawImage(srcImage, 0, 0, w, h);
+  if (hexColor && hexColor.toLowerCase() !== '#ffffff') {
+    const [tr, tg, tb] = hexToRgbArr(hexColor).map(v => v / 255);
+    const imgData = tctx.getImageData(0, 0, tc.width, tc.height);
+    const d = imgData.data;
+    for (let i = 0; i < d.length; i += 4) {
+      if (d[i + 3] > 0) {
+        d[i]     = Math.round(d[i]     * tr);
+        d[i + 1] = Math.round(d[i + 1] * tg);
+        d[i + 2] = Math.round(d[i + 2] * tb);
+      }
+    }
+    tctx.putImageData(imgData, 0, 0);
+  }
+  return tc;
+}
+
+function drawCanvas(onComplete) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  ctx.drawImage(baseImage, 0, 0, canvas.width, canvas.height);
+  // Layer 1: base poster or guidelines backdrop
+  if (baseImage) {
+    ctx.drawImage(baseImage, 0, 0, canvas.width, canvas.height);
+  } else {
+    if (guidelinesImage.complete && guidelinesImage.naturalWidth > 0) {
+      ctx.drawImage(guidelinesImage, 0, 0, canvas.width, canvas.height);
+    }
+    // Draw designer logo preview on the backdrop, then stop
+    drawDesignerLogoLayer();
+    if (onComplete) onComplete();
+    return;
+  }
 
-  if (networkLogoImage) {
+  // Layer 2: bottom gradient — drawn before logos so logos appear on top
+  if (gradientEnabled) {
+    const gradH = canvas.height * (gradientHeight / 100);
+    const [gr, gg, gb] = hexToRgbArr(gradientColor);
+    const grd = ctx.createLinearGradient(0, canvas.height - gradH, 0, canvas.height);
+    grd.addColorStop(0, 'rgba(0,0,0,0)');
+    grd.addColorStop(1, `rgba(${gr},${gg},${gb},${gradientOpacity})`);
+    ctx.fillStyle = grd;
+    ctx.fillRect(0, canvas.height - gradH, canvas.width, gradH);
+  }
+
+  if (networkLogoImage && activeSeasonNum === null) {
     const TARGET_WIDTH = 250 * logoScale;
     const TARGET_HEIGHT = 43 * logoScale;
     const MARGIN_LEFT = 54;
@@ -633,15 +895,109 @@ function drawCanvas() {
     ctx.drawImage(tempCanvas, MARGIN_LEFT, MARGIN_TOP, logoWidth, logoHeight);
   }
 
+  // Layer 3: designer clearlogo
+  drawDesignerLogoLayer();
+
+  // Layer 4: banner overlay + guidelines on top
   if (overlaySelect.value !== "none") {
     overlayImage = new Image();
     overlayImage.onload = () => {
       ctx.drawImage(overlayImage, 0, 0, canvas.width, canvas.height);
+      // Draw guidelines overlay on top of everything
+      if (guidelinesEnabled && guidelinesImage.complete && guidelinesImage.naturalWidth > 0) {
+        ctx.save();
+        ctx.globalAlpha = 0.55;
+        ctx.drawImage(guidelinesImage, 0, 0, canvas.width, canvas.height);
+        ctx.restore();
+      }
+      // Season label on top of everything
+      drawSeasonLabel();
+      if (onComplete) onComplete();
+      _scheduleThumbUpdate();
     };
     overlayImage.src = overlaySelect.value;
+  } else {
+    if (guidelinesEnabled && guidelinesImage.complete && guidelinesImage.naturalWidth > 0) {
+      ctx.save();
+      ctx.globalAlpha = 0.55;
+      ctx.drawImage(guidelinesImage, 0, 0, canvas.width, canvas.height);
+      ctx.restore();
+    }
+    // Season label on top of everything
+    drawSeasonLabel();
+    if (onComplete) onComplete();
+    _scheduleThumbUpdate();
   }
 }
-// Logo scale slider logic
+
+function _scheduleThumbUpdate() {
+  if (_capturingThumb || !seasonSuiteData) return;
+  clearTimeout(_thumbDebounceTimer);
+  _thumbDebounceTimer = setTimeout(() => {
+    const key = activeSeasonNum === null ? 'base' : activeSeasonNum;
+    captureCanvasThumb(key);
+  }, 250);
+}
+
+// ── Season label canvas draw ──────────────────────────────
+function drawSeasonLabel() {
+  if (!seasonLabelEnabled || !seasonLabelText.trim() || activeSeasonNum === null) return;
+  const y = canvas.height * (seasonLabelYPct / 100);
+  ctx.save();
+  // Weight: Exo 2 is a regular-weight font, others are display/bold
+  const weight = seasonLabelFont === 'Exo 2' ? '400' : '700';
+  ctx.font = `${weight} ${seasonLabelFontSize}px '${seasonLabelFont}', 'Arial Black', sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.shadowColor = 'rgba(0,0,0,0.85)';
+  ctx.shadowBlur = 18;
+  ctx.shadowOffsetX = 2;
+  ctx.shadowOffsetY = 3;
+  ctx.fillStyle = seasonLabelColor;
+  if (seasonLabelSpacing !== 0) {
+    ctx.letterSpacing = seasonLabelSpacing + 'px';
+  }
+  ctx.fillText(seasonLabelText, canvas.width / 2, y);
+  ctx.restore();
+}
+
+// ── Drag-and-drop poster onto the window / drop zone ────────
+(function wirePosterDrop() {
+  function handleDroppedFile(file) {
+    if (!file || !file.type.startsWith('image/')) return;
+    // Reuse the existing posterUpload change pipeline
+    const dataTransfer = new DataTransfer();
+    dataTransfer.items.add(file);
+    posterUpload.files = dataTransfer.files;
+    posterUpload.dispatchEvent(new Event('change'));
+  }
+
+  const dropZone = document.getElementById('poster-drop-zone');
+  const canvasContainer = document.querySelector('.canvas-container');
+  const targets = [dropZone, canvasContainer].filter(Boolean);
+
+  // Prevent default for the whole window so browser doesn't open the image
+  window.addEventListener('dragover', e => e.preventDefault());
+  window.addEventListener('drop',     e => e.preventDefault());
+
+  targets.forEach(el => {
+    el.addEventListener('dragover', e => {
+      e.preventDefault();
+      el.classList.add('drop-active');
+    });
+    el.addEventListener('dragleave', e => {
+      if (!el.contains(e.relatedTarget)) el.classList.remove('drop-active');
+    });
+    el.addEventListener('drop', e => {
+      e.preventDefault();
+      el.classList.remove('drop-active');
+      const file = e.dataTransfer.files[0];
+      handleDroppedFile(file);
+    });
+  });
+}());
+
+
 const logoScaleSlider = document.getElementById("logo-scale-slider");
 const logoScaleValue = document.getElementById("logo-scale-value");
 if (logoScaleSlider && logoScaleValue) {
@@ -651,6 +1007,7 @@ if (logoScaleSlider && logoScaleValue) {
     if (networkLogoImage && baseImage) {
       drawCanvas();
     }
+    deferredThumbUpdate();
   });
 }
 
@@ -1688,22 +2045,29 @@ function fetchShowPosters(showId, showTitle) {
 }
 
 function displayPosters(posters, title, contentType = "movie") {
-  const modal = document.getElementById("poster-modal");
-  const container = document.getElementById("poster-results");
-  container.innerHTML = "";
+  if (!posters || !posters.length) return;
+
+  // Build a temporary grid inside the poster picker modal
+  const modal    = document.getElementById('poster-picker-modal');
+  const backdrop = document.getElementById('poster-picker-backdrop');
+  const titleEl  = document.getElementById('poster-picker-title');
+  const grid     = document.getElementById('poster-picker-grid');
+  const tabsEl   = document.getElementById('poster-lang-tabs');
+
   const usernameFilter = document.getElementById("mediux-username-filter").value.trim();
+  if (titleEl) titleEl.textContent = usernameFilter
+    ? `${posters.length} posters by "${usernameFilter}"`
+    : `Posters — ${title || 'Results'} (${posters.length})`;
 
-  if (usernameFilter) {
-    modal.querySelector(".close-modal").textContent = `${posters.length} posters by "${usernameFilter}"`;
-  } else {
-    modal.querySelector(".close-modal").textContent = `Close (${posters.length} posters)`;
-  }
+  if (tabsEl) tabsEl.innerHTML = '';
+  if (grid)   grid.innerHTML   = '';
 
-  container.className = "poster-grid";
   posters.forEach((poster) => {
-    const img = document.createElement("img");
+    const item = document.createElement('div');
+    item.className = 'poster-picker-item';
+    const img = document.createElement('img');
     img.src = poster.dataUrl;
-    img.alt = title || "Poster";
+    img.alt = title || 'Poster';
 
     img.addEventListener("mouseenter", (e) => {
       const tooltip = document.getElementById("tooltip");
@@ -1713,56 +2077,38 @@ function displayPosters(posters, title, contentType = "movie") {
         tooltip.style.transform = "translateY(-8px)";
       }
     });
-
     img.addEventListener("mousemove", (e) => {
       const tooltip = document.getElementById("tooltip");
       if (tooltip) {
         tooltip.style.left = `${e.pageX + 12}px`;
-        tooltip.style.top = `${e.pageY - 28}px`;
+        tooltip.style.top  = `${e.pageY - 28}px`;
       }
     });
-
     img.addEventListener("mouseleave", () => {
       const tooltip = document.getElementById("tooltip");
-      if (tooltip) {
-        tooltip.style.opacity = 0;
-      }
+      if (tooltip) tooltip.style.opacity = 0;
     });
 
-    img.addEventListener("click", () => {
-      const imageDataUrl = poster.dataUrl;
-
+    item.addEventListener('click', () => {
       const image = new Image();
-      image.crossOrigin = "anonymous";
-
+      image.crossOrigin = 'anonymous';
       image.onload = () => {
         baseImage = image;
-
-        if (overlaySelect.value !== "none") {
-          overlayImage.src = overlaySelect.value;
-        }
-
+        if (overlaySelect.value !== 'none') overlayImage.src = overlaySelect.value;
         drawCanvas();
-        modal.style.display = "none";
-
+        closePosterPicker();
         fetchTMDBMetadataForTitle(title, contentType);
       };
-
-      image.src = imageDataUrl;
+      image.src = poster.dataUrl;
     });
 
-    container.appendChild(img);
+    item.appendChild(img);
+    grid.appendChild(item);
   });
 
-  const gridWrapper = document.querySelector(".poster-grid-wrapper");
-  if (gridWrapper) {
-    gridWrapper.removeAttribute("style");
-  }
-
-  modal.style.display = "flex";
-
-  enableHorizontalScrolling();
-  enableTouchScrolling(); // Add touch support for mobile
+  if (modal)    modal.style.display    = 'block';
+  if (backdrop) backdrop.style.display = 'block';
+  document.body.style.overflow = 'hidden';
 }
 
 function fetchTMDBMetadataForTitle(title, contentType = "movie") {
@@ -1944,135 +2290,22 @@ function fetchImageAsObjectUrl(originalUrl) {
 }
 
 function fetchAndDisplayPostersById(id, title, type = "movie") {
-  const container = document.getElementById("poster-results");
-  container.innerHTML = "";
-  container.dataset.contentType = type;
-
-  fetch(`https://api.themoviedb.org/3/${type}/${id}/images?api_key=${TMDB_API_KEY}`)
-    .then((res) => res.json())
-    .then((images) => {
-      const posters = images.posters.filter((p) => !p.iso_639_1 || p.iso_639_1 === "en").slice(0, 30);
-
-      if (posters.length === 0) {
-        container.innerHTML = '<p style="color:white;">No posters found.</p>';
-        return;
-      }
-
-      posters.forEach((poster) => {
-        const img = document.createElement("img");
-        const posterUrl = `https://image.tmdb.org/t/p/w500${poster.file_path}`;
-
-        img.src = posterUrl; // Keep the original URL for display
-        img.alt = title;
-        img.title = title;
-
-        img.addEventListener("click", () => {
-          // Show loading indicator
-          const loadingIndicator = document.createElement("div");
-          loadingIndicator.className = "loading-indicator";
-          loadingIndicator.innerHTML = "<p>Loading poster...</p>";
-          document.body.appendChild(loadingIndicator);
-
-          // Try different methods to load the image
-          const tempImage = new Image();
-          tempImage.crossOrigin = "anonymous";
-
-          tempImage.onload = () => {
-            try {
-              const tempCanvas = document.createElement("canvas");
-              tempCanvas.width = tempImage.width;
-              tempCanvas.height = tempImage.height;
-              const tempCtx = tempCanvas.getContext("2d");
-              tempCtx.drawImage(tempImage, 0, 0);
-
-              // Convert canvas to data URL
-              const dataUrl = tempCanvas.toDataURL("image/png");
-
-              // Final image from data URL
-              baseImage = new Image();
-              baseImage.onload = () => {
-                drawCanvas();
-                fetchMetadataById(id, type);
-                document.getElementById("poster-modal").style.display = "none";
-                document.body.removeChild(loadingIndicator);
-              };
-              baseImage.src = dataUrl;
-            } catch (e) {
-              console.warn("Canvas toDataURL failed, trying fetch method:", e);
-
-              // Try using fetch API as alternative
-              fetchImageAsObjectUrl(posterUrl)
-                .then((objectUrl) => {
-                  baseImage = new Image();
-                  baseImage.onload = () => {
-                    URL.revokeObjectURL(objectUrl);
-                    drawCanvas();
-                    fetchMetadataById(id, type);
-                    document.getElementById("poster-modal").style.display = "none";
-                    document.body.removeChild(loadingIndicator);
-                  };
-                  baseImage.src = objectUrl;
-                })
-                .catch((fetchError) => {
-                  console.error("All image loading methods failed:", fetchError);
-                  document.body.removeChild(loadingIndicator);
-
-                  // Try a final fallback without CORS
-                  baseImage = tempImage;
-                  drawCanvas();
-                  fetchMetadataById(id, type);
-                  document.getElementById("poster-modal").style.display = "none";
-                });
-            }
-          };
-
-          tempImage.onerror = () => {
-            console.warn("Direct image load failed, trying fetch API with proxy");
-
-            // Try using fetch API with proxy
-            fetchImageAsObjectUrl(posterUrl)
-              .then((objectUrl) => {
-                baseImage = new Image();
-                baseImage.onload = () => {
-                  URL.revokeObjectURL(objectUrl);
-                  drawCanvas();
-                  fetchMetadataById(id, type);
-                  document.getElementById("poster-modal").style.display = "none";
-                  document.body.removeChild(loadingIndicator);
-                };
-                baseImage.src = objectUrl;
-              })
-              .catch((fetchError) => {
-                console.error("Fetch method also failed:", fetchError);
-                document.body.removeChild(loadingIndicator);
-
-                // Just try direct load as last resort without proxy or CORS
-                baseImage = new Image();
-                baseImage.onload = () => {
-                  drawCanvas();
-                  fetchMetadataById(id, type);
-                  document.getElementById("poster-modal").style.display = "none";
-                };
-                baseImage.src = posterUrl;
-              });
-          };
-
-          // Start loading directly; fallback fetch uses proxy candidates if canvas export is blocked.
-          tempImage.src = posterUrl;
-        });
-
-        container.appendChild(img);
-      });
-
-      container.scrollLeft = 0;
-      document.getElementById("poster-modal").style.display = "flex";
-      enableHorizontalScrolling();
-    })
-    .catch((err) => {
-      container.innerHTML = '<p style="color:white;">Error loading posters.</p>';
-      console.error(err);
-    });
+  currentDesignerId    = id;
+  currentDesignerType  = type;
+  currentDesignerTitle = title;
+  // Also kick off the clearlogo strip for the logo picker
+  fetchAndDisplayClearlogos(id, type);
+  // Open the new poster picker modal
+  const modal    = document.getElementById('poster-picker-modal');
+  const backdrop = document.getElementById('poster-picker-backdrop');
+  const titleEl  = document.getElementById('poster-picker-title');
+  if (titleEl) titleEl.textContent = `Posters — ${title}`;
+  if (modal)    modal.style.display    = 'block';
+  if (backdrop) backdrop.style.display = 'block';
+  document.body.style.overflow = 'hidden';
+  fetchAndRenderPosterPicker(id, type);
 }
+
 
 function showSearchResultsDialog(results) {
   if (!document.getElementById("search-results-dialog")) {
@@ -2378,9 +2611,24 @@ function displayMovieMetadata(details) {
   document.getElementById("meta-network-row").style.display = "none";
   document.getElementById("content-type-indicator").textContent = "Movie";
   document.getElementById("content-type-indicator").className = "type-badge movie";
+
+  // Hide TV-only UI
+  const _ssp = document.getElementById('season-suite-panel');
+  if (_ssp) _ssp.style.display = 'none';
+  const _slc = document.getElementById('season-label-card');
+  if (_slc) _slc.style.display = 'none';
+  seasonLabelEnabled = false;
+  const _slt = document.getElementById('season-label-toggle');
+  if (_slt) _slt.checked = false;
+  seasonSuiteData     = null;
+  activeSeasonNum     = null;
+  showBasePosterPath  = null;
+  baseShowImage       = null;
+  seasonSavedImages.clear();
 }
 
 function displayTVShowMetadata(details) {
+  showBasePosterPath = details.poster_path || null;
   document.getElementById("meta-title").textContent = details.name;
   document.getElementById("meta-rating").textContent = details.vote_average?.toFixed(1) || "—";
   document.getElementById("meta-tagline").textContent = details.tagline || "";
@@ -2469,6 +2717,13 @@ function displayTVShowMetadata(details) {
       }
     }
   }
+
+  // Build season grid below the canvas
+  buildSeasonGrid(details.seasons || [], details.id);
+
+  // Show the Season Label card in the sidebar
+  const _slc2 = document.getElementById('season-label-card');
+  if (_slc2) _slc2.style.display = '';
 }
 
 document.addEventListener("click", (e) => {
@@ -2490,6 +2745,9 @@ document.getElementById("download-btn").addEventListener("click", () => {
   link.click();
 });
 
+const _seasonDlAllBtn = document.getElementById('season-download-all-btn');
+if (_seasonDlAllBtn) _seasonDlAllBtn.addEventListener('click', () => batchDownloadAllSeasons());
+
 document.getElementById("reset-btn").addEventListener("click", () => {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   posterUpload.value = "";
@@ -2499,15 +2757,47 @@ document.getElementById("reset-btn").addEventListener("click", () => {
   document.getElementById("tmdb-suggestions").innerHTML = "";
   document.getElementById("mediux-search-input").value = "";
   document.getElementById("mediux-suggestions").innerHTML = "";
-  document.getElementById("poster-modal").style.display = "none";
-  document.getElementById("poster-results").innerHTML = "";
   document.getElementById("mediux-username-filter").value = "";
   networkLogoSearch.value = "";
   networkLogoCheckbox.checked = false;
-  pickr.setColor("#ffffff");
   selectedLogoColor = "#ffffff";
+  if (networkLogoColorPickr) networkLogoColorPickr.setColor(selectedLogoColor);
   networkLogoImage = null;
   overlaySelect.value = "none";
+  // Reset season suite
+  seasonSuiteData    = null;
+  activeSeasonNum    = null;
+  showBasePosterPath = null;
+  baseShowImage      = null;
+  seasonSavedImages.clear();
+  seasonLabelEnabled = false;
+  seasonLabelText    = '';
+  seasonLabelColor   = '#ffffff';
+  const _ssp = document.getElementById('season-suite-panel');
+  if (_ssp) _ssp.style.display = 'none';
+  const _slc = document.getElementById('season-label-card');
+  if (_slc) _slc.style.display = 'none';
+  const _slt = document.getElementById('season-label-toggle');
+  if (_slt) _slt.checked = false;
+  const _sli = document.getElementById('season-label-text');
+  if (_sli) _sli.value = '';
+  if (seasonLabelColorPickr) seasonLabelColorPickr.setColor('#ffffff');
+  // Reset gradient
+  gradientEnabled = false; gradientOpacity = 0.7; gradientHeight = 50; gradientColor = '#000000';
+  const _gt  = document.getElementById('gradient-toggle');       if (_gt)  _gt.checked = false;
+  const _gcp = document.getElementById('gradient-controls-panel'); if (_gcp) _gcp.style.display = 'none';
+  const _go  = document.getElementById('gradient-opacity');      if (_go)  _go.value = '70';
+  const _gov = document.getElementById('gradient-opacity-val');  if (_gov) _gov.textContent = '70%';
+  const _gh  = document.getElementById('gradient-height');       if (_gh)  _gh.value = '50';
+  const _ghv = document.getElementById('gradient-height-val');   if (_ghv) _ghv.textContent = '50%';
+  if (gradientColorPickr) gradientColorPickr.setColor('#000000');
+  // Reset designer logo color
+  designerLogoColor = '#ffffff';
+  if (designerLogoColorPickr) designerLogoColorPickr.setColor('#ffffff');
+  // Redraw guidelines backdrop
+  if (guidelinesImage.complete && guidelinesImage.naturalWidth > 0) {
+    drawGuidelinesBackdrop();
+  }
 });
 
 const mobileMenuToggle = document.getElementById("mobile-menu-toggle");
@@ -2579,31 +2869,17 @@ function enableTouchScrolling() {
   }
 }
 
-// Fix poster modal on mobile
+// Show a message inside the poster picker modal
 function showPosterModal(message) {
-  const modal = document.getElementById("poster-modal");
-  const container = document.getElementById("poster-results");
-  container.innerHTML = `<p style="color:white; padding: 1rem; text-align:center; width:100%;">${message}</p>`;
-  modal.style.display = "flex";
-
-  enableHorizontalScrolling();
-
-  // Ensure close button works on mobile
-  const closeButton = modal.querySelector(".close-modal");
-  if (closeButton) {
-    closeButton.onclick = () => {
-      modal.style.display = "none";
-    };
-  }
-
-  // Allow closing by clicking outside on mobile
-  if (window.innerWidth <= 900) {
-    modal.onclick = (e) => {
-      if (e.target === modal) {
-        modal.style.display = "none";
-      }
-    };
-  }
+  const modal    = document.getElementById('poster-picker-modal');
+  const backdrop = document.getElementById('poster-picker-backdrop');
+  const grid     = document.getElementById('poster-picker-grid');
+  const tabsEl   = document.getElementById('poster-lang-tabs');
+  if (tabsEl) tabsEl.innerHTML = '';
+  if (grid)   grid.innerHTML   = `<p style="color:white; padding:1rem; text-align:center; width:100%;">${message}</p>`;
+  if (modal)    modal.style.display    = 'block';
+  if (backdrop) backdrop.style.display = 'block';
+  document.body.style.overflow = 'hidden';
 }
 
 // Handle orientation changes and resize events
@@ -3402,6 +3678,1669 @@ document.addEventListener("DOMContentLoaded", function() {
   initMobileContentTypeButtons();
 });
 
+// =====================================================
+// POSTER DESIGNER
+// =====================================================
+
+function showToast(message, duration = 2800) {
+  let el = document.getElementById('toast-notification');
+  if (!el) return;
+  el.textContent = message;
+  el.classList.add('toast-visible');
+  clearTimeout(el._toastTimer);
+  el._toastTimer = setTimeout(() => el.classList.remove('toast-visible'), duration);
+}
+
+// ── Fanart.tv API key ─────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function () {
+  const fanartKeyInput   = document.getElementById('fanart-api-key');
+  const fanartSaveBtn    = document.getElementById('fanart-save-key-btn');
+  const fanartConnected  = document.getElementById('fanart-connected-row');
+  const fanartForm       = document.getElementById('fanart-expanded-form');
+  const fanartChangeBtn  = document.getElementById('fanart-change-btn');
+
+  function setFanartState(hasKey) {
+    if (fanartConnected) fanartConnected.style.display = hasKey ? 'flex' : 'none';
+    if (fanartForm)      fanartForm.style.display      = hasKey ? 'none' : 'block';
+  }
+
+  // Init: pre-fill if key exists and set correct state
+  if (fanartKeyInput && fanartApiKey) fanartKeyInput.value = fanartApiKey;
+  setFanartState(!!fanartApiKey);
+
+  // "Change" re-expands the form
+  if (fanartChangeBtn) {
+    fanartChangeBtn.addEventListener('click', () => {
+      setFanartState(false);
+      if (fanartKeyInput) fanartKeyInput.focus();
+    });
+  }
+
+  if (fanartSaveBtn) {
+    fanartSaveBtn.addEventListener('click', () => {
+      const newKey = fanartKeyInput ? fanartKeyInput.value.trim() : '';
+      fanartApiKey = newKey;
+      localStorage.setItem('postertools_fanart_key', fanartApiKey);
+      setFanartState(!!fanartApiKey);
+      if (!fanartApiKey) {
+        showToast('Fanart.tv key cleared');
+        return;
+      }
+      if (currentDesignerId) {
+        showToast('Key saved — refreshing logos…');
+        fetchAndDisplayClearlogos(currentDesignerId, currentDesignerType);
+        openLogoPicker();
+      } else {
+        showToast('Fanart.tv key saved – pick a poster to load logos');
+      }
+    });
+  }
+
+  // ── Logo picker modal open/close ─────────────────────────
+  const openLogoPickerBtn  = document.getElementById('open-logo-picker-btn');
+  const closeLogoPickerBtn = document.getElementById('close-logo-picker');
+  const logoPickerBackdrop = document.getElementById('logo-picker-backdrop');
+  if (openLogoPickerBtn)  openLogoPickerBtn.addEventListener('click', openLogoPicker);
+  if (closeLogoPickerBtn) closeLogoPickerBtn.addEventListener('click', closeLogoPicker);
+  if (logoPickerBackdrop) logoPickerBackdrop.addEventListener('click', closeLogoPicker);
+  const logoPickerModal = document.getElementById('logo-picker-modal');
+
+  // ── Poster picker modal open/close ──────────────────────
+  const browsePosterBtn      = document.getElementById('browse-posters-btn');
+  const closePosterPickerBtn = document.getElementById('close-poster-picker');
+  const posterPickerBackdrop = document.getElementById('poster-picker-backdrop');
+  if (browsePosterBtn)      browsePosterBtn.addEventListener('click', openPosterPicker);
+  if (closePosterPickerBtn) closePosterPickerBtn.addEventListener('click', closePosterPicker);
+  if (posterPickerBackdrop) posterPickerBackdrop.addEventListener('click', closePosterPicker);
+
+  const refreshLogosBtn = document.getElementById('refresh-logos-btn');
+  if (refreshLogosBtn) {
+    refreshLogosBtn.addEventListener('click', () => {
+      if (currentDesignerId) {
+        fetchAndDisplayClearlogos(currentDesignerId, currentDesignerType);
+      } else {
+        showToast('Search for a title first');
+      }
+    });
+  }
+
+  // ── Slider controls ──────────────────────────────────────
+  function wireSlider(id, displayId, onInput) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('input', () => {
+      const v = onInput(el.value);
+      const disp = document.getElementById(displayId);
+      if (disp) disp.textContent = v;
+      if (designerLogoImage && baseImage) drawCanvas();
+      deferredThumbUpdate();
+    });
+  }
+
+  wireSlider('designer-logo-x', 'designer-x-display', v => { designerLogoX = parseInt(v); return v; });
+  wireSlider('designer-logo-y', 'designer-y-display', v => { designerLogoY = parseInt(v); return v; });
+  wireSlider('designer-logo-scale', 'designer-scale-display', v => {
+    designerLogoScale = parseFloat(v);
+    return Math.round(designerLogoScale * 100) + '%';
+  });
+  wireSlider('designer-shadow-blur', 'designer-shadow-blur-display', v => {
+    designerShadowBlur = parseInt(v);
+    return v + 'px';
+  });
+
+  // Step −/+ buttons for Title Logo sliders
+  function wireStepBtn(sliderId, dir) {
+    const btn = document.getElementById(sliderId + (dir > 0 ? '-inc' : '-dec'));
+    const slider = document.getElementById(sliderId);
+    if (!btn || !slider) return;
+    btn.addEventListener('click', () => {
+      const step = parseFloat(slider.step) || 1;
+      const min = parseFloat(slider.min);
+      const max = parseFloat(slider.max);
+      const newVal = Math.min(max, Math.max(min, parseFloat(slider.value) + dir * step));
+      slider.value = newVal;
+      slider.dispatchEvent(new Event('input'));
+    });
+  }
+  ['designer-logo-x', 'designer-logo-y', 'designer-logo-scale', 'designer-shadow-blur', 'logo-scale-slider',
+   'gradient-opacity', 'gradient-height'].forEach(id => {
+    wireStepBtn(id, -1);
+    wireStepBtn(id,  1);
+  });
+
+  // Season Label step buttons (wired after controls are added to DOM via HTML)
+  ['season-label-y', 'season-label-size', 'season-label-spacing'].forEach(id => {
+    wireStepBtn(id, -1);
+    wireStepBtn(id,  1);
+  });
+
+  // Season Label font select
+  const seasonLabelFontSelect = document.getElementById('season-label-font');
+  if (seasonLabelFontSelect) {
+    seasonLabelFontSelect.addEventListener('change', () => {
+      seasonLabelFont = seasonLabelFontSelect.value;
+      if (seasonLabelEnabled) drawCanvas();
+      deferredThumbUpdate();
+    });
+  }
+
+  // Season Label letter-spacing slider
+  const seasonLabelSpacingSlider = document.getElementById('season-label-spacing');
+  const seasonLabelSpacingVal    = document.getElementById('season-label-spacing-val');
+  if (seasonLabelSpacingSlider) {
+    seasonLabelSpacingSlider.addEventListener('input', () => {
+      seasonLabelSpacing = parseFloat(seasonLabelSpacingSlider.value);
+      if (seasonLabelSpacingVal) seasonLabelSpacingVal.textContent = seasonLabelSpacing + 'px';
+      if (seasonLabelEnabled) drawCanvas();
+      deferredThumbUpdate();
+    });
+  }
+
+  // Season Label toggle
+  const seasonLabelToggle = document.getElementById('season-label-toggle');
+  if (seasonLabelToggle) {
+    seasonLabelToggle.addEventListener('change', () => {
+      seasonLabelEnabled = seasonLabelToggle.checked;
+      drawCanvas();
+      deferredThumbUpdate();
+    });
+  }
+
+  // Season Label text input
+  const seasonLabelTextInput = document.getElementById('season-label-text');
+  if (seasonLabelTextInput) {
+    seasonLabelTextInput.addEventListener('input', () => {
+      seasonLabelText = seasonLabelTextInput.value;
+      if (seasonLabelEnabled) drawCanvas();
+      deferredThumbUpdate();
+    });
+  }
+
+  // Season Label vertical position slider
+  const seasonLabelYSlider = document.getElementById('season-label-y');
+  const seasonLabelYVal    = document.getElementById('season-label-y-val');
+  if (seasonLabelYSlider) {
+    seasonLabelYSlider.addEventListener('input', () => {
+      seasonLabelYPct = parseFloat(seasonLabelYSlider.value);
+      if (seasonLabelYVal) seasonLabelYVal.textContent = seasonLabelYPct + '%';
+      if (seasonLabelEnabled) drawCanvas();
+      deferredThumbUpdate();
+    });
+  }
+
+  // Season Label font size slider
+  const seasonLabelSizeSlider = document.getElementById('season-label-size');
+  const seasonLabelSizeVal    = document.getElementById('season-label-size-val');
+  if (seasonLabelSizeSlider) {
+    seasonLabelSizeSlider.addEventListener('input', () => {
+      seasonLabelFontSize = parseFloat(seasonLabelSizeSlider.value);
+      if (seasonLabelSizeVal) seasonLabelSizeVal.textContent = seasonLabelFontSize + 'px';
+      if (seasonLabelEnabled) drawCanvas();
+      deferredThumbUpdate();
+    });
+  }
+
+  // ── Color Pickers (Pickr) ────────────────────────────────────────────────
+  const _pickrOpts = {
+    theme: 'monolith',
+    position: 'right-middle',
+    padding: 48,
+    components: {
+      preview: true, opacity: false, hue: true,
+      interaction: { hex: true, input: true, save: true }
+    }
+  };
+
+  const _nlPickrEl = document.getElementById('network-logo-color-pickr');
+  if (_nlPickrEl) {
+    networkLogoColorPickr = Pickr.create({ el: _nlPickrEl, default: selectedLogoColor, ..._pickrOpts });
+    networkLogoColorPickr.on('change', color => {
+      selectedLogoColor = color.toHEXA().toString();
+      if (networkLogoImage && baseImage) drawCanvas();
+      deferredThumbUpdate();
+    }).on('save', (c, p) => p.hide());
+  }
+
+  const _slPickrEl = document.getElementById('season-label-color-pickr');
+  if (_slPickrEl) {
+    seasonLabelColorPickr = Pickr.create({ el: _slPickrEl, default: seasonLabelColor, ..._pickrOpts });
+    seasonLabelColorPickr.on('change', color => {
+      seasonLabelColor = color.toHEXA().toString();
+      if (seasonLabelEnabled) drawCanvas();
+      deferredThumbUpdate();
+    }).on('save', (c, p) => p.hide());
+  }
+
+  // ── Bottom Gradient controls ──────────────────────────────────────────────
+  const gradientToggle = document.getElementById('gradient-toggle');
+  if (gradientToggle) {
+    gradientToggle.addEventListener('change', () => {
+      gradientEnabled = gradientToggle.checked;
+      const gp = document.getElementById('gradient-controls-panel');
+      if (gp) gp.style.display = gradientEnabled ? 'block' : 'none';
+      if (baseImage) drawCanvas();
+    });
+  }
+  const gradientOpacitySlider = document.getElementById('gradient-opacity');
+  const gradientOpacityVal    = document.getElementById('gradient-opacity-val');
+  if (gradientOpacitySlider) {
+    gradientOpacitySlider.addEventListener('input', () => {
+      gradientOpacity = parseInt(gradientOpacitySlider.value) / 100;
+      if (gradientOpacityVal) gradientOpacityVal.textContent = gradientOpacitySlider.value + '%';
+      if (gradientEnabled && baseImage) drawCanvas();
+    });
+  }
+  const gradientHeightSlider = document.getElementById('gradient-height');
+  const gradientHeightVal    = document.getElementById('gradient-height-val');
+  if (gradientHeightSlider) {
+    gradientHeightSlider.addEventListener('input', () => {
+      gradientHeight = parseInt(gradientHeightSlider.value);
+      if (gradientHeightVal) gradientHeightVal.textContent = gradientHeightSlider.value + '%';
+      if (gradientEnabled && baseImage) drawCanvas();
+    });
+  }
+  const _gcPickrEl = document.getElementById('gradient-color-pickr');
+  if (_gcPickrEl) {
+    gradientColorPickr = Pickr.create({ el: _gcPickrEl, default: gradientColor, ..._pickrOpts });
+    gradientColorPickr.on('change', color => {
+      gradientColor = color.toHEXA().toString();
+      if (gradientEnabled && baseImage) drawCanvas();
+    }).on('save', (c, p) => p.hide());
+  }
+
+  // ── Designer logo tint color ──────────────────────────────────────────────
+  const _dlPickrEl = document.getElementById('designer-logo-color-pickr');
+  if (_dlPickrEl) {
+    designerLogoColorPickr = Pickr.create({ el: _dlPickrEl, default: designerLogoColor, ..._pickrOpts });
+    designerLogoColorPickr.on('change', color => {
+      designerLogoColor = color.toHEXA().toString();
+      if (designerLogoImage) { drawCanvas(); deferredThumbUpdate(); }
+    }).on('save', (c, p) => p.hide());
+  }
+
+  const shadowToggle = document.getElementById('designer-shadow-toggle');
+  if (shadowToggle) {
+    shadowToggle.addEventListener('change', () => {
+      designerShadowEnabled = shadowToggle.checked;
+      const sg = document.getElementById('designer-shadow-group');
+      if (sg) sg.style.display = designerShadowEnabled ? 'block' : 'none';
+      if (designerLogoImage && baseImage) drawCanvas();
+      deferredThumbUpdate();
+    });
+  }
+
+  const resetBtn = document.getElementById('designer-reset-btn');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+      designerLogoX = 0; designerLogoY = 55; designerLogoScale = 1;
+      const _rx = document.getElementById('designer-logo-x'); if (_rx) _rx.value = '0';
+      const _ry = document.getElementById('designer-logo-y'); if (_ry) _ry.value = '55';
+      const sc = document.getElementById('designer-logo-scale'); if (sc) sc.value = '1';
+      const _xd = document.getElementById('designer-x-display'); if (_xd) _xd.textContent = '0';
+      const _yd = document.getElementById('designer-y-display'); if (_yd) _yd.textContent = '55';
+      const sd = document.getElementById('designer-scale-display'); if (sd) sd.textContent = '100%';
+      drawCanvas();
+      deferredThumbUpdate();
+    });
+  }
+
+  // ── Guidelines toggle ────────────────────────────────────
+  const guidelinesToggleEl = document.getElementById('guidelines-toggle');
+  if (guidelinesToggleEl) {
+    guidelinesToggleEl.checked = guidelinesEnabled;
+    guidelinesToggleEl.addEventListener('change', () => {
+      guidelinesEnabled = guidelinesToggleEl.checked;
+      if (!baseImage) {
+        if (guidelinesEnabled && guidelinesImage.complete) drawGuidelinesBackdrop();
+        else ctx.clearRect(0, 0, canvas.width, canvas.height);
+      } else {
+        drawCanvas();
+      }
+    });
+  }
+
+  // ── Manual logo search ───────────────────────────────────
+  const designerSearchInput = document.getElementById('designer-logo-search-input');
+  const designerSuggestions = document.getElementById('designer-logo-suggestions');
+  if (designerSearchInput) {
+    let _dt;
+    designerSearchInput.addEventListener('input', () => {
+      clearTimeout(_dt);
+      const q = designerSearchInput.value.trim();
+      if (!q) { if (designerSuggestions) designerSuggestions.innerHTML = ''; return; }
+      _dt = setTimeout(() => searchDesignerTitle(q), 420);
+    });
+    designerSearchInput.addEventListener('blur', () => {
+      setTimeout(() => { if (designerSuggestions) designerSuggestions.innerHTML = ''; }, 220);
+    });
+    document.addEventListener('click', e => {
+      if (!e.target.closest('#designer-logo-search-input') && !e.target.closest('#designer-logo-suggestions') && designerSuggestions)
+        designerSuggestions.innerHTML = '';
+    });
+  }
+
+  // ── Canvas drag-to-reposition ────────────────────────────
+  canvas.addEventListener('mousedown', onCanvasMouseDown);
+  canvas.addEventListener('mousemove', onCanvasMouseMove);
+  canvas.addEventListener('mouseup',   onCanvasMouseUp);
+  canvas.addEventListener('mouseleave', onCanvasMouseUp);
+  canvas.addEventListener('touchstart', onCanvasTouchStart, { passive: false });
+  canvas.addEventListener('touchmove',  onCanvasTouchMove,  { passive: false });
+  canvas.addEventListener('touchend',   onCanvasMouseUp);
+});
+
+function getCanvasPoint(clientX, clientY) {
+  const rect = canvas.getBoundingClientRect();
+  return {
+    x: (clientX - rect.left) * (canvas.width  / rect.width),
+    y: (clientY - rect.top)  * (canvas.height / rect.height),
+  };
+}
+
+function drawDesignerLogoLayer() {
+  if (!designerLogoImage || !designerLogoImage.complete || !designerLogoImage.naturalWidth) return;
+  const maxW = Math.min(canvas.width * 0.70, 680) * designerLogoScale;
+  const maxH = canvas.height * 0.14 * designerLogoScale;
+  const ratio = designerLogoImage.naturalWidth / designerLogoImage.naturalHeight;
+  let lw, lh;
+  if (ratio > maxW / maxH) { lw = maxW; lh = lw / ratio; }
+  else                     { lh = maxH; lw = lh * ratio; }
+  const cx = canvas.width  / 2 + designerLogoX;
+  const cy = canvas.height * 0.78 + designerLogoY;
+  ctx.save();
+  if (designerShadowEnabled) {
+    ctx.shadowColor    = 'rgba(0,0,0,0.85)';
+    ctx.shadowBlur     = designerShadowBlur;
+    ctx.shadowOffsetX  = 0;
+    ctx.shadowOffsetY  = 3;
+  }
+  if (designerLogoColor && designerLogoColor.toLowerCase() !== '#ffffff') {
+    const tinted = applyLogoTint(designerLogoImage, lw, lh, designerLogoColor);
+    ctx.drawImage(tinted, cx - lw / 2, cy - lh / 2, lw, lh);
+  } else {
+    ctx.drawImage(designerLogoImage, cx - lw / 2, cy - lh / 2, lw, lh);
+  }
+  ctx.restore();
+}
+
+function getDesignerLogoBounds() {
+  if (!designerLogoImage || !designerLogoImage.complete || !designerLogoImage.naturalWidth) return null;
+  const maxW = Math.min(canvas.width * 0.70, 680) * designerLogoScale;
+  const maxH = canvas.height * 0.14 * designerLogoScale;
+  const ratio = designerLogoImage.naturalWidth / designerLogoImage.naturalHeight;
+  let lw, lh;
+  if (ratio > maxW / maxH) { lw = maxW; lh = lw / ratio; }
+  else                     { lh = maxH; lw = lh * ratio; }
+  const cx = canvas.width  / 2 + designerLogoX;
+  const cy = canvas.height * 0.78 + designerLogoY;
+  return { x: cx - lw / 2, y: cy - lh / 2, width: lw, height: lh };
+}
+
+function onCanvasMouseDown(e) {
+  if (!designerLogoImage || !baseImage) return;
+  const pt = getCanvasPoint(e.clientX, e.clientY);
+  const b  = getDesignerLogoBounds();
+  if (!b) return;
+  const pad = 24;
+  if (pt.x >= b.x - pad && pt.x <= b.x + b.width + pad &&
+      pt.y >= b.y - pad && pt.y <= b.y + b.height + pad) {
+    isDraggingLogo = true;
+    dragStartMouseX = pt.x; dragStartMouseY = pt.y;
+    dragStartLogoX  = designerLogoX; dragStartLogoY = designerLogoY;
+    canvas.style.cursor = 'grabbing';
+    e.preventDefault();
+  }
+}
+
+function onCanvasMouseMove(e) {
+  if (!designerLogoImage || !baseImage) return;
+  if (isDraggingLogo) {
+    const pt = getCanvasPoint(e.clientX, e.clientY);
+    designerLogoX = Math.round(dragStartLogoX + (pt.x - dragStartMouseX));
+    designerLogoY = Math.round(dragStartLogoY + (pt.y - dragStartMouseY));
+    _syncDesignerSliders();
+    drawCanvas();
+    e.preventDefault();
+  } else {
+    const pt = getCanvasPoint(e.clientX, e.clientY);
+    const b  = getDesignerLogoBounds();
+    if (b) {
+      const pad = 24;
+      canvas.style.cursor = (pt.x >= b.x - pad && pt.x <= b.x + b.width + pad &&
+                              pt.y >= b.y - pad && pt.y <= b.y + b.height + pad) ? 'grab' : '';
+    } else {
+      canvas.style.cursor = '';
+    }
+  }
+}
+
+function onCanvasMouseUp() {
+  if (isDraggingLogo) { isDraggingLogo = false; canvas.style.cursor = ''; }
+}
+
+function onCanvasTouchStart(e) {
+  if (!designerLogoImage || !baseImage || e.touches.length !== 1) return;
+  const t = e.touches[0];
+  const pt = getCanvasPoint(t.clientX, t.clientY);
+  const b  = getDesignerLogoBounds();
+  if (!b) return;
+  const pad = 36;
+  if (pt.x >= b.x - pad && pt.x <= b.x + b.width + pad &&
+      pt.y >= b.y - pad && pt.y <= b.y + b.height + pad) {
+    isDraggingLogo = true;
+    dragStartMouseX = pt.x; dragStartMouseY = pt.y;
+    dragStartLogoX  = designerLogoX; dragStartLogoY = designerLogoY;
+    e.preventDefault();
+  }
+}
+
+function onCanvasTouchMove(e) {
+  if (!isDraggingLogo || e.touches.length !== 1) return;
+  const t  = e.touches[0];
+  const pt = getCanvasPoint(t.clientX, t.clientY);
+  designerLogoX = Math.round(dragStartLogoX + (pt.x - dragStartMouseX));
+  designerLogoY = Math.round(dragStartLogoY + (pt.y - dragStartMouseY));
+  _syncDesignerSliders();
+  drawCanvas();
+  e.preventDefault();
+}
+
+function _syncDesignerSliders() {
+  const xEl = document.getElementById('designer-logo-x');
+  const yEl = document.getElementById('designer-logo-y');
+  const xDp = document.getElementById('designer-x-display');
+  const yDp = document.getElementById('designer-y-display');
+  if (xEl) xEl.value = Math.max(-480, Math.min(480, designerLogoX));
+  if (yEl) yEl.value = Math.max(-650, Math.min(650, designerLogoY));
+  if (xDp) xDp.textContent = designerLogoX;
+  if (yDp) yDp.textContent = designerLogoY;
+}
+
+// ── Logo fetch functions ──────────────────────────────────
+async function fetchTMDBLogos(tmdbId, mediaType) {
+  try {
+    const res  = await fetch(`https://api.themoviedb.org/3/${mediaType}/${tmdbId}/images?include_image_language=en,null&api_key=${TMDB_API_KEY}`);
+    const data = await res.json();
+    return (data.logos || [])
+      .sort((a, b) => (b.vote_average || 0) - (a.vote_average || 0))
+      .map(l => ({
+        thumbUrl: `https://image.tmdb.org/t/p/w300${l.file_path}`,
+        fullUrl:  `https://image.tmdb.org/t/p/original${l.file_path}`,
+        source: 'TMDB',
+        lang: l.iso_639_1 || '—',
+      }));
+  } catch { return []; }
+}
+
+async function fetchFanartMovieLogos(tmdbId) {
+  if (!fanartApiKey) return [];
+  const apiUrl = `https://webservice.fanart.tv/v3/movies/${tmdbId}?api_key=${fanartApiKey}`;
+  const data = await fetchJsonViaProxy(apiUrl, { skipDirect: true });
+  if (!data) return [];
+  if (data.status === 'error' || data['error message']) {
+    console.warn('[Fanart.tv] API error:', data['error message'] || data.status);
+    return [];
+  }
+  const logos = [];
+  for (const arr of [data.hdmovieclearlogo, data.movielogo]) {
+    (arr || []).forEach(l => logos.push({
+      thumbUrl: `https://images.weserv.nl/?url=${l.url.replace('/fanart/', '/preview/').replace(/^https?:\/\//, '')}`,
+      fullUrl:  `https://images.weserv.nl/?url=${l.url.replace(/^https?:\/\//, '')}`,
+      source:   'Fanart.tv'
+    }));
+  }
+  return logos;
+}
+
+async function fetchFanartTVLogos(tmdbId) {
+  if (!fanartApiKey) return [];
+  try {
+    const extRes  = await fetch(`https://api.themoviedb.org/3/tv/${tmdbId}/external_ids?api_key=${TMDB_API_KEY}`);
+    const extData = await extRes.json();
+    if (!extData.tvdb_id) { console.warn('[Fanart.tv] No TVDB id for TMDB id', tmdbId); return []; }
+    const apiUrl = `https://webservice.fanart.tv/v3/tv/${extData.tvdb_id}?api_key=${fanartApiKey}`;
+    const data = await fetchJsonViaProxy(apiUrl, { skipDirect: true });
+    if (!data) return [];
+    if (data.status === 'error' || data['error message']) {
+      console.warn('[Fanart.tv] API error:', data['error message'] || data.status);
+      return [];
+    }
+    const logos = [];
+    for (const arr of [data.hdtvlogo, data.clearlogo]) {
+      (arr || []).forEach(l => logos.push({
+        thumbUrl: `https://images.weserv.nl/?url=${l.url.replace('/fanart/', '/preview/').replace(/^https?:\/\//, '')}`,
+        fullUrl:  `https://images.weserv.nl/?url=${l.url.replace(/^https?:\/\//, '')}`,
+        source:   'Fanart.tv'
+      }));
+    }
+    return logos;
+  } catch (e) { console.warn('[Fanart.tv TV] Error:', e); return []; }
+}
+
+// Fetch JSON through a chain of CORS proxies, returning parsed object or null.
+// Pass { skipDirect: true } for endpoints known to block CORS (e.g. Fanart.tv).
+async function fetchJsonViaProxy(url, { skipDirect = false } = {}) {
+  const proxies = [
+    ...(skipDirect ? [] : [url]),
+    `https://corsproxy.io/?${encodeURIComponent(url)}`,
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+    `https://thingproxy.freeboard.io/fetch/${url}`,
+    `https://cors.isomorphic-git.org/${url}`,
+  ];
+  for (const candidate of proxies) {
+    try {
+      const res = await fetch(candidate);
+      if (!res.ok) { console.warn(`[fetchJsonViaProxy] ${res.status} from`, candidate); continue; }
+      const text = await res.text();
+      if (!text || text.trimStart().startsWith('<')) { console.warn('[fetchJsonViaProxy] HTML response from', candidate); continue; }
+      return JSON.parse(text);
+    } catch (e) {
+      console.warn('[fetchJsonViaProxy] Failed:', candidate, e.message);
+    }
+  }
+  console.error('[fetchJsonViaProxy] All proxies failed for', url);
+  return null;
+}
+
+function openLogoPicker() {
+  const modal    = document.getElementById('logo-picker-modal');
+  const backdrop = document.getElementById('logo-picker-backdrop');
+  if (modal)    modal.style.display    = 'block';
+  if (backdrop) backdrop.style.display = 'block';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeLogoPicker() {
+  const modal    = document.getElementById('logo-picker-modal');
+  const backdrop = document.getElementById('logo-picker-backdrop');
+  if (modal)    modal.style.display    = 'none';
+  if (backdrop) backdrop.style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+function openPosterPicker() {
+  if (!currentDesignerId) { showToast('Search for a title first'); return; }
+  const modal    = document.getElementById('poster-picker-modal');
+  const backdrop = document.getElementById('poster-picker-backdrop');
+  const titleEl  = document.getElementById('poster-picker-title');
+  if (titleEl) titleEl.textContent = currentDesignerTitle ? `Posters — ${currentDesignerTitle}` : 'Browse Posters';
+  if (modal)    modal.style.display    = 'block';
+  if (backdrop) backdrop.style.display = 'block';
+  document.body.style.overflow = 'hidden';
+  fetchAndRenderPosterPicker(currentDesignerId, currentDesignerType);
+}
+
+function closePosterPicker() {
+  const modal    = document.getElementById('poster-picker-modal');
+  const backdrop = document.getElementById('poster-picker-backdrop');
+  if (modal)    modal.style.display    = 'none';
+  if (backdrop) backdrop.style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+async function fetchAndRenderPosterPicker(id, type) {
+  const grid   = document.getElementById('poster-picker-grid');
+  const tabsEl = document.getElementById('poster-lang-tabs');
+  if (grid) {
+    grid.innerHTML = '<div class="clearlogo-loading">Fetching posters…</div>';
+    grid.style.cssText = ''; // reset any inline styles left over from season picker
+  }
+  if (tabsEl) tabsEl.innerHTML = '';
+
+  const LANG_NAMES = {
+    '__textless__': 'Textless',
+    'en': 'English', 'es': 'Spanish', 'fr': 'French', 'de': 'German',
+    'it': 'Italian', 'pt': 'Portuguese', 'ja': 'Japanese', 'ko': 'Korean',
+    'zh': 'Chinese', 'ru': 'Russian', 'ar': 'Arabic', 'tr': 'Turkish',
+    'nl': 'Dutch', 'pl': 'Polish',
+  };
+
+  // Priority order for tabs: Textless first, English second, rest alphabetically
+  const TAB_ORDER = ['__textless__', 'en'];
+
+  try {
+    const res  = await fetch(`https://api.themoviedb.org/3/${type}/${id}/images?api_key=${TMDB_API_KEY}`);
+    const data = await res.json();
+    const all  = data.posters || [];
+    if (!all.length) {
+      if (grid) grid.innerHTML = '<div class="clearlogo-empty">No posters found</div>';
+      return;
+    }
+
+    // Group by language (null iso_639_1 = textless)
+    const groups = new Map();
+    for (const p of all) {
+      const key = p.iso_639_1 || '__textless__';
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(p);
+    }
+
+    // Sort keys: Textless → English → others alphabetically
+    const sortedKeys = [
+      ...TAB_ORDER.filter(k => groups.has(k)),
+      ...[...groups.keys()].filter(k => !TAB_ORDER.includes(k)).sort(),
+    ];
+
+    // Default to first available tab
+    let activeKey = sortedKeys[0];
+
+    function renderGrid(key) {
+      activeKey = key;
+      tabsEl.querySelectorAll('.poster-lang-tab').forEach(t =>
+        t.classList.toggle('active', t.dataset.lang === key));
+      const posters = groups.get(key) || [];
+      if (!grid) return;
+      grid.innerHTML = '';
+      posters.forEach(p => {
+        const item = document.createElement('div');
+        item.className = 'poster-picker-item';
+        const img = document.createElement('img');
+        img.src     = `https://image.tmdb.org/t/p/w185${p.file_path}`;
+        img.loading = 'lazy';
+        img.alt     = '';
+        item.appendChild(img);
+        item.addEventListener('click', () =>
+          loadPosterFromPicker(`https://image.tmdb.org/t/p/w780${p.file_path}`, id, type));
+        grid.appendChild(item);
+      });
+    }
+
+    // Build tab pills in sorted order
+    for (const lang of sortedKeys) {
+      const items = groups.get(lang);
+      const btn = document.createElement('button');
+      btn.className  = 'poster-lang-tab' + (lang === activeKey ? ' active' : '');
+      btn.dataset.lang = lang;
+      btn.textContent = `${LANG_NAMES[lang] || lang.toUpperCase()} (${items.length})`;
+      btn.addEventListener('click', () => renderGrid(lang));
+      tabsEl.appendChild(btn);
+    }
+
+    renderGrid(activeKey);
+  } catch (e) {
+    if (grid) grid.innerHTML = '<div class="clearlogo-empty">Failed to load posters</div>';
+    console.error('[PosterPicker]', e);
+  }
+}
+
+function loadPosterFromPicker(posterUrl, id, type) {
+  closePosterPicker();
+  const loadingIndicator = document.createElement('div');
+  loadingIndicator.className = 'loading-indicator';
+  loadingIndicator.innerHTML = '<p>Loading poster…</p>';
+  document.body.appendChild(loadingIndicator);
+
+  const tempImage = new Image();
+  tempImage.crossOrigin = 'anonymous';
+
+  function finish(img) {
+    baseImage = img;
+    if (type === 'tv') baseShowImage = img; // save for restoring base
+
+    // If the season suite is already open for this same show, don't rebuild the grid.
+    // Just swap the base poster and update its thumbnail.
+    if (seasonSuiteData && seasonSuiteData.showId == id) {
+      activeSeasonNum = null;
+      document.querySelectorAll('.season-card').forEach(c =>
+        c.classList.toggle('active', c.dataset.seasonNum === 'base'));
+      seasonLabelText = '';
+      const _li = document.getElementById('season-label-text');
+      if (_li) _li.value = '';
+      seasonSavedImages.set('base', { img, labelText: '', labelColor: seasonLabelColor, logoColor: designerLogoColor });
+      drawCanvas();
+      setTimeout(() => captureCanvasThumb('base'), 220);
+      if (document.body.contains(loadingIndicator)) document.body.removeChild(loadingIndicator);
+      return;
+    }
+
+    activeSeasonNum = null;               // entering/re-entering the base context
+    drawCanvas();
+    fetchMetadataById(id, type);
+    if (document.body.contains(loadingIndicator)) document.body.removeChild(loadingIndicator);
+  }
+
+  tempImage.onload = () => {
+    try {
+      const tc = document.createElement('canvas');
+      tc.width = tempImage.width; tc.height = tempImage.height;
+      tc.getContext('2d').drawImage(tempImage, 0, 0);
+      const bi = new Image();
+      bi.onload = () => finish(bi);
+      bi.src = tc.toDataURL('image/png');
+    } catch (e) {
+      fetchImageAsObjectUrl(posterUrl)
+        .then(url => { const bi = new Image(); bi.onload = () => { URL.revokeObjectURL(url); finish(bi); }; bi.src = url; })
+        .catch(() => finish(tempImage));
+    }
+  };
+  tempImage.onerror = () => {
+    fetchImageAsObjectUrl(posterUrl)
+      .then(url => { const bi = new Image(); bi.onload = () => { URL.revokeObjectURL(url); finish(bi); }; bi.src = url; })
+      .catch(() => { const bi = new Image(); bi.onload = () => finish(bi); bi.src = posterUrl; });
+  };
+  tempImage.src = posterUrl;
+}
+
+function openPosterPicker() {
+  if (!currentDesignerId) { showToast('Search for a title first'); return; }
+  const modal    = document.getElementById('poster-picker-modal');
+  const backdrop = document.getElementById('poster-picker-backdrop');
+  const titleEl  = document.getElementById('poster-picker-title');
+  if (titleEl) titleEl.textContent = currentDesignerTitle ? `Posters — ${currentDesignerTitle}` : 'Browse Posters';
+  if (modal)    modal.style.display    = 'block';
+  if (backdrop) backdrop.style.display = 'block';
+  document.body.style.overflow = 'hidden';
+  fetchAndRenderPosterPicker(currentDesignerId, currentDesignerType);
+}
+
+function closePosterPicker() {
+  const modal    = document.getElementById('poster-picker-modal');
+  const backdrop = document.getElementById('poster-picker-backdrop');
+  if (modal)    modal.style.display    = 'none';
+  if (backdrop) backdrop.style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+// ── Season Suite ─────────────────────────────────────────
+// ── Season card thumbnail capture ────────────────────────
+const SEASON_NUMBER_WORDS = [
+  '', 'ONE', 'TWO', 'THREE', 'FOUR', 'FIVE', 'SIX', 'SEVEN', 'EIGHT',
+  'NINE', 'TEN', 'ELEVEN', 'TWELVE', 'THIRTEEN', 'FOURTEEN', 'FIFTEEN',
+  'SIXTEEN', 'SEVENTEEN', 'EIGHTEEN', 'NINETEEN', 'TWENTY',
+];
+function seasonLabelDefault(season) {
+  const n = season.season_number;
+  const word = SEASON_NUMBER_WORDS[n];
+  return word ? `SEASON ${word}` : `SEASON ${n}`;
+}
+function captureCanvasThumb(key) {
+  try {
+    _capturingThumb = true;
+    const wasGuidelines = guidelinesEnabled;
+    guidelinesEnabled = false;
+    // Force a clean redraw (without guidelines), then snapshot once drawCanvas signals done
+    drawCanvas(() => {
+      requestAnimationFrame(() => {
+        const THUMB_W = 300, THUMB_H = 450;
+        const tc = document.createElement('canvas');
+        tc.width = THUMB_W; tc.height = THUMB_H;
+        tc.getContext('2d').drawImage(canvas, 0, 0, THUMB_W, THUMB_H);
+        const dataUrl = tc.toDataURL('image/jpeg', 0.88);
+        const card = document.querySelector(`.season-card[data-season-num="${key}"]`);
+        if (card) {
+          let img = card.querySelector('img');
+          if (!img) {
+            img = document.createElement('img');
+            img.alt = '';
+            card.insertBefore(img, card.firstChild);
+          }
+          img.src = dataUrl;
+        }
+        // Restore guidelines and redraw normally
+        guidelinesEnabled = wasGuidelines;
+        _capturingThumb = false;
+        if (wasGuidelines) drawCanvas();
+      });
+    });
+  } catch (e) {
+    _capturingThumb = false;
+    console.warn('[SeasonThumb]', e);
+  }
+}
+
+// Module-level so loadDesignerLogo and other top-level functions can call it
+function deferredThumbUpdate() {
+  if (!seasonSuiteData) return;
+  const key = activeSeasonNum === null ? 'base' : activeSeasonNum;
+  setTimeout(() => captureCanvasThumb(key), 150);
+}
+
+// ── Async image loader for batch export ──────────────────
+function loadImageForDownload(posterPath) {
+  const posterUrl = `https://image.tmdb.org/t/p/w780${posterPath}`;
+  return new Promise((resolve, reject) => {
+    const tempImage = new Image();
+    tempImage.crossOrigin = 'anonymous';
+    tempImage.onload = () => {
+      try {
+        const tc = document.createElement('canvas');
+        tc.width  = tempImage.width;
+        tc.height = tempImage.height;
+        tc.getContext('2d').drawImage(tempImage, 0, 0);
+        const bi = new Image();
+        bi.onload  = () => resolve(bi);
+        bi.onerror = () => reject(new Error('re-encode failed'));
+        bi.src = tc.toDataURL('image/png');
+      } catch (_) {
+        fetchImageAsObjectUrl(posterUrl)
+          .then(url => {
+            const bi = new Image();
+            bi.onload  = () => { URL.revokeObjectURL(url); resolve(bi); };
+            bi.onerror = reject;
+            bi.src = url;
+          })
+          .catch(reject);
+      }
+    };
+    tempImage.onerror = () => {
+      fetchImageAsObjectUrl(posterUrl)
+        .then(url => {
+          const bi = new Image();
+          bi.onload  = () => { URL.revokeObjectURL(url); resolve(bi); };
+          bi.onerror = reject;
+          bi.src = url;
+        })
+        .catch(reject);
+    };
+    tempImage.src = posterUrl;
+  });
+}
+
+// ── Batch-download all season posters ────────────────────
+async function batchDownloadAllSeasons() {
+  if (!seasonSuiteData) return;
+
+  const btn = document.getElementById('season-download-all-btn');
+  if (btn) btn.disabled = true;
+
+  const showTitle = (document.getElementById('meta-title')?.textContent || 'Show')
+    .replace(/[/\\?%*:|"<>]/g, '-').trim();
+
+  const { seasons } = seasonSuiteData;
+  const displaySeasons = seasons
+    .filter(s => s.season_number > 0 || s.poster_path)
+    .sort((a, b) => a.season_number - b.season_number);
+
+  // base poster first, then each season in numeric order
+  const tasks = [
+    { key: 'base', season: null },
+    ...displaySeasons.map(s => ({ key: s.season_number, season: s })),
+  ];
+
+  // Only include tasks that actually have a source image
+  const downloadTasks = tasks.filter(t => {
+    if (t.key === 'base') return !!(seasonSavedImages.get('base') || baseShowImage);
+    return !!(seasonSavedImages.get(t.key) || t.season?.poster_path);
+  });
+
+  if (downloadTasks.length === 0) {
+    showToast('No season posters to download — browse at least one poster first');
+    if (btn) btn.disabled = false;
+    return;
+  }
+
+  // Snapshot current canvas state so we can restore it afterwards
+  const savedBaseImage   = baseImage;
+  const savedActiveNum   = activeSeasonNum;
+  const savedLabelText   = seasonLabelText;
+  const savedLabelColor  = seasonLabelColor;
+  const savedLogoColor   = designerLogoColor;
+  const savedGuidelines  = guidelinesEnabled;
+  guidelinesEnabled = false;
+
+  const zip = new JSZip();
+  let packed = 0;
+
+  for (const { key, season } of downloadTasks) {
+    if (btn) btn.textContent = `Building ${packed + 1} / ${downloadTasks.length}…`;
+
+    const saved = seasonSavedImages.get(key);
+
+    // Determine which image to draw
+    let img;
+    if (saved) {
+      img = saved.img;
+    } else if (key === 'base') {
+      img = baseShowImage || baseImage;
+    } else {
+      // Season not yet visited — fetch its poster fresh
+      try {
+        img = await loadImageForDownload(season.poster_path);
+      } catch (e) {
+        console.warn(`[BatchDownload] Failed to load Season ${key}`, e);
+        continue;
+      }
+    }
+
+    // Apply canvas state for this poster
+    baseImage = img;
+    if (key === 'base') {
+      activeSeasonNum   = null;
+      seasonLabelText   = saved?.labelText ?? '';
+      seasonLabelColor  = saved?.labelColor ?? savedLabelColor;
+      designerLogoColor = saved?.logoColor  ?? savedLogoColor;
+    } else {
+      activeSeasonNum   = key;
+      seasonLabelText   = saved ? saved.labelText : seasonLabelDefault(season);
+      seasonLabelColor  = saved ? saved.labelColor : savedLabelColor;
+      designerLogoColor = saved?.logoColor ?? savedLogoColor;
+    }
+    drawCanvas();
+
+    // Wait for canvas to finish rendering
+    await new Promise(resolve => requestAnimationFrame(resolve));
+
+    // Build filename
+    let filename;
+    if (key === 'base') {
+      filename = `${showTitle}.png`;
+    } else if (key === 0) {
+      filename = `${showTitle} - Specials.png`;
+    } else {
+      filename = `${showTitle} - Season ${String(key).padStart(2, '0')}.png`;
+    }
+
+    // Convert canvas to blob and add to zip
+    const dataUrl = canvas.toDataURL('image/png');
+    const base64  = dataUrl.split(',')[1];
+    zip.file(filename, base64, { base64: true });
+    packed++;
+  }
+
+  // Restore canvas to its pre-download state
+  baseImage         = savedBaseImage;
+  activeSeasonNum   = savedActiveNum;
+  seasonLabelText   = savedLabelText;
+  seasonLabelColor  = savedLabelColor;
+  designerLogoColor = savedLogoColor;
+  guidelinesEnabled = savedGuidelines;
+  drawCanvas();
+
+  if (packed === 0) {
+    showToast('Nothing was packed into the zip');
+    if (btn) { btn.disabled = false; btn.textContent = '⬇ Download All'; }
+    return;
+  }
+
+  if (btn) btn.textContent = 'Zipping…';
+
+  const blob = await zip.generateAsync({ type: 'blob', compression: 'STORE' });
+  const link = document.createElement('a');
+  link.download = `${showTitle} - Season Posters.zip`;
+  link.href     = URL.createObjectURL(blob);
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(link.href), 60000);
+
+  if (btn) {
+    btn.disabled    = false;
+    btn.textContent = '⬇ Download All';
+  }
+  showToast(`Zipped ${packed} poster${packed !== 1 ? 's' : ''}`);
+}
+
+function buildSeasonGrid(seasons, showId) {
+  const isSameShow = seasonSuiteData && String(seasonSuiteData.showId) === String(showId);
+  seasonSuiteData = { showId, seasons };
+  activeSeasonNum = null;
+
+  if (isSameShow) {
+    // Same show re-rendered (e.g. after a manual poster drop or metadata refresh).
+    // Preserve all saved season composites and update the base entry + fallback image
+    // so any manually-loaded poster isn't overwritten by the TMDB default.
+    if (baseImage) {
+      baseShowImage = baseImage;
+      const existingBase = seasonSavedImages.get('base');
+      seasonSavedImages.set('base', {
+        img: baseImage,
+        labelText: existingBase?.labelText ?? '',
+        labelColor: existingBase?.labelColor ?? seasonLabelColor,
+        logoColor: existingBase?.logoColor ?? designerLogoColor,
+      });
+    }
+  } else {
+    seasonSavedImages.clear();
+  }
+
+  const panel   = document.getElementById('season-suite-panel');
+  const grid    = document.getElementById('season-grid');
+  const countEl = document.getElementById('season-suite-count');
+  if (!panel || !grid) return;
+
+  // Include season 0 only if it has a poster (Specials)
+  const displaySeasons = seasons.filter(s => s.season_number > 0 || s.poster_path);
+
+  if (displaySeasons.length === 0) { panel.style.display = 'none'; return; }
+
+  // Total = base + seasons
+  const totalCount = displaySeasons.length + 1;
+  if (countEl) countEl.textContent = `${totalCount} poster${totalCount !== 1 ? 's' : ''}`;
+
+  grid.innerHTML = '';
+
+  // ── Base "Show Poster" card (always first) ──
+  const baseCard = document.createElement('div');
+  baseCard.className = 'season-card active'; // starts active
+  baseCard.dataset.seasonNum = 'base';
+
+  if (showBasePosterPath) {
+    const bImg = document.createElement('img');
+    bImg.src     = `https://image.tmdb.org/t/p/w185${showBasePosterPath}`;
+    bImg.alt     = 'Show Poster';
+    bImg.loading = 'lazy';
+    baseCard.appendChild(bImg);
+  } else {
+    const ph = document.createElement('div');
+    ph.className = 'season-card-placeholder';
+    ph.textContent = 'Show Poster';
+    baseCard.appendChild(ph);
+  }
+
+  // Browse icon for base poster — opens show-level poster picker
+  const baseBrowse = document.createElement('div');
+  baseBrowse.className = 'season-card-browse';
+  baseBrowse.title     = 'Browse show posters';
+  baseBrowse.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`;
+  baseBrowse.addEventListener('click', (e) => {
+    e.stopPropagation();
+    openPosterPicker(); // opens the main show-level poster picker
+  });
+  baseCard.appendChild(baseBrowse);
+
+  baseCard.addEventListener('click', () => {
+    if (activeSeasonNum === null) return; // already on base
+    // Save current season state before leaving
+    if (activeSeasonNum !== null && baseImage) {
+      seasonSavedImages.set(activeSeasonNum, { img: baseImage, labelText: seasonLabelText, labelColor: seasonLabelColor, logoColor: designerLogoColor });
+    }
+    activeSeasonNum = null;
+    document.querySelectorAll('.season-card').forEach(c => c.classList.remove('active'));
+    baseCard.classList.add('active');
+    // Clear season label text
+    seasonLabelText = '';
+    const li = document.getElementById('season-label-text');
+    if (li) li.value = '';
+    // Restore base show poster from saved state or baseShowImage
+    const saved = seasonSavedImages.get('base');
+    if (saved) {
+      baseImage = saved.img;
+    } else if (baseShowImage) {
+      baseImage = baseShowImage;
+    }
+    drawCanvas();
+    setTimeout(() => captureCanvasThumb('base'), 220);
+  });
+
+  // Wrap base card + label in outer container
+  const baseOuter = document.createElement('div');
+  baseOuter.className = 'season-card-outer';
+  baseOuter.appendChild(baseCard);
+  const baseLbl = document.createElement('span');
+  baseLbl.className   = 'season-card-label';
+  baseLbl.textContent = 'Show Poster';
+  baseOuter.appendChild(baseLbl);
+
+  grid.appendChild(baseOuter);
+
+  // ── Season cards ──
+  displaySeasons.forEach(season => {
+    const card = document.createElement('div');
+    card.className = 'season-card';
+    card.dataset.seasonNum  = season.season_number;
+    card.dataset.posterPath = season.poster_path || '';
+    const seasonName = season.name || `Season ${season.season_number}`;
+    card.dataset.seasonName = seasonName;
+
+    if (season.poster_path) {
+      const img = document.createElement('img');
+      img.src     = `https://image.tmdb.org/t/p/w185${season.poster_path}`;
+      img.alt     = seasonName;
+      img.loading = 'lazy';
+      card.appendChild(img);
+    } else {
+      const ph = document.createElement('div');
+      ph.className   = 'season-card-placeholder';
+      ph.textContent = 'No Poster';
+      card.appendChild(ph);
+    }
+
+    // Browse icon — opens textless season poster picker
+    const browseBtn = document.createElement('div');
+    browseBtn.className   = 'season-card-browse';
+    browseBtn.title       = `Browse posters for ${seasonName}`;
+    browseBtn.innerHTML   = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`;
+    browseBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      // Activate season context first, then open picker
+      activeSeasonNum = season.season_number;
+      document.querySelectorAll('.season-card').forEach(c =>
+        c.classList.toggle('active', parseInt(c.dataset.seasonNum) === season.season_number));
+      seasonLabelText = seasonLabelDefault(season);
+      const li = document.getElementById('season-label-text');
+      if (li) li.value = seasonLabelText;
+      openSeasonPosterPicker(showId, season.season_number, seasonLabelText);
+    });
+    card.appendChild(browseBtn);
+
+    // Main card click → activate + load its poster
+    card.addEventListener('click', () => {
+      // Save whatever is currently on canvas before switching
+      const prevKey = activeSeasonNum === null ? 'base' : activeSeasonNum;
+      if (baseImage) seasonSavedImages.set(prevKey, { img: baseImage, labelText: seasonLabelText, labelColor: seasonLabelColor, logoColor: designerLogoColor });
+
+      activeSeasonNum = season.season_number;
+      document.querySelectorAll('.season-card').forEach(c =>
+        c.classList.toggle('active', parseInt(c.dataset.seasonNum) === season.season_number));
+
+      // Restore saved label text + color for this season, or use defaults
+      const savedEntry = seasonSavedImages.get(season.season_number);
+      const newLabel = savedEntry ? savedEntry.labelText : seasonLabelDefault(season);
+      seasonLabelText = newLabel;
+      const labelInput = document.getElementById('season-label-text');
+      if (labelInput) labelInput.value = newLabel;
+
+      // Restore per-season label color
+      const newColor = savedEntry ? savedEntry.labelColor : '#ffffff';
+      seasonLabelColor = newColor;
+      if (seasonLabelColorPickr) seasonLabelColorPickr.setColor(newColor);
+      // Restore per-season logo tint color
+      const newLogoColor = savedEntry?.logoColor ?? '#ffffff';
+      designerLogoColor = newLogoColor;
+      if (designerLogoColorPickr) designerLogoColorPickr.setColor(newLogoColor);
+
+      // If we already have a saved composite for this season, restore it without re-fetching
+      if (savedEntry) {
+        baseImage = savedEntry.img;
+        drawCanvas();
+      } else if (season.poster_path) {
+        loadSeasonPoster(season.season_number, season.poster_path, seasonName);
+      } else {
+        openSeasonPosterPicker(showId, season.season_number, seasonName);
+      }
+    });
+
+    // Wrap card + label in outer container
+    const outer = document.createElement('div');
+    outer.className = 'season-card-outer';
+    outer.appendChild(card);
+    const lbl = document.createElement('span');
+    lbl.className   = 'season-card-label';
+    lbl.textContent = seasonName;
+    outer.appendChild(lbl);
+
+    grid.appendChild(outer);
+  });
+
+  panel.style.display = '';
+
+  // Capture the base card thumb from the current canvas (show poster is already drawn)
+  setTimeout(() => captureCanvasThumb('base'), 250);
+}
+
+function loadSeasonPoster(seasonNum, posterPath, seasonName) {
+  if (!posterPath) { showToast('No poster available for this season'); return; }
+
+  const posterUrl = `https://image.tmdb.org/t/p/w780${posterPath}`;
+
+  // Ensure active highlight is correct
+  activeSeasonNum = seasonNum;
+  document.querySelectorAll('.season-card').forEach(c =>
+    c.classList.toggle('active', parseInt(c.dataset.seasonNum) === seasonNum));
+
+  // Auto-update season label text to default SEASON WORD format
+  const defaultLabelText = seasonLabelDefault({ season_number: seasonNum });
+  // Only apply default if not already customised for this season
+  if (!seasonSavedImages.has(seasonNum)) {
+    seasonLabelText = defaultLabelText;
+    const labelInput = document.getElementById('season-label-text');
+    if (labelInput) labelInput.value = defaultLabelText;
+  }
+
+  // Show spinner on the active card
+  const activeCard = document.querySelector(`.season-card[data-season-num="${seasonNum}"]`);
+  let spinner = null;
+  if (activeCard) {
+    spinner = document.createElement('div');
+    spinner.className   = 'season-card-loading';
+    spinner.textContent = '…';
+    activeCard.appendChild(spinner);
+  }
+
+  const tempImage = new Image();
+  tempImage.crossOrigin = 'anonymous';
+
+  function finishSeason(img) {
+    baseImage = img;
+    seasonSavedImages.set(seasonNum, { img, labelText: seasonLabelText, labelColor: seasonLabelColor, logoColor: designerLogoColor });
+    drawCanvas();
+    if (spinner && spinner.parentNode) spinner.parentNode.removeChild(spinner);
+    // Update the season card thumbnail with the current canvas composite
+    setTimeout(() => captureCanvasThumb(seasonNum), 220);
+  }
+
+  tempImage.onload = () => {
+    try {
+      const tc = document.createElement('canvas');
+      tc.width  = tempImage.width;
+      tc.height = tempImage.height;
+      tc.getContext('2d').drawImage(tempImage, 0, 0);
+      const bi = new Image();
+      bi.onload = () => finishSeason(bi);
+      bi.src = tc.toDataURL('image/png');
+    } catch (e) {
+      fetchImageAsObjectUrl(posterUrl)
+        .then(url => {
+          const bi = new Image();
+          bi.onload = () => { URL.revokeObjectURL(url); finishSeason(bi); };
+          bi.src = url;
+        })
+        .catch(() => finishSeason(tempImage));
+    }
+  };
+  tempImage.onerror = () => {
+    fetchImageAsObjectUrl(posterUrl)
+      .then(url => {
+        const bi = new Image();
+        bi.onload = () => { URL.revokeObjectURL(url); finishSeason(bi); };
+        bi.src = url;
+      })
+      .catch(() => {
+        const bi = new Image();
+        bi.onload = () => finishSeason(bi);
+        bi.src = posterUrl;
+      });
+  };
+  tempImage.src = posterUrl;
+}
+
+// ── Season-specific poster picker ────────────────────────
+function openSeasonPosterPicker(showId, seasonNum, seasonName) {
+  const modal    = document.getElementById('poster-picker-modal');
+  const backdrop = document.getElementById('poster-picker-backdrop');
+  const titleEl  = document.getElementById('poster-picker-title');
+  if (titleEl) titleEl.textContent = `Posters — ${seasonName}`;
+  if (modal)    modal.style.display    = 'block';
+  if (backdrop) backdrop.style.display = 'block';
+  document.body.style.overflow = 'hidden';
+  fetchAndRenderSeasonPosterPicker(showId, seasonNum, seasonName);
+}
+
+async function fetchAndRenderSeasonPosterPicker(showId, seasonNum, seasonName) {
+  const grid   = document.getElementById('poster-picker-grid');
+  const tabsEl = document.getElementById('poster-lang-tabs');
+  if (grid)   grid.innerHTML   = '<div class="clearlogo-loading">Fetching posters…</div>';
+  if (tabsEl) tabsEl.innerHTML = '';
+
+  try {
+    // Fetch season-specific images AND show-level images in parallel
+    // No include_image_language filter — fetch all, then filter client-side for consistency
+    const [seasonRes, showRes] = await Promise.all([
+      fetch(`https://api.themoviedb.org/3/tv/${showId}/season/${seasonNum}/images?api_key=${TMDB_API_KEY}`),
+      fetch(`https://api.themoviedb.org/3/tv/${showId}/images?api_key=${TMDB_API_KEY}`),
+    ]);
+    const [seasonData, showData] = await Promise.all([seasonRes.json(), showRes.json()]);
+
+    // Textless = null/falsy iso_639_1 (matches main picker's grouping logic)
+    const showTextless   = (showData.posters   || []).filter(p => !p.iso_639_1);
+    const seasonTextless = (seasonData.posters || []).filter(p => !p.iso_639_1);
+
+    // Deduplicate show-level posters against season-specific ones
+    const seasonPaths = new Set(seasonTextless.map(p => p.file_path));
+    const showOnlyTextless = showTextless.filter(p => !seasonPaths.has(p.file_path));
+
+    if (!seasonTextless.length && !showOnlyTextless.length) {
+      if (grid) grid.innerHTML = '<div class="clearlogo-empty">No textless posters found</div>';
+      return;
+    }
+
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    function buildPickerSection(posters, label) {
+      if (!posters.length) return;
+      const section = document.createElement('div');
+      section.className = 'poster-picker-section';
+      const heading = document.createElement('div');
+      heading.className = 'poster-picker-section-label';
+      heading.textContent = label;
+      section.appendChild(heading);
+      const subGrid = document.createElement('div');
+      subGrid.className = 'poster-picker-grid';
+      posters.forEach(p => {
+        const item = document.createElement('div');
+        item.className = 'poster-picker-item';
+        const img = document.createElement('img');
+        img.src     = `https://image.tmdb.org/t/p/w185${p.file_path}`;
+        img.loading = 'lazy';
+        img.alt     = '';
+        item.appendChild(img);
+        item.addEventListener('click', () => {
+          loadSeasonPoster(seasonNum, p.file_path, seasonName);
+          closePosterPicker();
+        });
+        subGrid.appendChild(item);
+      });
+      section.appendChild(subGrid);
+      grid.appendChild(section);
+    }
+
+    buildPickerSection(seasonTextless, `${seasonName} — Textless`);
+    buildPickerSection(showOnlyTextless, 'Show — Textless');
+  } catch (e) {
+    if (grid) grid.innerHTML = '<div class="clearlogo-empty">Failed to load season posters</div>';
+    console.error('[SeasonPosterPicker]', e);
+  }
+}
+
+async function fetchAndDisplayClearlogos(tmdbId, mediaType) {
+  currentDesignerId   = tmdbId;
+  currentDesignerType = mediaType;
+  const strip = document.getElementById('clearlogo-strip');
+  if (strip) strip.innerHTML = '<div class="clearlogo-loading">Fetching logos…</div>';
+  const [tmdbLogos, fanartLogos] = await Promise.all([
+    fetchTMDBLogos(tmdbId, mediaType),
+    mediaType === 'movie' ? fetchFanartMovieLogos(tmdbId) : fetchFanartTVLogos(tmdbId),
+  ]);
+  console.log(`[Logos] TMDB: ${tmdbLogos.length}, Fanart.tv: ${fanartLogos.length}`);
+  renderClearlogoStrip(tmdbLogos, fanartLogos);
+}
+
+function renderClearlogoStrip(tmdbLogos, fanartLogos) {
+  const strip = document.getElementById('clearlogo-strip');
+  if (!strip) return;
+  strip.innerHTML = '';
+
+  const allLogos = [...tmdbLogos, ...fanartLogos];
+  if (!allLogos.length) {
+    strip.innerHTML = '<div class="clearlogo-empty">No logos found for this title</div>';
+    if (!fanartApiKey) addFanartHint(strip);
+    return;
+  }
+
+  // Build a labelled row for each source group
+  function buildRow(logos, label) {
+    if (!logos.length) return;
+    const section = document.createElement('div');
+    section.className = 'clearlogo-source-section';
+    const heading = document.createElement('div');
+    heading.className = 'clearlogo-source-label';
+    heading.textContent = label;
+    section.appendChild(heading);
+    const row = document.createElement('div');
+    row.className = 'clearlogo-row';
+    logos.forEach((logo, i) => {
+      const item = document.createElement('div');
+      item.className = 'clearlogo-item';
+      const img = document.createElement('img');
+      img.src = logo.thumbUrl;
+      img.alt = `${label} logo ${i + 1}`;
+      img.loading = 'lazy';
+      img.onerror = () => { item.style.display = 'none'; };
+      item.appendChild(img);
+      item.addEventListener('click', () => {
+        strip.querySelectorAll('.clearlogo-item').forEach(el => el.classList.remove('selected'));
+        item.classList.add('selected');
+        loadDesignerLogo(logo.fullUrl);
+        const nameLabel = document.getElementById('designer-selected-logo-name');
+        if (nameLabel) {
+          nameLabel.textContent = `✓ ${label} logo selected`;
+          nameLabel.style.display = 'block';
+        }
+        closeLogoPicker();
+        const panel = document.getElementById('designer-controls-panel');
+        if (panel) panel.style.display = 'flex';
+      });
+      row.appendChild(item);
+    });
+    section.appendChild(row);
+    strip.appendChild(section);
+  }
+
+  buildRow(tmdbLogos, 'TMDB');
+  buildRow(fanartLogos, 'Fanart.tv');
+
+  if (!fanartApiKey) addFanartHint(strip);
+}
+
+function addFanartHint(strip) {
+  const hint = document.createElement('div');
+  hint.className = 'clearlogo-fanart-hint';
+  hint.textContent = '🔑 Add a Fanart.tv key in the sidebar for more logos';
+  strip.appendChild(hint);
+}
+
+function loadDesignerLogo(url) {
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.onload = () => { designerLogoImage = img; if (baseImage) { drawCanvas(); deferredThumbUpdate(); } };
+  img.onerror = () => {
+    fetchImageAsObjectUrl(url)
+      .then(objUrl => {
+        const img2 = new Image();
+        img2.onload  = () => { designerLogoImage = img2; if (baseImage) { drawCanvas(); deferredThumbUpdate(); } };
+        img2.onerror = () => showToast('Could not load this logo – try another.');
+        img2.src = objUrl;
+      })
+      .catch(() => showToast('Could not load this logo – try another.'));
+  };
+  img.src = url;
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// Config save / load / export / import
+// ════════════════════════════════════════════════════════════════════════════
+const OVERLAY_CONFIG_KEY = 'postertools_overlay_configs';
+
+function _getOverlayConfigs() {
+  try { return JSON.parse(localStorage.getItem(OVERLAY_CONFIG_KEY) || '[]'); }
+  catch { return []; }
+}
+
+function _captureOverlaySettings() {
+  const overlayEl = document.getElementById('overlay-select');
+  return {
+    overlay:             overlayEl ? overlayEl.value : '',
+    networkLogoPath:     currentLogoPath || '',
+    networkLogoColor:    selectedLogoColor,
+    networkLogoScale:    parseFloat(document.getElementById('logo-scale-slider')?.value ?? 1),
+    designerLogoX,
+    designerLogoY,
+    designerLogoScale,
+    designerLogoColor,
+    designerShadowEnabled,
+    designerShadowBlur,
+    gradientEnabled,
+    gradientOpacity,
+    gradientHeight,
+    gradientColor,
+    seasonLabelEnabled,
+    seasonLabelFont,
+    seasonLabelFontSize,
+    seasonLabelColor,
+    seasonLabelYPct,
+    seasonLabelSpacing,
+  };
+}
+
+function saveOverlayConfig() {
+  const name = (currentDesignerTitle || 'Untitled').trim();
+  const configs = _getOverlayConfigs();
+  configs.push({
+    id: Date.now(),
+    name,
+    savedAt: new Date().toLocaleString(),
+    settings: _captureOverlaySettings(),
+  });
+  localStorage.setItem(OVERLAY_CONFIG_KEY, JSON.stringify(configs));
+  showToast(`Config saved: "${name}"`);
+}
+
+function _applyOverlaySettings(s) {
+  if (!s) return;
+  // Overlay banner
+  const overlayEl = document.getElementById('overlay-select');
+  if (overlayEl && s.overlay !== undefined) { overlayEl.value = s.overlay; overlayEl.dispatchEvent(new Event('change')); }
+
+  // Network logo path
+  if (s.networkLogoPath !== undefined && s.networkLogoPath) {
+    updateNetworkLogo(s.networkLogoPath);
+    const ns = document.getElementById('network-logo-search');
+    if (ns) ns.value = s.networkLogoPath.split('/').pop().replace(/\.\w+$/, '');
+  }
+  // Network logo color
+  if (s.networkLogoColor !== undefined) {
+    selectedLogoColor = s.networkLogoColor;
+    if (networkLogoColorPickr) networkLogoColorPickr.setColor(selectedLogoColor);
+  }
+  // Network logo scale
+  if (s.networkLogoScale !== undefined) {
+    const ns = document.getElementById('logo-scale-slider');
+    const nv = document.getElementById('logo-scale-val');
+    if (ns) { ns.value = s.networkLogoScale; if (nv) nv.textContent = parseFloat(s.networkLogoScale).toFixed(1) + 'x'; }
+  }
+  // Designer logo position / scale / shadow / color
+  if (s.designerLogoX !== undefined) { designerLogoX = s.designerLogoX; const el = document.getElementById('designer-logo-x'); if (el) el.value = designerLogoX; const vl = document.getElementById('designer-logo-x-val'); if (vl) vl.textContent = designerLogoX; }
+  if (s.designerLogoY !== undefined) { designerLogoY = s.designerLogoY; const el = document.getElementById('designer-logo-y'); if (el) el.value = designerLogoY; const vl = document.getElementById('designer-logo-y-val'); if (vl) vl.textContent = designerLogoY; }
+  if (s.designerLogoScale !== undefined) { designerLogoScale = s.designerLogoScale; const el = document.getElementById('designer-logo-scale'); if (el) el.value = designerLogoScale; const vl = document.getElementById('designer-logo-scale-val'); if (vl) vl.textContent = parseFloat(designerLogoScale).toFixed(2) + 'x'; }
+  if (s.designerLogoColor !== undefined) {
+    designerLogoColor = s.designerLogoColor;
+    if (designerLogoColorPickr) designerLogoColorPickr.setColor(designerLogoColor);
+  }
+  if (s.designerShadowEnabled !== undefined) {
+    designerShadowEnabled = s.designerShadowEnabled;
+    const st = document.getElementById('designer-shadow-toggle'); if (st) st.checked = designerShadowEnabled;
+    const sg = document.getElementById('designer-shadow-group');  if (sg) sg.style.display = designerShadowEnabled ? 'block' : 'none';
+  }
+  if (s.designerShadowBlur !== undefined) { designerShadowBlur = s.designerShadowBlur; const el = document.getElementById('designer-shadow-blur'); if (el) el.value = designerShadowBlur; const vl = document.getElementById('designer-shadow-blur-val'); if (vl) vl.textContent = designerShadowBlur; }
+  // Gradient
+  if (s.gradientEnabled !== undefined) {
+    gradientEnabled = s.gradientEnabled;
+    const gt = document.getElementById('gradient-toggle'); if (gt) gt.checked = gradientEnabled;
+    const gp = document.getElementById('gradient-controls-panel'); if (gp) gp.style.display = gradientEnabled ? 'block' : 'none';
+  }
+  if (s.gradientOpacity !== undefined) { gradientOpacity = s.gradientOpacity; const el = document.getElementById('gradient-opacity'); if (el) el.value = Math.round(gradientOpacity * 100); const vl = document.getElementById('gradient-opacity-val'); if (vl) vl.textContent = Math.round(gradientOpacity * 100) + '%'; }
+  if (s.gradientHeight  !== undefined) { gradientHeight  = s.gradientHeight;  const el = document.getElementById('gradient-height');  if (el) el.value = gradientHeight;  const vl = document.getElementById('gradient-height-val');  if (vl) vl.textContent = gradientHeight + '%'; }
+  if (s.gradientColor   !== undefined) { gradientColor = s.gradientColor; if (gradientColorPickr) gradientColorPickr.setColor(gradientColor); }
+  // Season label
+  if (s.seasonLabelEnabled !== undefined) { seasonLabelEnabled = s.seasonLabelEnabled; const el = document.getElementById('season-label-toggle'); if (el) el.checked = seasonLabelEnabled; }
+  if (s.seasonLabelFont    !== undefined) { seasonLabelFont    = s.seasonLabelFont;    const el = document.getElementById('season-label-font');    if (el) el.value = seasonLabelFont; }
+  if (s.seasonLabelFontSize!== undefined) { seasonLabelFontSize= s.seasonLabelFontSize;const el = document.getElementById('season-label-size');    if (el) el.value = seasonLabelFontSize; const vl = document.getElementById('season-label-size-val'); if (vl) vl.textContent = seasonLabelFontSize; }
+  if (s.seasonLabelColor  !== undefined) { seasonLabelColor = s.seasonLabelColor; if (seasonLabelColorPickr) seasonLabelColorPickr.setColor(seasonLabelColor); }
+  if (s.seasonLabelYPct   !== undefined) { seasonLabelYPct    = s.seasonLabelYPct;    const el = document.getElementById('season-label-y');        if (el) el.value = seasonLabelYPct;  const vl = document.getElementById('season-label-y-val');    if (vl) vl.textContent = seasonLabelYPct + '%'; }
+  if (s.seasonLabelSpacing!== undefined) { seasonLabelSpacing = s.seasonLabelSpacing; const el = document.getElementById('season-label-spacing');  if (el) el.value = seasonLabelSpacing; const vl = document.getElementById('season-label-spacing-val'); if (vl) vl.textContent = seasonLabelSpacing; }
+  drawCanvas();
+}
+
+function showLoadConfigModal() {
+  const configs = _getOverlayConfigs();
+  // Remove any existing modal
+  const existing = document.getElementById('overlay-config-modal');
+  if (existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'overlay-config-modal';
+  modal.className = 'config-modal-overlay';
+  modal.innerHTML = `
+    <div class="config-modal-box">
+      <div class="config-modal-header">
+        <span>Saved Configs</span>
+        <button class="config-modal-close" id="cfg-modal-close">&times;</button>
+      </div>
+      <div class="config-modal-body" id="cfg-modal-list">
+        ${configs.length === 0
+          ? '<p class="config-empty">No saved configs yet.</p>'
+          : configs.map((c, i) => `
+            <div class="config-modal-row" data-index="${i}">
+              <div class="config-modal-meta">
+                <span class="config-modal-name">${c.name}</span>
+                <span class="config-modal-date">${c.savedAt}</span>
+              </div>
+              <div class="config-modal-actions">
+                <button class="config-modal-load-btn" data-index="${i}">Load</button>
+                <button class="config-modal-del-btn"  data-index="${i}">✕</button>
+              </div>
+            </div>`).join('')}
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+
+  document.getElementById('cfg-modal-close').addEventListener('click', () => modal.remove());
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+
+  modal.querySelectorAll('.config-modal-load-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.dataset.index);
+      _applyOverlaySettings(configs[idx].settings);
+      showToast(`Config loaded: "${configs[idx].name}"`);
+      modal.remove();
+    });
+  });
+  modal.querySelectorAll('.config-modal-del-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.dataset.index);
+      const updated = _getOverlayConfigs();
+      const removed = updated.splice(idx, 1)[0];
+      localStorage.setItem(OVERLAY_CONFIG_KEY, JSON.stringify(updated));
+      showToast(`Deleted: "${removed?.name}"`);
+      modal.remove();
+      if (updated.length) showLoadConfigModal();
+    });
+  });
+}
+
+function exportOverlayConfigs() {
+  const configs = _getOverlayConfigs();
+  if (!configs.length) { showToast('No configs to export'); return; }
+  const blob = new Blob([JSON.stringify(configs, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'poster-overlay-configs.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function importOverlayConfigs() {
+  const input = document.createElement('input');
+  input.type = 'file'; input.accept = 'application/json,.json';
+  input.addEventListener('change', () => {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const imported = JSON.parse(reader.result);
+        if (!Array.isArray(imported)) throw new Error('Not an array');
+        const existing = _getOverlayConfigs();
+        const merged = [...existing, ...imported];
+        localStorage.setItem(OVERLAY_CONFIG_KEY, JSON.stringify(merged));
+        showToast(`Imported ${imported.length} config(s)`);
+      } catch {
+        showToast('Import failed: invalid JSON file');
+      }
+    };
+    reader.readAsText(file);
+  });
+  input.click();
+}
+
+function searchDesignerTitle(query) {
+  const sugg = document.getElementById('designer-logo-suggestions');
+  if (!sugg) return;
+  sugg.innerHTML = '<div class="suggestion-item">Searching…</div>';
+  const type = currentMediaType || 'movie';
+  fetch(`https://api.themoviedb.org/3/search/${type}?query=${encodeURIComponent(query)}&api_key=${TMDB_API_KEY}`)
+    .then(r => r.json())
+    .then(data => {
+      sugg.innerHTML = '';
+      const results = (data.results || []).slice(0, 6);
+      if (!results.length) { sugg.innerHTML = '<div class="suggestion-item">No results</div>'; return; }
+      results.forEach(item => {
+        const div   = document.createElement('div');
+        div.className = 'suggestion-item';
+        const title = item.title || item.name || 'Unknown';
+        const year  = (item.release_date || item.first_air_date || '').substring(0, 4);
+        div.textContent = year ? `${title} (${year})` : title;
+        div.addEventListener('click', () => {
+          sugg.innerHTML = '';
+          const inp = document.getElementById('designer-logo-search-input');
+          if (inp) inp.value = title;
+          fetchAndDisplayClearlogos(item.id, type);
+        });
+        sugg.appendChild(div);
+      });
+    })
+    .catch(() => { sugg.innerHTML = '<div class="suggestion-item">Search failed</div>'; });
+}
+
 function hideNetworkSuggestions() {
   document.getElementById('network-logo-suggestions').style.display = 'none';
   document.getElementById('mobile-network-suggestions').style.display = 'none';
@@ -3426,12 +5365,15 @@ function setupResetButton() {
       
       // Clear the canvas
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = "#000000";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
       
       // Reset upload status
       hideMetadataPanel();
       resetCanvasState();
+
+      // Show guidelines backdrop on the blank canvas
+      if (guidelinesEnabled && guidelinesImage.complete && guidelinesImage.naturalWidth > 0) {
+        drawGuidelinesBackdrop();
+      }
       
       // Reset UI elements
       document.getElementById("network-logo-checkbox").checked = false;
@@ -3460,9 +5402,8 @@ function setupResetButton() {
         document.getElementById("mobile-network-search").value = "";
       }
 
-      const pickrInstance = Pickr.all[0];
-      if (pickrInstance) {
-        pickrInstance.setColor("#ffffff");
+      if (typeof pickr !== 'undefined' && pickr) {
+        pickr.setColor("#ffffff");
       }
 
       // Display a message
@@ -3473,6 +5414,39 @@ function setupResetButton() {
       confirmOverlay.style.display = "none";
     }, { once: true });
   };
+
+  // ── Config buttons ────────────────────────────────────────────────────────
+  const _cfgSave   = document.getElementById('config-save-btn');
+  const _cfgLoad   = document.getElementById('config-load-btn');
+  const _cfgExport = document.getElementById('config-export-btn');
+  const _cfgImport = document.getElementById('config-import-btn');
+  if (_cfgSave)   _cfgSave.addEventListener('click', saveOverlayConfig);
+  if (_cfgLoad)   _cfgLoad.addEventListener('click', showLoadConfigModal);
+  if (_cfgExport) _cfgExport.addEventListener('click', exportOverlayConfigs);
+  if (_cfgImport) _cfgImport.addEventListener('click', importOverlayConfigs);
+
+  // Config dropdown toggle
+  const _configDropdown = document.querySelector('.config-dropdown');
+  if (_configDropdown) {
+    const _configDropdownBtn  = _configDropdown.querySelector('.action-button');
+    const _configDropdownMenu = _configDropdown.querySelector('.config-dropdown-menu');
+    if (_configDropdownBtn && _configDropdownMenu) {
+      _configDropdownBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        _configDropdownMenu.classList.toggle('show');
+      });
+      document.addEventListener('click', (e) => {
+        if (!_configDropdown.contains(e.target)) {
+          _configDropdownMenu.classList.remove('show');
+        }
+      });
+      document.querySelectorAll('.config-menu-item').forEach(item => {
+        item.addEventListener('click', () => {
+          _configDropdownMenu.classList.remove('show');
+        });
+      });
+    }
+  }
 
   resetBtn.addEventListener("click", handleReset);
   
@@ -3486,15 +5460,33 @@ function setupResetButton() {
 }
 
 function resetCanvasState() {
-  // Fill canvas with black background
-  ctx.fillStyle = "#000000";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  
   // Reset variables
   baseImage = null;
   networkLogoImage = null;
   currentLogoPath = "none";
-  
+
+  // Reset Poster Designer state
+  designerLogoImage   = null;
+  designerLogoX       = 0;
+  designerLogoY       = 55;
+  designerLogoScale   = 1.0;
+  designerShadowEnabled = false;
+  currentDesignerId   = null;
+  const _strip = document.getElementById('clearlogo-strip');
+  if (_strip) _strip.innerHTML = '<div class="clearlogo-empty">Select a TMDB poster above to load logos</div>';
+  const _modal = document.getElementById('logo-picker-modal');
+  if (_modal) _modal.style.display = 'none';
+  const _nameLabel = document.getElementById('designer-selected-logo-name');
+  if (_nameLabel) { _nameLabel.textContent = ''; _nameLabel.style.display = 'none'; }
+  const _frx = document.getElementById('designer-logo-x'); if (_frx) _frx.value = '0';
+  const _fry = document.getElementById('designer-logo-y'); if (_fry) _fry.value = '55';
+  const _sc = document.getElementById('designer-logo-scale'); if (_sc) _sc.value = '1';
+  const _fxd = document.getElementById('designer-x-display'); if (_fxd) _fxd.textContent = '0';
+  const _fyd = document.getElementById('designer-y-display'); if (_fyd) _fyd.textContent = '55';
+  const _sd = document.getElementById('designer-scale-display'); if (_sd) _sd.textContent = '100%';
+  const _st = document.getElementById('designer-shadow-toggle'); if (_st) _st.checked = false;
+  const _sg = document.getElementById('designer-shadow-group');  if (_sg) _sg.style.display = 'none';
+
   // Reset file input
   posterUpload.value = "";
   
@@ -3509,4 +5501,5 @@ function hideMetadataPanel() {
 // Initialize the reset button confirmation
 document.addEventListener("DOMContentLoaded", function() {
   setupResetButton();
+  checkAndShowChangelog();
 });
