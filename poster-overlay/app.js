@@ -2243,15 +2243,14 @@ function getImageProxyCandidates(originalUrl) {
   const urlWithoutScheme = originalUrl.replace(/^https?:\/\//i, "");
 
   return [
-    // Some CDNs allow direct CORS fetch; try it first.
+    // Own Cloudflare Worker proxy — most reliable
+    `https://poster-proxy.pejamas.workers.dev/?url=${encodeURIComponent(originalUrl)}`,
+
+    // Direct (some CDNs allow CORS)
     originalUrl,
 
-    // Public CORS proxies (best-effort; availability may vary)
+    // Public fallbacks
     `https://corsproxy.io/?${encodeURIComponent(originalUrl)}`,
-    `https://api.allorigins.win/raw?url=${encodeURIComponent(originalUrl)}`,
-    `https://cors.isomorphic-git.org/${originalUrl}`,
-
-    // Image-specific proxy
     `https://images.weserv.nl/?url=${encodeURIComponent(urlWithoutScheme)}`,
   ];
 }
@@ -4222,10 +4221,9 @@ async function fetchFanartTVLogos(tmdbId) {
 async function fetchJsonViaProxy(url, { skipDirect = false } = {}) {
   const proxies = [
     ...(skipDirect ? [] : [url]),
+    `https://poster-proxy.pejamas.workers.dev/?url=${encodeURIComponent(url)}`,
     `https://corsproxy.io/?${encodeURIComponent(url)}`,
     `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-    `https://thingproxy.freeboard.io/fetch/${url}`,
-    `https://cors.isomorphic-git.org/${url}`,
   ];
   for (const candidate of proxies) {
     try {
