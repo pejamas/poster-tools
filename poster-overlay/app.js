@@ -1,6 +1,21 @@
 // Changelog Configuration
-const CURRENT_VERSION = '1.1.0';
+const CURRENT_VERSION = '1.2.0';
 const CHANGELOG = [
+  {
+    version: '1.2.0',
+    date: 'March 25, 2026',
+    changes: [
+      { type: 'feature',     text: 'Poster Fit modes — choose between Stretch, Contain, Cover, or Manual resize/reposition for each poster independently' },
+      { type: 'feature',     text: 'Manual fit controls — scale slider and X/Y offset sliders let you precisely position and size the poster on the canvas' },
+      { type: 'improvement', text: 'Per-poster fit settings — each show poster and season poster remembers its own fit mode, scale, and offsets independently' },
+      { type: 'improvement', text: 'Season Suite save states — switching between show poster and season posters now correctly saves and restores each poster\'s image and fit settings' },
+      { type: 'improvement', text: 'Upload to active poster — manually uploading an image now saves to whichever poster is currently active (show or season), not always the show poster' },
+      { type: 'improvement', text: 'Individual download filenames — the single download button now uses context-aware filenames (e.g. "Breaking Bad - Season 01.png") matching the batch ZIP naming' },
+      { type: 'improvement', text: 'Guidelines off by default — placement guidelines overlay is now disabled on load' },
+      { type: 'fix',         text: 'Fixed show poster being overwritten by a season image when navigating between Season Suite cards' },
+      { type: 'fix',         text: 'Fixed season poster not rendering correctly after loading via Season Suite' }
+    ]
+  },
   {
     version: '1.1.0',
     date: 'March 23, 2026',
@@ -207,8 +222,27 @@ let networkLogoImage = null;
 let currentLogoPath = "none";
 let selectedLogoColor = "#ffffff";
 
+// ── Poster Image Fit state ────────────────────────────────
+// Poster fit settings are now per-poster (per season or base)
+function getCurrentPosterKey() {
+  return activeSeasonNum === null ? 'base' : activeSeasonNum;
+}
+function getPosterFitSettings(key) {
+  return seasonSavedImages.get(key)?.fit || { mode: 'stretch', scale: 1.0, offsetX: 0, offsetY: 0 };
+}
+function setPosterFitSettings(key, fit) {
+  const entry = seasonSavedImages.get(key) || {};
+  entry.fit = fit;
+  seasonSavedImages.set(key, entry);
+}
+let posterFitMode   = 'stretch';
+let posterScale     = 1.0;
+let posterOffsetX   = 0;
+let posterOffsetY   = 0;
+
 // ── Poster Designer state ──────────────────────────────────
 let designerLogoImage   = null;
+let designerLogoUrl     = '';   // URL of the currently loaded clearlogo (persisted in config)
 let designerLogoX       = 0;
 let designerLogoY       = 55;
 let designerLogoScale   = 1.0;
@@ -256,12 +290,12 @@ let _capturingThumb    = false; // prevents drawCanvas auto-schedule from loopin
 let _thumbDebounceTimer = null; // debounce handle for auto thumbnail updates
 
 // ── Guidelines overlay state ──────────────────────────────
-let guidelinesEnabled = true;
+let guidelinesEnabled = false;
 const guidelinesImage = new Image();
 guidelinesImage.src = '../assets/guidelines_poster.jpg';
 guidelinesImage.onload = () => {
-  // Draw default backdrop if no poster loaded yet
-  if (!baseImage) drawGuidelinesBackdrop();
+  // On initial load, do not draw guidelines or any image by default
+  if (!baseImage) ctx.clearRect(0, 0, canvas.width, canvas.height);
 };
 
 function drawGuidelinesBackdrop() {
@@ -508,19 +542,47 @@ posterUpload.addEventListener("change", (e) => {
   const file = e.target.files[0];
   if (!file) return;
 
+  // Reset poster fit state for the new image (per-poster)
+  const key = getCurrentPosterKey();
+  posterFitMode = 'stretch';
+  posterScale = 1.0;
+  posterOffsetX = 0;
+  posterOffsetY = 0;
+  setPosterFitSettings(key, { mode: posterFitMode, scale: posterScale, offsetX: posterOffsetX, offsetY: posterOffsetY });
+  const fitModeEl = document.getElementById('poster-fit-mode');
+  const scaleEl   = document.getElementById('poster-scale');
+  const oxEl      = document.getElementById('poster-offset-x');
+  const oyEl      = document.getElementById('poster-offset-y');
+  const fitPanel  = document.getElementById('poster-fit-controls');
+  if (fitModeEl) fitModeEl.value = 'stretch';
+  if (scaleEl)   scaleEl.value = 1;
+  if (oxEl)      oxEl.value = 0;
+  if (oyEl)      oyEl.value = 0;
+  if (fitPanel)  fitPanel.style.display = 'none';
+  const dispScale = document.getElementById('poster-scale-display');
+  const dispX     = document.getElementById('poster-offset-x-display');
+  const dispY     = document.getElementById('poster-offset-y-display');
+  if (dispScale) dispScale.textContent = '100%';
+  if (dispX)     dispX.textContent = '0';
+  if (dispY)     dispY.textContent = '0';
+
   const reader = new FileReader();
   reader.onload = function (evt) {
     baseImage = new Image();
     baseImage.onload = () => {
-      // If a TV show suite is already active, lock in the manual image right now
-      // so it survives any async buildSeasonGrid call that clears saved state
+      // If a TV show suite is already active, save to the CURRENT poster's slot
+      // (show poster if activeSeasonNum === null, or the active season otherwise)
       if (seasonSuiteData) {
-        baseShowImage = baseImage;
-        seasonSavedImages.set('base', {
+        const uploadKey = activeSeasonNum === null ? 'base' : activeSeasonNum;
+        if (activeSeasonNum === null) baseShowImage = baseImage;
+        const fit = { mode: posterFitMode, scale: posterScale, offsetX: posterOffsetX, offsetY: posterOffsetY };
+        const existing = seasonSavedImages.get(uploadKey);
+        seasonSavedImages.set(uploadKey, {
           img: baseImage,
-          labelText: seasonSavedImages.get('base')?.labelText ?? '',
-          labelColor: seasonSavedImages.get('base')?.labelColor ?? seasonLabelColor,
-          logoColor: seasonSavedImages.get('base')?.logoColor ?? designerLogoColor,
+          labelText: existing?.labelText ?? seasonLabelText,
+          labelColor: existing?.labelColor ?? seasonLabelColor,
+          logoColor: existing?.logoColor ?? designerLogoColor,
+          fit
         });
       }
       drawCanvas();
@@ -817,12 +879,86 @@ function applyLogoTint(srcImage, w, h, hexColor) {
   return tc;
 }
 
+function drawBaseImage() {
+  const cw = canvas.width;
+  const ch = canvas.height;
+  const iw = baseImage.naturalWidth;
+  const ih = baseImage.naturalHeight;
+
+  if (posterFitMode === 'stretch') {
+    ctx.drawImage(baseImage, 0, 0, cw, ch);
+    return;
+  }
+
+  const imgRatio    = iw / ih;
+  const canvasRatio = cw / ch;
+
+  if (posterFitMode === 'contain') {
+    let dw, dh;
+    if (imgRatio > canvasRatio) { dw = cw; dh = cw / imgRatio; }
+    else                        { dh = ch; dw = ch * imgRatio; }
+    const dx = (cw - dw) / 2;
+    const dy = (ch - dh) / 2;
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(0, 0, cw, ch);
+    ctx.drawImage(baseImage, dx, dy, dw, dh);
+    return;
+  }
+
+  if (posterFitMode === 'cover') {
+    let dw, dh;
+    if (imgRatio > canvasRatio) { dh = ch; dw = ch * imgRatio; }
+    else                        { dw = cw; dh = cw / imgRatio; }
+    const dx = (cw - dw) / 2;
+    const dy = (ch - dh) / 2;
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, 0, cw, ch);
+    ctx.clip();
+    ctx.drawImage(baseImage, dx, dy, dw, dh);
+    ctx.restore();
+    return;
+  }
+
+  // manual mode
+  if (posterFitMode === 'manual') {
+    let dw, dh;
+    if (imgRatio > canvasRatio) { dw = cw * posterScale; dh = dw / imgRatio; }
+    else                        { dh = ch * posterScale; dw = dh * imgRatio; }
+    const dx = (cw - dw) / 2 + posterOffsetX;
+    const dy = (ch - dh) / 2 + posterOffsetY;
+    ctx.fillStyle = '#111111';
+    ctx.fillRect(0, 0, cw, ch);
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, 0, cw, ch);
+    ctx.clip();
+    ctx.drawImage(baseImage, dx, dy, dw, dh);
+    ctx.restore();
+  }
+}
+
 function drawCanvas(onComplete) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   // Layer 1: base poster or guidelines backdrop
   if (baseImage) {
-    ctx.drawImage(baseImage, 0, 0, canvas.width, canvas.height);
+    // Load fit settings for current poster
+    const fit = getPosterFitSettings(getCurrentPosterKey());
+    posterFitMode = fit.mode;
+    posterScale = fit.scale;
+    posterOffsetX = fit.offsetX;
+    posterOffsetY = fit.offsetY;
+    // Update UI controls to match
+    const fitModeEl = document.getElementById('poster-fit-mode');
+    const scaleEl   = document.getElementById('poster-scale');
+    const oxEl      = document.getElementById('poster-offset-x');
+    const oyEl      = document.getElementById('poster-offset-y');
+    if (fitModeEl) fitModeEl.value = posterFitMode;
+    if (scaleEl)   scaleEl.value = posterScale;
+    if (oxEl)      oxEl.value = posterOffsetX;
+    if (oyEl)      oyEl.value = posterOffsetY;
+    drawBaseImage();
   } else {
     if (guidelinesImage.complete && guidelinesImage.naturalWidth > 0) {
       ctx.drawImage(guidelinesImage, 0, 0, canvas.width, canvas.height);
@@ -1327,6 +1463,7 @@ function displayTMDBResultsForMediux(movies, type = "movie") {
       } else {
         lookupMediuxShowByTMDBId(movie.tmdb_id, movie.title);
       }
+      collapseSearchSection();
     });
 
     mediuxSuggestions.appendChild(div);
@@ -1538,6 +1675,7 @@ function displayMediuxResults(items, type = "movie") {
     div.addEventListener("click", () => {
       mediuxInput.value = item.title;
       mediuxSuggestions.innerHTML = "";
+      collapseSearchSection();
 
       if (type === "movie") {
         const hasDirectPosters = item.posters && item.posters.length > 0;
@@ -2233,6 +2371,7 @@ function displaySearchResults(results) {
       suggestionsBox.innerHTML = "";
 
       fetchAndDisplayPostersById(item.id, item.title, item.type);
+      collapseSearchSection();
     });
 
     suggestionsBox.appendChild(div);
@@ -2735,8 +2874,17 @@ document.getElementById("download-btn").addEventListener("click", () => {
   const link = document.createElement("a");
   let filename = "poster-overlay.png";
   const titleElement = document.getElementById("meta-title");
-  if (titleElement && titleElement.textContent && titleElement.textContent !== "Title") {
-    filename = titleElement.textContent.replace(/[/\\?%*:|"<>]/g, "-").trim() + ".png";
+  const showTitle = titleElement?.textContent?.trim();
+  if (showTitle && showTitle !== "Title") {
+    const safeName = showTitle.replace(/[/\\?%*:|"<>]/g, "-").trim();
+    if (activeSeasonNum === null) {
+      // Show poster
+      filename = `${safeName}.png`;
+    } else if (activeSeasonNum === 0) {
+      filename = `${safeName} - Specials.png`;
+    } else {
+      filename = `${safeName} - Season ${String(activeSeasonNum).padStart(2, '0')}.png`;
+    }
   }
 
   link.download = filename;
@@ -3807,6 +3955,71 @@ document.addEventListener('DOMContentLoaded', function () {
     wireStepBtn(id,  1);
   });
 
+  // ── Poster Fit controls ───────────────────────────────────
+  function updatePosterFitControls() {
+    const panel = document.getElementById('poster-fit-controls');
+    if (panel) panel.style.display = (posterFitMode === 'stretch') ? 'none' : 'block';
+  }
+
+  const posterFitModeSelect = document.getElementById('poster-fit-mode');
+  if (posterFitModeSelect) {
+    posterFitModeSelect.addEventListener('change', () => {
+      posterFitMode = posterFitModeSelect.value;
+      setPosterFitSettings(getCurrentPosterKey(), { mode: posterFitMode, scale: posterScale, offsetX: posterOffsetX, offsetY: posterOffsetY });
+      updatePosterFitControls();
+      if (baseImage) { drawCanvas(); deferredThumbUpdate(); }
+    });
+  }
+
+  function wirePosterSlider(sliderId, displayId, onInput) {
+    const el = document.getElementById(sliderId);
+    if (!el) return;
+    el.addEventListener('input', () => {
+      const v = onInput(el.value);
+      const disp = document.getElementById(displayId);
+      if (disp) disp.textContent = v;
+      if (baseImage) { drawCanvas(); deferredThumbUpdate(); }
+    });
+  }
+
+  wirePosterSlider('poster-scale', 'poster-scale-display', v => {
+    posterScale = parseFloat(v);
+    setPosterFitSettings(getCurrentPosterKey(), { mode: posterFitMode, scale: posterScale, offsetX: posterOffsetX, offsetY: posterOffsetY });
+    return Math.round(posterScale * 100) + '%';
+  });
+  wirePosterSlider('poster-offset-x', 'poster-offset-x-display', v => {
+    posterOffsetX = parseInt(v);
+    setPosterFitSettings(getCurrentPosterKey(), { mode: posterFitMode, scale: posterScale, offsetX: posterOffsetX, offsetY: posterOffsetY });
+    return v;
+  });
+  wirePosterSlider('poster-offset-y', 'poster-offset-y-display', v => {
+    posterOffsetY = parseInt(v);
+    setPosterFitSettings(getCurrentPosterKey(), { mode: posterFitMode, scale: posterScale, offsetX: posterOffsetX, offsetY: posterOffsetY });
+    return v;
+  });
+
+  ['poster-scale', 'poster-offset-x', 'poster-offset-y'].forEach(id => {
+    wireStepBtn(id, -1);
+    wireStepBtn(id,  1);
+  });
+
+  const posterFitResetBtn = document.getElementById('poster-fit-reset-btn');
+  if (posterFitResetBtn) {
+    posterFitResetBtn.addEventListener('click', () => {
+      posterScale = 1.0;
+      posterOffsetX = 0;
+      posterOffsetY = 0;
+      setPosterFitSettings(getCurrentPosterKey(), { mode: posterFitMode, scale: posterScale, offsetX: posterOffsetX, offsetY: posterOffsetY });
+      const scaleEl = document.getElementById('poster-scale');
+      const oxEl    = document.getElementById('poster-offset-x');
+      const oyEl    = document.getElementById('poster-offset-y');
+      if (scaleEl) { scaleEl.value = 1; document.getElementById('poster-scale-display').textContent = '100%'; }
+      if (oxEl)    { oxEl.value = 0;    document.getElementById('poster-offset-x-display').textContent = '0'; }
+      if (oyEl)    { oyEl.value = 0;    document.getElementById('poster-offset-y-display').textContent = '0'; }
+      if (baseImage) { drawCanvas(); deferredThumbUpdate(); }
+    });
+  }
+
   // Season Label step buttons (wired after controls are added to DOM via HTML)
   ['season-label-y', 'season-label-size', 'season-label-spacing'].forEach(id => {
     wireStepBtn(id, -1);
@@ -4384,7 +4597,9 @@ function loadPosterFromPicker(posterUrl, id, type) {
       seasonLabelText = '';
       const _li = document.getElementById('season-label-text');
       if (_li) _li.value = '';
-      seasonSavedImages.set('base', { img, labelText: '', labelColor: seasonLabelColor, logoColor: designerLogoColor });
+      // Always save fit settings for base poster
+      const fit = { mode: posterFitMode, scale: posterScale, offsetX: posterOffsetX, offsetY: posterOffsetY };
+      seasonSavedImages.set('base', { img, labelText: '', labelColor: seasonLabelColor, logoColor: designerLogoColor, fit });
       drawCanvas();
       setTimeout(() => captureCanvasThumb('base'), 220);
       if (document.body.contains(loadingIndicator)) document.body.removeChild(loadingIndicator);
@@ -4448,6 +4663,7 @@ const SEASON_NUMBER_WORDS = [
 ];
 function seasonLabelDefault(season) {
   const n = season.season_number;
+  if (n === 0) return 'SPECIALS';
   const word = SEASON_NUMBER_WORDS[n];
   return word ? `SEASON ${word}` : `SEASON ${n}`;
 }
@@ -4671,21 +4887,7 @@ function buildSeasonGrid(seasons, showId) {
   seasonSuiteData = { showId, seasons };
   activeSeasonNum = null;
 
-  if (isSameShow) {
-    // Same show re-rendered (e.g. after a manual poster drop or metadata refresh).
-    // Preserve all saved season composites and update the base entry + fallback image
-    // so any manually-loaded poster isn't overwritten by the TMDB default.
-    if (baseImage) {
-      baseShowImage = baseImage;
-      const existingBase = seasonSavedImages.get('base');
-      seasonSavedImages.set('base', {
-        img: baseImage,
-        labelText: existingBase?.labelText ?? '',
-        labelColor: existingBase?.labelColor ?? seasonLabelColor,
-        logoColor: existingBase?.logoColor ?? designerLogoColor,
-      });
-    }
-  } else {
+  if (!isSameShow) {
     seasonSavedImages.clear();
   }
 
@@ -4738,7 +4940,9 @@ function buildSeasonGrid(seasons, showId) {
     if (activeSeasonNum === null) return; // already on base
     // Save current season state before leaving
     if (activeSeasonNum !== null && baseImage) {
-      seasonSavedImages.set(activeSeasonNum, { img: baseImage, labelText: seasonLabelText, labelColor: seasonLabelColor, logoColor: designerLogoColor });
+      // Save fit settings for the current season poster
+      const fit = { mode: posterFitMode, scale: posterScale, offsetX: posterOffsetX, offsetY: posterOffsetY };
+      seasonSavedImages.set(activeSeasonNum, { img: baseImage, labelText: seasonLabelText, labelColor: seasonLabelColor, logoColor: designerLogoColor, fit });
     }
     activeSeasonNum = null;
     document.querySelectorAll('.season-card').forEach(c => c.classList.remove('active'));
@@ -4749,11 +4953,21 @@ function buildSeasonGrid(seasons, showId) {
     if (li) li.value = '';
     // Restore base show poster from saved state or baseShowImage
     const saved = seasonSavedImages.get('base');
+    let showPosterImg = null;
     if (saved) {
-      baseImage = saved.img;
+      showPosterImg = saved.img;
+      // Restore fit settings for base poster
+      if (saved.fit) {
+        posterFitMode = saved.fit.mode;
+        posterScale = saved.fit.scale;
+        posterOffsetX = saved.fit.offsetX;
+        posterOffsetY = saved.fit.offsetY;
+      }
     } else if (baseShowImage) {
-      baseImage = baseShowImage;
+      showPosterImg = baseShowImage;
     }
+    // Only set baseImage if we are in show poster context
+    if (showPosterImg) baseImage = showPosterImg;
     drawCanvas();
     setTimeout(() => captureCanvasThumb('base'), 220);
   });
@@ -4813,7 +5027,11 @@ function buildSeasonGrid(seasons, showId) {
     card.addEventListener('click', () => {
       // Save whatever is currently on canvas before switching
       const prevKey = activeSeasonNum === null ? 'base' : activeSeasonNum;
-      if (baseImage) seasonSavedImages.set(prevKey, { img: baseImage, labelText: seasonLabelText, labelColor: seasonLabelColor, logoColor: designerLogoColor });
+      if (baseImage) {
+        // Save fit settings for the previous poster
+        const fit = { mode: posterFitMode, scale: posterScale, offsetX: posterOffsetX, offsetY: posterOffsetY };
+        seasonSavedImages.set(prevKey, { img: baseImage, labelText: seasonLabelText, labelColor: seasonLabelColor, logoColor: designerLogoColor, fit });
+      }
 
       activeSeasonNum = season.season_number;
       document.querySelectorAll('.season-card').forEach(c =>
@@ -4823,6 +5041,13 @@ function buildSeasonGrid(seasons, showId) {
       const savedEntry = seasonSavedImages.get(season.season_number);
       const newLabel = savedEntry ? savedEntry.labelText : seasonLabelDefault(season);
       seasonLabelText = newLabel;
+      // Restore fit settings for this season poster
+      if (savedEntry && savedEntry.fit) {
+        posterFitMode = savedEntry.fit.mode;
+        posterScale = savedEntry.fit.scale;
+        posterOffsetX = savedEntry.fit.offsetX;
+        posterOffsetY = savedEntry.fit.offsetY;
+      }
       const labelInput = document.getElementById('season-label-text');
       if (labelInput) labelInput.value = newLabel;
 
@@ -5097,6 +5322,7 @@ function addFanartHint(strip) {
 }
 
 function loadDesignerLogo(url) {
+  designerLogoUrl = url;
   const img = new Image();
   img.crossOrigin = 'anonymous';
   img.onload = () => { designerLogoImage = img; if (baseImage) { drawCanvas(); deferredThumbUpdate(); } };
@@ -5130,6 +5356,10 @@ function _captureOverlaySettings() {
     networkLogoPath:     currentLogoPath || '',
     networkLogoColor:    selectedLogoColor,
     networkLogoScale:    parseFloat(document.getElementById('logo-scale-slider')?.value ?? 1),
+    designerLogoUrl,
+    designerTmdbId:      currentDesignerId,
+    designerTmdbType:    currentDesignerType,
+    designerTitle:       currentDesignerTitle,
     designerLogoX,
     designerLogoY,
     designerLogoScale,
@@ -5164,6 +5394,10 @@ function saveOverlayConfig() {
 
 function _applyOverlaySettings(s) {
   if (!s) return;
+  // TMDB metadata
+  if (s.designerTmdbId    !== undefined) currentDesignerId    = s.designerTmdbId;
+  if (s.designerTmdbType  !== undefined) currentDesignerType  = s.designerTmdbType;
+  if (s.designerTitle     !== undefined) currentDesignerTitle = s.designerTitle;
   // Overlay banner
   const overlayEl = document.getElementById('overlay-select');
   if (overlayEl && s.overlay !== undefined) { overlayEl.value = s.overlay; overlayEl.dispatchEvent(new Event('change')); }
@@ -5199,6 +5433,17 @@ function _applyOverlaySettings(s) {
     const sg = document.getElementById('designer-shadow-group');  if (sg) sg.style.display = designerShadowEnabled ? 'block' : 'none';
   }
   if (s.designerShadowBlur !== undefined) { designerShadowBlur = s.designerShadowBlur; const el = document.getElementById('designer-shadow-blur'); if (el) el.value = designerShadowBlur; const vl = document.getElementById('designer-shadow-blur-val'); if (vl) vl.textContent = designerShadowBlur; }
+  // Designer logo — re-fetch the clearlogo by URL
+  if (s.designerLogoUrl) {
+    loadDesignerLogo(s.designerLogoUrl);
+    const panel = document.getElementById('designer-controls-panel');
+    if (panel) panel.style.display = 'flex';
+    const nameLabel = document.getElementById('designer-selected-logo-name');
+    if (nameLabel) {
+      nameLabel.textContent = `✓ ${s.designerTitle || 'Saved'} logo loaded`;
+      nameLabel.style.display = 'block';
+    }
+  }
   // Gradient
   if (s.gradientEnabled !== undefined) {
     gradientEnabled = s.gradientEnabled;
@@ -5465,6 +5710,7 @@ function resetCanvasState() {
 
   // Reset Poster Designer state
   designerLogoImage   = null;
+  designerLogoUrl     = '';
   designerLogoX       = 0;
   designerLogoY       = 55;
   designerLogoScale   = 1.0;
@@ -5496,8 +5742,71 @@ function hideMetadataPanel() {
   metaPanel.style.display = "none";
 }
 
+// ── Collapsible sidebar sections ─────────────────────────────────────────
+function setupCollapsibleSections() {
+  const STORAGE_KEY = 'overlay_section_collapse';
+
+  function getSavedState() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }
+    catch { return {}; }
+  }
+
+  function setSectionCollapsed(key, collapsed) {
+    const state = getSavedState();
+    state[key] = collapsed;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+
+  function applyState(wrapper, body, isActive) {
+    if (isActive) {
+      wrapper.classList.add('active');
+      body.classList.remove('collapsed');
+    } else {
+      wrapper.classList.remove('active');
+      body.classList.add('collapsed');
+    }
+  }
+
+  document.querySelectorAll('.section-toggle').forEach(header => {
+    const key = header.dataset.section;
+    const wrapper = header.closest('.collapsible');
+    const body = document.getElementById(`body-${key}`);
+    if (!wrapper || !body) return;
+
+    // Restore saved state immediately (no animation — remove transition briefly)
+    const saved = getSavedState();
+    if (saved[key] === true) {
+      body.style.transition = 'none';
+      applyState(wrapper, body, false);
+      requestAnimationFrame(() => { body.style.transition = ''; });
+    }
+
+    header.addEventListener('click', () => {
+      const nowActive = !wrapper.classList.contains('active');
+      applyState(wrapper, body, nowActive);
+      setSectionCollapsed(key, !nowActive);
+    });
+  });
+}
+
+// Auto-collapse Search Functions after a title is selected
+function collapseSearchSection() {
+  const header  = document.querySelector('[data-section="search"]');
+  const wrapper = header ? header.closest('.collapsible') : null;
+  const body    = document.getElementById('body-search');
+  if (!wrapper || !body || !wrapper.classList.contains('active')) return;
+  wrapper.classList.remove('active');
+  body.classList.add('collapsed');
+  try {
+    const state = JSON.parse(localStorage.getItem('overlay_section_collapse') || '{}');
+    state['search'] = true;
+    localStorage.setItem('overlay_section_collapse', JSON.stringify(state));
+  } catch {}
+}
+
 // Initialize the reset button confirmation
 document.addEventListener("DOMContentLoaded", function() {
   setupResetButton();
+  setupCollapsibleSections();
   checkAndShowChangelog();
 });

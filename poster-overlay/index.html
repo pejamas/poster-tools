@@ -84,42 +84,56 @@
     <div class="layout">
       <div class="sidebar" id="sidebar">
         <div class="sidebar-toggle" id="sidebar-toggle">Options & Tools</div>
-        <div class="sidebar-section">
-          <h3 class="section-title">Content Type</h3>
-          <div class="media-type-selector">
-            <button class="media-type-btn active" data-type="movie">Movies</button>
-            <button class="media-type-btn" data-type="tv">TV Shows</button>
+        <div class="sidebar-section collapsible active" id="section-content-type">
+          <div class="collapsible-header section-toggle" data-section="content-type">
+            <h3>Content Type</h3>
+            <div class="toggle-icon"></div>
+          </div>
+          <div class="section-body collapsible-content" id="body-content-type">
+            <div class="media-type-selector">
+              <button class="media-type-btn active" data-type="movie">Movies</button>
+              <button class="media-type-btn" data-type="tv">TV Shows</button>
+            </div>
           </div>
         </div>
-        <div class="sidebar-section">
-          <h3 class="section-title">Search Functions</h3>
-          <div class="sidebar-section">
-            <label for="tmdb-search-input">Search TMDB</label>
-            <div class="tmdb-search">
-              <input type="text" id="tmdb-search-input" placeholder="Search for a title..." autocomplete="off" />
-              <div class="autocomplete-suggestions" id="tmdb-suggestions"></div>
-            </div>
+        <div class="sidebar-section collapsible active" id="section-search">
+          <div class="collapsible-header section-toggle" data-section="search">
+            <h3>Search Functions</h3>
+            <div class="toggle-icon"></div>
           </div>
-          <div class="sidebar-section">
-            <label for="mediux-search-input">Search Mediux</label>
-            <div class="tmdb-search">
-              <input type="text" id="mediux-search-input" placeholder="Search for a title..." autocomplete="off" />
-              <div class="autocomplete-suggestions" id="mediux-suggestions"></div>
+          <div class="section-body collapsible-content" id="body-search">
+            <div class="sidebar-section">
+              <label for="tmdb-search-input">Search TMDB</label>
+              <div class="tmdb-search">
+                <input type="text" id="tmdb-search-input" placeholder="Search for a title..." autocomplete="off" />
+                <div class="autocomplete-suggestions" id="tmdb-suggestions"></div>
+              </div>
             </div>
-          </div>
-          <div class="sidebar-section">
-            <label for="mediux-username-filter">Filter by Mediux User</label>
-            <input
-              type="text"
-              id="mediux-username-filter"
-              placeholder="Leave empty to show all posters..."
-              autocomplete="off"
-            />
+            <div class="sidebar-section">
+              <label for="mediux-search-input">Search Mediux</label>
+              <div class="tmdb-search">
+                <input type="text" id="mediux-search-input" placeholder="Search for a title..." autocomplete="off" />
+                <div class="autocomplete-suggestions" id="mediux-suggestions"></div>
+              </div>
+            </div>
+            <div class="sidebar-section">
+              <label for="mediux-username-filter">Filter by Mediux User</label>
+              <input
+                type="text"
+                id="mediux-username-filter"
+                placeholder="Leave empty to show all posters..."
+                autocomplete="off"
+              />
+            </div>
           </div>
         </div>
         <!-- ── CANVAS TOOLS ───────────────────────────────────── -->
-        <div class="sidebar-section">
-          <h3 class="section-title">Canvas Tools</h3>
+        <div class="sidebar-section collapsible active" id="section-canvas-tools">
+          <div class="collapsible-header section-toggle" data-section="canvas-tools">
+            <h3>Canvas Tools</h3>
+            <div class="toggle-icon"></div>
+          </div>
+          <div class="section-body collapsible-content" id="body-canvas-tools">
 
           <!-- Upload Poster — primary action, standalone -->
           <button id="upload-poster-btn" class="action-button ct-primary-btn" type="button">
@@ -130,6 +144,55 @@
           <button id="browse-posters-btn" class="action-button ct-primary-btn" type="button">
             Browse TMDB Posters
           </button>
+
+          <!-- ── Poster Fit card ── -->
+          <div class="ct-group" id="poster-fit-card">
+            <div class="ct-group-header">
+              <span class="ct-group-title">Poster Fit</span>
+            </div>
+            <select id="poster-fit-mode">
+              <option value="stretch">Stretch (fill canvas)</option>
+              <option value="contain">Contain (letterbox)</option>
+              <option value="cover">Cover (crop to fill)</option>
+              <option value="manual">Manual (scale &amp; pan)</option>
+            </select>
+            <div id="poster-fit-controls" style="display:none">
+              <div class="ct-slider-block" style="margin-top:8px">
+                <div class="ct-slider-label">
+                  <span class="ct-row-label">Scale</span>
+                  <span class="ct-row-val" id="poster-scale-display">100%</span>
+                </div>
+                <div class="ct-slider-row">
+                  <button type="button" class="sidebar-range-btn" id="poster-scale-dec" tabindex="-1">−</button>
+                  <input type="range" id="poster-scale" min="0.1" max="3" value="1" step="0.05" class="designer-slider" />
+                  <button type="button" class="sidebar-range-btn" id="poster-scale-inc" tabindex="-1">+</button>
+                </div>
+              </div>
+              <div class="ct-slider-block">
+                <div class="ct-slider-label">
+                  <span class="ct-row-label">Horizontal</span>
+                  <span class="ct-row-val" id="poster-offset-x-display">0</span>
+                </div>
+                <div class="ct-slider-row">
+                  <button type="button" class="sidebar-range-btn" id="poster-offset-x-dec" tabindex="-1">−</button>
+                  <input type="range" id="poster-offset-x" min="-500" max="500" value="0" step="5" class="designer-slider" />
+                  <button type="button" class="sidebar-range-btn" id="poster-offset-x-inc" tabindex="-1">+</button>
+                </div>
+              </div>
+              <div class="ct-slider-block">
+                <div class="ct-slider-label">
+                  <span class="ct-row-label">Vertical</span>
+                  <span class="ct-row-val" id="poster-offset-y-display">0</span>
+                </div>
+                <div class="ct-slider-row">
+                  <button type="button" class="sidebar-range-btn" id="poster-offset-y-dec" tabindex="-1">−</button>
+                  <input type="range" id="poster-offset-y" min="-750" max="750" value="0" step="5" class="designer-slider" />
+                  <button type="button" class="sidebar-range-btn" id="poster-offset-y-inc" tabindex="-1">+</button>
+                </div>
+              </div>
+              <button id="poster-fit-reset-btn" class="ct-reset-btn" type="button">↺ Reset</button>
+            </div>
+          </div>
 
           <!-- ── Banner Overlay card ── -->
           <div class="ct-group">
@@ -297,7 +360,7 @@
             <div class="ct-toggle-row ct-guidelines-row">
               <span class="ct-toggle-label">Placement Guidelines</span>
               <label class="toggle-switch">
-                <input type="checkbox" id="guidelines-toggle" checked />
+                <input type="checkbox" id="guidelines-toggle" />
                 <span class="toggle-slider"></span>
               </label>
             </div>
@@ -370,7 +433,9 @@
             <div id="season-label-color-pickr"></div>
           </div>
         </div>
-        <!-- ── END CANVAS TOOLS ───────────────────────────────── -->
+        <!-- ── END CANVAS TOOLS section-body ── -->
+        </div>
+        <!-- ── END CANVAS TOOLS section ── -->
 
         <div class="section-separator"></div>
         <div class="sidebar-action-row">
