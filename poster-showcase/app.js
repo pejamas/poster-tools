@@ -1814,4 +1814,27 @@ document.addEventListener("DOMContentLoaded", function () {
       parent.classList.toggle("active");
     });
   });
+
+  // Config dropdown toggle
+  const _configDropdown = document.querySelector('.config-dropdown');
+  if (_configDropdown) {
+    const _configDropdownBtn  = _configDropdown.querySelector('.action-button');
+    const _configDropdownMenu = _configDropdown.querySelector('.config-dropdown-menu');
+    if (_configDropdownBtn && _configDropdownMenu) {
+      _configDropdownBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        _configDropdownMenu.classList.toggle('show');
+      });
+      document.addEventListener('click', (e) => {
+        if (!_configDropdown.contains(e.target)) {
+          _configDropdownMenu.classList.remove('show');
+        }
+      });
+      document.querySelectorAll('.config-menu-item').forEach(item => {
+        item.addEventListener('click', () => {
+          _configDropdownMenu.classList.remove('show');
+        });
+      });
+    }
+  }
 });

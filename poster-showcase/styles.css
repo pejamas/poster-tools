@@ -1408,6 +1408,85 @@ input:checked + .toggle-slider:before {
   box-shadow: 0 4px 12px rgba(0, 255, 255, 0.15);
 }
 
+.action-button-icon {
+  padding: 0.5rem;
+  min-width: 40px;
+  min-height: 40px;
+}
+
+.config-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.config-dropdown-menu {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  background: rgba(22, 24, 48, 0.98);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  min-width: 200px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 20px rgba(0, 255, 240, 0.1);
+  backdrop-filter: blur(12px);
+  z-index: 1000;
+  padding: 8px 0;
+  animation: dropdownFadeIn 0.2s ease-out;
+}
+
+.config-dropdown-menu::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: 0;
+  right: 0;
+  height: 4px;
+}
+
+@keyframes dropdownFadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.config-dropdown-menu.show {
+  display: block;
+}
+
+.config-menu-item {
+  width: 100%;
+  padding: 10px 16px;
+  background: transparent;
+  border: none;
+  color: white;
+  font-family: "Gabarito", sans-serif;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.2s ease;
+  text-align: left;
+  box-sizing: border-box;
+}
+
+.config-menu-item:hover {
+  background: linear-gradient(135deg, rgba(0, 255, 240, 0.15), rgba(166, 0, 255, 0.15));
+}
+
+.menu-icon {
+  width: 16px;
+  height: 16px;
+  filter: brightness(0) invert(1);
+}
+
+.menu-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 6px 12px;
+}
+
 .action-icon {
   width: 22px;
   height: 22px;
