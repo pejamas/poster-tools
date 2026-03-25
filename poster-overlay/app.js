@@ -1,6 +1,17 @@
 // Changelog Configuration
-const CURRENT_VERSION = '1.2.0';
+const CURRENT_VERSION = '1.3.0';
 const CHANGELOG = [
+  {
+    version: '1.3.0',
+    date: 'March 25, 2026',
+    changes: [
+      { type: 'feature',     text: 'Quick Edit Bar — floating two-row control bar above the canvas for fast access to poster fit, title logo, overlays, season label, and download/reset without opening the sidebar' },
+      { type: 'improvement', text: 'Season Suite wider layout — grid now expands up to the full viewport width so shows with 20+ seasons display in fewer rows' },
+      { type: 'improvement', text: 'Network Logo and Bottom Gradient toggles now sync correctly on show load — the edit bar button reflects the real state immediately' },
+      { type: 'improvement', text: 'Season Label always visible — no longer hidden until a TV show is searched; works on any poster' },
+      { type: 'improvement', text: 'Edit bar width is stable — bar keeps a consistent size regardless of whether a show or movie is loaded' },
+    ]
+  },
   {
     version: '1.2.0',
     date: 'March 25, 2026',
@@ -756,6 +767,7 @@ function displayLogoSuggestions(logos) {
         updateNetworkLogo(logo.path);
       } else {
         networkLogoCheckbox.checked = true;
+        networkLogoCheckbox.dispatchEvent(new Event('change'));
         updateNetworkLogo(logo.path);
       }
     });
@@ -2753,11 +2765,9 @@ function displayMovieMetadata(details) {
   // Hide TV-only UI
   const _ssp = document.getElementById('season-suite-panel');
   if (_ssp) _ssp.style.display = 'none';
-  const _slc = document.getElementById('season-label-card');
-  if (_slc) _slc.style.display = 'none';
   seasonLabelEnabled = false;
   const _slt = document.getElementById('season-label-toggle');
-  if (_slt) _slt.checked = false;
+  if (_slt) { _slt.checked = false; _slt.dispatchEvent(new Event('change')); }
   seasonSuiteData     = null;
   activeSeasonNum     = null;
   showBasePosterPath  = null;
@@ -2810,6 +2820,7 @@ function displayTVShowMetadata(details) {
       networkLogoSearch.value = exactMatch.name;
       updateNetworkLogo(exactMatch.path);
       networkLogoCheckbox.checked = true;
+      networkLogoCheckbox.dispatchEvent(new Event('change'));
       hideNetworkSuggestions();
     } else {
       // Check special cases
@@ -2827,6 +2838,7 @@ function displayTVShowMetadata(details) {
           networkLogoSearch.value = specialMatch.name;
           updateNetworkLogo(specialMatch.path);
           networkLogoCheckbox.checked = true;
+          networkLogoCheckbox.dispatchEvent(new Event('change'));
           hideNetworkSuggestions();
         }
       } else {
@@ -2843,6 +2855,7 @@ function displayTVShowMetadata(details) {
             networkLogoSearch.value = logo.name;
             updateNetworkLogo(logo.path);
             networkLogoCheckbox.checked = true;
+            networkLogoCheckbox.dispatchEvent(new Event('change'));
             hideNetworkSuggestions();
             matchFound = true;
             break;
@@ -2860,8 +2873,7 @@ function displayTVShowMetadata(details) {
   buildSeasonGrid(details.seasons || [], details.id);
 
   // Show the Season Label card in the sidebar
-  const _slc2 = document.getElementById('season-label-card');
-  if (_slc2) _slc2.style.display = '';
+  // (always visible — nothing to show/hide)
 }
 
 document.addEventListener("click", (e) => {
@@ -2922,16 +2934,14 @@ document.getElementById("reset-btn").addEventListener("click", () => {
   seasonLabelColor   = '#ffffff';
   const _ssp = document.getElementById('season-suite-panel');
   if (_ssp) _ssp.style.display = 'none';
-  const _slc = document.getElementById('season-label-card');
-  if (_slc) _slc.style.display = 'none';
   const _slt = document.getElementById('season-label-toggle');
-  if (_slt) _slt.checked = false;
+  if (_slt) { _slt.checked = false; _slt.dispatchEvent(new Event('change')); }
   const _sli = document.getElementById('season-label-text');
   if (_sli) _sli.value = '';
   if (seasonLabelColorPickr) seasonLabelColorPickr.setColor('#ffffff');
   // Reset gradient
   gradientEnabled = false; gradientOpacity = 0.7; gradientHeight = 50; gradientColor = '#000000';
-  const _gt  = document.getElementById('gradient-toggle');       if (_gt)  _gt.checked = false;
+  const _gt  = document.getElementById('gradient-toggle');       if (_gt)  { _gt.checked = false; _gt.dispatchEvent(new Event('change')); }
   const _gcp = document.getElementById('gradient-controls-panel'); if (_gcp) _gcp.style.display = 'none';
   const _go  = document.getElementById('gradient-opacity');      if (_go)  _go.value = '70';
   const _gov = document.getElementById('gradient-opacity-val');  if (_gov) _gov.textContent = '70%';
@@ -5447,14 +5457,14 @@ function _applyOverlaySettings(s) {
   // Gradient
   if (s.gradientEnabled !== undefined) {
     gradientEnabled = s.gradientEnabled;
-    const gt = document.getElementById('gradient-toggle'); if (gt) gt.checked = gradientEnabled;
+    const gt = document.getElementById('gradient-toggle'); if (gt) { gt.checked = gradientEnabled; gt.dispatchEvent(new Event('change')); }
     const gp = document.getElementById('gradient-controls-panel'); if (gp) gp.style.display = gradientEnabled ? 'block' : 'none';
   }
   if (s.gradientOpacity !== undefined) { gradientOpacity = s.gradientOpacity; const el = document.getElementById('gradient-opacity'); if (el) el.value = Math.round(gradientOpacity * 100); const vl = document.getElementById('gradient-opacity-val'); if (vl) vl.textContent = Math.round(gradientOpacity * 100) + '%'; }
   if (s.gradientHeight  !== undefined) { gradientHeight  = s.gradientHeight;  const el = document.getElementById('gradient-height');  if (el) el.value = gradientHeight;  const vl = document.getElementById('gradient-height-val');  if (vl) vl.textContent = gradientHeight + '%'; }
   if (s.gradientColor   !== undefined) { gradientColor = s.gradientColor; if (gradientColorPickr) gradientColorPickr.setColor(gradientColor); }
   // Season label
-  if (s.seasonLabelEnabled !== undefined) { seasonLabelEnabled = s.seasonLabelEnabled; const el = document.getElementById('season-label-toggle'); if (el) el.checked = seasonLabelEnabled; }
+  if (s.seasonLabelEnabled !== undefined) { seasonLabelEnabled = s.seasonLabelEnabled; const el = document.getElementById('season-label-toggle'); if (el) { el.checked = seasonLabelEnabled; el.dispatchEvent(new Event('change')); } }
   if (s.seasonLabelFont    !== undefined) { seasonLabelFont    = s.seasonLabelFont;    const el = document.getElementById('season-label-font');    if (el) el.value = seasonLabelFont; }
   if (s.seasonLabelFontSize!== undefined) { seasonLabelFontSize= s.seasonLabelFontSize;const el = document.getElementById('season-label-size');    if (el) el.value = seasonLabelFontSize; const vl = document.getElementById('season-label-size-val'); if (vl) vl.textContent = seasonLabelFontSize; }
   if (s.seasonLabelColor  !== undefined) { seasonLabelColor = s.seasonLabelColor; if (seasonLabelColorPickr) seasonLabelColorPickr.setColor(seasonLabelColor); }
@@ -5810,3 +5820,180 @@ document.addEventListener("DOMContentLoaded", function() {
   setupCollapsibleSections();
   checkAndShowChangelog();
 });
+
+// ═══════════════════════════════════════════════════════════
+// QUICK EDIT BAR — bidirectional sync with sidebar controls
+// ═══════════════════════════════════════════════════════════
+function initPoEditBar() {
+  // ── Show/hide toggle with localStorage persistence ────────
+  (function initToggle() {
+    const btn = document.getElementById('po-eb-toggle');
+    const bar = document.getElementById('po-edit-bar');
+    if (!btn || !bar) return;
+    const STORAGE_KEY = 'po_edit_bar_open';
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved === 'false') {
+      bar.classList.add('po-eb-collapsed');
+      btn.setAttribute('aria-expanded', 'false');
+    }
+    btn.addEventListener('click', () => {
+      const isOpen = btn.getAttribute('aria-expanded') === 'true';
+      if (isOpen) {
+        bar.classList.add('po-eb-collapsed');
+        btn.setAttribute('aria-expanded', 'false');
+        localStorage.setItem(STORAGE_KEY, 'false');
+      } else {
+        bar.classList.remove('po-eb-collapsed');
+        btn.setAttribute('aria-expanded', 'true');
+        localStorage.setItem(STORAGE_KEY, 'true');
+      }
+    });
+  })();
+
+  // ── Helpers ────────────────────────────────────────────────
+  function syncSelects(ebId, sbId) {
+    const eb = document.getElementById(ebId);
+    const sb = document.getElementById(sbId);
+    if (!eb || !sb) return;
+    // Populate eb options from sb if sb has more options
+    if (sb.options.length > eb.options.length) {
+      eb.innerHTML = sb.innerHTML;
+    }
+    eb.value = sb.value;
+    eb.addEventListener('change', () => {
+      sb.value = eb.value;
+      sb.dispatchEvent(new Event('change'));
+    });
+    sb.addEventListener('change', () => { eb.value = sb.value; });
+  }
+
+  // Sync a checkbox (sidebar) with a toggle button (edit bar).
+  function syncCheckboxToggle(ebId, sbId) {
+    const eb = document.getElementById(ebId);
+    const sb = document.getElementById(sbId);
+    if (!eb || !sb) return;
+    function updateEb() {
+      const on = sb.checked;
+      eb.setAttribute('aria-pressed', String(on));
+      eb.textContent = on ? 'On' : 'Off';
+    }
+    updateEb();
+    eb.addEventListener('click', () => {
+      sb.checked = !sb.checked;
+      sb.dispatchEvent(new Event('change'));
+      updateEb();
+    });
+    sb.addEventListener('change', updateEb);
+  }
+
+  // Mirror a range slider + display value both ways.
+  function syncSlider(ebSliderId, ebValId, ebDecId, ebIncId, sbSliderId, formatFn) {
+    const ebSlider = document.getElementById(ebSliderId);
+    const ebVal    = document.getElementById(ebValId);
+    const ebDec    = document.getElementById(ebDecId);
+    const ebInc    = document.getElementById(ebIncId);
+    const sbSlider = document.getElementById(sbSliderId);
+    if (!ebSlider || !sbSlider) return;
+
+    function updateEbVal(v) {
+      if (ebVal) ebVal.textContent = formatFn ? formatFn(v) : v;
+    }
+
+    // Seed from sidebar
+    ebSlider.value = sbSlider.value;
+    updateEbVal(sbSlider.value);
+
+    ebSlider.addEventListener('input', () => {
+      sbSlider.value = ebSlider.value;
+      sbSlider.dispatchEvent(new Event('input'));
+      updateEbVal(ebSlider.value);
+    });
+
+    sbSlider.addEventListener('input', () => {
+      ebSlider.value = sbSlider.value;
+      updateEbVal(sbSlider.value);
+    });
+
+    // − / + buttons on the edit bar operate the sidebar slider so existing logic fires
+    if (ebDec) {
+      ebDec.addEventListener('click', () => {
+        const step = parseFloat(sbSlider.step) || 1;
+        const min  = parseFloat(sbSlider.min);
+        const newVal = Math.max(min, parseFloat(sbSlider.value) - step);
+        sbSlider.value = newVal;
+        sbSlider.dispatchEvent(new Event('input'));
+        ebSlider.value = sbSlider.value;
+        updateEbVal(sbSlider.value);
+      });
+    }
+    if (ebInc) {
+      ebInc.addEventListener('click', () => {
+        const step = parseFloat(sbSlider.step) || 1;
+        const max  = parseFloat(sbSlider.max);
+        const newVal = Math.min(max, parseFloat(sbSlider.value) + step);
+        sbSlider.value = newVal;
+        sbSlider.dispatchEvent(new Event('input'));
+        ebSlider.value = sbSlider.value;
+        updateEbVal(sbSlider.value);
+      });
+    }
+  }
+
+  // ── Title Logo ─────────────────────────────────────────────
+  const ebPickLogo = document.getElementById('eb-pick-logo-btn');
+  if (ebPickLogo) ebPickLogo.addEventListener('click', () => document.getElementById('open-logo-picker-btn')?.click());
+
+  syncSlider('eb-logo-y', 'eb-logo-y-val', 'eb-logo-y-dec', 'eb-logo-y-inc',
+             'designer-logo-y', v => v);
+  syncSlider('eb-logo-scale', 'eb-logo-scale-val', 'eb-logo-scale-dec', 'eb-logo-scale-inc',
+             'designer-logo-scale', v => Math.round(parseFloat(v) * 100) + '%');
+
+  // ── Poster ─────────────────────────────────────────────────
+  syncSelects('eb-fit-mode', 'poster-fit-mode');
+
+  // ── Overlays ───────────────────────────────────────────────
+  syncSelects('eb-overlay-select', 'overlay-select');
+  syncCheckboxToggle('eb-gradient-toggle', 'gradient-toggle');
+  syncCheckboxToggle('eb-network-toggle', 'network-logo-checkbox');
+
+  // ── Season Label ───────────────────────────────────────────
+  const ebSeasonToggle = document.getElementById('eb-season-label-toggle');
+  const sbSeasonToggle = document.getElementById('season-label-toggle');
+  if (ebSeasonToggle && sbSeasonToggle) {
+    function updateEbSeasonToggle() {
+      const on = sbSeasonToggle.checked;
+      ebSeasonToggle.setAttribute('aria-pressed', String(on));
+      ebSeasonToggle.textContent = on ? 'On' : 'Off';
+    }
+    updateEbSeasonToggle();
+    ebSeasonToggle.addEventListener('click', () => {
+      sbSeasonToggle.checked = !sbSeasonToggle.checked;
+      sbSeasonToggle.dispatchEvent(new Event('change'));
+      updateEbSeasonToggle();
+    });
+    sbSeasonToggle.addEventListener('change', updateEbSeasonToggle);
+  }
+
+  const ebLabelText = document.getElementById('eb-season-label-text');
+  const sbLabelText = document.getElementById('season-label-text');
+  if (ebLabelText && sbLabelText) {
+    ebLabelText.value = sbLabelText.value;
+    ebLabelText.addEventListener('input', () => {
+      sbLabelText.value = ebLabelText.value;
+      sbLabelText.dispatchEvent(new Event('input'));
+    });
+    sbLabelText.addEventListener('input', () => { ebLabelText.value = sbLabelText.value; });
+  }
+
+  syncSlider('eb-season-y', 'eb-season-y-val', 'eb-season-y-dec', 'eb-season-y-inc',
+             'season-label-y', v => parseFloat(v).toFixed(1) + '%');
+
+  // ── Actions ────────────────────────────────────────────────
+  const ebDownload = document.getElementById('eb-download-btn');
+  if (ebDownload) ebDownload.addEventListener('click', () => document.getElementById('download-btn')?.click());
+
+  const ebReset = document.getElementById('eb-reset-btn');
+  if (ebReset) ebReset.addEventListener('click', () => document.getElementById('reset-btn')?.click());
+}
+
+document.addEventListener("DOMContentLoaded", initPoEditBar);

@@ -121,10 +121,9 @@
 
 .main-content {
     display: flex;
-    gap: 1rem;
-    justify-content: center;
-    align-items: flex-start;
-    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;  /* spacing between edit-bar-unit and canvas-meta-row is handled per-component */
 }
 
 /* ==========================================
@@ -725,7 +724,6 @@ canvas {
    ========================================== */
 .metadata-panel {
     width: 380px;
-    height: 8;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
@@ -3288,12 +3286,333 @@ input:checked + .toggle-slider:before {
 }
 
 /* ═══════════════════════════════════════════════════════════
+   QUICK EDIT BAR
+   ═══════════════════════════════════════════════════════════ */
+
+/* Canvas column — flex column that stacks toggle pill → edit bar → canvas */
+.po-canvas-col {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  /* width driven by the canvas-container (550px) inside it */
+}
+
+/* Workspace wrapper: transparent layout container — children become direct flex items
+   of main-content and center independently. */
+.po-workspace {
+  display: contents;
+}
+
+/* Unit that holds the toggle pill + edit bar — max-content so width = content only,
+   never influenced by anything above or below */
+.po-eb-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: max-content;
+}
+
+/* Row that places canvas and metadata panel side-by-side */
+.po-canvas-meta-row {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  margin-top: 18px;  /* gap between edit bar and canvas/metadata */
+}
+
+/* Toggle pill sits directly above the edit bar */
+.po-eb-toggle-pill {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: rgba(0, 255, 240, 0.07);
+  border: 1px solid rgba(0, 255, 240, 0.2);
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  color: rgba(0, 255, 240, 0.75);
+  font-size: 11px;
+  font-family: 'Gabarito', sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s;
+  width: 100%;
+  box-sizing: border-box;
+}
+.po-eb-toggle-pill:hover {
+  background: rgba(0, 255, 240, 0.12);
+  color: #00fff0;
+}
+/* When collapsed: restore full rounded corners */
+.po-eb-toggle-pill[aria-expanded="false"] {
+  border-bottom: 1px solid rgba(0, 255, 240, 0.2);
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.po-eb-chevron {
+  transition: transform 0.25s ease;
+}
+.po-eb-toggle-pill[aria-expanded="false"] .po-eb-chevron {
+  transform: rotate(180deg);
+}
+
+.po-edit-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  width: 100%;
+  padding: 10px 14px;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(0, 255, 240, 0.18);
+  border-top: none;
+  border-radius: 0 0 10px 10px;
+  backdrop-filter: blur(8px);
+  box-sizing: border-box;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  max-height: 130px;
+  opacity: 1;
+  transition: max-height 0.3s ease, opacity 0.25s ease, padding 0.25s ease;
+}
+.po-edit-bar.po-eb-collapsed {
+  max-height: 0;
+  opacity: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Each explicit row inside the edit bar */
+.po-eb-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  flex-wrap: nowrap;
+}
+
+/* Row 2 (Title Logo + Season Label) — subtle top separator; wraps if season label is too wide */
+.po-eb-row-2 {
+  padding-top: 8px;
+  margin-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  flex-wrap: nowrap;
+}
+
+.po-eb-group {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.po-eb-group-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(0, 255, 240, 0.7);
+  margin-right: 2px;
+  white-space: nowrap;
+}
+
+.po-eb-label {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.55);
+  white-space: nowrap;
+}
+
+.po-eb-sep {
+  width: 1px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 0 4px;
+  flex-shrink: 0;
+}
+
+.po-eb-divider {
+  width: 1px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 0 2px;
+}
+
+/* Buttons */
+.po-eb-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 6px;
+  color: #fff;
+  font-size: 12px;
+  font-family: 'Gabarito', sans-serif;
+  font-weight: 500;
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: background 0.18s, border-color 0.18s;
+  white-space: nowrap;
+}
+.po-eb-btn:hover {
+  background: rgba(0, 255, 240, 0.12);
+  border-color: rgba(0, 255, 240, 0.35);
+}
+.po-eb-btn svg { flex-shrink: 0; }
+
+.po-eb-toggle-btn {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 11px;
+  font-family: 'Gabarito', sans-serif;
+  font-weight: 600;
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s, border-color 0.18s;
+  white-space: nowrap;
+  min-width: 36px;
+  text-align: center;
+}
+.po-eb-toggle-btn[aria-pressed="true"] {
+  background: linear-gradient(135deg, #00bfa5 0%, #6a11cb 100%);
+  border-color: transparent;
+  color: #fff;
+}
+.po-eb-toggle-btn:hover {
+  border-color: rgba(0, 255, 240, 0.35);
+  color: #fff;
+}
+
+.po-eb-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-family: 'Gabarito', sans-serif;
+  font-weight: 600;
+  padding: 6px 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.18s, transform 0.18s;
+}
+.po-eb-action-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+.po-eb-dl {
+  background: linear-gradient(135deg, #00fff0, #6a11cb);
+  color: #fff;
+}
+.po-eb-reset {
+  background: linear-gradient(135deg, #ff5252, #d50000);
+  color: #fff;
+}
+
+/* Select */
+.po-eb-select {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 6px;
+  color: #fff;
+  font-size: 12px;
+  font-family: 'Gabarito', sans-serif;
+  padding: 4px 6px;
+  cursor: pointer;
+  outline: none;
+  max-width: 110px;
+}
+.po-eb-select option { background: #1a1a2e; color: #fff; }
+.po-eb-select:focus { border-color: rgba(0, 255, 240, 0.4); }
+
+/* Text input */
+.po-eb-text {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 6px;
+  color: #fff;
+  font-size: 12px;
+  font-family: 'Gabarito', sans-serif;
+  padding: 5px 8px;
+  width: 90px;
+  outline: none;
+}
+.po-eb-text:focus { border-color: rgba(0, 255, 240, 0.4); }
+.po-eb-text::placeholder { color: rgba(255,255,255,0.3); }
+
+/* Slider + range buttons */
+.po-eb-range-btn {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 5px;
+  color: #00fff0;
+  font-size: 14px;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s;
+  flex-shrink: 0;
+  padding: 0;
+}
+.po-eb-range-btn:hover { background: rgba(0, 255, 240, 0.15); }
+
+.po-eb-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 65px;
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(to right, #00bfa5, #8e24aa);
+  outline: none;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.po-eb-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+.po-eb-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  border: none;
+  cursor: pointer;
+}
+
+.po-eb-val {
+  font-size: 11px;
+  color: #00fff0;
+  min-width: 36px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* ═══════════════════════════════════════════════════════════
    SEASON SUITE — panel below canvas / metadata
    ═══════════════════════════════════════════════════════════ */
 
 .season-suite-panel {
-  width: 100%;
-  max-width: 1000px;
+  width: min(90vw, 1600px);
   margin-top: 18px;
   padding: 14px 16px 16px;
   background: rgba(255, 255, 255, 0.03);

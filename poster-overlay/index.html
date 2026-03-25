@@ -366,8 +366,8 @@
             </div>
           </div>
 
-          <!-- ── Season Label card (TV only) ── -->
-          <div class="ct-group" id="season-label-card" style="display:none">
+          <!-- ── Season Label card ── -->
+          <div class="ct-group" id="season-label-card">
             <div class="ct-group-header">
               <span class="ct-group-title">Season Label</span>
               <label class="toggle-switch">
@@ -449,18 +449,118 @@
       </div>
       <div class="main">
         <div class="main-content">
-          <div class="canvas-container">
-            <canvas id="overlay-canvas" width="1000" height="1500"></canvas>
-          </div>
-          <div class="mobile-canvas-actions">
-            <button id="mobile-canvas-download-btn" class="icon-button teal">
-              <img src="../assets/poster-overlay-icons/download.svg" class="icon" /> Download
+          <div class="po-workspace">
+          <!-- Edit bar unit: wider than canvas, sits above canvas+metadata row -->
+          <div class="po-eb-unit">
+
+            <!-- ── Quick Edit Bar Toggle Pill ── -->
+            <button class="po-eb-toggle-pill" id="po-eb-toggle" aria-expanded="true">
+              <svg class="po-eb-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+              Quick Edit
             </button>
-            <button id="mobile-canvas-reset-btn" class="icon-button red">
-              <img src="../assets/poster-overlay-icons/refresh-cw.svg" class="icon" /> Reset
-            </button>
-          </div>
-          <div class="metadata-panel" id="metadata-panel" style="display: none">
+
+            <!-- ── Quick Edit Bar ── -->
+            <div class="po-edit-bar" id="po-edit-bar">
+
+              <!-- Row 1: Poster (Pick Logo + Fit) · Overlays · Actions -->
+              <div class="po-eb-row">
+                <div class="po-eb-group">
+                  <span class="po-eb-group-label">Poster</span>
+                  <button class="po-eb-btn" id="eb-pick-logo-btn" data-tooltip="Pick a title logo">Pick Logo</button>
+                  <div class="po-eb-divider"></div>
+                  <span class="po-eb-label">Fit</span>
+                  <select class="po-eb-select" id="eb-fit-mode" data-tooltip="Poster fit mode">
+                    <option value="stretch">Stretch</option>
+                    <option value="contain">Contain</option>
+                    <option value="cover">Cover</option>
+                    <option value="manual">Manual</option>
+                  </select>
+                </div>
+
+                <div class="po-eb-sep"></div>
+
+                <div class="po-eb-group">
+                  <span class="po-eb-group-label">Overlays</span>
+                  <span class="po-eb-label">Banner</span>
+                  <select class="po-eb-select" id="eb-overlay-select" data-tooltip="Banner overlay">
+                    <option value="none">None</option>
+                    <option value="../assets/movie-overlays/4K with DV.png">Dolby Vision</option>
+                    <option value="../assets/movie-overlays/4K with HDR.png">HDR</option>
+                    <option value="../assets/movie-overlays/4K no HDR.png">Ultra HD</option>
+                  </select>
+                  <div class="po-eb-divider"></div>
+                  <span class="po-eb-label">Bottom Gradient</span>
+                  <button class="po-eb-toggle-btn" id="eb-gradient-toggle" data-tooltip="Toggle bottom gradient" aria-pressed="false">Off</button>
+                  <div class="po-eb-divider"></div>
+                  <span class="po-eb-label">Network Logo</span>
+                  <button class="po-eb-toggle-btn" id="eb-network-toggle" data-tooltip="Toggle network logo" aria-pressed="false">Off</button>
+                </div>
+
+                <div class="po-eb-sep"></div>
+
+                <div class="po-eb-group">
+                  <button class="po-eb-action-btn po-eb-dl" id="eb-download-btn" data-tooltip="Download poster">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    Download
+                  </button>
+                  <button class="po-eb-action-btn po-eb-reset" id="eb-reset-btn" data-tooltip="Reset canvas">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.84"/></svg>
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Row 2: Title Logo Y/Scale · Season Label (TV only, inline) -->
+              <div class="po-eb-row po-eb-row-2">
+                <div class="po-eb-group" id="eb-logo-group">
+                  <span class="po-eb-group-label">Title Logo</span>
+                  <span class="po-eb-label">Y</span>
+                  <button class="po-eb-range-btn" id="eb-logo-y-dec">−</button>
+                  <input type="range" class="po-eb-slider" id="eb-logo-y" min="-650" max="650" value="55" step="5" data-tooltip="Logo vertical position" />
+                  <button class="po-eb-range-btn" id="eb-logo-y-inc">+</button>
+                  <span class="po-eb-val" id="eb-logo-y-val">55</span>
+                  <div class="po-eb-divider"></div>
+                  <span class="po-eb-label">Scale</span>
+                  <button class="po-eb-range-btn" id="eb-logo-scale-dec">−</button>
+                  <input type="range" class="po-eb-slider" id="eb-logo-scale" min="0.1" max="3" value="1" step="0.05" data-tooltip="Logo scale" />
+                  <button class="po-eb-range-btn" id="eb-logo-scale-inc">+</button>
+                  <span class="po-eb-val" id="eb-logo-scale-val">100%</span>
+                </div>
+
+                <div class="po-eb-sep" id="eb-season-sep"></div>
+
+                <div class="po-eb-group" id="eb-season-group">
+                  <span class="po-eb-group-label">Season Label</span>
+                  <button class="po-eb-toggle-btn" id="eb-season-label-toggle" data-tooltip="Toggle season label" aria-pressed="false">Off</button>
+                  <input type="text" class="po-eb-text" id="eb-season-label-text" placeholder="e.g. Season 1" data-tooltip="Season label text" />
+                  <div class="po-eb-divider"></div>
+                  <span class="po-eb-label">Y</span>
+                  <button class="po-eb-range-btn" id="eb-season-y-dec">−</button>
+                  <input type="range" class="po-eb-slider" id="eb-season-y" min="0" max="100" step="0.5" value="91" data-tooltip="Label vertical position" />
+                  <button class="po-eb-range-btn" id="eb-season-y-inc">+</button>
+                  <span class="po-eb-val" id="eb-season-y-val">91%</span>
+                </div>
+              </div>
+
+            </div>
+          </div><!-- end po-eb-unit -->
+
+          <!-- Canvas + metadata side-by-side row -->
+          <div class="po-canvas-meta-row">
+            <div class="po-canvas-col">
+              <div class="canvas-container">
+                <canvas id="overlay-canvas" width="1000" height="1500"></canvas>
+              </div>
+              <div class="mobile-canvas-actions">
+                <button id="mobile-canvas-download-btn" class="icon-button teal">
+                  <img src="../assets/poster-overlay-icons/download.svg" class="icon" /> Download
+                </button>
+                <button id="mobile-canvas-reset-btn" class="icon-button red">
+                  <img src="../assets/poster-overlay-icons/refresh-cw.svg" class="icon" /> Reset
+                </button>
+              </div>
+            </div>
+          <div class="metadata-panel" id="metadata-panel" style="display:none">
             <div class="title-row">
               <h2 id="meta-title">Title</h2>
               <div class="meta-badges">
@@ -491,6 +591,7 @@
             </div>
             <div class="overview" id="meta-overview"></div>
           </div>
+          </div><!-- end po-canvas-meta-row -->
 
           <!-- ── Season Suite (TV shows only) ── -->
           <div id="season-suite-panel" class="season-suite-panel" style="display:none">
@@ -501,7 +602,8 @@
             </div>
             <div id="season-grid" class="season-grid"></div>
           </div>
-        </div>
+          </div><!-- end po-workspace -->
+        </div><!-- end main-content -->
 <div id="poster-picker-backdrop" style="display:none"></div>
         <div id="poster-picker-modal" style="display:none">
           <div class="logo-picker-header">
