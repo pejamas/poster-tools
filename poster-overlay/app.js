@@ -588,11 +588,13 @@ posterUpload.addEventListener("change", (e) => {
         if (activeSeasonNum === null) baseShowImage = baseImage;
         const fit = { mode: posterFitMode, scale: posterScale, offsetX: posterOffsetX, offsetY: posterOffsetY };
         const existing = seasonSavedImages.get(uploadKey);
+        const gradient = { enabled: gradientEnabled, opacity: gradientOpacity, height: gradientHeight, color: gradientColor };
         seasonSavedImages.set(uploadKey, {
           img: baseImage,
           labelText: existing?.labelText ?? seasonLabelText,
           labelColor: existing?.labelColor ?? seasonLabelColor,
           logoColor: existing?.logoColor ?? designerLogoColor,
+          gradient,
           fit
         });
       }
@@ -1475,7 +1477,6 @@ function displayTMDBResultsForMediux(movies, type = "movie") {
       } else {
         lookupMediuxShowByTMDBId(movie.tmdb_id, movie.title);
       }
-      collapseSearchSection();
     });
 
     mediuxSuggestions.appendChild(div);
@@ -1687,7 +1688,6 @@ function displayMediuxResults(items, type = "movie") {
     div.addEventListener("click", () => {
       mediuxInput.value = item.title;
       mediuxSuggestions.innerHTML = "";
-      collapseSearchSection();
 
       if (type === "movie") {
         const hasDirectPosters = item.posters && item.posters.length > 0;
@@ -2383,7 +2383,6 @@ function displaySearchResults(results) {
       suggestionsBox.innerHTML = "";
 
       fetchAndDisplayPostersById(item.id, item.title, item.type);
-      collapseSearchSection();
     });
 
     suggestionsBox.appendChild(div);
@@ -4609,7 +4608,8 @@ function loadPosterFromPicker(posterUrl, id, type) {
       if (_li) _li.value = '';
       // Always save fit settings for base poster
       const fit = { mode: posterFitMode, scale: posterScale, offsetX: posterOffsetX, offsetY: posterOffsetY };
-      seasonSavedImages.set('base', { img, labelText: '', labelColor: seasonLabelColor, logoColor: designerLogoColor, fit });
+      const gradient = { enabled: gradientEnabled, opacity: gradientOpacity, height: gradientHeight, color: gradientColor };
+      seasonSavedImages.set('base', { img, labelText: '', labelColor: seasonLabelColor, logoColor: designerLogoColor, gradient, fit });
       drawCanvas();
       setTimeout(() => captureCanvasThumb('base'), 220);
       if (document.body.contains(loadingIndicator)) document.body.removeChild(loadingIndicator);
@@ -4952,7 +4952,7 @@ function buildSeasonGrid(seasons, showId) {
     if (activeSeasonNum !== null && baseImage) {
       // Save fit settings for the current season poster
       const fit = { mode: posterFitMode, scale: posterScale, offsetX: posterOffsetX, offsetY: posterOffsetY };
-      seasonSavedImages.set(activeSeasonNum, { img: baseImage, labelText: seasonLabelText, labelColor: seasonLabelColor, logoColor: designerLogoColor, fit });
+      seasonSavedImages.set(activeSeasonNum, { img: baseImage, labelText: seasonLabelText, labelColor: seasonLabelColor, logoColor: designerLogoColor, gradient: { enabled: gradientEnabled, opacity: gradientOpacity, height: gradientHeight, color: gradientColor }, fit });
     }
     activeSeasonNum = null;
     document.querySelectorAll('.season-card').forEach(c => c.classList.remove('active'));
@@ -4973,6 +4973,7 @@ function buildSeasonGrid(seasons, showId) {
         posterOffsetX = saved.fit.offsetX;
         posterOffsetY = saved.fit.offsetY;
       }
+      applyGradientState(saved.gradient);
     } else if (baseShowImage) {
       showPosterImg = baseShowImage;
     }
@@ -5040,7 +5041,7 @@ function buildSeasonGrid(seasons, showId) {
       if (baseImage) {
         // Save fit settings for the previous poster
         const fit = { mode: posterFitMode, scale: posterScale, offsetX: posterOffsetX, offsetY: posterOffsetY };
-        seasonSavedImages.set(prevKey, { img: baseImage, labelText: seasonLabelText, labelColor: seasonLabelColor, logoColor: designerLogoColor, fit });
+        seasonSavedImages.set(prevKey, { img: baseImage, labelText: seasonLabelText, labelColor: seasonLabelColor, logoColor: designerLogoColor, gradient: { enabled: gradientEnabled, opacity: gradientOpacity, height: gradientHeight, color: gradientColor }, fit });
       }
 
       activeSeasonNum = season.season_number;
@@ -5069,6 +5070,7 @@ function buildSeasonGrid(seasons, showId) {
       const newLogoColor = savedEntry?.logoColor ?? '#ffffff';
       designerLogoColor = newLogoColor;
       if (designerLogoColorPickr) designerLogoColorPickr.setColor(newLogoColor);
+      applyGradientState(savedEntry?.gradient);
 
       // If we already have a saved composite for this season, restore it without re-fetching
       if (savedEntry) {
@@ -5133,7 +5135,7 @@ function loadSeasonPoster(seasonNum, posterPath, seasonName) {
 
   function finishSeason(img) {
     baseImage = img;
-    seasonSavedImages.set(seasonNum, { img, labelText: seasonLabelText, labelColor: seasonLabelColor, logoColor: designerLogoColor });
+    seasonSavedImages.set(seasonNum, { img, labelText: seasonLabelText, labelColor: seasonLabelColor, logoColor: designerLogoColor, gradient: { enabled: gradientEnabled, opacity: gradientOpacity, height: gradientHeight, color: gradientColor } });
     drawCanvas();
     if (spinner && spinner.parentNode) spinner.parentNode.removeChild(spinner);
     // Update the season card thumbnail with the current canvas composite
@@ -5797,6 +5799,25 @@ function setupCollapsibleSections() {
       setSectionCollapsed(key, !nowActive);
     });
   });
+}
+
+// Restore per-poster gradient state from a saved entry
+function applyGradientState(g) {
+  if (!g) return;
+  gradientEnabled = !!g.enabled;
+  if (g.opacity  !== undefined) gradientOpacity = g.opacity;
+  if (g.height   !== undefined) gradientHeight  = g.height;
+  if (g.color    !== undefined) gradientColor   = g.color;
+  // Sync UI
+  const gt = document.getElementById('gradient-toggle');
+  if (gt) { gt.checked = gradientEnabled; gt.dispatchEvent(new Event('change')); }
+  const gop = document.getElementById('gradient-opacity');
+  const gopv = document.getElementById('gradient-opacity-val');
+  if (gop) { gop.value = Math.round(gradientOpacity * 100); if (gopv) gopv.textContent = gop.value + '%'; }
+  const gh = document.getElementById('gradient-height');
+  const ghv = document.getElementById('gradient-height-val');
+  if (gh) { gh.value = gradientHeight; if (ghv) ghv.textContent = gradientHeight + '%'; }
+  if (gradientColorPickr) gradientColorPickr.setColor(gradientColor);
 }
 
 // Auto-collapse Search Functions after a title is selected

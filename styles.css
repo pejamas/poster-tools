@@ -169,7 +169,28 @@
     transform: translateY(-3px);
     box-shadow: 0 5px 15px rgba(0, 255, 255, 0.2);
   }
-  
+
+  .bmc-btn {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+    transition: all 0.25s ease;
+    border-radius: 8px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .bmc-btn img {
+    height: 36px;
+    width: auto;
+    display: block;
+  }
+
+  .bmc-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(255, 221, 0, 0.5);
+  }
+
   /* Modern mobile menu styling (header-mobile-menu) */
   .header-mobile-menu {
     display: none;
