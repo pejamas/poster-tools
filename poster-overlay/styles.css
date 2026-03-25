@@ -3612,7 +3612,8 @@ input:checked + .toggle-slider:before {
    ═══════════════════════════════════════════════════════════ */
 
 .season-suite-panel {
-  width: min(90vw, 1600px);
+  width: max-content;
+  max-width: min(90vw, 1600px);
   margin-top: 18px;
   padding: 14px 16px 16px;
   background: rgba(255, 255, 255, 0.03);
@@ -3674,8 +3675,8 @@ input:checked + .toggle-slider:before {
 }
 
 .season-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(108px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 10px;
 }
 
@@ -3684,6 +3685,8 @@ input:checked + .toggle-slider:before {
   display: flex;
   flex-direction: column;
   gap: 5px;
+  width: 108px;
+  flex-shrink: 0;
 }
 
 .season-card {
