@@ -1,0 +1,1492 @@
+/* ============================================================
+   emby-dashboard.css — Emby Integration for Poster Overlay
+   Local-only panel: connect, browse library, push artwork
+   ============================================================ */
+
+/* ── Fullscreen overlay ─────────────────────────────────────── */
+.emby-dashboard-fullscreen {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(10, 10, 18, 0.99);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  padding: 28px 32px 32px;
+  overflow-y: auto;
+  gap: 0;
+  font-family: "Gabarito", sans-serif;
+  color: #e0e0e0;
+}
+
+body.emby-dashboard-open {
+  overflow: hidden;
+}
+
+/* ── Header ─────────────────────────────────────────────────── */
+.emby-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+}
+
+.emby-header-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.emby-header h2 {
+  margin: 0;
+  font-size: 1.9rem;
+  font-weight: 700;
+  background: linear-gradient(to right, #52b54b, #00fff0);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.emby-subtitle {
+  margin: 0;
+  color: #999;
+  font-size: 0.95rem;
+}
+
+/* ── Connected bar (replaces form after connect) ────────────── */
+.emby-connected-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(82, 181, 75, 0.08);
+  border: 1px solid rgba(82, 181, 75, 0.25);
+  border-radius: 8px;
+  padding: 12px 18px;
+  margin-bottom: 16px;
+  flex-shrink: 0;
+}
+
+.emby-connected-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.emby-connected-label {
+  font-size: 0.95rem;
+  color: #e0e0e0;
+}
+
+.emby-connected-label strong {
+  color: #52b54b;
+}
+
+.emby-connected-url {
+  font-size: 0.85rem;
+  color: #888;
+}
+
+/* ── Connection form ────────────────────────────────────────── */
+.emby-connection-form {
+  background: rgba(20, 20, 30, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 24px 28px;
+  margin-bottom: 20px;
+  flex-shrink: 0;
+  max-width: 680px;
+}
+
+.emby-form-header h3 {
+  margin: 0 0 4px;
+  font-size: 1.1rem;
+  color: #fff;
+  font-weight: 600;
+}
+
+.emby-form-header .emby-connection-info {
+  margin: 0 0 20px;
+  color: #999;
+  font-size: 0.9rem;
+}
+
+.emby-connection-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.emby-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.emby-form-group label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #ccc;
+}
+
+.emby-form-group input[type="text"],
+.emby-form-group input[type="password"] {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  padding: 9px 12px;
+  color: #fff;
+  font-family: "Gabarito", sans-serif;
+  font-size: 0.95rem;
+  transition: border-color 0.2s;
+  outline: none;
+}
+
+.emby-form-group input:focus {
+  border-color: rgba(82, 181, 75, 0.6);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.emby-form-hint {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.emby-checkbox-label {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center;
+  gap: 10px;
+  font-weight: 400 !important;
+  font-size: 0.92rem;
+  cursor: pointer;
+}
+
+.emby-checkbox-label input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+  accent-color: #52b54b;
+  flex-shrink: 0;
+}
+
+.emby-disclaimer {
+  background: rgba(255, 152, 0, 0.08);
+  border: 1px solid rgba(255, 152, 0, 0.3);
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 0.85rem;
+  color: #e0a040;
+  line-height: 1.5;
+}
+
+.emby-connect-btn {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: linear-gradient(135deg, rgba(82, 181, 75, 0.15), rgba(0, 255, 240, 0.1)) !important;
+  border: 1px solid rgba(82, 181, 75, 0.4) !important;
+  color: #fff !important;
+  font-size: 0.95rem;
+  padding: 10px 20px !important;
+  align-self: flex-start;
+}
+
+.emby-connect-btn:hover {
+  background: linear-gradient(135deg, rgba(82, 181, 75, 0.3), rgba(0, 255, 240, 0.2)) !important;
+  border-color: rgba(82, 181, 75, 0.6) !important;
+  transform: translateY(-1px);
+}
+
+.emby-status-text {
+  font-size: 0.9rem;
+  color: #999;
+  margin: 0;
+  min-height: 1.2em;
+}
+
+.emby-status-text.success { color: #52b54b; }
+.emby-status-text.error   { color: #ff5252; }
+
+/* ── Push bar ───────────────────────────────────────────────── */
+.emby-push-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: linear-gradient(135deg, rgba(82, 181, 75, 0.12), rgba(0, 255, 240, 0.06));
+  border: 1px solid rgba(82, 181, 75, 0.3);
+  border-radius: 10px;
+  padding: 12px 18px;
+  margin-bottom: 16px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.emby-push-bar-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 180px;
+  font-size: 0.95rem;
+}
+
+.emby-push-bar-info strong {
+  color: #fff;
+}
+
+.emby-push-btn {
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #52b54b, #00bfa5) !important;
+  border: none !important;
+  color: #fff !important;
+  font-weight: 600 !important;
+  padding: 9px 18px !important;
+  font-size: 0.9rem !important;
+  box-shadow: 0 3px 12px rgba(82, 181, 75, 0.35);
+  transition: all 0.25s ease !important;
+  flex-shrink: 0;
+}
+
+.emby-push-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #62c55b, #00d4b0) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 5px 16px rgba(82, 181, 75, 0.5) !important;
+}
+
+.emby-push-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.emby-push-clear-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  color: #888;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.emby-push-clear-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* ── Library section ────────────────────────────────────────── */
+.emby-library-section {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  gap: 14px;
+}
+
+.emby-library-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.emby-search-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 200px;
+  max-width: 360px;
+}
+
+.emby-search-input {
+  width: 100%;
+  padding: 9px 32px 9px 34px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  color: #fff;
+  font-family: "Gabarito", sans-serif;
+  font-size: 0.9rem;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.emby-search-input:focus {
+  border-color: rgba(82, 181, 75, 0.5);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.emby-search-input::placeholder { color: rgba(255, 255, 255, 0.35); }
+
+.emby-search-clear {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  font-size: 0.75rem;
+  line-height: 1;
+  padding: 2px 4px;
+  transition: color 0.15s;
+}
+
+.emby-search-clear:hover {
+  color: #fff;
+}
+
+.emby-filter-tabs {
+  display: flex;
+  gap: 6px;
+}
+
+.emby-filter-tab {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  color: #aaa;
+  font-family: "Gabarito", sans-serif;
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 6px 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.emby-filter-tab:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+.emby-filter-tab.active {
+  background: rgba(82, 181, 75, 0.2);
+  border-color: rgba(82, 181, 75, 0.5);
+  color: #fff;
+}
+
+/* ── Library grid ───────────────────────────────────────────── */
+.emby-library-container {
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+.emby-library-container::-webkit-scrollbar { width: 6px; }
+.emby-library-container::-webkit-scrollbar-track { background: transparent; }
+.emby-library-container::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.emby-library-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 14px;
+  padding: 4px 2px 20px;
+}
+
+.emby-item {
+  cursor: pointer;
+  border-radius: 8px;
+  overflow: visible;
+  border: 2px solid transparent;
+  transition: all 0.2s ease;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.emby-item:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+}
+
+.emby-item.selected {
+  border-color: #52b54b;
+  box-shadow: 0 0 14px rgba(82, 181, 75, 0.4);
+}
+
+.emby-item.expanded {
+  border-color: rgba(0, 255, 240, 0.4);
+}
+
+.emby-item-thumb {
+  position: relative;
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.emby-item-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: saturate(0.2) brightness(0.65);
+  transition: filter 0.3s ease;
+}
+
+.emby-item.customised .emby-item-thumb img {
+  filter: none;
+}
+
+.emby-item-thumb.no-image::after {
+  content: "No image";
+  color: rgba(255, 255, 255, 0.2);
+  font-size: 0.7rem;
+  text-align: center;
+  position: absolute;
+}
+
+.emby-type-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  flex-shrink: 0;
+}
+
+.emby-type-badge.series {
+  background: rgba(0, 122, 255, 0.85);
+  color: #fff;
+}
+
+.emby-type-badge.movie {
+  background: rgba(166, 0, 255, 0.85);
+  color: #fff;
+}
+
+.emby-item-name {
+  padding: 6px 8px 2px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #e8e8e8;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.35;
+  min-height: 2.3em;
+}
+
+.emby-item-badges {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 8px 7px;
+  flex-wrap: wrap;
+}
+
+.emby-item-badges .emby-quality-badge {
+  position: static;
+  font-size: 0.6rem;
+  padding: 2px 5px;
+}
+
+.emby-item-year-inline {
+  font-size: 0.72rem;
+  color: #666;
+  margin-left: auto;
+}
+
+/* ── Seasons panel (inline below show card) ─────────────────── */
+/* ── Seasons modal backdrop ──────────────────────────────────── */
+.emby-seasons-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 10010;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  backdrop-filter: blur(3px);
+}
+
+.emby-seasons-backdrop.open {
+  opacity: 1;
+}
+
+/* ── Seasons modal ───────────────────────────────────────────── */
+.emby-seasons-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -46%);
+  width: min(98vw, 1800px);
+  max-height: 90vh;
+  background: rgba(16, 16, 26, 0.98);
+  border: 1px solid rgba(0, 255, 240, 0.2);
+  border-radius: 14px;
+  padding: 20px 22px 18px;
+  z-index: 10011;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.7);
+  overflow: hidden;
+}
+
+.emby-seasons-modal.open {
+  opacity: 1;
+  transform: translate(-50%, -50%);
+}
+
+.emby-seasons-panel {
+  /* kept as fallback for list view — overridden below */
+  background: rgba(14, 14, 24, 0.97);
+  border: 1px solid rgba(0, 255, 240, 0.18);
+  border-radius: 12px;
+  padding: 16px 18px 18px;
+  margin: -2px 0 10px;
+  animation: dropdownFadeIn 0.18s ease-out;
+}
+
+.emby-seasons-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.emby-seasons-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.95rem;
+  color: #ddd;
+  font-weight: 700;
+  min-width: 0;
+}
+
+.emby-seasons-title span:first-of-type {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.emby-seasons-progress {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #52b54b;
+  background: rgba(82, 181, 75, 0.12);
+  border: 1px solid rgba(82, 181, 75, 0.3);
+  border-radius: 20px;
+  padding: 2px 10px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.emby-seasons-close {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  color: #888;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.emby-seasons-close:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  border-color: rgba(255,255,255,0.3);
+}
+
+.emby-seasons-footer {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-shrink: 0;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.emby-seasons-footer-btn {
+  padding: 6px 16px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: transparent;
+  color: #bbb;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+
+.emby-seasons-footer-btn.mark:hover {
+  border-color: rgba(82, 181, 75, 0.5);
+  background: rgba(82, 181, 75, 0.12);
+  color: #8edc88;
+}
+
+.emby-seasons-footer-btn.unmark:hover {
+  border-color: rgba(255, 100, 100, 0.4);
+  background: rgba(255, 100, 100, 0.1);
+  color: #ff9090;
+}
+
+.emby-seasons-footer-btn.back {
+  margin-right: auto;
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #888;
+}
+
+.emby-seasons-footer-btn.back:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.07);
+  color: #ccc;
+}
+
+.emby-seasons-footer-btn.next {
+  margin-left: auto;
+  border-color: rgba(0, 255, 240, 0.25);
+  color: #00fff0;
+}
+
+.emby-seasons-footer-btn.next:hover {
+  border-color: rgba(0, 255, 240, 0.55);
+  background: rgba(0, 255, 240, 0.08);
+  color: #fff;
+}
+
+.emby-seasons-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 14px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 4px 22px 6px 4px;
+  flex: 1;
+  min-height: 0;
+}
+.emby-seasons-list::-webkit-scrollbar {
+  width: 6px;
+}
+.emby-seasons-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+.emby-seasons-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 3px;
+}
+.emby-seasons-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.emby-season-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 10px 8px;
+  border-radius: 10px;
+  border: 2px solid transparent;
+  transition: all 0.2s;
+  width: 100%;
+}
+
+.emby-season-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.18);
+  transform: translateY(-2px);
+}
+
+.emby-season-item.series-poster-item {
+  border-color: rgba(0, 255, 240, 0.18);
+  background: rgba(0, 255, 240, 0.04);
+}
+
+.emby-season-item.series-poster-item:hover {
+  border-color: rgba(0, 255, 240, 0.4);
+  background: rgba(0, 255, 240, 0.08);
+}
+
+.emby-season-item.customised .emby-season-thumb-wrap {
+  box-shadow: 0 0 0 2px #52b54b, 0 0 12px rgba(82, 181, 75, 0.4);
+}
+
+.emby-season-item.customised .emby-season-label {
+  color: #8edc88;
+}
+
+.emby-season-thumb-wrap {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  border-radius: 6px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.06);
+  flex-shrink: 0;
+  position: relative;
+}
+
+.emby-season-thumb-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: saturate(0.2) brightness(0.65);
+  transition: filter 0.25s ease;
+}
+
+.emby-season-item.customised .emby-season-thumb-wrap img {
+  filter: none;
+}
+
+.emby-season-hover-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  opacity: 0;
+  transition: opacity 0.18s ease;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+.emby-season-item:hover .emby-season-hover-overlay {
+  opacity: 1;
+}
+
+.emby-season-thumb-wrap.no-img::after {
+  content: "No image";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255,255,255,0.2);
+  font-size: 0.65rem;
+}
+
+.emby-season-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  width: 100%;
+}
+
+.emby-season-number {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 0.04em;
+}
+
+.emby-season-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #ccc;
+  text-align: center;
+  word-break: break-word;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ── Loading / states ───────────────────────────────────────── */
+.emby-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  gap: 16px;
+  color: #888;
+}
+
+.emby-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top-color: #52b54b;
+  border-radius: 50%;
+  animation: emby-spin 0.8s linear infinite;
+}
+
+.emby-empty,
+.emby-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  gap: 14px;
+  color: #888;
+  text-align: center;
+}
+
+.emby-error { color: #ff7070; }
+
+/* ── Spin animation ─────────────────────────────────────────── */
+@keyframes emby-spin {
+  to { transform: rotate(360deg); }
+}
+
+.emby-spin {
+  animation: emby-spin 0.9s linear infinite;
+  flex-shrink: 0;
+  margin-right: 6px;
+}
+
+/* ── Toast notifications ────────────────────────────────────── */
+.emby-toast {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: rgba(30, 30, 45, 0.97);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  padding: 12px 22px;
+  font-family: "Gabarito", sans-serif;
+  font-size: 0.95rem;
+  color: #e0e0e0;
+  z-index: 10000;
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: none;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  max-width: 420px;
+  text-align: center;
+}
+
+.emby-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.emby-toast.emby-toast-success {
+  border-color: rgba(82, 181, 75, 0.5);
+  color: #8ee888;
+}
+
+.emby-toast.emby-toast-error {
+  border-color: rgba(255, 82, 82, 0.5);
+  color: #ff8080;
+}
+
+/* ── Toolbar left/right split ───────────────────────────────── */
+.emby-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.emby-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+/* ── Item count ─────────────────────────────────────────────── */
+.emby-item-count {
+  font-size: 0.82rem;
+  color: #666;
+  white-space: nowrap;
+}
+
+/* ── Sort select ────────────────────────────────────────────── */
+.emby-sort-select {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  color: #ccc;
+  font-family: "Gabarito", sans-serif;
+  font-size: 0.82rem;
+  padding: 5px 12px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.emby-sort-select:focus,
+.emby-sort-select:hover {
+  border-color: rgba(255, 255, 255, 0.25);
+  color: #fff;
+}
+
+.emby-sort-select option {
+  background: #1a1a2e;
+  color: #e0e0e0;
+}
+
+.emby-genre-select {
+  max-width: 150px;
+}
+
+/* ── Size toggle ─────────────────────────────────────────────── */
+.emby-size-toggle {
+  display: flex;
+  gap: 2px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 3px;
+}
+
+.emby-size-btn {
+  background: transparent;
+  border: none;
+  border-radius: 5px;
+  color: #777;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  font-family: "Gabarito", sans-serif;
+  transition: all 0.18s;
+}
+
+.emby-size-btn:hover {
+  color: #ccc;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.emby-size-btn.active {
+  background: rgba(82, 181, 75, 0.2);
+  color: #52b54b;
+}
+
+/* ── Icon button (refresh etc.) ──────────────────────────────── */
+.emby-icon-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 7px;
+  color: #777;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.18s;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.emby-icon-btn:hover {
+  color: #ccc;
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* ── View toggle ────────────────────────────────────────────── */
+.emby-view-toggle {
+  display: flex;
+  gap: 2px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 3px;
+}
+
+.emby-view-btn {
+  background: transparent;
+  border: none;
+  border-radius: 5px;
+  color: #777;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.18s;
+}
+
+.emby-view-btn:hover {
+  color: #ccc;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.emby-view-btn.active {
+  background: rgba(82, 181, 75, 0.2);
+  color: #52b54b;
+}
+
+/* ── Hover overlay on grid cards ────────────────────────────── */
+.emby-item-thumb {
+  position: relative;
+}
+
+.emby-item-hover-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  opacity: 0;
+  transition: opacity 0.18s ease;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-align: center;
+  padding: 6px;
+  pointer-events: none;
+}
+
+.emby-item:hover .emby-item-hover-overlay {
+  opacity: 1;
+}
+
+/* In select mode, suppress hover overlay and show checkbox instead */
+.select-mode-active .emby-item:hover .emby-item-hover-overlay {
+  opacity: 0;
+}
+
+/* ── Multi-select checkbox overlay ──────────────────────────── */
+.emby-item-checkbox {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.8);
+  background: rgba(0,0,0,0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: transparent;
+  opacity: 0;
+  z-index: 4;
+  transition: opacity 0.15s ease, background 0.15s ease, color 0.15s ease;
+  pointer-events: none;
+}
+
+.select-mode-active .emby-item-checkbox {
+  opacity: 1;
+  pointer-events: none;
+}
+
+.emby-item.multi-selected .emby-item-checkbox {
+  background: #52b54b;
+  border-color: #52b54b;
+  color: #fff;
+  opacity: 1;
+}
+
+/* ── Multi-selected card ─────────────────────────────────────── */
+.emby-item.multi-selected {
+  border-color: #52b54b;
+  box-shadow: 0 0 0 2px rgba(82, 181, 75, 0.5), 0 4px 14px rgba(0,0,0,0.4);
+}
+
+.emby-list-item.multi-selected {
+  background: rgba(82, 181, 75, 0.12);
+  border-color: rgba(82, 181, 75, 0.45);
+}
+
+/* ── List view ──────────────────────────────────────────────── */
+.emby-list-view {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px 2px 20px;
+}
+
+.emby-list-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.emby-list-item:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.emby-list-item.selected {
+  background: rgba(82, 181, 75, 0.1);
+  border-color: rgba(82, 181, 75, 0.35);
+}
+
+.emby-list-item-thumb {
+  width: 44px;
+  height: 66px;
+  border-radius: 5px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.06);
+  flex-shrink: 0;
+}
+
+.emby-list-item-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.emby-list-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+  min-width: 0;
+}
+
+.emby-list-item-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #e0e0e0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.emby-list-item-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: #777;
+}
+
+.emby-list-item-action {
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.18s;
+}
+
+.emby-list-item:hover .emby-list-item-action {
+  opacity: 1;
+}
+
+.emby-load-hint {
+  font-size: 0.8rem;
+  color: #52b54b;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ── Quality badges ─────────────────────────────────────────── */
+.emby-quality-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.6rem;
+  font-weight: 800;
+  padding: 2px 5px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+
+.emby-quality-badge.hdr {
+  background: linear-gradient(135deg, #ff8c00, #ff4500);
+  color: #fff;
+}
+
+.emby-quality-badge.dv {
+  background: linear-gradient(135deg, #0090ff, #7b2fff);
+  color: #fff;
+}
+
+/* List view: slightly larger */
+.emby-list-item-meta .emby-quality-badge {
+  padding: 1px 5px;
+  font-size: 0.68rem;
+}
+
+/* ── Context menu ────────────────────────────────────────────── */
+.emby-ctx-menu {
+  position: fixed;
+  z-index: 10020;
+  background: rgba(22, 22, 35, 0.98);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  padding: 5px;
+  min-width: 190px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+}
+
+.emby-ctx-btn {
+  display: block;
+  width: 100%;
+  background: none;
+  border: none;
+  text-align: left;
+  padding: 8px 12px;
+  border-radius: 5px;
+  color: #e0e0e0;
+  font-family: "Gabarito", sans-serif;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+
+.emby-ctx-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.emby-ctx-btn.emby-ctx-muted {
+  color: #999;
+}
+
+.emby-ctx-btn.emby-ctx-muted:hover {
+  color: #ccc;
+}
+
+.emby-ctx-sep {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  margin: 4px 0;
+}
+
+/* ── Customised indicator: thumb glow + title tint ─────────────────── */
+.emby-item.customised .emby-item-thumb {
+  box-shadow: 0 0 0 2px #52b54b, 0 0 14px rgba(82, 181, 75, 0.45);
+}
+
+.emby-item.customised .emby-item-name {
+  color: #8edc88;
+}
+
+/* ── Partial customised (some seasons done) ─────────────────────────── */
+.emby-item.partial .emby-item-thumb {
+  box-shadow: 0 0 0 2px #d4882a, 0 0 14px rgba(212, 136, 42, 0.4);
+}
+
+.emby-item.partial .emby-item-thumb img {
+  filter: saturate(0.55) brightness(0.8);
+}
+
+.emby-item.partial .emby-item-name {
+  color: #e8b86d;
+}
+
+.emby-list-item.partial {
+  border-left: 3px solid #d4882a;
+  padding-left: 9px;
+}
+
+.emby-list-item.partial .emby-list-item-name {
+  color: #e8b86d;
+}
+
+/* ── Season progress pill (inside .emby-item-badges) ───────────────── */
+.emby-item-progress-pill {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.emby-item-progress-pill.partial {
+  color: #d4882a;
+  background: rgba(212, 136, 42, 0.15);
+  border: 1px solid rgba(212, 136, 42, 0.4);
+}
+
+.emby-item-progress-pill.full {
+  color: #52b54b;
+  background: rgba(82, 181, 75, 0.12);
+  border: 1px solid rgba(82, 181, 75, 0.35);
+}
+
+.emby-list-item.customised {
+  border-left: 3px solid #52b54b;
+  padding-left: 9px;
+}
+
+.emby-list-item.customised .emby-list-item-name {
+  color: #8edc88;
+}
+
+.emby-customised-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.75rem;
+  color: #52b54b;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ── Multi-select button active state ────────────────────────── */
+#emby-multiselect-btn.active {
+  background: rgba(82, 181, 75, 0.2);
+  border-color: #52b54b;
+  color: #52b54b;
+}
+
+/* ── Bulk action bar ─────────────────────────────────────────── */
+.emby-bulk-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  background: rgba(16, 16, 28, 0.95);
+  border-bottom: 1px solid rgba(82, 181, 75, 0.35);
+  border-top: 1px solid rgba(82, 181, 75, 0.15);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.emby-bulk-count {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #52b54b;
+  min-width: 80px;
+}
+
+.emby-bulk-btn {
+  padding: 5px 13px;
+  border-radius: 6px;
+  border: 1px solid;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  letter-spacing: 0.02em;
+}
+
+.emby-bulk-btn.mark {
+  background: rgba(82, 181, 75, 0.15);
+  border-color: #52b54b;
+  color: #52b54b;
+}
+
+.emby-bulk-btn.mark:hover {
+  background: rgba(82, 181, 75, 0.35);
+  color: #fff;
+}
+
+.emby-bulk-btn.unmark {
+  background: rgba(230, 60, 60, 0.12);
+  border-color: rgba(230, 60, 60, 0.6);
+  color: #e66;
+}
+
+.emby-bulk-btn.unmark:hover {
+  background: rgba(230, 60, 60, 0.3);
+  color: #fff;
+}
+
+.emby-bulk-btn.clear {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #888;
+  margin-left: auto;
+}
+
+.emby-bulk-btn.clear:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ccc;
+}
+
+/* Pulse animation on successful push */
+@keyframes emby-push-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(82, 181, 75, 0.7); }
+  50%  { box-shadow: 0 0 0 10px rgba(82, 181, 75, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(82, 181, 75, 0); }
+}
+
+.push-pulse {
+  animation: emby-push-pulse 0.9s ease-out;
+}
+
+/* ── Responsive ─────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .emby-dashboard-fullscreen {
+    padding: 16px;
+  }
+
+  .emby-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .emby-library-grid {
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 10px;
+  }
+
+  .emby-push-bar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .emby-library-toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .emby-toolbar-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .emby-search-wrap {
+    max-width: 100%;
+    width: 100%;
+  }
+}

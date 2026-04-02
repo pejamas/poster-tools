@@ -1,6 +1,21 @@
 // Changelog Configuration
-const CURRENT_VERSION = '1.3.0';
+const CURRENT_VERSION = '1.4.0';
 const CHANGELOG = [
+  {
+    version: '1.4.0',
+    date: 'April 2, 2026',
+    changes: [
+      { type: 'feature',     text: 'Emby Integration — connect to your Emby server (local network only) and push artwork directly from the canvas to any movie or TV show in your library' },
+      { type: 'feature',     text: 'Season poster push — open a show in the Emby panel, pick a season from the modal, and push each season poster individually' },
+      { type: 'feature',     text: 'Library browser — browse your full Emby library with search, genre filter, quality filter, sort order, grid/list view, and small/medium/large card sizes' },
+      { type: 'feature',     text: 'Customised badge — items you have pushed artwork to are marked with a badge; filter the library to show only customised or only untouched items' },
+      { type: 'feature',     text: 'Multi-select push — select multiple library items and push the current canvas artwork to all of them in one action' },
+      { type: 'feature',     text: 'Auto-load from Emby — clicking a library item or season loads its TMDB poster and poster browser results automatically' },
+      { type: 'feature',     text: 'Season Suite badge overlay — after pushing, Season Suite thumbnails update instantly with a customised indicator' },
+      { type: 'improvement', text: 'Local-only by design — the Emby panel is only visible when the app is accessed from a local network address (localhost, 192.168.x.x, 10.x.x.x, etc.); it is never exposed on public hosting' },
+      { type: 'improvement', text: 'API key stored locally — your Emby URL and API key are saved only in your browser\'s localStorage and never sent anywhere except your own Emby server' }
+    ]
+  },
   {
     version: '1.3.0',
     date: 'March 25, 2026',
@@ -600,6 +615,16 @@ posterUpload.addEventListener("change", (e) => {
       }
       drawCanvas();
 
+      // If the Emby integration pre-loaded a TMDB ID, use it directly
+      if (window._embyTmdbHint) {
+        const { id: _eid, type: _etype } = window._embyTmdbHint;
+        window._embyTmdbHint = null;
+        const _typeBtn = document.querySelector('.media-type-btn[data-type="' + _etype + '"]');
+        if (_typeBtn) _typeBtn.click();
+        fetchMetadataById(_eid, _etype);
+        return;
+      }
+
       const suggestedType = advancedContentTypeDetection(file.name);
 
       multiStepSearch(file.name, currentMediaType).then((results) => {
@@ -640,6 +665,7 @@ const networkLogoSuggestions = document.getElementById("network-logo-suggestions
 const networkLogoCheckbox = document.getElementById("network-logo-checkbox");
 
 const logoNames = [
+  "5",
   "ABC TV",
   "Acorn TV",
   "ABC",
@@ -2686,6 +2712,12 @@ function fetchMetadataById(id, type) {
   fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${TMDB_API_KEY}&append_to_response=credits`)
     .then((res) => res.json())
     .then((details) => {
+      // Set designer state so Browse Posters + Pick Logo work without a manual search
+      currentDesignerId    = String(id);
+      currentDesignerType  = type;
+      currentDesignerTitle = type === 'movie' ? (details.title || '') : (details.name || '');
+      fetchAndDisplayClearlogos(currentDesignerId, currentDesignerType);
+
       if (type === "movie") {
         displayMovieMetadata(details);
       } else {
@@ -3920,6 +3952,31 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
+  // ── Upload local logo ────────────────────────────────────
+  const uploadLogoBtn   = document.getElementById('upload-logo-btn');
+  const logoUploadInput = document.getElementById('logo-upload-input');
+  if (uploadLogoBtn && logoUploadInput) {
+    uploadLogoBtn.addEventListener('click', () => logoUploadInput.click());
+    logoUploadInput.addEventListener('change', () => {
+      const file = logoUploadInput.files[0];
+      if (!file) return;
+      const objUrl = URL.createObjectURL(file);
+      // Deselect any strip items
+      document.querySelectorAll('.clearlogo-item').forEach(el => el.classList.remove('selected'));
+      loadDesignerLogo(objUrl);
+      const nameLabel = document.getElementById('designer-selected-logo-name');
+      if (nameLabel) {
+        nameLabel.textContent = `✓ Custom logo: ${file.name}`;
+        nameLabel.style.display = 'block';
+      }
+      closeLogoPicker();
+      const panel = document.getElementById('designer-controls-panel');
+      if (panel) panel.style.display = 'flex';
+      // Reset so re-uploading the same file fires change again
+      logoUploadInput.value = '';
+    });
+  }
+
   // ── Slider controls ──────────────────────────────────────
   function wireSlider(id, displayId, onInput) {
     const el = document.getElementById(id);
@@ -3967,7 +4024,7 @@ document.addEventListener('DOMContentLoaded', function () {
   // ── Poster Fit controls ───────────────────────────────────
   function updatePosterFitControls() {
     const panel = document.getElementById('poster-fit-controls');
-    if (panel) panel.style.display = (posterFitMode === 'stretch') ? 'none' : 'block';
+    if (panel) panel.style.display = (posterFitMode === 'stretch') ? 'none' : 'flex';
   }
 
   const posterFitModeSelect = document.getElementById('poster-fit-mode');
@@ -4138,7 +4195,7 @@ document.addEventListener('DOMContentLoaded', function () {
     gradientToggle.addEventListener('change', () => {
       gradientEnabled = gradientToggle.checked;
       const gp = document.getElementById('gradient-controls-panel');
-      if (gp) gp.style.display = gradientEnabled ? 'block' : 'none';
+      if (gp) gp.style.display = gradientEnabled ? 'flex' : 'none';
       if (baseImage) drawCanvas();
     });
   }
@@ -4957,6 +5014,11 @@ function buildSeasonGrid(seasons, showId) {
     activeSeasonNum = null;
     document.querySelectorAll('.season-card').forEach(c => c.classList.remove('active'));
     baseCard.classList.add('active');
+    // Sync Emby push target to the show poster
+    const _embyMap = window._embyActiveSeasonMap;
+    if (_embyMap && _embyMap.base && typeof window._embySetTarget === 'function') {
+      window._embySetTarget(_embyMap.base, _embyMap._showName || 'Show Poster', 'Series');
+    }
     // Clear season label text
     seasonLabelText = '';
     const li = document.getElementById('season-label-text');
@@ -5072,6 +5134,13 @@ function buildSeasonGrid(seasons, showId) {
       if (designerLogoColorPickr) designerLogoColorPickr.setColor(newLogoColor);
       applyGradientState(savedEntry?.gradient);
 
+      // Sync Emby push target to this specific season
+      const _embyMap = window._embyActiveSeasonMap;
+      if (_embyMap && typeof window._embySetTarget === 'function') {
+        const _embySeasonId = _embyMap[season.season_number];
+        if (_embySeasonId) window._embySetTarget(_embySeasonId, seasonName, 'Season');
+      }
+
       // If we already have a saved composite for this season, restore it without re-fetching
       if (savedEntry) {
         baseImage = savedEntry.img;
@@ -5099,7 +5168,41 @@ function buildSeasonGrid(seasons, showId) {
 
   // Capture the base card thumb from the current canvas (show poster is already drawn)
   setTimeout(() => captureCanvasThumb('base'), 250);
+
+  // Apply any existing Emby push badges now that cards are built
+  refreshSeasonSuiteBadges();
 }
+
+/**
+ * Adds/removes the green ✓ badge on Season Suite cards based on Emby customisedIds.
+ * Called after buildSeasonGrid and whenever a push completes.
+ */
+function refreshSeasonSuiteBadges() {
+  const map = window._embyActiveSeasonMap;
+  const state = typeof window._embyGetState === 'function' ? window._embyGetState() : null;
+  if (!map || !state) return;
+
+  document.querySelectorAll('.season-card').forEach(card => {
+    const rawKey = card.dataset.seasonNum;
+    const lookupKey = rawKey === 'base' ? 'base' : parseInt(rawKey, 10);
+    const embyId = map[lookupKey];
+    let badge = card.querySelector('.season-card-emby-badge');
+    if (embyId && state.customisedIds.has(embyId)) {
+      if (!badge) {
+        badge = document.createElement('div');
+        badge.className = 'season-card-emby-badge';
+        badge.textContent = '✓';
+        card.appendChild(badge);
+      }
+    } else {
+      if (badge) badge.remove();
+    }
+  });
+}
+
+window._embyRefreshSeasonSuiteBadges = function () {
+  refreshSeasonSuiteBadges();
+};
 
 function loadSeasonPoster(seasonNum, posterPath, seasonName) {
   if (!posterPath) { showToast('No poster available for this season'); return; }
@@ -5351,6 +5454,17 @@ function loadDesignerLogo(url) {
   img.src = url;
 }
 
+// Called by emby-dashboard.js before loading a new poster so the previous
+// title's clearlogo doesn't bleed through into the next canvas render.
+window._embyClearLogoState = function () {
+  designerLogoImage = null;
+  designerLogoUrl   = '';
+  // Clear selected highlight in the logo picker strip
+  document.querySelectorAll('.clearlogo-item').forEach(function (el) {
+    el.classList.remove('selected');
+  });
+};
+
 // ════════════════════════════════════════════════════════════════════════════
 // Config save / load / export / import
 // ════════════════════════════════════════════════════════════════════════════
@@ -5460,7 +5574,7 @@ function _applyOverlaySettings(s) {
   if (s.gradientEnabled !== undefined) {
     gradientEnabled = s.gradientEnabled;
     const gt = document.getElementById('gradient-toggle'); if (gt) { gt.checked = gradientEnabled; gt.dispatchEvent(new Event('change')); }
-    const gp = document.getElementById('gradient-controls-panel'); if (gp) gp.style.display = gradientEnabled ? 'block' : 'none';
+    const gp = document.getElementById('gradient-controls-panel'); if (gp) gp.style.display = gradientEnabled ? 'flex' : 'none';
   }
   if (s.gradientOpacity !== undefined) { gradientOpacity = s.gradientOpacity; const el = document.getElementById('gradient-opacity'); if (el) el.value = Math.round(gradientOpacity * 100); const vl = document.getElementById('gradient-opacity-val'); if (vl) vl.textContent = Math.round(gradientOpacity * 100) + '%'; }
   if (s.gradientHeight  !== undefined) { gradientHeight  = s.gradientHeight;  const el = document.getElementById('gradient-height');  if (el) el.value = gradientHeight;  const vl = document.getElementById('gradient-height-val');  if (vl) vl.textContent = gradientHeight + '%'; }
@@ -5964,6 +6078,14 @@ function initPoEditBar() {
   const ebPickLogo = document.getElementById('eb-pick-logo-btn');
   if (ebPickLogo) ebPickLogo.addEventListener('click', () => document.getElementById('open-logo-picker-btn')?.click());
 
+  // ── Browse Poster ──────────────────────────────────────────
+  const ebBrowse = document.getElementById('eb-browse-btn');
+  if (ebBrowse) ebBrowse.addEventListener('click', () => document.getElementById('browse-posters-btn')?.click());
+
+  // ── Upload Poster ──────────────────────────────────────────
+  const ebUpload = document.getElementById('eb-upload-btn');
+  if (ebUpload) ebUpload.addEventListener('click', () => document.getElementById('poster-upload')?.click());
+
   syncSlider('eb-logo-y', 'eb-logo-y-val', 'eb-logo-y-dec', 'eb-logo-y-inc',
              'designer-logo-y', v => v);
   syncSlider('eb-logo-scale', 'eb-logo-scale-val', 'eb-logo-scale-dec', 'eb-logo-scale-inc',
@@ -5976,6 +6098,12 @@ function initPoEditBar() {
   syncSelects('eb-overlay-select', 'overlay-select');
   syncCheckboxToggle('eb-gradient-toggle', 'gradient-toggle');
   syncCheckboxToggle('eb-network-toggle', 'network-logo-checkbox');
+  syncCheckboxToggle('eb-guidelines-toggle', 'guidelines-toggle');
+
+  syncSlider('eb-gradient-opacity', 'eb-gradient-opacity-val', 'eb-gradient-opacity-dec', 'eb-gradient-opacity-inc',
+             'gradient-opacity', v => Math.round(v) + '%');
+  syncSlider('eb-gradient-height', 'eb-gradient-height-val', 'eb-gradient-height-dec', 'eb-gradient-height-inc',
+             'gradient-height', v => Math.round(v) + '%');
 
   // ── Season Label ───────────────────────────────────────────
   const ebSeasonToggle = document.getElementById('eb-season-label-toggle');

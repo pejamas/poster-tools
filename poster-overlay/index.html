@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Poster Overlay</title>
     <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="emby-dashboard.css" />
     <link rel="icon" type="image/svg+xml" href="../assets/favicon.png" />
     <link href="https://fonts.googleapis.com/css2?family=Gabarito:wght@400;600;700&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Anton&display=swap" rel="stylesheet" />
@@ -26,6 +27,11 @@
         <button onclick="showChangelogModal()" class="action-button whats-new-btn" data-tooltip="See what's new in Poster Overlay">
           <span class="whats-new-badge">NEW</span>
           <span>What's New</span>
+        </button>
+        <button id="emby-button" class="action-button action-button-icon" data-tooltip="Connect to Emby">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
         </button>
         <div class="config-dropdown">
           <button class="action-button action-button-icon" data-tooltip="Settings & Config">
@@ -139,29 +145,30 @@
           </div>
           <div class="section-body collapsible-content" id="body-canvas-tools">
 
-          <!-- Upload Poster — primary action, standalone -->
-          <button id="upload-poster-btn" class="action-button ct-primary-btn" type="button">
-            <img src="../assets/poster-overlay-icons/upload.svg" class="action-icon" alt="" />
-            Upload Poster
-          </button>
-          <input type="file" id="poster-upload" accept="image/*" style="display:none" />
-          <button id="browse-posters-btn" class="action-button ct-primary-btn" type="button">
-            Browse TMDB Posters
-          </button>
-
-          <!-- ── Poster Fit card ── -->
-          <div class="ct-group" id="poster-fit-card">
+          <!-- ── Image group ── -->
+          <div class="ct-group">
             <div class="ct-group-header">
-              <span class="ct-group-title">Poster Fit</span>
+              <span class="ct-group-title">Image</span>
             </div>
+            <div class="ct-btn-row">
+              <button id="browse-posters-btn" class="action-button ct-primary-btn" type="button">
+                <svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                Browse
+              </button>
+              <button id="upload-poster-btn" class="action-button ct-primary-btn" type="button">
+                <svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Upload
+              </button>
+            </div>
+            <input type="file" id="poster-upload" accept="image/*" style="display:none" />
             <select id="poster-fit-mode">
               <option value="stretch">Stretch (fill canvas)</option>
               <option value="contain">Contain (letterbox)</option>
               <option value="cover">Cover (crop to fill)</option>
               <option value="manual">Manual (scale &amp; pan)</option>
             </select>
-            <div id="poster-fit-controls" style="display:none">
-              <div class="ct-slider-block" style="margin-top:8px">
+            <div id="poster-fit-controls" class="ct-inner-panel" style="display:none">
+              <div class="ct-slider-block">
                 <div class="ct-slider-label">
                   <span class="ct-row-label">Scale</span>
                   <span class="ct-row-val" id="poster-scale-display">100%</span>
@@ -198,29 +205,114 @@
             </div>
           </div>
 
-          <!-- ── Banner Overlay card ── -->
+          <!-- ── Logo group ── -->
           <div class="ct-group">
             <div class="ct-group-header">
-              <span class="ct-group-title">Banner Overlay</span>
+              <span class="ct-group-title">Logo</span>
             </div>
+            <button id="open-logo-picker-btn" class="action-button ct-primary-btn" type="button">
+              Pick Title Logo
+            </button>
+            <p id="designer-selected-logo-name" class="ct-hint" style="display:none"></p>
+
+            <!-- logo controls — revealed after picking a logo -->
+            <div id="designer-controls-panel" class="ct-controls" style="display:none">
+              <div class="ct-slider-block">
+                <div class="ct-slider-label">
+                  <span class="ct-row-label">Horizontal</span>
+                  <span class="ct-row-val" id="designer-x-display">0</span>
+                </div>
+                <div class="ct-slider-row">
+                  <button type="button" class="sidebar-range-btn" id="designer-logo-x-dec" tabindex="-1">−</button>
+                  <input type="range" id="designer-logo-x" min="-480" max="480" value="0" step="5" class="designer-slider" />
+                  <button type="button" class="sidebar-range-btn" id="designer-logo-x-inc" tabindex="-1">+</button>
+                </div>
+              </div>
+              <div class="ct-slider-block">
+                <div class="ct-slider-label">
+                  <span class="ct-row-label">Vertical</span>
+                  <span class="ct-row-val" id="designer-y-display">0</span>
+                </div>
+                <div class="ct-slider-row">
+                  <button type="button" class="sidebar-range-btn" id="designer-logo-y-dec" tabindex="-1">−</button>
+                  <input type="range" id="designer-logo-y" min="-650" max="650" value="55" step="5" class="designer-slider" />
+                  <button type="button" class="sidebar-range-btn" id="designer-logo-y-inc" tabindex="-1">+</button>
+                </div>
+              </div>
+              <div class="ct-slider-block">
+                <div class="ct-slider-label">
+                  <span class="ct-row-label">Scale</span>
+                  <span class="ct-row-val" id="designer-scale-display">100%</span>
+                </div>
+                <div class="ct-slider-row">
+                  <button type="button" class="sidebar-range-btn" id="designer-logo-scale-dec" tabindex="-1">−</button>
+                  <input type="range" id="designer-logo-scale" min="0.1" max="3" value="1" step="0.05" class="designer-slider" />
+                  <button type="button" class="sidebar-range-btn" id="designer-logo-scale-inc" tabindex="-1">+</button>
+                </div>
+              </div>
+              <div class="ct-toggle-row">
+                <span class="ct-toggle-label">Drop Shadow</span>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="designer-shadow-toggle" />
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+              <div id="designer-shadow-group" style="display:none">
+                <div class="ct-slider-block">
+                  <div class="ct-slider-label">
+                    <span class="ct-row-label">Blur</span>
+                    <span class="ct-row-val" id="designer-shadow-blur-display">20px</span>
+                  </div>
+                  <div class="ct-slider-row">
+                    <button type="button" class="sidebar-range-btn" id="designer-shadow-blur-dec" tabindex="-1">−</button>
+                    <input type="range" id="designer-shadow-blur" min="0" max="80" value="20" step="1" class="designer-slider" />
+                    <button type="button" class="sidebar-range-btn" id="designer-shadow-blur-inc" tabindex="-1">+</button>
+                  </div>
+                </div>
+              </div>
+              <button id="designer-reset-btn" class="ct-reset-btn" type="button">↺ Reset Position</button>
+              <div class="ct-slider-label">
+                <span class="ct-row-label">Logo Color</span>
+              </div>
+              <div id="designer-logo-color-pickr"></div>
+            </div>
+
+            <!-- guidelines — always visible -->
+            <div class="ct-toggle-row ct-guidelines-row">
+              <span class="ct-toggle-label">Placement Guidelines</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="guidelines-toggle" />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- ── Overlays group ── -->
+          <div class="ct-group">
+            <div class="ct-group-header">
+              <span class="ct-group-title">Overlays</span>
+            </div>
+
+            <!-- Banner sub-section -->
+            <span class="ct-sub-label">Banner</span>
             <select id="overlay-select">
               <option value="none">None</option>
               <option value="../assets/movie-overlays/4K with DV.png">Dolby Vision</option>
               <option value="../assets/movie-overlays/4K with HDR.png">HDR</option>
               <option value="../assets/movie-overlays/4K no HDR.png">Ultra HD</option>
             </select>
-          </div>
 
-          <!-- ── Bottom Gradient card ── -->
-          <div class="ct-group" id="gradient-card">
-            <div class="ct-group-header">
-              <span class="ct-group-title">Bottom Gradient</span>
+            <div class="ct-inner-sep"></div>
+
+            <!-- Gradient sub-section -->
+            <div class="ct-sub-header">
+              <span class="ct-sub-label">Gradient</span>
               <label class="toggle-switch">
                 <input type="checkbox" id="gradient-toggle" />
                 <span class="toggle-slider"></span>
               </label>
             </div>
-            <div id="gradient-controls-panel" style="display:none">
+            <div id="gradient-controls-panel" class="ct-inner-panel" style="display:none">
               <div class="ct-slider-block">
                 <div class="ct-slider-label">
                   <span class="ct-row-label">Opacity</span>
@@ -243,17 +335,17 @@
                   <button type="button" class="sidebar-range-btn" id="gradient-height-inc" tabindex="-1">+</button>
                 </div>
               </div>
-              <div class="ct-slider-label" style="margin-top:8px">
+              <div class="ct-slider-label">
                 <span class="ct-row-label">Color</span>
               </div>
               <div id="gradient-color-pickr"></div>
             </div>
-          </div>
 
-          <!-- ── Network Logo card ── -->
-          <div class="ct-group">
-            <div class="ct-group-header">
-              <span class="ct-group-title">Network Logo</span>
+            <div class="ct-inner-sep"></div>
+
+            <!-- Network Logo sub-section -->
+            <div class="ct-sub-header">
+              <span class="ct-sub-label">Network Logo</span>
               <label class="toggle-switch">
                 <input type="checkbox" id="network-logo-checkbox" />
                 <span class="toggle-slider"></span>
@@ -263,7 +355,7 @@
               <input type="text" id="network-logo-search" placeholder="Search network logos…" autocomplete="off" />
               <div class="network-logo-suggestions" id="network-logo-suggestions"></div>
             </div>
-            <div class="ct-slider-block" style="margin-top:10px">
+            <div class="ct-slider-block">
               <div class="ct-slider-label">
                 <span class="ct-row-label">Scale</span>
                 <span class="ct-row-val" id="logo-scale-value">100%</span>
@@ -274,103 +366,13 @@
                 <button type="button" class="sidebar-range-btn" id="logo-scale-slider-inc" tabindex="-1">+</button>
               </div>
             </div>
-            <div class="ct-slider-label" style="margin-top:10px">
+            <div class="ct-slider-label">
               <span class="ct-row-label">Color</span>
             </div>
             <div id="network-logo-color-pickr"></div>
           </div>
 
-          <!-- ── Title Logo card ── -->
-          <div class="ct-group">
-            <div class="ct-group-header">
-              <span class="ct-group-title">Title Logo</span>
-            </div>
-            <button id="open-logo-picker-btn" class="action-button ct-primary-btn" type="button">
-              Pick Title Logo
-            </button>
-            <p id="designer-selected-logo-name" class="ct-hint" style="display:none"></p>
-
-            <!-- logo controls — revealed after picking a logo -->
-            <div id="designer-controls-panel" class="ct-controls" style="display:none">
-
-              <div class="ct-slider-block">
-                <div class="ct-slider-label">
-                  <span class="ct-row-label">Horizontal</span>
-                  <span class="ct-row-val" id="designer-x-display">0</span>
-                </div>
-                <div class="ct-slider-row">
-                  <button type="button" class="sidebar-range-btn" id="designer-logo-x-dec" tabindex="-1">−</button>
-                  <input type="range" id="designer-logo-x" min="-480" max="480" value="0" step="5" class="designer-slider" />
-                  <button type="button" class="sidebar-range-btn" id="designer-logo-x-inc" tabindex="-1">+</button>
-                </div>
-              </div>
-
-              <div class="ct-slider-block">
-                <div class="ct-slider-label">
-                  <span class="ct-row-label">Vertical</span>
-                  <span class="ct-row-val" id="designer-y-display">0</span>
-                </div>
-                <div class="ct-slider-row">
-                  <button type="button" class="sidebar-range-btn" id="designer-logo-y-dec" tabindex="-1">−</button>
-                  <input type="range" id="designer-logo-y" min="-650" max="650" value="55" step="5" class="designer-slider" />
-                  <button type="button" class="sidebar-range-btn" id="designer-logo-y-inc" tabindex="-1">+</button>
-                </div>
-              </div>
-
-              <div class="ct-slider-block">
-                <div class="ct-slider-label">
-                  <span class="ct-row-label">Scale</span>
-                  <span class="ct-row-val" id="designer-scale-display">100%</span>
-                </div>
-                <div class="ct-slider-row">
-                  <button type="button" class="sidebar-range-btn" id="designer-logo-scale-dec" tabindex="-1">−</button>
-                  <input type="range" id="designer-logo-scale" min="0.1" max="3" value="1" step="0.05" class="designer-slider" />
-                  <button type="button" class="sidebar-range-btn" id="designer-logo-scale-inc" tabindex="-1">+</button>
-                </div>
-              </div>
-
-              <div class="ct-toggle-row">
-                <span class="ct-toggle-label">Drop Shadow</span>
-                <label class="toggle-switch">
-                  <input type="checkbox" id="designer-shadow-toggle" />
-                  <span class="toggle-slider"></span>
-                </label>
-              </div>
-
-              <div id="designer-shadow-group" style="display:none">
-                <div class="ct-slider-block" style="margin-top:2px">
-                  <div class="ct-slider-label">
-                    <span class="ct-row-label">Blur</span>
-                    <span class="ct-row-val" id="designer-shadow-blur-display">20px</span>
-                  </div>
-                  <div class="ct-slider-row">
-                    <button type="button" class="sidebar-range-btn" id="designer-shadow-blur-dec" tabindex="-1">−</button>
-                    <input type="range" id="designer-shadow-blur" min="0" max="80" value="20" step="1" class="designer-slider" />
-                    <button type="button" class="sidebar-range-btn" id="designer-shadow-blur-inc" tabindex="-1">+</button>
-                  </div>
-                </div>
-              </div>
-
-              <button id="designer-reset-btn" class="ct-reset-btn" type="button">↺ Reset Position</button>
-
-              <!-- Logo Tint Color -->
-              <div class="ct-slider-label" style="margin-top:10px">
-                <span class="ct-row-label">Logo Color</span>
-              </div>
-              <div id="designer-logo-color-pickr"></div>
-            </div>
-
-            <!-- guidelines — always visible -->
-            <div class="ct-toggle-row ct-guidelines-row">
-              <span class="ct-toggle-label">Placement Guidelines</span>
-              <label class="toggle-switch">
-                <input type="checkbox" id="guidelines-toggle" />
-                <span class="toggle-slider"></span>
-              </label>
-            </div>
-          </div>
-
-          <!-- ── Season Label card ── -->
+          <!-- ── Season Label group ── -->
           <div class="ct-group" id="season-label-card">
             <div class="ct-group-header">
               <span class="ct-group-title">Season Label</span>
@@ -379,13 +381,13 @@
                 <span class="toggle-slider"></span>
               </label>
             </div>
-            <div class="ct-slider-block" style="margin-bottom:10px">
+            <div class="ct-slider-block">
               <div class="ct-slider-label">
                 <span class="ct-row-label">Label Text</span>
               </div>
               <input type="text" id="season-label-text" class="ct-text-input" value="Season 1" placeholder="e.g. Season 1" />
             </div>
-            <div class="ct-slider-block" style="margin-bottom:10px">
+            <div class="ct-slider-block">
               <div class="ct-slider-label">
                 <span class="ct-row-label">Font</span>
               </div>
@@ -409,7 +411,7 @@
                 <button type="button" class="sidebar-range-btn" id="season-label-y-inc" tabindex="-1">+</button>
               </div>
             </div>
-            <div class="ct-slider-block" style="margin-top:10px">
+            <div class="ct-slider-block">
               <div class="ct-slider-label">
                 <span class="ct-row-label">Size</span>
                 <span class="ct-row-val" id="season-label-size-val">60px</span>
@@ -420,7 +422,7 @@
                 <button type="button" class="sidebar-range-btn" id="season-label-size-inc" tabindex="-1">+</button>
               </div>
             </div>
-            <div class="ct-slider-block" style="margin-top:10px">
+            <div class="ct-slider-block">
               <div class="ct-slider-label">
                 <span class="ct-row-label">Spacing</span>
                 <span class="ct-row-val" id="season-label-spacing-val">0px</span>
@@ -431,7 +433,7 @@
                 <button type="button" class="sidebar-range-btn" id="season-label-spacing-inc" tabindex="-1">+</button>
               </div>
             </div>
-            <div class="ct-slider-label" style="margin-top:10px">
+            <div class="ct-slider-label">
               <span class="ct-row-label">Color</span>
             </div>
             <div id="season-label-color-pickr"></div>
@@ -441,10 +443,12 @@
         </div>
         <!-- ── END CANVAS TOOLS section ── -->
 
-        <div class="section-separator"></div>
         <div class="sidebar-action-row">
           <button id="download-btn" class="icon-button teal" title="Download">
             <img src="../assets/poster-overlay-icons/download.svg" class="icon" />
+          </button>
+          <button id="emby-push-canvas-btn" class="icon-button emby-green" title="Push to Emby" style="display:none;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
           </button>
           <button id="reset-btn" class="icon-button red" title="Reset">
             <img src="../assets/poster-overlay-icons/refresh-cw.svg" class="icon" />
@@ -466,11 +470,20 @@
             <!-- ── Quick Edit Bar ── -->
             <div class="po-edit-bar" id="po-edit-bar">
 
-              <!-- Row 1: Poster (Pick Logo + Fit) · Overlays · Actions -->
+              <!-- Row 1: Image (Browse + Fit) | Logo (Pick + Y + Scale) | Overlays + Guidelines -->
               <div class="po-eb-row">
+
+                <!-- LOAD + FIT -->
                 <div class="po-eb-group">
-                  <span class="po-eb-group-label">Poster</span>
-                  <button class="po-eb-btn" id="eb-pick-logo-btn" data-tooltip="Pick a title logo">Pick Logo</button>
+                  <span class="po-eb-group-label">Image</span>
+                  <button class="po-eb-btn" id="eb-browse-btn" data-tooltip="Browse TMDB posters">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                    Browse
+                  </button>
+                  <button class="po-eb-btn" id="eb-upload-btn" data-tooltip="Upload image from device">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    Upload
+                  </button>
                   <div class="po-eb-divider"></div>
                   <span class="po-eb-label">Fit</span>
                   <select class="po-eb-select" id="eb-fit-mode" data-tooltip="Poster fit mode">
@@ -483,41 +496,11 @@
 
                 <div class="po-eb-sep"></div>
 
-                <div class="po-eb-group">
-                  <span class="po-eb-group-label">Overlays</span>
-                  <span class="po-eb-label">Banner</span>
-                  <select class="po-eb-select" id="eb-overlay-select" data-tooltip="Banner overlay">
-                    <option value="none">None</option>
-                    <option value="../assets/movie-overlays/4K with DV.png">Dolby Vision</option>
-                    <option value="../assets/movie-overlays/4K with HDR.png">HDR</option>
-                    <option value="../assets/movie-overlays/4K no HDR.png">Ultra HD</option>
-                  </select>
-                  <div class="po-eb-divider"></div>
-                  <span class="po-eb-label">Bottom Gradient</span>
-                  <button class="po-eb-toggle-btn" id="eb-gradient-toggle" data-tooltip="Toggle bottom gradient" aria-pressed="false">Off</button>
-                  <div class="po-eb-divider"></div>
-                  <span class="po-eb-label">Network Logo</span>
-                  <button class="po-eb-toggle-btn" id="eb-network-toggle" data-tooltip="Toggle network logo" aria-pressed="false">Off</button>
-                </div>
-
-                <div class="po-eb-sep"></div>
-
-                <div class="po-eb-group">
-                  <button class="po-eb-action-btn po-eb-dl" id="eb-download-btn" data-tooltip="Download poster">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                    Download
-                  </button>
-                  <button class="po-eb-action-btn po-eb-reset" id="eb-reset-btn" data-tooltip="Reset canvas">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.84"/></svg>
-                    Reset
-                  </button>
-                </div>
-              </div>
-
-              <!-- Row 2: Title Logo Y/Scale · Season Label (TV only, inline) -->
-              <div class="po-eb-row po-eb-row-2">
+                <!-- LOGO: pick → fine-tune -->
                 <div class="po-eb-group" id="eb-logo-group">
-                  <span class="po-eb-group-label">Title Logo</span>
+                  <span class="po-eb-group-label">Logo</span>
+                  <button class="po-eb-btn" id="eb-pick-logo-btn" data-tooltip="Pick a title logo">Pick</button>
+                  <div class="po-eb-divider"></div>
                   <span class="po-eb-label">Y</span>
                   <button class="po-eb-range-btn" id="eb-logo-y-dec">−</button>
                   <input type="range" class="po-eb-slider" id="eb-logo-y" min="-650" max="650" value="55" step="5" data-tooltip="Logo vertical position" />
@@ -531,10 +514,53 @@
                   <span class="po-eb-val" id="eb-logo-scale-val">100%</span>
                 </div>
 
-                <div class="po-eb-sep" id="eb-season-sep"></div>
+                <div class="po-eb-sep"></div>
 
+                <!-- OVERLAYS + GUIDELINES -->
+                <div class="po-eb-group">
+                  <span class="po-eb-group-label">Overlays</span>
+                  <span class="po-eb-label">Banner</span>
+                  <select class="po-eb-select" id="eb-overlay-select" data-tooltip="Banner overlay">
+                    <option value="none">None</option>
+                    <option value="../assets/movie-overlays/4K with DV.png">Dolby Vision</option>
+                    <option value="../assets/movie-overlays/4K with HDR.png">HDR</option>
+                    <option value="../assets/movie-overlays/4K no HDR.png">Ultra HD</option>
+                  </select>
+                  <div class="po-eb-divider"></div>
+                  <span class="po-eb-label">Network</span>
+                  <button class="po-eb-toggle-btn" id="eb-network-toggle" data-tooltip="Toggle network logo" aria-pressed="false">Off</button>
+                  <div class="po-eb-divider"></div>
+                  <span class="po-eb-label">Guidelines</span>
+                  <button class="po-eb-toggle-btn" id="eb-guidelines-toggle" data-tooltip="Toggle placement guidelines" aria-pressed="false">Off</button>
+                </div>
+              </div>
+
+              <!-- Row 2: Season (TV only) | Export -->
+              <div class="po-eb-row po-eb-row-2">
+
+                <!-- GRADIENT: toggle → opacity → height -->
+                <div class="po-eb-group" id="eb-gradient-group">
+                  <span class="po-eb-group-label">Gradient</span>
+                  <button class="po-eb-toggle-btn" id="eb-gradient-toggle" data-tooltip="Toggle bottom gradient" aria-pressed="false">Off</button>
+                  <div class="po-eb-divider"></div>
+                  <span class="po-eb-label">Opacity</span>
+                  <button class="po-eb-range-btn" id="eb-gradient-opacity-dec">−</button>
+                  <input type="range" class="po-eb-slider" id="eb-gradient-opacity" min="5" max="100" value="70" step="5" data-tooltip="Gradient opacity" />
+                  <button class="po-eb-range-btn" id="eb-gradient-opacity-inc">+</button>
+                  <span class="po-eb-val" id="eb-gradient-opacity-val">70%</span>
+                  <div class="po-eb-divider"></div>
+                  <span class="po-eb-label">Height</span>
+                  <button class="po-eb-range-btn" id="eb-gradient-height-dec">−</button>
+                  <input type="range" class="po-eb-slider" id="eb-gradient-height" min="5" max="100" value="50" step="5" data-tooltip="Gradient height" />
+                  <button class="po-eb-range-btn" id="eb-gradient-height-inc">+</button>
+                  <span class="po-eb-val" id="eb-gradient-height-val">50%</span>
+                </div>
+
+                <div class="po-eb-sep"></div>
+
+                <!-- SEASON LABEL (TV only) -->
                 <div class="po-eb-group" id="eb-season-group">
-                  <span class="po-eb-group-label">Season Label</span>
+                  <span class="po-eb-group-label">Season</span>
                   <button class="po-eb-toggle-btn" id="eb-season-label-toggle" data-tooltip="Toggle season label" aria-pressed="false">Off</button>
                   <input type="text" class="po-eb-text" id="eb-season-label-text" placeholder="e.g. Season 1" data-tooltip="Season label text" />
                   <div class="po-eb-divider"></div>
@@ -543,6 +569,24 @@
                   <input type="range" class="po-eb-slider" id="eb-season-y" min="0" max="100" step="0.5" value="91" data-tooltip="Label vertical position" />
                   <button class="po-eb-range-btn" id="eb-season-y-inc">+</button>
                   <span class="po-eb-val" id="eb-season-y-val">91%</span>
+                </div>
+
+                <div class="po-eb-sep" id="eb-season-sep"></div>
+
+                <!-- EXPORT -->
+                <div class="po-eb-group">
+                  <button class="po-eb-action-btn po-eb-dl" id="eb-download-btn" data-tooltip="Download poster">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    Download
+                  </button>
+                  <button class="po-eb-action-btn po-eb-emby" id="eb-emby-push-btn" data-tooltip="Push to Emby" style="display:none;">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                    Push to Emby
+                  </button>
+                  <button class="po-eb-action-btn po-eb-reset" id="eb-reset-btn" data-tooltip="Reset canvas">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.84"/></svg>
+                    Reset
+                  </button>
                 </div>
               </div>
 
@@ -627,6 +671,8 @@
           <div class="logo-picker-header">
             <span class="logo-picker-title">Pick a Title Logo</span>
             <div class="logo-picker-header-actions">
+              <button id="upload-logo-btn" class="logo-picker-refresh" type="button" title="Upload a logo from your computer">&#8679; Upload</button>
+              <input type="file" id="logo-upload-input" accept="image/*" style="display:none" />
               <button id="refresh-logos-btn" class="logo-picker-refresh" type="button" title="Reload logos">&#8635; Refresh</button>
               <button id="close-logo-picker" class="logo-picker-close-btn" type="button" title="Close">&#10005;</button>
             </div>
@@ -794,5 +840,6 @@
     </div>
     <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
     <script src="app.js"></script>
+    <script src="emby-dashboard.js"></script>
   </body>
 </html>

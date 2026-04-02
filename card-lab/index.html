@@ -120,10 +120,28 @@
               Replace ALL Episode images
             </button>
 
-            <button id="revert-all-thumbnails-btn" class="action-button" style="width: 92%;">
+            <button id="revert-all-thumbnails-btn" class="action-button" style="width: 92%; margin-bottom: 12px;">
               <img src="../assets/poster-overlay-icons/refresh-cw.svg" class="action-icon" alt="Revert All" />
               Revert All to Default Thumbnails
             </button>
+
+            <!-- Thumbnail Zoom / Pan Controls -->
+            <div class="thumbnail-zoom-control">
+              <div class="position-label">
+                <span class="label-text">Zoom</span>
+                <span class="position-value" id="thumbnail-zoom-value">100%</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:4px;">
+                <button type="button" class="sidebar-range-btn" id="thumbnail-zoom-decrement" tabindex="-1">-</button>
+                <input type="range" id="thumbnail-zoom" min="50" max="500" value="100" step="5" />
+                <button type="button" class="sidebar-range-btn" id="thumbnail-zoom-increment" tabindex="-1">+</button>
+              </div>
+              <div class="thumbnail-zoom-reset-row">
+                <button id="thumbnail-reset-pan-btn" class="action-button">Reset Position</button>
+                <button id="thumbnail-reset-zoom-btn" class="action-button">Reset Zoom</button>
+              </div>
+              <p class="thumbnail-zoom-hint">Drag the preview to pan · Scroll to zoom</p>
+            </div>
 
             <!-- Hidden file inputs for upload buttons -->
             <input type="file" id="thumbnail-upload" accept="image/*" style="display: none" />

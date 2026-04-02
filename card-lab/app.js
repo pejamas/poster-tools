@@ -1,6 +1,17 @@
 // Changelog Configuration
-const CURRENT_VERSION = '1.7.2';
+const CURRENT_VERSION = '1.8.0';
 const CHANGELOG = [
+  {
+    version: '1.8.0',
+    date: 'April 2, 2026',
+    changes: [
+      { type: 'feature',     text: 'Thumbnail zoom — zoom in and out of the episode thumbnail using a slider, scroll wheel, or pinch on touch devices' },
+      { type: 'feature',     text: 'Thumbnail pan — drag the preview canvas or swipe on touch to reposition the thumbnail within the frame' },
+      { type: 'improvement', text: 'Zoom and pan state saved per episode — each card remembers its own zoom level and position independently' },
+      { type: 'improvement', text: 'Grid view matches single-card crop — the grid thumbnail reflects the same zoom and pan as the individual card view' },
+      { type: 'improvement', text: 'Reset Position and Reset Zoom controls in the Thumbnail Options panel for quick restore' }
+    ]
+  },
   {
     version: '1.7.2',
     date: 'March 16, 2026',
@@ -447,6 +458,9 @@ if (spoilerToggle) {
   let selectedCardIndex = -1;
   let isTMDBMode = false;
   let thumbnailImg = null;
+  let thumbnailZoom = 1.0;
+  let thumbnailPanX = 0;
+  let thumbnailPanY = 0;
   let hasSearchResults = false;
   let originalThumbnail = null; // To store original thumbnail for revert functionality
 
@@ -687,6 +701,7 @@ if (spoilerToggle) {
           const img = new Image();
           img.onload = () => {
             thumbnailImg = img;
+            canvas.style.cursor = 'grab';
             if (selectedCardIndex >= 0 && episodeTitleCards[selectedCardIndex]) {
               if (!episodeTitleCards[selectedCardIndex].originalThumbnail && episodeTitleCards[selectedCardIndex].thumbnailImg) {
                 episodeTitleCards[selectedCardIndex].originalThumbnail = episodeTitleCards[selectedCardIndex].thumbnailImg;
@@ -746,6 +761,10 @@ if (spoilerToggle) {
           if (selectedCardIndex >= 0 && episodeTitleCards[selectedCardIndex]) {
             thumbnailImg = episodeTitleCards[selectedCardIndex].thumbnailImg;
           }
+          thumbnailZoom = 1.0;
+          thumbnailPanX = 0;
+          thumbnailPanY = 0;
+          updateThumbnailZoomUI();
           updateBothViews();
           showToast("All episode thumbnails reverted to default.");
         } else {
@@ -840,6 +859,157 @@ if (spoilerToggle) {
       setupSidebarRangeButton("vertical-position", 5, -350, 350);
       setupSidebarRangeButton("title-info-spacing", 5, -50, 50);
     }, 0);
+
+    // =====================================================
+    // THUMBNAIL ZOOM / PAN — sidebar controls
+    // =====================================================
+    const thumbZoomSlider = document.getElementById('thumbnail-zoom');
+    const thumbZoomDecBtn = document.getElementById('thumbnail-zoom-decrement');
+    const thumbZoomIncBtn = document.getElementById('thumbnail-zoom-increment');
+    const thumbResetPanBtn = document.getElementById('thumbnail-reset-pan-btn');
+    const thumbResetZoomBtn = document.getElementById('thumbnail-reset-zoom-btn');
+
+    if (thumbZoomSlider) {
+      thumbZoomSlider.addEventListener('input', () => {
+        thumbnailZoom = parseInt(thumbZoomSlider.value) / 100;
+        const label = document.getElementById('thumbnail-zoom-value');
+        if (label) label.textContent = thumbZoomSlider.value + '%';
+        saveThumbnailTransformToCard();
+        drawCard();
+      });
+    }
+    if (thumbZoomDecBtn) {
+      thumbZoomDecBtn.addEventListener('click', () => {
+        thumbnailZoom = Math.max(0.5, thumbnailZoom - 0.05);
+        updateThumbnailZoomUI();
+        saveThumbnailTransformToCard();
+        drawCard();
+      });
+    }
+    if (thumbZoomIncBtn) {
+      thumbZoomIncBtn.addEventListener('click', () => {
+        thumbnailZoom = Math.min(5, thumbnailZoom + 0.05);
+        updateThumbnailZoomUI();
+        saveThumbnailTransformToCard();
+        drawCard();
+      });
+    }
+    if (thumbResetPanBtn) {
+      thumbResetPanBtn.addEventListener('click', () => {
+        thumbnailPanX = 0;
+        thumbnailPanY = 0;
+        saveThumbnailTransformToCard();
+        drawCard();
+      });
+    }
+    if (thumbResetZoomBtn) {
+      thumbResetZoomBtn.addEventListener('click', () => {
+        thumbnailZoom = 1.0;
+        thumbnailPanX = 0;
+        thumbnailPanY = 0;
+        updateThumbnailZoomUI();
+        saveThumbnailTransformToCard();
+        drawCard();
+      });
+    }
+
+    // =====================================================
+    // THUMBNAIL ZOOM / PAN — canvas interactions
+    // =====================================================
+    // Mouse wheel to zoom
+    canvas.addEventListener('wheel', (e) => {
+      if (!thumbnailImg) return;
+      e.preventDefault();
+      const delta = e.deltaY < 0 ? 0.06 : -0.06;
+      thumbnailZoom = Math.min(5, Math.max(0.5, thumbnailZoom + delta));
+      updateThumbnailZoomUI();
+      saveThumbnailTransformToCard();
+      drawCard();
+    }, { passive: false });
+
+    // Mouse drag to pan
+    let _thumbDragging = false;
+    let _thumbDragStartX = 0, _thumbDragStartY = 0;
+    let _thumbDragPanX = 0, _thumbDragPanY = 0;
+
+    canvas.addEventListener('mousedown', (e) => {
+      if (!thumbnailImg || canvas.style.display === 'none') return;
+      _thumbDragging = true;
+      _thumbDragStartX = e.clientX;
+      _thumbDragStartY = e.clientY;
+      _thumbDragPanX = thumbnailPanX;
+      _thumbDragPanY = thumbnailPanY;
+      canvas.style.cursor = 'grabbing';
+      e.preventDefault();
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (!_thumbDragging) return;
+      const scaleX = canvas.width / canvas.clientWidth;
+      const scaleY = canvas.height / canvas.clientHeight;
+      thumbnailPanX = _thumbDragPanX + (e.clientX - _thumbDragStartX) * scaleX;
+      thumbnailPanY = _thumbDragPanY + (e.clientY - _thumbDragStartY) * scaleY;
+      saveThumbnailTransformToCard();
+      drawCard();
+    });
+
+    document.addEventListener('mouseup', () => {
+      if (_thumbDragging) {
+        _thumbDragging = false;
+        canvas.style.cursor = thumbnailImg ? 'grab' : 'default';
+      }
+    });
+
+    // Touch drag to pan + pinch to zoom
+    let _touchLastX = 0, _touchLastY = 0;
+    let _touchLastDist = 0;
+    let _touchPanning = false;
+
+    canvas.addEventListener('touchstart', (e) => {
+      if (!thumbnailImg) return;
+      if (e.touches.length === 1) {
+        _touchPanning = true;
+        _touchLastX = e.touches[0].clientX;
+        _touchLastY = e.touches[0].clientY;
+      } else if (e.touches.length === 2) {
+        _touchPanning = false;
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        _touchLastDist = Math.hypot(dx, dy);
+      }
+      e.preventDefault();
+    }, { passive: false });
+
+    canvas.addEventListener('touchmove', (e) => {
+      if (!thumbnailImg) return;
+      const scaleX = canvas.width / canvas.clientWidth;
+      const scaleY = canvas.height / canvas.clientHeight;
+      if (e.touches.length === 1 && _touchPanning) {
+        thumbnailPanX += (e.touches[0].clientX - _touchLastX) * scaleX;
+        thumbnailPanY += (e.touches[0].clientY - _touchLastY) * scaleY;
+        _touchLastX = e.touches[0].clientX;
+        _touchLastY = e.touches[0].clientY;
+        saveThumbnailTransformToCard();
+        drawCard();
+      } else if (e.touches.length === 2) {
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        const dist = Math.hypot(dx, dy);
+        if (_touchLastDist > 0) {
+          thumbnailZoom = Math.min(5, Math.max(0.5, thumbnailZoom * (dist / _touchLastDist)));
+          updateThumbnailZoomUI();
+          saveThumbnailTransformToCard();
+          drawCard();
+        }
+        _touchLastDist = dist;
+      }
+      e.preventDefault();
+    }, { passive: false });
+
+    canvas.addEventListener('touchend', () => {
+      _touchPanning = false;
+      _touchLastDist = 0;
+    });
 
     // Set default values for sliders
     document.getElementById("text-shadow-blur").value = 0;
@@ -1094,6 +1264,26 @@ if (spoilerToggle) {
     return isNaN(num) ? 0 : num;
   }
 
+  // =====================================================
+  // THUMBNAIL ZOOM / PAN
+  // =====================================================
+
+  function updateThumbnailZoomUI() {
+    const slider = document.getElementById('thumbnail-zoom');
+    const label = document.getElementById('thumbnail-zoom-value');
+    if (slider) slider.value = Math.round(thumbnailZoom * 100);
+    if (label) label.textContent = Math.round(thumbnailZoom * 100) + '%';
+  }
+
+  function saveThumbnailTransformToCard() {
+    if (selectedCardIndex >= 0 && episodeTitleCards[selectedCardIndex]) {
+      const card = episodeTitleCards[selectedCardIndex];
+      card.thumbnailZoom = thumbnailZoom;
+      card.thumbnailPanX = thumbnailPanX;
+      card.thumbnailPanY = thumbnailPanY;
+    }
+  }
+
   // Update both single card and grid views
   function updateBothViews() {
     // Save current episode's specific data if we're editing a card
@@ -1304,6 +1494,9 @@ if (spoilerToggle) {
       currentCard.title = titleInput.value;
       currentCard.seasonNumber = formatNumber(seasonNumberInput.value);
       currentCard.episodeNumber = formatNumber(episodeNumberInput.value);
+      currentCard.thumbnailZoom = thumbnailZoom;
+      currentCard.thumbnailPanX = thumbnailPanX;
+      currentCard.thumbnailPanY = thumbnailPanY;
     }
     
     canvas.style.display = "none";
@@ -1489,34 +1682,51 @@ function drawCardToContext(targetCtx, width, height, card) {
 
     // Draw the thumbnail image if available
     if (thumbnailImg) {
+      // Use card-specific zoom/pan when drawing for grid, else use globals
+      const zoom = card ? (card.thumbnailZoom ?? 1.0) : thumbnailZoom;
+      // Pan values are stored in single-card canvas space (1920×1080).
+      // Scale them proportionally when rendering at a different canvas size.
+      const SINGLE_W = 1920, SINGLE_H = 1080;
+      const panX = card ? (card.thumbnailPanX ?? 0) * (width / SINGLE_W) : thumbnailPanX;
+      const panY = card ? (card.thumbnailPanY ?? 0) * (height / SINGLE_H) : thumbnailPanY;
+
       targetCtx.save();
       targetCtx.globalAlpha = 1.0;
 
-      // Calculate draw dimensions
-      let drawX = 0, drawY = 0, drawW = width, drawH = height;
+      // Clip to canvas bounds so zoomed/panned image doesn't overflow
+      targetCtx.beginPath();
+      targetCtx.rect(0, 0, width, height);
+      targetCtx.clip();
+
+      // Calculate base draw dimensions
+      let baseX = 0, baseY = 0, baseW = width, baseH = height;
       if (!(thumbnailFullsize && thumbnailFullsize.checked)) {
         // Draw maintaining aspect ratio
-        const scale = 1.0;
         if (thumbnailImg.width / thumbnailImg.height > width / height) {
-          drawH = height * scale;
-          drawW = thumbnailImg.width * (drawH / thumbnailImg.height);
+          baseH = height;
+          baseW = thumbnailImg.width * (baseH / thumbnailImg.height);
         } else {
-          drawW = width * scale;
-          drawH = thumbnailImg.height * (drawW / thumbnailImg.width);
+          baseW = width;
+          baseH = thumbnailImg.height * (baseW / thumbnailImg.width);
         }
-        drawX = (width - drawW) / 2;
-        drawY = (height - drawH) / 2;
+        baseX = (width - baseW) / 2;
+        baseY = (height - baseH) / 2;
       }
 
-      // If spoiler/blur is enabled, draw with blur filter
+      // Apply zoom (scale from image center) and pan
+      const drawW = baseW * zoom;
+      const drawH = baseH * zoom;
+      const drawX = baseX - (drawW - baseW) / 2 + panX;
+      const drawY = baseY - (drawH - baseH) / 2 + panY;
+
       if (isSpoilerBlurEnabled()) {
         // Create an offscreen canvas to apply blur
         const offCanvas = document.createElement('canvas');
-        offCanvas.width = drawW;
-        offCanvas.height = drawH;
+        offCanvas.width = Math.max(1, Math.ceil(drawW));
+        offCanvas.height = Math.max(1, Math.ceil(drawH));
         const offCtx = offCanvas.getContext('2d');
         offCtx.filter = 'blur(18px)';
-        offCtx.drawImage(thumbnailImg, 0, 0, drawW, drawH);
+        offCtx.drawImage(thumbnailImg, 0, 0, offCanvas.width, offCanvas.height);
         targetCtx.drawImage(offCanvas, drawX, drawY, drawW, drawH);
       } else {
         targetCtx.drawImage(thumbnailImg, drawX, drawY, drawW, drawH);
@@ -3394,6 +3604,9 @@ function drawCardToContext(targetCtx, width, height, card) {
       previousCard.title = titleInput.value;
       previousCard.seasonNumber = formatNumber(seasonNumberInput.value);
       previousCard.episodeNumber = formatNumber(episodeNumberInput.value);
+      previousCard.thumbnailZoom = thumbnailZoom;
+      previousCard.thumbnailPanX = thumbnailPanX;
+      previousCard.thumbnailPanY = thumbnailPanY;
     }
 
     selectedCardIndex = index;
@@ -3413,12 +3626,21 @@ function drawCardToContext(targetCtx, width, height, card) {
     // Set thumbnail image
     if (card.thumbnailImg) {
       thumbnailImg = card.thumbnailImg;
+      canvas.style.cursor = 'grab';
       // Only update the label if the element exists
       const thumbContainer = document.querySelector('#thumbnail-container span');
       if (thumbContainer) {
         thumbContainer.textContent = 'Custom Thumbnail Applied';
       }
+    } else {
+      canvas.style.cursor = 'default';
     }
+
+    // Restore thumbnail zoom/pan for this card
+    thumbnailZoom = card.thumbnailZoom ?? 1.0;
+    thumbnailPanX = card.thumbnailPanX ?? 0;
+    thumbnailPanY = card.thumbnailPanY ?? 0;
+    updateThumbnailZoomUI();
 
     // Apply card-specific settings if available
     if (card.currentSettings) {
@@ -5962,6 +6184,13 @@ function drawCardToContext(targetCtx, width, height, card) {
         if (card.originalThumbnail) {
           card.thumbnailImg = card.originalThumbnail;
           thumbnailImg = card.originalThumbnail;
+          thumbnailZoom = 1.0;
+          thumbnailPanX = 0;
+          thumbnailPanY = 0;
+          card.thumbnailZoom = 1.0;
+          card.thumbnailPanX = 0;
+          card.thumbnailPanY = 0;
+          updateThumbnailZoomUI();
           const thumbContainer = document.querySelector('#thumbnail-container span');
           if (thumbContainer) {
             thumbContainer.textContent = 'Original Thumbnail Restored';

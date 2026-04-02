@@ -24,8 +24,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const tabSwitcher = document.createElement("div");
     tabSwitcher.className = "edit-bar-tabs";
     tabSwitcher.innerHTML = `
-      <button class="edit-bar-settings-btn" data-tooltip="Edit Bar Settings" style="margin-right:6px;display:flex;align-items:center;background:transparent;border:none;cursor:pointer;padding:4px 8px;min-width:32px;min-height:32px;">
-        <i data-lucide="settings" width="20" height="20"></i>
+      <button class="edit-bar-settings-btn" data-tooltip="Edit Bar Settings" style="margin-right:6px;display:flex;align-items:center;background:transparent;border:none;cursor:pointer;padding:4px 8px;min-width:32px;min-height:32px;color:#fff;">
+        <i data-lucide="settings" width="20" height="20" style="color:#fff;stroke:#fff;"></i>
       </button>
       <button class="edit-bar-tab active" data-tab="title" data-tooltip="Title Controls" style="padding:4px 8px;min-width:32px;min-height:32px;display:flex;align-items:center;justify-content:center;">
         <i data-lucide="type" class="lucide" width="20" height="20"></i>
@@ -42,10 +42,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Create toggle button
     const toggleButton = document.createElement("button");
     toggleButton.className = "edit-bar-toggle floating-edit-bar-toggle";
-    toggleButton.innerHTML = `
-      <i data-lucide="edit-3" width="20" height="20" style="margin-right:8px;"></i>
-      <span class="edit-bar-toggle-label">Edit Bar</span>
-    `;
+    toggleButton.innerHTML = `<svg class="edit-bar-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg><span class="edit-bar-toggle-label">Quick Edit</span>`;
     // Style: center under header/canvas frame, floating, more prominent
     toggleButton.style.position = "absolute";
     toggleButton.style.left = "50%";
@@ -420,13 +417,11 @@ document.addEventListener("DOMContentLoaded", () => {
           icon.firstElementChild.style.stroke = '#fff';
         }
       });
-      // Make settings icon white
-      const settingsIcon = tabSwitcher.querySelector('.edit-bar-settings-btn i');
-      if (settingsIcon) {
-        settingsIcon.style.color = '#fff';
-        if (settingsIcon.firstElementChild && settingsIcon.firstElementChild.tagName === 'svg') {
-          settingsIcon.firstElementChild.style.stroke = '#fff';
-        }
+      // Make settings icon white — target svg (Lucide replaces <i> with <svg>)
+      const settingsIconSvg = tabSwitcher.querySelector('.edit-bar-settings-btn svg');
+      if (settingsIconSvg) {
+        settingsIconSvg.style.color = '#fff';
+        settingsIconSvg.style.stroke = '#fff';
       }
       // Remove native title attributes from all edit bar buttons/icons to prevent native tooltips
       editBar.querySelectorAll('[data-tooltip][title]').forEach(el => el.removeAttribute('title'));
@@ -442,72 +437,72 @@ document.addEventListener("DOMContentLoaded", () => {
     settingsModal.style.display = 'none';
     settingsModal.innerHTML = `
       <div class="edit-bar-settings-backdrop"></div>
-      <div class="edit-bar-settings-frame" style="max-width:400px;width:96vw;min-width:0;">
+      <div class="edit-bar-settings-frame">
         <div class="edit-bar-settings-header">
           <span>Edit Bar Settings</span>
-          <button class="edit-bar-settings-close" data-tooltip="Close Settings"><i data-lucide="x" width="20" height="20"></i></button>
+          <button class="edit-bar-settings-close" data-tooltip="Close Settings"><i data-lucide="x" width="16" height="16"></i></button>
         </div>
         <form id="edit-bar-settings-form" autocomplete="off">
-        <div class="edit-bar-settings-content" style="padding:0 0 8px 0;">
-          <div style="margin-bottom:18px;">
-            <div style="background:linear-gradient(90deg,#1e1e1e 80%,#00bfa5 120%);border-radius:7px 7px 0 0;padding:8px 18px 6px 18px;border-bottom:2px solid #00bfa5;box-shadow:0 2px 8px rgba(0,191,165,0.08);font-weight:700;font-size:1.08em;color:#fff;letter-spacing:.01em;">Title Controls</div>
-            <div style="background:#18181a;border-radius:0 0 7px 7px;padding:12px 18px 8px 18px;display:flex;flex-wrap:wrap;gap:10px 18px;border-bottom:1.5px solid #222;">
-              <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;min-width:180px;">
-                <input type="checkbox" id="toggle-title-font" checked style="accent-color:#00bfa5;">
-                <span>Show Font Controls</span>
-              </label>
-              <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;min-width:180px;">
-                <input type="checkbox" id="toggle-title-format" checked style="accent-color:#00bfa5;">
-                <span>Show Format Controls</span>
-              </label>
-              <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;min-width:180px;">
-                <input type="checkbox" id="toggle-title-effects" checked style="accent-color:#00bfa5;">
-                <span>Show Effects Controls</span>
-              </label>
-              <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;min-width:180px;">
-                <input type="checkbox" id="toggle-title-position" checked style="accent-color:#00bfa5;">
-                <span>Show Position Controls</span>
-              </label>
-              <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;min-width:180px;">
-                <input type="checkbox" id="toggle-info-offset" style="accent-color:#00bfa5;">
-                <span>Show X/Y Offset Controls</span>
-              </label>
-              <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;min-width:180px;">
-                <input type="checkbox" id="toggle-info-blur" style="accent-color:#00bfa5;">
-                <span>Show Spoiler Blur Control</span>
-              </label>
+          <div class="edit-bar-settings-content">
+            <div class="eb-settings-section">
+              <div class="eb-settings-section-title" data-theme="title">Title Controls</div>
+              <div class="eb-settings-section-body">
+                <label class="eb-settings-label">
+                  <input type="checkbox" id="toggle-title-font" checked>
+                  <span>Font Controls</span>
+                </label>
+                <label class="eb-settings-label">
+                  <input type="checkbox" id="toggle-title-format" checked>
+                  <span>Format Controls</span>
+                </label>
+                <label class="eb-settings-label">
+                  <input type="checkbox" id="toggle-title-effects" checked>
+                  <span>Effects Controls</span>
+                </label>
+                <label class="eb-settings-label">
+                  <input type="checkbox" id="toggle-title-position" checked>
+                  <span>Position Controls</span>
+                </label>
+                <label class="eb-settings-label">
+                  <input type="checkbox" id="toggle-info-offset">
+                  <span>X / Y Offset</span>
+                </label>
+                <label class="eb-settings-label">
+                  <input type="checkbox" id="toggle-info-blur">
+                  <span>Spoiler Blur</span>
+                </label>
+              </div>
+            </div>
+            <div class="eb-settings-section">
+              <div class="eb-settings-section-title" data-theme="info">Info Controls</div>
+              <div class="eb-settings-section-body">
+                <label class="eb-settings-label">
+                  <input type="checkbox" id="toggle-info-font" checked>
+                  <span>Font Controls</span>
+                </label>
+                <label class="eb-settings-label">
+                  <input type="checkbox" id="toggle-info-format" checked>
+                  <span>Format Controls</span>
+                </label>
+                <label class="eb-settings-label">
+                  <input type="checkbox" id="toggle-info-spacing">
+                  <span>Text Spacing</span>
+                </label>
+                <label class="eb-settings-label">
+                  <input type="checkbox" id="toggle-info-number-style">
+                  <span>Number &amp; Separator Style</span>
+                </label>
+                <label class="eb-settings-label">
+                  <input type="checkbox" id="toggle-info-season-episode">
+                  <span>Season / Episode Toggles</span>
+                </label>
+              </div>
             </div>
           </div>
-          <div style="margin-bottom:0;">
-            <div style="background:linear-gradient(90deg,#232323 80%,#8e24aa 120%);border-radius:7px 7px 0 0;padding:8px 18px 6px 18px;border-bottom:2px solid #8e24aa;box-shadow:0 2px 8px rgba(142,36,170,0.10);font-weight:700;font-size:1.08em;color:#fff;letter-spacing:.01em;">Info Controls</div>
-            <div style="background:#19181c;border-radius:0 0 7px 7px;padding:12px 18px 8px 18px;display:flex;flex-wrap:wrap;gap:10px 18px;">
-              <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;min-width:180px;">
-                <input type="checkbox" id="toggle-info-font" checked style="accent-color:#8e24aa;">
-                <span>Show Font Controls</span>
-              </label>
-              <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;min-width:180px;">
-                <input type="checkbox" id="toggle-info-format" checked style="accent-color:#8e24aa;">
-                <span>Show Format Controls</span>
-              </label>
-              <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;min-width:180px;">
-                <input type="checkbox" id="toggle-info-spacing" style="accent-color:#8e24aa;">
-                <span>Show Info Text Spacing</span>
-              </label>
-              <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;min-width:180px;">
-                <input type="checkbox" id="toggle-info-number-style" style="accent-color:#8e24aa;">
-                <span>Show Number/Separator Style Controls</span>
-              </label>
-              <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;min-width:180px;">
-                <input type="checkbox" id="toggle-info-season-episode" style="accent-color:#8e24aa;">
-                <span>Show Season/Episode Toggles</span>
-              </label>
-            </div>
+          <div class="eb-settings-footer">
+            <button type="button" class="edit-bar-settings-reset">Reset</button>
+            <button type="submit" class="edit-bar-settings-save">Save</button>
           </div>
-        </div>
-        <div style="display:flex;justify-content:flex-end;gap:10px;padding:0 24px 18px 24px;">
-          <button type="button" class="edit-bar-settings-reset" style="background:#232323;color:#fff;border:1px solid #00bfa5;border-radius:6px;padding:7px 18px;font-weight:600;cursor:pointer;">Reset</button>
-          <button type="submit" class="edit-bar-settings-save" style="background:linear-gradient(135deg,#00bfa5,#8e24aa);color:#fff;border:none;border-radius:6px;padding:7px 18px;font-weight:600;cursor:pointer;">Save</button>
-        </div>
         </form>
       </div>
     `;
@@ -516,7 +511,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Open modal on settings button click
     const settingsBtn = tabSwitcher.querySelector('.edit-bar-settings-btn');
     settingsBtn.addEventListener('click', () => {
-      settingsModal.style.display = 'block';
+      settingsModal.style.display = 'flex';
       if (window.lucide && typeof window.lucide.createIcons === 'function') {
         window.lucide.createIcons();
       }
@@ -778,23 +773,7 @@ document.addEventListener("DOMContentLoaded", () => {
     toggleButton.addEventListener('click', () => {
       editBarContainer.classList.toggle('visible');
       toggleButton.classList.toggle('active');
-      // Change icon and label depending on state
-      if (editBarContainer.classList.contains('visible')) {
-        toggleButton.innerHTML = '<i data-lucide="x" width="24" height="24" style="margin-right:8px;"></i><span class="edit-bar-toggle-label">Close Edit Bar</span>';
-      } else {
-        toggleButton.innerHTML = '<i data-lucide="edit-3" width="20" height="20" style="margin-right:8px;"></i><span class="edit-bar-toggle-label">Edit Bar</span>';
-      }
-      if (window.lucide && typeof window.lucide.createIcons === 'function') {
-        window.lucide.createIcons();
-      }
     });
-    // Set initial icon and label
-    if (!editBarContainer.classList.contains('visible')) {
-      toggleButton.innerHTML = '<i data-lucide="edit-3" width="20" height="20" style="margin-right:8px;"></i><span class="edit-bar-toggle-label">Edit Bar</span>';
-      if (window.lucide && typeof window.lucide.createIcons === 'function') {
-        window.lucide.createIcons();
-      }
-    }
     
     // Font family sync
     syncSelectElements('edit-bar-font-family', 'font-family');
